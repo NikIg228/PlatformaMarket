@@ -1,5 +1,43 @@
 # DentMarket KZ — матрица фактической готовности
 
+## Актуальный срез28.09.2026 и источники правды
+
+Исходный код: canonical main278be21cb36f913ef508756b4246ee28035aaf86.
+Docs-only reconciliation не является новым runtime pass. Более старые датированные
+записи ниже — история; верхний срез исправляет устаревшие pending-формулировки.
+
+| Источник | Что определяет |
+| --- | --- |
+| [Product V2 §23](../product/DENTMARKET_PRODUCT_V2.md#23-внутренний-пилот-уточнение-владельца-28092026) | Согласованный пилот, акции/история/шаблоны, три кабинета и ограничения |
+| [Foundation §4.2](../backend/DENTMARKET_BACKEND_FOUNDATION_V2.md#42-очередь-внутреннего-пилота--уточнение28092026) | Следующие этапы, зависимости, открытые вопросы и DoD |
+| Этот файл и связанные checkpoints | Фактическое evidence и границы PASS; не наличие галочки или модуля |
+| [ADR](../architecture/adr/) и packages/schemas/API client/OpenAPI | Принятые архитектурные решения и реализованные контракты; будущие требования не выдаются за API |
+| [Workflow](DEVELOPMENT_WORKFLOW.md), AGENTS.md и [UI standard](../ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md) | Правила выполнения, проверки и свойства интерфейса |
+
+ORGANIZATION-READY: CLOSED,7f06914f87aa465a0e09f08e2bcdb7c34c0327f0,
+[CI36035175719](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36035175719)
+и [Security36035175682](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36035175682) SUCCESS.
+CORE-04.1–04.4: CLOSED,278be21,
+[CI36127372917](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36127372917)
+и [Security36127373128](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36127373128) SUCCESS.
+Источники: локальные closing receipts PRIMARY-SESSION/CORE-04 и сохранённое
+evidence. Полные CORE-01/05, B5, CORE-09/POST-FULL этим не закрыты.
+
+| Остаток на28.09 | Классификация, не новый тестовый pass |
+| --- | --- |
+| Ручное добавление | API проверен, завершённый UI не принят; CORE-04.5 |
+| Повтор заказа, избранное/списки | Завершённый путь не найден при целевой сверке маршрутов/компонентов |
+| Акции §23.3 | Существующие discount APIs не покрывают N+M, новую модерацию/снимок/витрину/шаблоны; SPEC_APPROVED, NOT_ACCEPTED |
+| Корзина | Reprice/checkout/reservations baseline; требуемый60с/focus UX не найден в просмотренном клиенте |
+| CORE-02/03 | Отложены; delivery/POD код есть, весь цикл не принят, shipment требует PAID |
+| Диалоги | CORE-06.5 requirements approved; implementation not started |
+| Панель/доступ/уведомления/метрики | Есть отдельные модули и доказательства; полная приёмка §23.4 ещё открыта |
+| Техдолг | lint API=tsc, tracked pnpm-lock при выбранном npm, крупный buyer route; catalog demo9 групп названий/2 search misses; не повод переписывать ядро |
+
+[Checkpoint этой docs-only задачи](task-state/PILOT-DOCS-2026-09-28.md).
+PROJECT_HANDOFF и PRIMARY-SESSION — навигация/состояние исполнения, не альтернативные
+требования или очередь. Утверждение требований не разрешает автоматически новый code scope.
+
 Операционное дополнение24.09.2026 — ORGANIZATION-READY, **локальные проверки пройдены**:
 анкета с юридическим адресом и адресом доставки, серверная готовность/допуск,
 выбор кабинета и переходы реализованы локально на main4cd87a5 + dirty scope.
@@ -73,7 +111,7 @@ evidence не означает свежий pass текущего checkout ил�
 | CORE-01 | Владелец подтвердил обязательный договор площадка–поставщик до публикации; assertActive сохранён | Полнота versioned acceptance/ONE_TIME/FRAMEWORK contract и локальные tests; optional относится только к buyer–supplier framework |
 | CORE-02 | Payment intent требует provider и merchant account, mock capture существует | Отдельный manual/off-platform claim/review/settlement без фиктивного PSP; пока техническое предложение |
 | CORE-03 | Confirmation/dispatch проверены; logistics содержит delivery closure/POD code | Принятые API/PG сценарии получения, частичной доставки, отмены/expiry локального резерва, repeat purchase |
-| CORE-04 | Local PASS25.09: CSV/XLSX preview/publication/rollback, manual API, search48/50, matching100/0 wrong, runtime freshness; [evidence](task-state/CORE-04-2026-09-25.md) | Push/CI ожидаются; demo-name duplicates9 групп, search2 misses, реальные прайсы/media rights не сертифицированы |
+| CORE-04 | CLOSED04.1–04.4 на278be21, CI/Security PASS: CSV/XLSX preview/publication/rollback, manual API, search48/50, matching100/0 wrong; [evidence](task-state/CORE-04-2026-09-25.md) | Новые04.5–04.7 не реализованы/не приняты; demo-name duplicates9 групп, search2 misses, реальные прайсы/media rights не сертифицированы |
 | CORE-05 | Auth/session/role/security regressions существуют | Принятый внутренний onboarding/recovery/membership lifecycle без live email/social providers; rights новых endpoints |
 | CORE-06 | Outbox/DLQ/import review и shipment in-app работают в локальном baseline | Полный внутренний work-queue/correction path, уведомления новых transitions, явное поведение при отсутствующем adapter |
 | CORE-07 | Operational metrics и search analytics существуют | Единая схема минимальных продуктовых событий/расчётов, retry-safe counts и demo/live separation |
