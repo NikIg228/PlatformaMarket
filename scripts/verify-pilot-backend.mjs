@@ -75,6 +75,9 @@ function assertOpenApiContract(openApi) {
     ["/api/catalog/cities", "get", "200", "PublicCityListResponse"],
     ["/api/catalog/search", "get", "200", "CatalogSearchResponse"],
     ["/api/catalog/offer-options", "get", "200", "OfferOptionsResponse"],
+    ["/api/suppliers/{supplierOrganizationId}/import-batches", "get", "200", "SupplierImportHistoryResponse"],
+    ["/api/suppliers/{supplierOrganizationId}/offers/{offerId}/delivery-options", "get", "200", "OfferDeliveryOptionsResponse"],
+    ["/api/suppliers/{supplierOrganizationId}/offers/{offerId}/delivery-options", "post", "201", "OfferDeliveryOptionResponse", "CreateOfferDeliveryOptionRequest"],
     [
       "/api/catalog/products/{productId}/compare",
       "get",

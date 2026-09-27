@@ -208,6 +208,8 @@ export const comparedOfferSchema = z.object({
       method: z.string(),
       priceType: z.string(),
       fixedAmountMinor: decimalStringSchema.nullable(),
+      freeFromAmountMinor: decimalStringSchema.nullable().optional(),
+      currency: z.string().optional(),
       minLeadTimeHours: z.number().int(),
       maxLeadTimeHours: z.number().int().nullable(),
       temperatureControlled: z.boolean(),

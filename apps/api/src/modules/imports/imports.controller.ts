@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Headers, Param, Post, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Headers, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { confirmSupplierItemMatchSchema, createImportBatchSchema, rollbackImportBatchSchema } from "@marketplace/schemas";
 import { ApiTags } from "@nestjs/swagger";
 import { PermissionsGuard } from "../access-control/permissions.guard";
@@ -11,6 +11,8 @@ import {
   ApiUuidParam,
 } from "../../platform/openapi/core-openapi";
 import { ImportsService } from "./imports.service";
+import { supplierImportHistoryQuerySchema } from "@marketplace/schemas";
+import { ApiCoreQuery } from "../../platform/openapi/core-openapi";
 
 @ApiTags("supplier-imports")
 @ApiCoreProtected()
@@ -23,8 +25,12 @@ export class ImportsController {
 
   @Get("import-batches")
   @RequirePermissions("import.manage")
-  batches(@Param("supplierOrganizationId") supplierOrganizationId: string, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
-    return this.imports.batches(supplierOrganizationId, this.context(actorId, organizationId));
+  @ApiCoreQuery("SupplierImportHistoryQuery")
+  @ApiCoreResponse("SupplierImportHistoryResponse")
+  batches(@Param("supplierOrganizationId") supplierOrganizationId: string, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string, @Query() query: unknown) {
+    const parsed = supplierImportHistoryQuerySchema.safeParse(query);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.imports.batches(supplierOrganizationId, this.context(actorId, organizationId), parsed.data);
   }
 
   @Get("onboarding-readiness")

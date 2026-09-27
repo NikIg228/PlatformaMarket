@@ -416,6 +416,8 @@ export class SearchService {
               method: option.method,
               priceType: option.priceType,
               fixedAmountMinor: option.fixedAmountMinor?.toString() ?? null,
+              freeFromAmountMinor: option.freeFromAmountMinor?.toString() ?? null,
+              currency: option.currency,
               minLeadTimeHours: option.minLeadTimeHours,
               maxLeadTimeHours: option.maxLeadTimeHours,
               temperatureControlled: option.temperatureControlled,

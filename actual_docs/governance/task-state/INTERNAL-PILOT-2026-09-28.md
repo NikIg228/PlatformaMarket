@@ -85,3 +85,39 @@ this bounded slice. Core contract PASS reused: last edits did not change HTTP sh
 or catalogue response inputs. PostgreSQL2 exercised latest inventory implementation.
 Review and git diff --check PASS; publish 29 explicit paths, excluding pre-existing
 registry/handoff/CORE04/PILOTDOCS/PRIMARY/next-env/flow-a WIP. Full CORE04.5 still open.
+088150ad44bd8f63524d61c61ba1cecae221d6b3 pushed; exact remote SHA verified.
+CI36351888969/Security36351889033 pending. Same CORE04.5 continues (not next phase):
+import history cursor pagination, delivery terms via existing OfferDeliveryOption,
+new-draft reset. Contracts first, no new provider/DB model. DoD: scoped cursor/tenant
+unit/API, delivery form + buyer visibility, schemas/OpenAPI/client, typecheck/tests,
+app builds, contract/browser; existing stock PostgreSQL evidence unchanged.
+Questions document remains authoritative for unresolved business choices.
+Terms/history slice: typecheck1 PASS12/12; tests1 PASS11/11 (API381, schema125).
+Production build1 running. Supplier validator changed to lazy import after
+initial typecheck; build typecheck + final targeted check covers exact final input.
+Review discovered existing manual-candidate approve produces offer without packaging
+and publication record, unlike import approval. CORE04.5 remains open until this
+supplier→operator→supplier→buyer path is fixed and browser-proven; do not confuse
+CSV/XLSX approval E2E with manual-candidate evidence.
+Review of onboarding permissions: real supplier onboarding grants pricing.manage,
+delivery.view/manage. Historical seed.ts supplier permission list omits pricing.manage;
+record as seed consistency debt for final acceptance, not a reason to alter working
+accounts or weaken authorization. Explicit browser fixture permissions are isolated.
+Terms build1 PASS10/10 (6m19s), latest supplier lazy validator included; E2E
+TypeScript PASS. Contract1 running after build completion (no overlapping build).
+Browser follow-up: manual-offer + spreadsheet-import-ui + marketplace/product-login
+for affected supplier, history and both buyer comparison surfaces. Full regular50
+from prior slice reused for unrelated flows; source changes isolated to terms/history.
+088150a CI36351888969 and Security36351889033 SUCCESS (exact published SHA).
+Terms core-contract1 PASS90 schemas/30 core operations, response/error validation.
+Terms browser1 running on approved DB and latest built apps. No pending previous
+slice gate; current remaining manual-candidate gap still prevents CORE04.5 closure.
+Terms/history browser1 PASS13/13: actual delivery upsert→buyer product dialog,
+exact threshold/fallback price + hours, mobile/desktop history page51, product login
+return and marketplace. Owned ports confirmed free; npm lifecycle stderr appeared
+only during test-owned shutdown after passes; Playwright exit0, no assertion failed.
+Review: no automatic shipment, no provider call, fixed money exact; tenant-scoped
+cursor, stable timestamp/id ordering, active warehouse guard, explicit read/save.
+No Prisma schema/migration changed. PostgreSQL stock evidence REUSED unchanged
+inventory/commerce inputs. Contract/typecheck/tests/build/browser/diff-check PASS.
+Ready for scoped terms/history publication; next work remains manual-candidate gap.

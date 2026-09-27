@@ -15,6 +15,7 @@ import type { Cart } from "../../features/purchasing/types";
 import styles from "./page.module.css";
 import { formatCatalogMoney } from "../../catalog/catalog-view-model";
 import { useVerifiedSession, sessionApiContext } from "../../workspace-session";
+import { OfferDeliverySummary, type DeliverySummary } from "../../catalog/offer-delivery-summary";
 
 type Offer = {
   id: string;
@@ -25,6 +26,7 @@ type Offer = {
   packaging?: { name: string; quantityInBaseUnit?: string; unit?: string | null };
   available: boolean;
   deliveryMethods?: string[];
+  delivery?: DeliverySummary[];
   verifiedDocuments?: boolean;
   officialDistributor?: boolean;
 };
@@ -130,7 +132,7 @@ export default function ProductOfferActions({ offers, loginHref }: { offers: Off
                   <div className={styles.compareOfferMain}>
                     <strong>{offer.supplier.name}</strong>
                     <span>{offer.packaging?.name ? `Фасовка: ${offer.packaging.name}` : "Фасовка уточняется"}</span>
-                    <span>{deliveryLabel(offer.deliveryMethods)}</span>
+                    {offer.delivery ? <OfferDeliverySummary options={offer.delivery} currency={offer.currency} /> : <span>{deliveryLabel(offer.deliveryMethods)}</span>}
                   </div>
                   <div className={styles.compareOfferSide}>
                     <strong>{formatCatalogMoney(offer.priceMinor, offer.currency)} за упаковку / единицу продажи</strong>

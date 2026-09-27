@@ -74,6 +74,7 @@ import { PublicHeader } from "./public-header";
 import { loginUrl } from "./public-links";
 import { canonicalSearchQuery } from "./catalog-search";
 import { formatCatalogMoney } from "./catalog/catalog-view-model";
+import { OfferDeliverySummary, type DeliverySummary } from "./catalog/offer-delivery-summary";
 import type {
   ProductVariantOption,
   SearchMedia,
@@ -167,11 +168,7 @@ type CompareOffer = {
     quantityAvailable: string;
     updatedAt: string | null;
   }>;
-  delivery: Array<{
-    method: string;
-    minLeadTimeHours: number | null;
-    maxLeadTimeHours: number | null;
-  }>;
+  delivery: DeliverySummary[];
   markers: {
     verifiedDocuments: boolean;
     complianceRisk: string | null;
@@ -2110,12 +2107,6 @@ export default function BuyerWorkspace({
                         index === 0 &&
                         available &&
                         offer.markers.verifiedDocuments;
-                      const deliveryMethods = offer.delivery.map(
-                        ({ method }) => method,
-                      );
-                      const leadTime = offer.delivery.find(
-                        ({ maxLeadTimeHours }) => maxLeadTimeHours != null,
-                      )?.maxLeadTimeHours;
                       return (
                         <article
                           className={
@@ -2185,10 +2176,7 @@ export default function BuyerWorkspace({
                                 ? "В наличии"
                                 : "Требует подтверждения"}
                             </strong>
-                            <span>{deliveryLabel(deliveryMethods)}</span>
-                            {leadTime != null ? (
-                              <small>до {Math.ceil(leadTime / 24)} дн.</small>
-                            ) : null}
+                            <OfferDeliverySummary options={offer.delivery} currency={offer.price.currency} />
                           </div>
                           <div className={styles.sellerTrust}>
                             {frontendFeatures.trust && <strong>

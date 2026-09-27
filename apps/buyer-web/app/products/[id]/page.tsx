@@ -11,6 +11,7 @@ import ProductOfferActions from "./product-offer-actions";
 import { formatCatalogMoney } from "../../catalog/catalog-view-model";
 import { safeCatalogReturn } from "../../catalog/marketplace-url";
 import { productLoginUrl } from "../../public-links";
+import type { DeliverySummary } from "../../catalog/offer-delivery-summary";
 
 type CatalogProduct = (typeof catalog.products)[number];
 type PublicComparison = Awaited<
@@ -36,6 +37,7 @@ type DetailProduct = {
     packaging?: { name: string; quantityInBaseUnit?: string; unit?: string | null };
     available: boolean;
     deliveryMethods: string[];
+    delivery?: DeliverySummary[];
     verifiedDocuments: boolean;
     officialDistributor: boolean;
   }>;
@@ -115,6 +117,7 @@ function fromComparison(comparison: PublicComparison): DetailProduct {
         ({ quantityAvailable }) => Number(quantityAvailable) > 0,
       ),
       deliveryMethods: offer.delivery.map(({ method }) => method),
+      delivery: offer.delivery,
       verifiedDocuments: offer.markers.verifiedDocuments,
       officialDistributor: offer.markers.officialDistributor,
     })),

@@ -308,6 +308,10 @@ export const supplierImportBatchResponseSchema = z
   })
   .passthrough();
 
+export const supplierImportHistoryQuerySchema = z.object({ cursor: z.uuid().optional(), limit: z.coerce.number().int().min(1).max(50).default(50) });
+export const supplierImportHistoryResponseSchema = z.array(supplierImportBatchResponseSchema);
+export type SupplierImportHistoryQuery = z.input<typeof supplierImportHistoryQuerySchema>;
+
 export const supplierImportConflictSchema = z.object({
   rowNumber: z.number().int().positive(),
   status: supplierImportRowStatusSchema,
@@ -887,6 +891,17 @@ export const createOfferDeliveryOptionSchema = deliveryPricingFields.and(z.objec
   temperatureControlled: z.boolean().default(false),
   installationRequired: z.boolean().default(false),
 }));
+
+export const offerDeliveryOptionResponseSchema = z.object({
+  id: z.uuid(), offerId: z.uuid(), warehouseId: z.uuid(), method: deliveryMethodSchema,
+  priceType: deliveryPriceTypeSchema, fixedAmountMinor: z.string().nullable(),
+  freeFromAmountMinor: z.string().nullable(), currency: z.string(),
+  minLeadTimeHours: z.number().int(), maxLeadTimeHours: z.number().int().nullable(),
+  pickupInstructions: z.string().nullable(), temperatureControlled: z.boolean(),
+  installationRequired: z.boolean(), status: z.string(),
+});
+export const offerDeliveryOptionsResponseSchema = z.array(offerDeliveryOptionResponseSchema);
+export type OfferDeliveryOptionResponse = z.infer<typeof offerDeliveryOptionResponseSchema>;
 
 export const createDeliveryRuleSchema = deliveryPricingFields.and(z.object({
   warehouseId: z.uuid().nullable().optional(),

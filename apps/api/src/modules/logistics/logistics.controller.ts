@@ -30,12 +30,15 @@ export class LogisticsController {
 
   @Get("suppliers/:supplierOrganizationId/offers/:offerId/delivery-options")
   @RequirePermissions("delivery.view")
+  @ApiCoreResponse("OfferDeliveryOptionsResponse")
   offerOptions(@Param("supplierOrganizationId") supplierOrganizationId: string, @Param("offerId") offerId: string, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     return this.logistics.offerOptions(supplierOrganizationId, offerId, this.context(actorId, organizationId));
   }
 
   @Post("suppliers/:supplierOrganizationId/offers/:offerId/delivery-options")
   @RequirePermissions("delivery.manage")
+  @ApiCoreBody("CreateOfferDeliveryOptionRequest")
+  @ApiCoreResponse("OfferDeliveryOptionResponse", 201)
   createOfferOption(@Param("supplierOrganizationId") supplierOrganizationId: string, @Param("offerId") offerId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     const parsed = createOfferDeliveryOptionSchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
     return this.logistics.createOfferOption(supplierOrganizationId, offerId, parsed.data, this.context(actorId, organizationId));

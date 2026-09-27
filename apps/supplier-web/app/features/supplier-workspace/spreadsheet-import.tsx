@@ -33,6 +33,7 @@ export function SpreadsheetImport({ api, supplierId, sources, onChanged }: {
   const [createdSource, setCreatedSource] = useState<SupplierDataSource | null>(null);
   const [reason, setReason] = useState("");
   const [history, setHistory] = useState<SupplierImportBatchResponse[] | null>(null);
+  const [historyHasMore, setHistoryHasMore] = useState(false);
   const fileType = file?.name.toLowerCase().endsWith(".xlsx") ? "EXCEL" : "CSV";
   const availableSources = [...sources, ...(createdSource && !sources.some(source => source.id === createdSource.id) ? [createdSource] : [])]
     .filter(source => source.type === fileType && source.status === "ACTIVE");
@@ -93,9 +94,16 @@ export function SpreadsheetImport({ api, supplierId, sources, onChanged }: {
   return <Section title="Импорт Excel / CSV" description="Сначала просмотр файла, затем обработка и проверка сопоставлений. Загрузка сама по себе не публикует товары.">
     <div className="mp-stack">
       {error ? <ErrorState description={error} /> : null}
-      <DmButton disabled={busy} onClick={() => void run(async () => setHistory(await api.listSupplierImportBatches(supplierId)))}>История загрузок</DmButton>
+      <DmButton disabled={busy} onClick={() => void run(async () => {
+        const rows = await api.listSupplierImportBatches(supplierId);
+        setHistory(rows); setHistoryHasMore(rows.length === 50);
+      })}>История загрузок</DmButton>
       {history ? <div>
-        <h3>Последние 50 загрузок</h3>
+        <h3>История загрузок</h3>
+        {historyHasMore ? <DmButton disabled={busy} onClick={() => void run(async () => {
+          const rows = await api.listSupplierImportBatches(supplierId, { cursor: history.at(-1)?.id });
+          setHistory(current => [...(current ?? []), ...rows]); setHistoryHasMore(rows.length === 50);
+        })}>Показать более ранние загрузки</DmButton> : null}
         {!history.length ? <p>Вы ещё не загружали прайсы.</p> : <DmTable caption="История импорта" columns={[{ key: "file", label: "Файл" }, { key: "status", label: "Результат" }, { key: "action", label: "Действие" }]}>
           {history.map(item => <tr key={item.id}>
             <td data-label="Файл">{item.fileName}<br /><time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString("ru-RU")}</time></td>

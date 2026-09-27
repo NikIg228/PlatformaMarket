@@ -18,6 +18,14 @@ for (const width of [1440, 390]) test(`UI-only spreadsheet preview, retry and pr
     if (path.endsWith("/organizations/current/onboarding")) return route.fulfill({ json: { organization: { organizationId, canEdit: false }, capability: "SUPPLIER", ready: true, steps: [{ id: "organization", complete: true, label: "Анкета заполнена" }] } });
     if (path.endsWith("/integrations/onboarding/readiness")) return route.fulfill({ json: { channel: "CSV", completedSteps: 1, totalSteps: 1, progressPercent: 100, connection: null, timeTargets: {}, steps: [] } });
     if (path.endsWith("/data-sources")) return route.fulfill({ json: [source] });
+    if (path.endsWith("/import-batches") && method === "GET") {
+      const cursor = new URL(route.request().url()).searchParams.get("cursor");
+      if (cursor) {
+        expect(cursor).toBe("00000000-0000-4000-8000-000000000149");
+        return route.fulfill({ json: [{ ...batch, id: "00000000-0000-4000-8000-000000000150", fileName: "older-price.csv" }] });
+      }
+      return route.fulfill({ json: Array.from({ length: 50 }, (_, index) => ({ ...batch, id: `00000000-0000-4000-8000-${String(100 + index).padStart(12, "0")}`, fileName: `history-${index}.csv` })) });
+    }
     if (path.endsWith("/import-batches") && method === "POST") {
       uploads++;
       expect(route.request().postDataJSON()).toMatchObject({ sourceId: source.id, fileType: "CSV", columnMapping: { externalId: "externalId", name: "name" } });
@@ -53,4 +61,9 @@ for (const width of [1440, 390]) test(`UI-only spreadsheet preview, retry and pr
   await expect(panel.getByText("Обработано: 1.", { exact: false })).toBeVisible();
   expect(processed).toBe(1);
   await expect(panel.getByRole("button", { name: "Данные проверены — обработать" })).toHaveCount(0);
+  await panel.getByRole("button", { name: "История загрузок", exact: true }).click();
+  await expect(panel.getByRole("table", { name: "История импорта" })).toContainText("history-49.csv");
+  await panel.getByRole("button", { name: "Показать более ранние загрузки", exact: true }).click();
+  await expect(panel.getByRole("table", { name: "История импорта" })).toContainText("older-price.csv");
+  await expect(panel.getByRole("button", { name: "Показать более ранние загрузки", exact: true })).toHaveCount(0);
 });

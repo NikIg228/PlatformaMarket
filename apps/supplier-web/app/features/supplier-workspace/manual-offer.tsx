@@ -6,6 +6,7 @@ import type { OfferOption, OfferOptionsResponse, SupplierWarehouseList } from "@
 import { DmButton, DmField, DmInput, DmSelect, ErrorState, Section, errorMessage } from "@marketplace/ui";
 import { offerPriceMinor, offerPriceText, offerQuantity } from "./offer-editor-model";
 import type { Offer } from "./types";
+import { OfferDelivery } from "./offer-delivery";
 
 export function ManualOffer({ api, supplierId, onChanged, initialOffer }: {
   api: MarketplaceApiClient; supplierId: string; onChanged: () => Promise<void>; initialOffer?: Offer;
@@ -173,6 +174,7 @@ export function ManualOffer({ api, supplierId, onChanged, initialOffer }: {
         {saved ? <DmButton disabled={busy} onClick={() => void publish()}>Опубликовать предложение</DmButton> : null}
         <p>Публикация проверяет допуск поставщика, договор, карточку, цену и остаток. При отказе черновик сохраняется.</p>
       </form>}
+      {createdId && selected ? <OfferDelivery key={createdId} api={api} supplierId={supplierId} offerId={createdId} warehouses={warehouses} defaultWarehouseId={warehouseId} /> : null}
     </div>}
   </Section>;
 }

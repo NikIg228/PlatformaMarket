@@ -65,7 +65,7 @@ export class LogisticsService {
   async createOfferOption(supplierOrganizationId: string, offerId: string, input: CreateOfferDeliveryOptionInput, context: SupplierActorContext) {
     await this.supplierAccess.assertCanManage(supplierOrganizationId, context);
     await this.requireSupplierOffer(supplierOrganizationId, offerId);
-    const warehouse = await this.prisma.warehouse.findFirst({ where: { id: input.warehouseId, supplierOrganizationId } });
+    const warehouse = await this.prisma.warehouse.findFirst({ where: { id: input.warehouseId, supplierOrganizationId, status: "ACTIVE" } });
     if (!warehouse) throw new BadRequestException("Warehouse does not belong to this supplier");
     return this.prisma.$transaction(async (tx) => {
       const option = await tx.offerDeliveryOption.upsert({

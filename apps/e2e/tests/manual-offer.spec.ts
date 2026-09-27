@@ -14,7 +14,7 @@ test("supplier creates and resumes a manual draft, then publishes it into the cl
   try {
     const [identity] = await db.$queryRaw<Array<{ name: string }>>`SELECT current_database() AS name`;
     expect(identity.name).toBe(url.pathname.slice(1));
-    workspace = await installPilotWorkspace(page, "SUPPLIER", ["catalog.offer.edit", "pricing.manage", "inventory.adjust", "catalog.offer.publish"]);
+    workspace = await installPilotWorkspace(page, "SUPPLIER", ["catalog.offer.edit", "pricing.manage", "inventory.adjust", "catalog.offer.publish", "delivery.view", "delivery.manage"]);
     const unit = await db.unitOfMeasure.findFirstOrThrow();
     const category = await db.category.findFirstOrThrow({ where: { status: "ACTIVE" } });
     const industry = await db.industry.findFirstOrThrow();
@@ -38,6 +38,15 @@ test("supplier creates and resumes a manual draft, then publishes it into the cl
     await page.getByLabel("Остаток, базовых единиц").fill("0");
     await page.getByRole("button", { name: "Сохранить условия", exact: true }).click();
     await expect(page.getByText("Условия сохранены. Предложение ещё не опубликовано.", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Настроить доставку", exact: true }).click();
+    await page.getByLabel("Способ доставки", { exact: true }).selectOption("CARRIER");
+    await page.getByLabel("Стоимость доставки", { exact: true }).selectOption("FREE_FROM_AMOUNT");
+    await page.getByLabel("Цена доставки, ₸", { exact: true }).fill("1000");
+    await page.getByLabel("Бесплатно от суммы, ₸", { exact: true }).fill("10000");
+    await page.getByLabel("Минимальный срок, часов", { exact: true }).fill("24");
+    await page.getByLabel("Максимальный срок, часов", { exact: true }).fill("48");
+    await page.getByRole("button", { name: "Сохранить доставку", exact: true }).click();
+    await expect(page.getByText("Условия доставки сохранены и доступны клинике при сравнении предложений.", { exact: true })).toBeVisible();
     const offer = await db.supplierOffer.findFirstOrThrow({ where: { supplierOrganizationId: workspace.organizationId, productVariantId: product.variants[0]!.id }, include: { prices: true } });
     expect(offer.prices.find(price => price.status === "ACTIVE")?.amountMinor.toString()).toBe("12345");
     await page.getByRole("button", { name: "Опубликовать предложение", exact: true }).click();
@@ -63,6 +72,10 @@ test("supplier creates and resumes a manual draft, then publishes it into the cl
       await buyerPage.goto(`http://127.0.0.1:3001/products/${product.id}`);
       await expect(buyerPage.getByRole("heading", { name, exact: true })).toBeVisible();
       await expect(buyerPage.getByRole("button", { name: "Сравнить и заказать", exact: true })).toBeVisible();
+      await buyerPage.getByRole("button", { name: "Сравнить и заказать", exact: true }).click();
+      await expect(buyerPage.getByRole("dialog")).toContainText("24–48 ч.");
+      await expect(buyerPage.getByRole("dialog")).toContainText("бесплатно от");
+      await expect(buyerPage.getByRole("dialog")).toContainText(/бесплатно от 10\s000 ₸; иначе 1\s000 ₸/);
     } finally { await buyerPage.close(); }
   } finally {
     if (productId) await db.product.update({ where: { id: productId }, data: { status: "ARCHIVED" } });

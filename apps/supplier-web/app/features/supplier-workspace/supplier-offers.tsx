@@ -40,6 +40,7 @@ export function SupplierOffers({
   onChanged: () => Promise<void>;
 }) {
   const [editing, setEditing] = useState<Offer | undefined>();
+  const [editorGeneration, setEditorGeneration] = useState(0);
   return (
     <div className="mp-stack">
       <PageHeader
@@ -47,8 +48,8 @@ export function SupplierOffers({
         title="Предложения и цены"
         description="У каждой цены видны срок действия, публикация и текущий доступный остаток."
       />
-      {editing ? <DmButton onClick={() => setEditing(undefined)}>Новое предложение</DmButton> : null}
-      <ManualOffer key={editing?.id ?? "new"} api={api} supplierId={supplierId} onChanged={onChanged} initialOffer={editing} />
+      <DmButton onClick={() => { setEditing(undefined); setEditorGeneration(value => value + 1); }}>Новое предложение</DmButton>
+      <ManualOffer key={`${editing?.id ?? "new"}-${editorGeneration}`} api={api} supplierId={supplierId} onChanged={onChanged} initialOffer={editing} />
       <Section>
         {!offers.length ? (
           <EmptyState

@@ -458,8 +458,16 @@ export class MarketplaceApiClient {
     return this.post<import("@marketplace/schemas").ProductCandidateSubmitted>("/moderation/product-candidates/submissions", input);
   }
 
-  listSupplierImportBatches(supplierId: string) {
-    return this.get<SupplierImportBatchResponse[]>(`/suppliers/${supplierId}/import-batches`);
+  listSupplierImportBatches(supplierId: string, query: import("@marketplace/schemas").SupplierImportHistoryQuery = {}) {
+    return this.get<SupplierImportBatchResponse[]>(this.withQuery(`/suppliers/${supplierId}/import-batches`, query));
+  }
+
+  listOfferDeliveryOptions(supplierId: string, offerId: string) {
+    return this.get<import("@marketplace/schemas").OfferDeliveryOptionResponse[]>(`/suppliers/${supplierId}/offers/${offerId}/delivery-options`);
+  }
+
+  saveOfferDeliveryOption(supplierId: string, offerId: string, input: import("@marketplace/schemas").CreateOfferDeliveryOptionInput) {
+    return this.post<import("@marketplace/schemas").OfferDeliveryOptionResponse>(`/suppliers/${supplierId}/offers/${offerId}/delivery-options`, input);
   }
 
   createSupplierImportBatch(

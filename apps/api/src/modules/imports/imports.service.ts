@@ -163,13 +163,15 @@ export class ImportsService implements OnModuleInit {
     );
   }
 
-  async batches(supplierOrganizationId: string, context: SupplierActorContext) {
+  async batches(supplierOrganizationId: string, context: SupplierActorContext, query: { cursor?: string; limit?: number } = {}) {
     await this.access.assertCanManage(supplierOrganizationId, context);
+    const anchor = query.cursor ? await this.prisma.importBatch.findFirst({ where: { id: query.cursor, supplierOrganizationId }, select: { id: true, createdAt: true } }) : null;
+    if (query.cursor && !anchor) throw new NotFoundException("Import history cursor not found");
     return this.prisma.importBatch.findMany({
-      where: { supplierOrganizationId },
+      where: { supplierOrganizationId, ...(anchor ? { OR: [{ createdAt: { lt: anchor.createdAt } }, { createdAt: anchor.createdAt, id: { lt: anchor.id } }] } : {}) },
       include: { source: true, _count: { select: { rows: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 50,
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: query.limit ?? 50,
     });
   }
 
