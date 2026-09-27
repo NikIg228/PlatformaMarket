@@ -475,8 +475,8 @@ export const approveProductCandidateSchema = z.object({
   regulatoryClass: z.string().trim().max(80).nullable().optional(),
   industryIds: z.array(z.uuid()).min(1).max(20),
   categoryIds: z.array(z.uuid()).min(1).max(20),
-  saleUnitId: z.uuid().nullable().optional(),
-  packageQuantity: z.number().positive().default(1),
+  saleUnitId: z.uuid(),
+  packageQuantity: z.number().positive().max(999999.999999).refine(value => /^\d{1,6}(?:\.\d{1,6})?$/.test(String(value)), "Use at most six decimal places").default(1),
 });
 
 export const approveImportProductCandidateSchema = approveProductCandidateSchema.extend({
@@ -900,6 +900,26 @@ export const offerDeliveryOptionResponseSchema = z.object({
   pickupInstructions: z.string().nullable(), temperatureControlled: z.boolean(),
   installationRequired: z.boolean(), status: z.string(),
 });
+
+export const productCandidateHistoryQuerySchema = z.object({ cursor: z.uuid().optional(), limit: z.coerce.number().int().min(1).max(50).default(20) });
+export const productCandidateSummarySchema = z.object({
+  id: z.uuid(), proposedName: z.string(), proposedSku: z.string().nullable(),
+  proposedGtin: z.string().nullable(), proposedBrand: z.string().nullable(),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED"]), rejectionReason: z.string().nullable(),
+  approvedProductId: z.uuid().nullable(), approvedVariantId: z.uuid().nullable(),
+  createdAt: z.iso.datetime(), decidedAt: z.iso.datetime().nullable(),
+});
+export const productCandidateHistoryResponseSchema = z.object({ items: z.array(productCandidateSummarySchema), nextCursor: z.uuid().nullable() });
+export const manualProductReviewQueueSchema = z.object({
+  items: z.array(productCandidateSummarySchema.extend({ description: z.string().nullable(), supplier: z.object({ organizationId: z.uuid(), displayName: z.string() }) })),
+  nextCursor: z.uuid().nullable(), options: catalogImportReviewQueueResponseSchema.shape.options,
+});
+export const approveProductCandidateResponseSchema = z.object({ candidate: z.object({ id: z.uuid(), status: z.string() }), product: z.object({ id: z.uuid() }), variant: z.object({ id: z.uuid() }), offer: z.object({ id: z.uuid(), version: z.number().int() }) });
+export type ProductCandidateHistoryQuery = z.input<typeof productCandidateHistoryQuerySchema>;
+export type ProductCandidateHistoryResponse = z.infer<typeof productCandidateHistoryResponseSchema>;
+export type ProductCandidateSummary = z.infer<typeof productCandidateSummarySchema>;
+export type ManualProductReviewQueue = z.infer<typeof manualProductReviewQueueSchema>;
+export type ApproveProductCandidateResponse = z.infer<typeof approveProductCandidateResponseSchema>;
 export const offerDeliveryOptionsResponseSchema = z.array(offerDeliveryOptionResponseSchema);
 export type OfferDeliveryOptionResponse = z.infer<typeof offerDeliveryOptionResponseSchema>;
 

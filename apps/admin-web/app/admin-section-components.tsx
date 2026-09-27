@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 
 const loading = () => <LoadingState label="Загружаем раздел" />;
 
+export const ManualProductReview = dynamic(() => import("./manual-product-review").then(module => module.ManualProductReview), { loading });
+
 export const AgreementOperations = dynamic(
   () =>
     import("./agreement-operations").then(

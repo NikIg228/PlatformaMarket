@@ -23,18 +23,6 @@ type Organization = {
   displayName: string;
   capabilities: Array<{ capability: string }>;
 };
-type Industry = { id: string; nameRu: string };
-type Category = { id: string; nameRu: string };
-type Unit = { id: string; nameRu: string };
-type Candidate = {
-  id: string;
-  proposedName: string;
-  proposedSku?: string | null;
-  status: string;
-  rejectionReason?: string | null;
-  externalItem: { externalId: string };
-  approvedProduct?: { canonicalName: string } | null;
-};
 type Offer = {
   id: string;
   productVariant: { product: { canonicalName: string } };
@@ -88,10 +76,6 @@ export function SupplierControls() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [supplierId, setSupplierId] = useState("");
   const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [industries, setIndustries] = useState<Industry[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [offerId, setOfferId] = useState("");
   const [tiers, setTiers] = useState<PriceTier[]>([]);
@@ -137,25 +121,13 @@ export function SupplierControls() {
       const [
         supplierData,
         organizationData,
-        industryData,
-        categoryData,
-        unitData,
-        candidateData,
       ] = await Promise.all([
         request<Supplier[]>("/suppliers"),
         request<Organization[]>("/organizations"),
-        request<Industry[]>("/catalog/industries"),
-        request<Category[]>("/catalog/categories"),
-        request<Unit[]>("/catalog/units"),
-        request<Candidate[]>("/moderation/product-candidates"),
       ]);
       const activeSupplierId = supplierId || supplierData[0]?.organizationId;
       setSuppliers(supplierData);
       setOrganizations(organizationData);
-      setIndustries(industryData);
-      setCategories(categoryData);
-      setUnits(unitData);
-      setCandidates(candidateData);
       if (!activeSupplierId) return;
       if (!supplierId) setSupplierId(activeSupplierId);
       const [offerData, balanceData, recallData] = await Promise.all([
@@ -199,55 +171,6 @@ export function SupplierControls() {
   useEffect(() => {
     void load();
   }, [load]);
-
-  async function approve(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const data = new FormData(form);
-    try {
-      await request(
-        `/moderation/product-candidates/${data.get("candidateId")}/approve`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            canonicalName: data.get("canonicalName"),
-            slug: data.get("slug"),
-            productType: data.get("productType"),
-            industryIds: [data.get("industryId")],
-            categoryIds: [data.get("categoryId")],
-            saleUnitId: String(data.get("saleUnitId") ?? "") || null,
-            packageQuantity: 1,
-          }),
-        },
-      );
-      form.reset();
-      await load();
-      report("Кандидат утверждён: Product и Variant созданы атомарно.");
-    } catch (error) {
-      report(
-        error instanceof Error ? error.message : "Кандидат не утверждён.",
-        "danger",
-      );
-    }
-  }
-
-  async function reject(candidate: Candidate) {
-    try {
-      await request(`/moderation/product-candidates/${candidate.id}/reject`, {
-        method: "POST",
-        body: JSON.stringify({
-          reason: "Отклонено командой PlatformaMarket",
-        }),
-      });
-      await load();
-      report("Кандидат отклонён с сохранением решения.");
-    } catch (error) {
-      report(
-        error instanceof Error ? error.message : "Кандидат не отклонён.",
-        "danger",
-      );
-    }
-  }
 
   async function createTier(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -391,7 +314,6 @@ export function SupplierControls() {
     }
   }
 
-  const pending = candidates.filter(({ status }) => status === "PENDING");
   const buyers = organizations.filter(({ capabilities }) =>
     capabilities.some(({ capability }) => capability === "BUYER"),
   );
@@ -442,91 +364,6 @@ export function SupplierControls() {
         <LoadingState label="Загружаем контроль поставщика" />
       ) : (
         <div className={styles.grid}>
-          <article className={styles.panel}>
-            <header>
-              <b>01</b>
-              <div>
-                <h3>Новые карточки товаров</h3>
-                <p>{pending.length} ожидают решения</p>
-              </div>
-            </header>
-            <form className={styles.form} onSubmit={approve}>
-              <DmField className={styles.wide} label="Кандидат" required>
-                <DmSelect name="candidateId" required>
-                  <option value="">Выберите</option>
-                  {pending.map((candidate) => (
-                    <option key={candidate.id} value={candidate.id}>
-                      {candidate.proposedName}
-                    </option>
-                  ))}
-                </DmSelect>
-              </DmField>
-              <DmField className={styles.wide} label="Каноническое название" required>
-                <DmInput name="canonicalName" required />
-              </DmField>
-              <DmField label="Slug" required>
-                <DmInput name="slug" required />
-              </DmField>
-              <DmField label="Тип" required>
-                <DmInput name="productType" defaultValue="material" required />
-              </DmField>
-              <DmField label="Индустрия" required>
-                <DmSelect name="industryId" required>
-                  <option value="">Выберите</option>
-                  {industries.map((industry) => (
-                    <option key={industry.id} value={industry.id}>
-                      {industry.nameRu}
-                    </option>
-                  ))}
-                </DmSelect>
-              </DmField>
-              <DmField label="Категория" required>
-                <DmSelect name="categoryId" required>
-                  <option value="">Выберите</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.nameRu}
-                    </option>
-                  ))}
-                </DmSelect>
-              </DmField>
-              <DmField label="Единица">
-                <DmSelect name="saleUnitId">
-                  <option value="">Не задана</option>
-                  {units.map((unit) => (
-                    <option key={unit.id} value={unit.id}>
-                      {unit.nameRu}
-                    </option>
-                  ))}
-                </DmSelect>
-              </DmField>
-              <DmButton type="submit" appearance="primary">Утвердить</DmButton>
-            </form>
-            <div className={styles.records}>
-              {candidates.slice(0, 6).map((candidate) => (
-                <div className={styles.record} key={candidate.id}>
-                  <div>
-                    <strong>{candidate.proposedName}</strong>
-                    <small>
-                      {candidate.externalItem.externalId}. {formatAdminStatus(candidate.status)}
-                    </small>
-                  </div>
-                  {candidate.status === "PENDING" ? (
-                    <DmButton appearance="secondary" onClick={() => void reject(candidate)}>
-                      Отклонить
-                    </DmButton>
-                  ) : (
-                    <b>
-                      {candidate.approvedProduct?.canonicalName ??
-                        candidate.rejectionReason ??
-                        "Решено"}
-                    </b>
-                  )}
-                </div>
-              ))}
-            </div>
-          </article>
-
           <article className={styles.panel}>
             <header>
               <b>02</b>

@@ -121,3 +121,46 @@ cursor, stable timestamp/id ordering, active warehouse guard, explicit read/save
 No Prisma schema/migration changed. PostgreSQL stock evidence REUSED unchanged
 inventory/commerce inputs. Contract/typecheck/tests/build/browser/diff-check PASS.
 Ready for scoped terms/history publication; next work remains manual-candidate gap.
+83a428c1a618ec1cf8597979abb3c7908ed73831 terms/history pushed, remote exact.
+CI pending. Same CORE04.5 candidate roundtrip starts: approval operator-only,
+required unit/pack coefficient, active master product/variant + SALE packaging,
+hidden DRAFT offer/publication, atomic single decision; supplier own submission
+history. Existing proposed API/UI retained where possible, no automatic publication.
+Gates: contracts/types/tests, API/admin/supplier builds, disposable PG concurrency,
+manual candidate browser supplier→operator→supplier→buyer; no new integrations.
+Candidate typecheck2 PASS12/12. Candidate unit1: API384 pass incl4 new risk tests;
+1 existing PDF renderer timeout5000ms. Isolated retry2 unchanged test PASS8/8
+(3.23s assertions); remaining10 workspaces now run separately, reuse passedAPI.
+No renderer/assertion/timeout changes. Current browser test cleanup archives all
+owned approved masters even if a later assertion fails. Published83a CI still
+in progress at browser step; Security36353212608 SUCCESS.
+Candidate remaining unit1: seven workspaces PASS, admin lazy-panel count test
+expected16 but new separate lazy panel makes17. Updated explicit module/count
+assertion (same lazy-loading rule); admin/buyer/supplier unit2 PASS4/4 tasks.
+API384 + isolated PDF8 and remaining workspace passes now cover complete unit set.
+Candidate build1 running; no schema migration. Terms83a CI36353212652 SUCCESS,
+Security36353212608 SUCCESS. Full published terms/history acceptance confirmed.
+Read-only next-phase findings: existing PAYMENT_CONFIRMATION document visibility
+requires confirmed PSP payment graph (document-reference-graph.ts). A buyer's
+unverified transfer receipt must use a distinct evidence kind/contract, never
+relax that invariant or relabel it as confirmed payment. Order confirmation
+locks SupplierOrder before checking state; manual payment/cancel transitions
+must share that lock and preserve order/invoice version. No next-phase writes yet.
+Candidate build1 PASS10/10 (3m38), contract1 PASS99 schemas/35 operations,
+PostgreSQL1 PASS transaction/tenant/idempotency/stock regressions. Browser1 running:
+manual-candidate + manual-offer + flow-b3 (5 cases). Owned servers from this run;
+all ports were free at preflight. No working DB changes.
+Correction to next-phase note: PAYMENT_CONFIRMATION accepts a PAID supplier order
+as well as confirmed PSP allocations; it still cannot represent an unpaid receipt.
+Candidate browser1:4PASS, manual-candidateFAIL at exact required-field label
+(Industry includes required marker); operator card/materials loaded. Test locator
+changed to scoped label match; no app/timeout/assertion weakened. Browser2 runs
+candidate plus import publication/rollback regressions because approval schema
+and rejection logic are shared. Build/contract/PG inputs unchanged, passes reused.
+Candidate browser2 PASS5/5: manual supplier→operator→supplier→buyer incl real PG
+simultaneous approval (201/409, one master/audit), CSV/EXCEL operator publication
+and rollback. Browser1 other4 PASS reused. No runtime changes after build/typecheck.
+Review: operator-only decision, pending CAS inside transaction, category industry
+validation, bounded exact packaging coefficient, hidden unpriced offer; tenant
+history keyset. Old duplicate candidate UI removed, other controls preserved.
+All local gates PASS. Current candidate publication is next; CORE04.5 waits exactCI.

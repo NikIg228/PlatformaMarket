@@ -18,6 +18,7 @@ import type { Offer } from "./types";
 import { statusTone } from "./view-model";
 import { offerPackaging } from "./offer-packaging";
 import { ManualOffer } from "./manual-offer";
+import { ProductProposals } from "./product-proposals";
 import { useState } from "react";
 
 export function SupplierOffers({
@@ -50,6 +51,7 @@ export function SupplierOffers({
       />
       <DmButton onClick={() => { setEditing(undefined); setEditorGeneration(value => value + 1); }}>Новое предложение</DmButton>
       <ManualOffer key={`${editing?.id ?? "new"}-${editorGeneration}`} api={api} supplierId={supplierId} onChanged={onChanged} initialOffer={editing} />
+      <ProductProposals api={api} onChanged={onChanged} />
       <Section>
         {!offers.length ? (
           <EmptyState

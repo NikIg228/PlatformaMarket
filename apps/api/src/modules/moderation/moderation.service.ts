@@ -167,6 +167,41 @@ export class ModerationService {
     });
   }
 
+  async ownSubmissions(query: { cursor?: string; limit: number }, context: SupplierActorContext) {
+    const where = { supplierOrganizationId: context.organizationId, externalItem: { importRowId: null } };
+    const anchor = query.cursor ? await this.prisma.productCandidate.findFirst({ where: { ...where, id: query.cursor }, select: { id: true, createdAt: true } }) : null;
+    if (query.cursor && !anchor) throw new NotFoundException("Product proposal cursor not found");
+    const rows = await this.prisma.productCandidate.findMany({
+      where: { ...where, ...(anchor ? { OR: [{ createdAt: { lt: anchor.createdAt } }, { createdAt: anchor.createdAt, id: { lt: anchor.id } }] } : {}) },
+      select: { id: true, proposedName: true, proposedSku: true, proposedGtin: true, proposedBrand: true, status: true, rejectionReason: true, approvedProductId: true, approvedVariantId: true, createdAt: true, decidedAt: true },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: query.limit + 1,
+    });
+    const items = rows.slice(0, query.limit);
+    return { items, nextCursor: rows.length > query.limit ? items.at(-1)!.id : null };
+  }
+
+  async manualReviewQueue(query: { cursor?: string; limit: number }, context: SupplierActorContext) {
+    await this.assertOperator(context);
+    const scope = { status: "PENDING" as const, externalItem: { importRowId: null } };
+    // The anchor may have been decided while the operator reviewed the page.
+    const anchor = query.cursor ? await this.prisma.productCandidate.findFirst({ where: { id: query.cursor, externalItem: { importRowId: null } }, select: { id: true, createdAt: true } }) : null;
+    if (query.cursor && !anchor) throw new NotFoundException("Product review cursor not found");
+    const [rows, industries, categories, units] = await Promise.all([
+      this.prisma.productCandidate.findMany({ where: { ...scope, ...(anchor ? { OR: [{ createdAt: { gt: anchor.createdAt } }, { createdAt: anchor.createdAt, id: { gt: anchor.id } }] } : {}) },
+        include: { supplier: { include: { organization: true } }, externalItem: { select: { rawData: true } } },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }], take: query.limit + 1 }),
+      this.prisma.industry.findMany({ where: { status: "ACTIVE" }, select: { id: true, nameRu: true } }),
+      this.prisma.category.findMany({ where: { status: "ACTIVE" }, select: { id: true, nameRu: true, industryId: true } }),
+      this.prisma.unitOfMeasure.findMany({ select: { id: true, nameRu: true, symbol: true } }),
+    ]);
+    const items = rows.slice(0, query.limit).map(({ supplier, externalItem, ...candidate }) => ({ ...candidate,
+      description: stringValue(record(externalItem.rawData)?.description), supplier: { organizationId: supplier.organizationId, displayName: supplier.organization.displayName },
+    }));
+    return { items, nextCursor: rows.length > query.limit ? items.at(-1)!.id : null, options: {
+      industries: industries.map(item => ({ id: item.id, name: item.nameRu })), categories: categories.map(item => ({ id: item.id, name: item.nameRu, industryId: item.industryId })), units: units.map(item => ({ id: item.id, name: item.nameRu, symbol: item.symbol })),
+    } };
+  }
+
   async list(status: "PENDING" | "APPROVED" | "REJECTED" | undefined, context: SupplierActorContext) {
     const operator = await this.isOperator(context.organizationId);
     return this.prisma.productCandidate.findMany({
@@ -185,32 +220,42 @@ export class ModerationService {
   }
 
   async approve(candidateId: string, input: ApproveProductCandidateInput, context: SupplierActorContext) {
+    await this.assertOperator(context);
     const candidate = await this.requireCandidate(candidateId, context);
+    if (candidate.externalItem.importRowId) throw new BadRequestException("Use the import review workflow for imported candidates");
     if (candidate.status !== "PENDING") throw new ConflictException("Product candidate has already been decided");
     const existingVariants = await this.prisma.productVariant.findMany({ where: { status: { in: ["ACTIVE", "UNDER_REVIEW"] } }, include: { product: { include: { brand: true, manufacturer: true } } } });
     const duplicate = rankVariants({ name: input.canonicalName, normalizedName: normalizeCatalogText(input.canonicalName), supplierSku: candidate.proposedSku, gtin: candidate.proposedGtin, brandText: candidate.proposedBrand }, existingVariants)[0];
     if (duplicate && duplicate.score >= 0.8) throw new ConflictException(`Possible duplicate catalog card: ${duplicate.variant.product.canonicalName}. Link the supplier offer to the existing variant instead.`);
-    const [industryCount, categoryCount] = await Promise.all([
+    const [industryCount, categories, unit] = await Promise.all([
       this.prisma.industry.count({ where: { id: { in: input.industryIds }, status: "ACTIVE" } }),
-      this.prisma.category.count({ where: { id: { in: input.categoryIds }, status: "ACTIVE" } }),
+      this.prisma.category.findMany({ where: { id: { in: input.categoryIds }, status: "ACTIVE" }, select: { id: true, industryId: true } }),
+      this.prisma.unitOfMeasure.findUnique({ where: { id: input.saleUnitId } }),
     ]);
-    if (industryCount !== new Set(input.industryIds).size || categoryCount !== new Set(input.categoryIds).size) throw new BadRequestException("Every industry and category must exist and be active");
+    if (industryCount !== new Set(input.industryIds).size || categories.length !== new Set(input.categoryIds).size) throw new BadRequestException("Every industry and category must exist and be active");
+    if (categories.some(category => !input.industryIds.includes(category.industryId))) throw new BadRequestException("Every category must belong to a selected industry");
+    if (!unit) throw new BadRequestException("Sale unit must exist");
     try {
       return await this.prisma.$transaction(async (tx) => {
+        const decision = await tx.productCandidate.updateMany({ where: { id: candidateId, status: "PENDING" }, data: { status: "APPROVED", decidedById: context.actorId, decidedAt: new Date() } });
+        if (decision.count !== 1) throw new ConflictException("Product candidate has already been decided");
         const product = await tx.product.create({
           data: {
             canonicalName: input.canonicalName,
             slug: input.slug,
             productType: input.productType,
             regulatoryClass: input.regulatoryClass ?? null,
+            baseUnitId: input.saleUnitId,
+            status: "ACTIVE",
             gtin: candidate.proposedGtin,
             industries: { create: [...new Set(input.industryIds)].map((industryId) => ({ industryId })) },
             categories: { create: [...new Set(input.categoryIds)].map((categoryId) => ({ categoryId })) },
             searchDocument: { create: { searchableText: `${input.canonicalName} ${candidate.proposedSku ?? ""} ${candidate.proposedGtin ?? ""}`.trim(), normalizedText: input.canonicalName.toLocaleLowerCase("ru"), facets: { source: "supplier_candidate" } } },
           },
         });
-        const variant = await tx.productVariant.create({ data: { productId: product.id, sku: candidate.proposedSku, gtin: candidate.proposedGtin, saleUnitId: input.saleUnitId ?? null, packageQuantity: input.packageQuantity } });
-        const offer = await tx.supplierOffer.create({ data: { supplierOrganizationId: candidate.supplierOrganizationId, productVariantId: variant.id, saleUnitId: input.saleUnitId ?? null, sourceId: candidate.externalItem.sourceId, supplierSku: candidate.proposedSku, sourceType: "MANUAL", status: "DRAFT" } });
+        const variant = await tx.productVariant.create({ data: { productId: product.id, sku: candidate.proposedSku, gtin: candidate.proposedGtin, saleUnitId: input.saleUnitId, packageQuantity: input.packageQuantity, status: "ACTIVE" } });
+        const packaging = await tx.productPackaging.create({ data: { productVariantId: variant.id, unitId: input.saleUnitId, code: `sale-${candidate.id.slice(0, 8)}`, name: `${input.canonicalName} — ${unit.nameRu}`, level: "SALE", quantityInBaseUnit: input.packageQuantity } });
+        const offer = await tx.supplierOffer.create({ data: { supplierOrganizationId: candidate.supplierOrganizationId, productVariantId: variant.id, saleUnitId: input.saleUnitId, packagingId: packaging.id, baseUnitsPerSaleUnit: input.packageQuantity, sourceId: candidate.externalItem.sourceId, supplierSku: candidate.proposedSku, sourceType: "MANUAL", status: "DRAFT", publication: { create: {} } } });
         const decided = await tx.productCandidate.update({ where: { id: candidateId }, data: { status: "APPROVED", approvedProductId: product.id, approvedVariantId: variant.id, decidedById: context.actorId, decidedAt: new Date() } });
         await tx.supplierExternalItem.update({ where: { id: candidate.externalItemId }, data: { matchedVariantId: variant.id } });
         await tx.supplierItemMatchCandidate.create({ data: { externalItemId: candidate.externalItemId, productVariantId: variant.id, score: 1, reasons: ["approved_product_candidate"], status: "CONFIRMED" } });
@@ -343,10 +388,13 @@ export class ModerationService {
   }
 
   async reject(candidateId: string, input: RejectProductCandidateInput, context: SupplierActorContext) {
+    await this.assertOperator(context);
     const candidate = await this.requireCandidate(candidateId, context);
     if (candidate.status !== "PENDING") throw new ConflictException("Product candidate has already been decided");
     return this.prisma.$transaction(async (tx) => {
-      const rejected = await tx.productCandidate.update({ where: { id: candidateId }, data: { status: "REJECTED", rejectionReason: input.reason, decidedById: context.actorId, decidedAt: new Date() } });
+      const decision = await tx.productCandidate.updateMany({ where: { id: candidateId, status: "PENDING" }, data: { status: "REJECTED", rejectionReason: input.reason, decidedById: context.actorId, decidedAt: new Date() } });
+      if (decision.count !== 1) throw new ConflictException("Product candidate has already been decided");
+      const rejected = await tx.productCandidate.findUniqueOrThrow({ where: { id: candidateId } });
       await tx.auditLog.create({ data: { ...context, action: "moderation.product_candidate.rejected", entityType: "ProductCandidate", entityId: candidateId, before: candidate, after: rejected } });
       await tx.outboxEvent.create({ data: { aggregateType: "ProductCandidate", aggregateId: candidateId, eventType: "ProductCandidateRejected", payload: { candidateId, supplierOrganizationId: candidate.supplierOrganizationId, reason: input.reason } } });
       return rejected;

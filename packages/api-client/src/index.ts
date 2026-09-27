@@ -458,6 +458,22 @@ export class MarketplaceApiClient {
     return this.post<import("@marketplace/schemas").ProductCandidateSubmitted>("/moderation/product-candidates/submissions", input);
   }
 
+  listProductSubmissions(query: import("@marketplace/schemas").ProductCandidateHistoryQuery = {}) {
+    return this.get<import("@marketplace/schemas").ProductCandidateHistoryResponse>(this.withQuery("/moderation/product-candidates/submissions", query));
+  }
+
+  listManualProductReviews(query: import("@marketplace/schemas").ProductCandidateHistoryQuery = {}) {
+    return this.get<import("@marketplace/schemas").ManualProductReviewQueue>(this.withQuery("/moderation/product-candidates/review-queue", query));
+  }
+
+  approveProductCandidate(candidateId: string, input: import("@marketplace/schemas").ApproveProductCandidateInput) {
+    return this.post<import("@marketplace/schemas").ApproveProductCandidateResponse>(`/moderation/product-candidates/${candidateId}/approve`, input);
+  }
+
+  rejectProductCandidate(candidateId: string, input: import("@marketplace/schemas").RejectProductCandidateInput) {
+    return this.post<import("@marketplace/schemas").ProductCandidateSummary>(`/moderation/product-candidates/${candidateId}/reject`, input);
+  }
+
   listSupplierImportBatches(supplierId: string, query: import("@marketplace/schemas").SupplierImportHistoryQuery = {}) {
     return this.get<SupplierImportBatchResponse[]>(this.withQuery(`/suppliers/${supplierId}/import-batches`, query));
   }

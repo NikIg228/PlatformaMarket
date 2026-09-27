@@ -1,5 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Headers, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { approveProductCandidateSchema, rejectProductCandidateSchema, submitProductCandidateSchema } from "@marketplace/schemas";
+import { productCandidateHistoryQuerySchema } from "@marketplace/schemas";
+import { ApiCoreBody, ApiCoreErrors, ApiCoreProtected, ApiCoreQuery, ApiCoreResponse } from "../../platform/openapi/core-openapi";
 import { ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { PermissionsGuard } from "../access-control/permissions.guard";
@@ -17,10 +19,26 @@ export class ModerationController {
 
   @Post("submissions")
   @RequirePermissions("catalog.offer.edit")
+  @ApiCoreProtected()
+  @ApiCoreErrors()
+  @ApiCoreBody("SubmitProductCandidateRequest")
+  @ApiCoreResponse("ProductCandidateSubmittedResponse", 201)
   submit(@Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     const parsed = submitProductCandidateSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
     return this.moderation.submit(parsed.data, this.context(actorId, organizationId));
+  }
+
+  @Get("submissions")
+  @RequirePermissions("catalog.offer.edit")
+  @ApiCoreProtected()
+  @ApiCoreErrors()
+  @ApiCoreQuery("ProductCandidateHistoryQuery")
+  @ApiCoreResponse("ProductCandidateHistoryResponse")
+  ownSubmissions(@Query() query: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+    const parsed = productCandidateHistoryQuerySchema.safeParse(query);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.moderation.ownSubmissions(parsed.data, this.context(actorId, organizationId));
   }
 
   @Get()
@@ -31,8 +49,24 @@ export class ModerationController {
     return this.moderation.list(parsed.data, this.context(actorId, organizationId));
   }
 
+  @Get("review-queue")
+  @RequirePermissions("catalog.candidate.moderate")
+  @ApiCoreProtected()
+  @ApiCoreErrors()
+  @ApiCoreQuery("ProductCandidateHistoryQuery")
+  @ApiCoreResponse("ManualProductReviewQueueResponse")
+  manualReviewQueue(@Query() query: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+    const parsed = productCandidateHistoryQuerySchema.safeParse(query);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.moderation.manualReviewQueue(parsed.data, this.context(actorId, organizationId));
+  }
+
   @Post(":candidateId/approve")
   @RequirePermissions("catalog.candidate.moderate")
+  @ApiCoreProtected()
+  @ApiCoreErrors()
+  @ApiCoreBody("ApproveProductCandidateRequest")
+  @ApiCoreResponse("ApproveProductCandidateResponse", 201)
   approve(@Param("candidateId") candidateId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     const parsed = approveProductCandidateSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
@@ -41,6 +75,10 @@ export class ModerationController {
 
   @Post(":candidateId/reject")
   @RequirePermissions("catalog.candidate.moderate")
+  @ApiCoreProtected()
+  @ApiCoreErrors()
+  @ApiCoreBody("RejectProductCandidateRequest")
+  @ApiCoreResponse("ProductCandidateSummaryResponse", 201)
   reject(@Param("candidateId") candidateId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     const parsed = rejectProductCandidateSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
