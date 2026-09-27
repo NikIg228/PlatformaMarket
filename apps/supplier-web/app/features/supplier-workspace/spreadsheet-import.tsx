@@ -32,6 +32,7 @@ export function SpreadsheetImport({ api, supplierId, sources, onChanged }: {
   const [error, setError] = useState<string | null>(null);
   const [createdSource, setCreatedSource] = useState<SupplierDataSource | null>(null);
   const [reason, setReason] = useState("");
+  const [history, setHistory] = useState<SupplierImportBatchResponse[] | null>(null);
   const fileType = file?.name.toLowerCase().endsWith(".xlsx") ? "EXCEL" : "CSV";
   const availableSources = [...sources, ...(createdSource && !sources.some(source => source.id === createdSource.id) ? [createdSource] : [])]
     .filter(source => source.type === fileType && source.status === "ACTIVE");
@@ -92,6 +93,20 @@ export function SpreadsheetImport({ api, supplierId, sources, onChanged }: {
   return <Section title="Импорт Excel / CSV" description="Сначала просмотр файла, затем обработка и проверка сопоставлений. Загрузка сама по себе не публикует товары.">
     <div className="mp-stack">
       {error ? <ErrorState description={error} /> : null}
+      <DmButton disabled={busy} onClick={() => void run(async () => setHistory(await api.listSupplierImportBatches(supplierId)))}>История загрузок</DmButton>
+      {history ? <div>
+        <h3>Последние 50 загрузок</h3>
+        {!history.length ? <p>Вы ещё не загружали прайсы.</p> : <DmTable caption="История импорта" columns={[{ key: "file", label: "Файл" }, { key: "status", label: "Результат" }, { key: "action", label: "Действие" }]}>
+          {history.map(item => <tr key={item.id}>
+            <td data-label="Файл">{item.fileName}<br /><time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString("ru-RU")}</time></td>
+            <td data-label="Результат">{formatStatus(item.status)} · {item.processedRows}/{item.totalRows} · ошибок: {item.errorRows}</td>
+            <td data-label="Действие"><DmButton disabled={busy} onClick={() => void run(async () => {
+              const [detail, report] = await Promise.all([api.getSupplierImportBatch(supplierId, item.id), api.getSupplierImportDiagnostics(supplierId, item.id)]);
+              setBatch(detail); setDiagnostics(report); setReason("");
+            })}>Открыть результат {item.fileName}</DmButton></td>
+          </tr>)}
+        </DmTable>}
+      </div> : null}
       {!batch ? <>
         <DmField label="Таблица поставщика" hint="CSV с запятыми или первый лист XLSX; до 20 МБ и 5 000 строк данных.">
           <input aria-label="Таблица поставщика" type="file" accept=".csv,.xlsx" disabled={busy} onChange={event => { setFile(event.target.files?.[0] ?? null); setSourceId(""); }} />

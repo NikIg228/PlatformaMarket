@@ -482,7 +482,8 @@ export default function SupplierWorkspace() {
         onPriceChange={(offerId, value) =>
           setPriceDrafts((items) => ({ ...items, [offerId]: value }))
         }
-        onSavePrice={savePrice}
+          onSavePrice={savePrice}
+          onChanged={() => refresh(true)}
       />
     ) : active === "inventory" ? (
       <SupplierInventory

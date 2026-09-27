@@ -23,7 +23,7 @@ export async function workspaceFixture(prisma: PrismaClient, capability: "BUYER"
 }
 
 /** UI/profile scenarios use a real scoped session; normal login has separate coverage. */
-export async function installPilotWorkspace(page: Page, capability: "BUYER" | "SUPPLIER") {
+export async function installPilotWorkspace(page: Page, capability: "BUYER" | "SUPPLIER", extraPermissions: string[] = []) {
   assertTestDatabase();
   const db = new PrismaClient();
   try {
@@ -31,10 +31,10 @@ export async function installPilotWorkspace(page: Page, capability: "BUYER" | "S
     const permissions = capability === "BUYER" ? ["organization.view","order.create","document.view","notification.view","catalog.product.view"] : ["organization.view","catalog.product.view","inventory.view","order.confirm","integration.view","import.manage","compliance.view","document.view","notification.view"];
     const key = randomUUID();
     const user = await db.user.create({ data: { email: `e2e-workspace-${key}@example.invalid`, displayName: "Browser fixture", status: "ACTIVE", emailVerifiedAt: new Date() } });
-    const role = await db.role.create({ data: { organizationId: org.id, code: `e2e-${key}`, name: "Browser fixture", permissions: { create: permissions.map(code => ({ permission: { connect: { code } } })) } } });
+    const role = await db.role.create({ data: { organizationId: org.id, code: `e2e-${key}`, name: "Browser fixture", permissions: { create: [...new Set([...permissions, ...extraPermissions])].map(code => ({ permission: { connect: { code } } })) } } });
     await db.organizationMembership.create({ data: { userId: user.id, organizationId: org.id, status: "ACTIVE", acceptedAt: new Date(), roles: { create: { roleId: role.id } } } });
     const session = await workspaceFixture(db, capability, { userId: user.id, organizationId: org.id, displayName: org.displayName });
     await page.addInitScript(({ session, capability }) => sessionStorage.setItem(`dentmarket:${capability.toLowerCase()}-session`, JSON.stringify(session)), { session, capability });
-    return { displayName: org.displayName, dispose: async () => { const cleanup = new PrismaClient(); try { await cleanup.authSession.updateMany({ where: { id: session.sessionId }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "browser_fixture_finished" } }); } finally { await cleanup.$disconnect(); } } };
+    return { organizationId: org.id, displayName: org.displayName, dispose: async () => { const cleanup = new PrismaClient(); try { await cleanup.authSession.updateMany({ where: { id: session.sessionId }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "browser_fixture_finished" } }); } finally { await cleanup.$disconnect(); } } };
   } finally { await db.$disconnect(); }
 }

@@ -39,6 +39,8 @@ function assertOpenApiContract(openApi) {
     "HealthResponse",
     "ReadinessResponse",
     "CatalogSearchResponse",
+    "OfferOptionsResponse",
+    "OfferOptionsQuery",
     "OfferComparisonResponse",
     "CreateCartRequest",
     "CartResponse",
@@ -72,6 +74,7 @@ function assertOpenApiContract(openApi) {
     ["/api/health/ready", "get", "200", "ReadinessResponse"],
     ["/api/catalog/cities", "get", "200", "PublicCityListResponse"],
     ["/api/catalog/search", "get", "200", "CatalogSearchResponse"],
+    ["/api/catalog/offer-options", "get", "200", "OfferOptionsResponse"],
     [
       "/api/catalog/products/{productId}/compare",
       "get",

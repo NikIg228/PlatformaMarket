@@ -8,6 +8,9 @@ export type SupplierSummary = {
 
 export type Offer = {
   id: string;
+  version?: number;
+  minimumOrderQuantity?: string;
+  orderIncrement?: string;
   supplierSku: string | null;
   status: string;
   sourceType: string;
@@ -25,6 +28,7 @@ export type Offer = {
     };
   };
   packaging: {
+    id?: string;
     name: string;
     quantityInBaseUnit: string;
     unit: { symbol: string };
@@ -39,12 +43,16 @@ export type Offer = {
   prices: Array<{
     id: string;
     amountMinor: string;
+    includesVat?: boolean;
+    vatRate?: string | null;
     currency: string;
     status: string;
     freshnessExpiresAt: string | null;
   }>;
   inventoryBalances: Array<{
     id: string;
+    warehouseId?: string;
+    quantityOnHand?: string;
     quantityAvailable: string;
     freshnessStatus: string;
     warehouse: { name: string };

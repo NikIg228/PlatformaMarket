@@ -430,6 +430,38 @@ export class MarketplaceApiClient {
     return this.download(`/documents/${documentId}/download`);
   }
 
+  searchOfferOptions(input: import("@marketplace/schemas").OfferOptionsQuery) {
+    return this.get<import("@marketplace/schemas").OfferOptionsResponse>(this.withQuery("/catalog/offer-options", input));
+  }
+
+  listSupplierWarehouses(supplierId: string) {
+    return this.get<import("@marketplace/schemas").SupplierWarehouseList>(`/suppliers/${supplierId}/warehouses`);
+  }
+
+  createSupplierOffer(supplierId: string, input: import("@marketplace/schemas").CreateSupplierOfferInput) {
+    return this.post<import("@marketplace/schemas").SupplierOfferCreated>(`/suppliers/${supplierId}/offers`, input);
+  }
+
+  setSupplierOfferPrice(supplierId: string, offerId: string, input: import("@marketplace/schemas").SetOfferPriceInput) {
+    return this.put<unknown>(`/suppliers/${supplierId}/offers/${offerId}/price`, input);
+  }
+
+  assignSupplierOfferPackaging(supplierId: string, offerId: string, input: import("@marketplace/schemas").AssignOfferPackagingInput) {
+    return this.put<unknown>(`/suppliers/${supplierId}/offers/${offerId}/packaging`, input);
+  }
+
+  setSupplierInventory(supplierId: string, input: import("@marketplace/schemas").SetInventoryBalanceInput) {
+    return this.put<unknown>(`/suppliers/${supplierId}/inventory/balances`, input);
+  }
+
+  submitProductCandidate(input: import("@marketplace/schemas").SubmitProductCandidateInput) {
+    return this.post<import("@marketplace/schemas").ProductCandidateSubmitted>("/moderation/product-candidates/submissions", input);
+  }
+
+  listSupplierImportBatches(supplierId: string) {
+    return this.get<SupplierImportBatchResponse[]>(`/suppliers/${supplierId}/import-batches`);
+  }
+
   createSupplierImportBatch(
     supplierOrganizationId: string,
     input: CreateImportBatchInput,

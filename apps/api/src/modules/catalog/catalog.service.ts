@@ -251,6 +251,35 @@ export class CatalogService {
     });
   }
 
+  async offerOptions(input: { q: string; cursor?: string; variantId?: string; limit: number }) {
+    // Shared master data only. Supplier price, inventory and private data are
+    // deliberately absent; those require a separate scoped supplier operation.
+    const rows = await this.prisma.productVariant.findMany({
+      where: {
+        status: "ACTIVE", product: { status: "ACTIVE" },
+        ...(input.cursor ? { id: { gt: input.cursor } } : {}),
+        ...(input.variantId ? { id: input.variantId } : {}),
+        ...(input.q ? { OR: [
+          { sku: { contains: input.q, mode: "insensitive" as const } },
+          { gtin: { contains: input.q } },
+          { product: { canonicalName: { contains: input.q, mode: "insensitive" as const } } },
+          { product: { manufacturerSku: { contains: input.q, mode: "insensitive" as const } } },
+        ] } : {}),
+      },
+      select: { id: true, productId: true, sku: true, gtin: true,
+        product: { select: { canonicalName: true } },
+        packagings: { where: { status: "ACTIVE" }, orderBy: { quantityInBaseUnit: "asc" },
+          select: { id: true, name: true, unitId: true, quantityInBaseUnit: true, unit: { select: { symbol: true } } } },
+      },
+      orderBy: { id: "asc" }, take: input.limit + 1,
+    });
+    const items = rows.slice(0, input.limit).map(row => ({
+      id: row.id, productId: row.productId, name: row.product.canonicalName, sku: row.sku, gtin: row.gtin,
+      packagings: row.packagings.map(pack => ({ ...pack, unit: pack.unit.symbol, quantityInBaseUnit: pack.quantityInBaseUnit.toString() })),
+    }));
+    return { items, nextCursor: rows.length > input.limit ? items.at(-1)!.id : null };
+  }
+
   async qualityReport() {
     const [
       cards,

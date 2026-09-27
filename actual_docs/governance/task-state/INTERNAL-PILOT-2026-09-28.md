@@ -1,0 +1,87 @@
+# INTERNAL-PILOT — полная последовательность, 28.09.2026
+
+Owner: primary01a0c957-1f23-7b70-9dc9-226afbb5c0b1, generation3; один writer.
+Статус: ACTIVE. Пользователь разрешил все восемь блоков из предыдущего ответа,
+без ожидания подтверждений; вопросы записывать для последующего обсуждения.
+Источник требований: Product23/22, Foundation4.2; это checkpoint, не второе ТЗ.
+Разрешение включает реализацию внутреннего цикла заказа; прежнее откладывание
+CORE-02/03 больше не запрещает работу в этой последовательности. Неутверждённые
+бизнес-правила не выдаются за решения владельца: см. PILOT-OPEN-QUESTIONS.md.
+Без внешних СДЭК/1С/PSP, production deployment, реальных платежей/данных/рассылок.
+
+Checkout: C:\Users\user\Desktop\dentmarket-kz-main, main7f49402.
+Origin: NikIg228/PlatformaMarket. Папка не переименована: sharing violation3/3,
+REBRAND checkpoint сохраняется. Перенос не блокирует продуктовую реализацию.
+Прежний WIP: staged branding51 paths, AGENTS origin, registry/handoff/PRIMARY/
+CORE-04/PILOT-DOCS receipts, четыре next-env и flow-a. Сохранять; коммиты разделять.
+
+Последовательность: CORE-04.5 ручное предложение/история/карточка/корзина;
+CORE-01/02/03 заказ; CORE-05/06 коммуникации/права; CORE-04.6/04.7 акции;
+CORE-06.6 панель; CORE-07 списки/аналитика; CORE-08/09 общая приёмка.
+Перед каждым блоком сверить существующий код/API/tests, затем реализовать пробел.
+DoD: сквозной UI/API сценарий трёх сторон, ошибки/tenant/idempotency/резервы,
+документы и права; актуальное evidence, review, scoped commit/push и actual CI.
+Не считать весь пилот готовым по приёмке одного блока.
+
+Gates по Workflow: TS typecheck+test, затронутые builds, critical UI verify:web;
+API contract verify:core-contract; commerce/DB verify:postgres, migrations upgrade;
+runtime/config/profile gates только при изменении соответствующих входов.
+Только существующая disposable dentmarket_audit_20260914; не рабочая БД.
+Max3 попытки/gate,20мин build/test,45мин suite/CI; прежние попытки не обнулять.
+Роли прочитаны: Backend Architect (границы/данные), Frontend Developer
+(состояния/доступность), Code Reviewer (риски), Git Workflow Master (атомарность).
+Агенты не создаются. Рабочие source changes пока не начаты.
+Следующий шаг: конкретная сверка ручного предложения/API и refresh корзины.
+
+CORE-04.5 implementation in progress: typed master variant search/cursor, manual
+create/configure/publish form and candidate submission; history selection; cart
+60s/focus scheduler; initial inventory guard against rebinding another offer.
+Typecheck attempt1 FAIL BigInt literal under current TS target; fixed with BigInt()
+without changing target. Attempt2 PASS12/12. Unit attempt1 aborted after existing
+buyer order-profile cold import exceeded5s (78 buyer cases passed, new scheduler
+passed); no failed assertion. Retry2 uses same tests/thresholds sequential Turbo
+workspace scheduling to reduce contention; unfinished workspaces must also run.
+Brand-only commit b917ff84d16b0a3585e64dfd3d24a552e081a9b9 pushed and exact remote
+confirmed; CI36350104586/Security36350104628 pending. Source base now b917ff8.
+Folder move still blocked; no fourth move attempt. No pilot feature committed yet.
+Typecheck2 PASS12/12; tests2 PASS11/11 with workspace concurrency1, unchanged
+assertions/timeouts. Full pilot build attempt1 running; local URLs explicitly
+forwarded via Turbo --env-mode=loose. E2E typecheck PASS before additional positive
+publication assertions (same new test, check again before browser).
+Core-contract attempt1: schema/API prerequisite builds passed and reused; direct
+node scripts/verify-pilot-backend.mjs --contract-only FAILED API readiness45s,
+no child diagnostic output. It overlapped web build; retry only after build completes
+to isolate resource contention. No timeout increase, no auth/config bypass.
+New manual E2E verifies zero-stock publication refusal, reload/resume, then positive
+stock/publication and clinic product detail. Fixtures confined to audited local DB;
+seed supplier has one active historical agreement, no current acceptance override.
+Build1 PASS10/10; core-contract2 PASS85 components/27 operations; PostgreSQL1
+PASS tenant/rollback/idempotency/stock/cart-race. Manual browser1 PASS including
+publication refusal/resume/positive buyer visibility/mobile390. E2E typecheck2 PASS.
+Review follow-up: preserve warehouse safety stock during initialForOffer updates,
+VAT rate in resumed editor, assign missing legacy packaging via existing versioned
+API. New regression checks; changed inputs require applicable gates again.
+Review follow-up typecheck PASS12/12 and tests PASS11/11 (tests3.log), no relaxed
+assertions. Build2 running for changed inventory/API-client/supplier inputs.
+Brand b917ff8 CI36350104586 + Security36350104628 both SUCCESS.
+Browser acceptance will run all test files in two disjoint batches with a fresh
+owned API per batch: authentication/workspace group and remaining product flows.
+Reason: previously observed auth429 under accumulated fixture requests; preserve
+rate limits and tests. This changes scheduling only, not assertions or coverage.
+Remaining CORE-04.5 after current slice: delivery terms UI and complete import
+history pagination; new-product operator roundtrip evidence. Do not close row yet.
+Final review: tenant boundary remains server-side; search returns only shared
+master fields; initial inventory cannot rebind another offer, preserve reserved
+and safety quantities; exact minor-unit price conversion; retries retain draft;
+publish stays explicit and enforces agreement/admission/compliance. Added source
+restriction per ADR012: manual editor cannot edit API/ERP-managed offers.
+Build2 PASS10/10; PostgreSQL2 PASS; regular browser batches PASS41+9=50,
+38 pre-existing opt-in cases SKIPPED (not claimed as evidence). Changed supplier
+source restriction now has targeted typecheck/tests/build/manual browser follow-up;
+all unaffected workspace evidence reused. No business data migration.
+Supplier source-guard follow-up: typecheck PASS, tests49/49 PASS, production build
+and bundle budget PASS; manual browser final PASS1/1. No remaining failed gate for
+this bounded slice. Core contract PASS reused: last edits did not change HTTP shapes
+or catalogue response inputs. PostgreSQL2 exercised latest inventory implementation.
+Review and git diff --check PASS; publish 29 explicit paths, excluding pre-existing
+registry/handoff/CORE04/PILOTDOCS/PRIMARY/next-env/flow-a WIP. Full CORE04.5 still open.

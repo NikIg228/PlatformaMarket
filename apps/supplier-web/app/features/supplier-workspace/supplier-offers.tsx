@@ -17,6 +17,8 @@ import styles from "../../page.module.css";
 import type { Offer } from "./types";
 import { statusTone } from "./view-model";
 import { offerPackaging } from "./offer-packaging";
+import { ManualOffer } from "./manual-offer";
+import { useState } from "react";
 
 export function SupplierOffers({
   api,
@@ -26,6 +28,7 @@ export function SupplierOffers({
   busy,
   onPriceChange,
   onSavePrice,
+  onChanged,
 }: {
   api: MarketplaceApiClient;
   supplierId: string;
@@ -34,7 +37,9 @@ export function SupplierOffers({
   busy: string | null;
   onPriceChange: (offerId: string, value: string) => void;
   onSavePrice: (offer: Offer) => Promise<void>;
+  onChanged: () => Promise<void>;
 }) {
+  const [editing, setEditing] = useState<Offer | undefined>();
   return (
     <div className="mp-stack">
       <PageHeader
@@ -42,6 +47,8 @@ export function SupplierOffers({
         title="Предложения и цены"
         description="У каждой цены видны срок действия, публикация и текущий доступный остаток."
       />
+      {editing ? <DmButton onClick={() => setEditing(undefined)}>Новое предложение</DmButton> : null}
+      <ManualOffer key={editing?.id ?? "new"} api={api} supplierId={supplierId} onChanged={onChanged} initialOffer={editing} />
       <Section>
         {!offers.length ? (
           <EmptyState
@@ -84,6 +91,10 @@ export function SupplierOffers({
                     <StatusTag tone={statusTone(offer.publication?.status ?? "DRAFT")}>
                       {formatStatus(offer.publication?.status ?? "DRAFT")}
                     </StatusTag>
+                    {["MANUAL", "IMPORT"].includes(offer.sourceType)
+                      ? <DmButton onClick={() => setEditing(offer)}>Настроить предложение</DmButton>
+                      : <small>Условия управляются подключённым источником.</small>}
+                    {offer.publication?.blockedReason ? <p>{offer.publication.blockedReason}</p> : null}
                   </td>
                   <td data-label="Остаток">
                     {offer.inventoryBalances.reduce(

@@ -17,6 +17,9 @@ import type {
   SchemaObject,
 } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
 import {
+  offerOptionsResponseSchema,
+  offerOptionsQuerySchema,
+  setInventoryBalanceSchema,
   saveOrganizationProfileSchema, organizationProfileResponseSchema, organizationOnboardingSchema, currentSessionSchema,
   addCartItemSchema,
   acceptSupplierTermsSchema, reviewSupplierAdmissionSchema, supplierLegalBundleSchema, supplierTermsStateSchema, supplierTermsAcceptanceSchema, supplierAdmissionListSchema,
@@ -160,6 +163,9 @@ const coreZodSchemas = {
   SupplierOrderResponse: supplierOrderResponseSchema,
   SupplierOrderListResponse: supplierOrderListResponseSchema,
   SupplierImportBatchResponse: supplierImportBatchResponseSchema,
+  OfferOptionsResponse: offerOptionsResponseSchema,
+  OfferOptionsQuery: offerOptionsQuerySchema,
+  SetInventoryBalanceRequest: setInventoryBalanceSchema,
   SupplierImportDiagnosticsResponse: supplierImportDiagnosticsResponseSchema,
   SupplierImportRollbackResponse: supplierImportRollbackResponseSchema,
   CatalogImportReviewQueueResponse: catalogImportReviewQueueResponseSchema,

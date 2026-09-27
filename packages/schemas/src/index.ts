@@ -402,6 +402,7 @@ export const supplierOfferPublicationResponseSchema = z.object({
 });
 
 export const setInventoryBalanceSchema = z.object({
+  initialForOffer: z.boolean().optional(),
   warehouseId: z.uuid(),
   productVariantId: z.uuid(),
   offerId: z.uuid().nullable().optional(),
@@ -1334,3 +1335,4 @@ export * from "./workspace-session.js";
 export * from "./supplier-terms.js";
 export * from "./product-navigation.js";
 export * from "./organization-profile.js";
+export * from "./offer-editor.js";

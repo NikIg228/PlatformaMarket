@@ -36,12 +36,14 @@ export class InventoryService {
     const freshnessExpiresAt = new Date(now.getTime() + freshnessPolicy.staleAfterMinutes * 60_000);
     return this.prisma.$transaction(async (tx) => {
       const before = await tx.inventoryBalance.findUnique({ where: { supplierOrganizationId_warehouseId_productVariantId: { supplierOrganizationId, warehouseId: input.warehouseId, productVariantId: input.productVariantId } } });
+      if (input.initialForOffer && before && before.offerId !== input.offerId) throw new ConflictException("Для этого варианта на складе уже существует остаток. Проверьте его в разделе остатков; создание предложения не должно перезаписывать другой учёт.");
       const effectiveReserved = before ? Number(before.quantityReserved) : input.quantityReserved;
-      if (effectiveReserved + input.safetyStock > input.quantityOnHand) throw new ConflictException("On-hand update cannot invalidate existing reservations and safety stock");
-      const quantityAvailable = input.quantityOnHand - effectiveReserved - input.safetyStock;
+      const safetyStock = input.initialForOffer && before ? Number(before.safetyStock) : input.safetyStock;
+      if (effectiveReserved + safetyStock > input.quantityOnHand) throw new ConflictException("On-hand update cannot invalidate existing reservations and safety stock");
+      const quantityAvailable = input.quantityOnHand - effectiveReserved - safetyStock;
       let balance;
       if (before) {
-        const updated = await tx.inventoryBalance.updateMany({ where: { id: before.id, version: before.version }, data: { offerId: input.offerId ?? null, quantityOnHand: input.quantityOnHand, safetyStock: input.safetyStock, quantityAvailable, availabilityStatus: availability(quantityAvailable), freshnessStatus: "FRESH", freshnessExpiresAt, source: input.source, externalUpdatedAt: now, lastSuccessfulSyncAt: now, version: { increment: 1 } } });
+        const updated = await tx.inventoryBalance.updateMany({ where: { id: before.id, version: before.version }, data: { offerId: input.offerId ?? null, quantityOnHand: input.quantityOnHand, safetyStock, quantityAvailable, availabilityStatus: availability(quantityAvailable), freshnessStatus: "FRESH", freshnessExpiresAt, source: input.source, externalUpdatedAt: now, lastSuccessfulSyncAt: now, version: { increment: 1 } } });
         if (updated.count !== 1) throw new ConflictException("Inventory balance changed concurrently; retry the update");
         balance = await tx.inventoryBalance.findUniqueOrThrow({ where: { id: before.id } });
       } else {

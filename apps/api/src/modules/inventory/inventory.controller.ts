@@ -6,6 +6,7 @@ import { RequirePermissions } from "../access-control/require-permissions.decora
 import { InventoryService } from "./inventory.service";
 import { InventoryFreshnessService } from "./inventory-freshness.service";
 import { DataFreshnessService } from "./data-freshness.service";
+import { ApiCoreBody, ApiCoreErrors, ApiCoreProtected } from "../../platform/openapi/core-openapi";
 
 @ApiTags("inventory")
 @UseGuards(PermissionsGuard)
@@ -21,6 +22,9 @@ export class InventoryController {
   }
 
   @Put("balances")
+  @ApiCoreBody("SetInventoryBalanceRequest")
+  @ApiCoreProtected()
+  @ApiCoreErrors()
   @RequirePermissions("inventory.adjust")
   setBalance(@Param("supplierOrganizationId") supplierOrganizationId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     const parsed = setInventoryBalanceSchema.safeParse(body);

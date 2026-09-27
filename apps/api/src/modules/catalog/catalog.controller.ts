@@ -1,4 +1,6 @@
-import { BadRequestException, Body, Controller, Delete, Get, Headers, Param, Patch, Post, Put, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Headers, Param, Patch, Post, Put, Query, UseGuards } from "@nestjs/common";
+import { offerOptionsQuerySchema } from "@marketplace/schemas";
+import { ApiCoreProtected, ApiCoreErrors, ApiCoreQuery, ApiCoreResponse } from "../../platform/openapi/core-openapi";
 import { ApiTags } from "@nestjs/swagger";
 import { createAttributeDefinitionSchema, createCategorySchema, createProductPackagingSchema, createProductSchema, createVariantSchema, setAttributeValueSchema, updateProductSchema, upsertCategoryAttributeRuleSchema } from "@marketplace/schemas";
 import { PermissionsGuard } from "../access-control/permissions.guard";
@@ -12,6 +14,18 @@ import { PackagingService } from "./packaging.service";
 @Controller("catalog")
 export class CatalogController {
   constructor(private readonly catalog: CatalogService, private readonly attributeValues: AttributeValuesService, private readonly packaging: PackagingService) {}
+
+  @Get("offer-options")
+  @RequirePermissions("catalog.product.view")
+  @ApiCoreProtected()
+  @ApiCoreErrors()
+  @ApiCoreResponse("OfferOptionsResponse")
+  @ApiCoreQuery("OfferOptionsQuery")
+  offerOptions(@Query() query: unknown) {
+    const parsed = offerOptionsQuerySchema.safeParse(query);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.catalog.offerOptions(parsed.data);
+  }
 
   @Get("attributes")
   @RequirePermissions("catalog.product.view")
