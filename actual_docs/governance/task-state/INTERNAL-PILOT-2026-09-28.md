@@ -164,3 +164,13 @@ Review: operator-only decision, pending CAS inside transaction, category industr
 validation, bounded exact packaging coefficient, hidden unpriced offer; tenant
 history keyset. Old duplicate candidate UI removed, other controls preserved.
 All local gates PASS. Current candidate publication is next; CORE04.5 waits exactCI.
+a393cf56e05c519f46e7f12dfa6fe71d421ebea5 pushed; exact remote verified.
+CI36354950995 / Security36354951032 pending. Same CORE04.5 review found a UI
+unit label inconsistency: existing cart/reservation quantity uses sale units,
+new manual form incorrectly said base units. Corrected label to packages + hint;
+Product23.2 documents current units (5 packs of10 => input5), no stock conversion,
+DB mutation or domain rule change. Supplier typecheck +49tests PASS; supplier
+build/browser follow-up pending, unrelated workspace/API/PG evidence reused.
+Stock label follow-up supplier build PASS, browser PASS2/2 (manual draft and new
+candidate journeys). Only visible copy/docs/locators changed; other type/unit,
+contract/PostgreSQL/full-build inputs unchanged, PASS reused. Ready to publish.

@@ -63,7 +63,7 @@ test("manual proposal is reviewed by the operator, configured by supplier and sh
     await page.getByLabel("Цена за упаковку, ₸", { exact: true }).fill("1000");
     const warehouse = await db.warehouse.findFirstOrThrow({ where: { supplierOrganizationId: workspace.organizationId, status: "ACTIVE" } });
     await page.getByLabel("Склад", { exact: true }).selectOption(warehouse.id);
-    await page.getByLabel("Остаток, базовых единиц", { exact: true }).fill("50");
+    await page.getByLabel("Остаток, упаковок", { exact: true }).fill("50");
     await page.getByRole("button", { name: "Сохранить условия", exact: true }).click();
     await expect(page.getByText("Условия сохранены. Предложение ещё не опубликовано.", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Опубликовать предложение", exact: true }).click();

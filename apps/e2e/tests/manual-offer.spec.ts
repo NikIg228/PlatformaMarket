@@ -35,7 +35,7 @@ test("supplier creates and resumes a manual draft, then publishes it into the cl
     const warehouse = await db.warehouse.findFirstOrThrow({ where: { supplierOrganizationId: workspace.organizationId, status: "ACTIVE" } });
     await page.getByLabel("Склад", { exact: true }).selectOption(warehouse.id);
     // Zero stock intentionally fails publication, independent of supplier admission.
-    await page.getByLabel("Остаток, базовых единиц").fill("0");
+    await page.getByLabel("Остаток, упаковок").fill("0");
     await page.getByRole("button", { name: "Сохранить условия", exact: true }).click();
     await expect(page.getByText("Условия сохранены. Предложение ещё не опубликовано.", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Настроить доставку", exact: true }).click();
@@ -62,7 +62,7 @@ test("supplier creates and resumes a manual draft, then publishes it into the cl
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.getByRole("button", { name: "Сохранить условия", exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-    await page.getByLabel("Остаток, базовых единиц").fill("10");
+    await page.getByLabel("Остаток, упаковок").fill("10");
     await page.getByRole("button", { name: "Сохранить условия", exact: true }).click();
     await expect(page.getByText("Условия сохранены. Предложение ещё не опубликовано.", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Опубликовать предложение", exact: true }).click();
