@@ -30,6 +30,15 @@ test("buyer can search and compare marketplace offers", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Каталог для стоматологий" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Сравнить цены" }).first()).toBeVisible();
   await expect(page.getByTestId("product-card").first()).toBeVisible();
+  await expect(page).toHaveTitle(/PlatformaMarket/);
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    const brand = page.getByRole("link", { name: "PlatformaMarket, магазин", exact: true });
+    await expect(brand).toBeVisible();
+    await brand.focus();
+    await expect(brand).toBeFocused();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  }
   await expectHealthyPage(page, errors);
 });
 
@@ -67,6 +76,7 @@ test("an actor-only stored identity does not authorize the supplier workspace", 
   const errors = collectBrowserErrors(page);
   await page.addInitScript(() => sessionStorage.setItem("dentmarket:supplier-session", JSON.stringify({ capability: "SUPPLIER", actorId: "00000000-0000-4000-8000-000000000001", organizationId: "00000000-0000-4000-8000-000000000020" })));
   await page.goto("http://127.0.0.1:3002");
+  await expect(page).toHaveTitle(/PlatformaMarket/);
   await expect(page.getByRole("alert").filter({ hasText: "Войдите в кабинет поставщика" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Предложения", exact: true })).toHaveCount(0);
   await expectHealthyPage(page, errors);
@@ -75,6 +85,7 @@ test("an actor-only stored identity does not authorize the supplier workspace", 
 test("public landing routes both marketplace audiences", async ({ page }) => {
   const errors = collectBrowserErrors(page);
   await page.goto("http://127.0.0.1:3003");
+  await expect(page).toHaveTitle(/PlatformaMarket/);
   await expect(page.getByRole("heading", { name: "Материалы, цены и сроки поставки в одном месте" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Зарегистрировать клинику" }).first()).toHaveAttribute("href", "/register?role=buyer");
   await expect(page.getByRole("link", { name: "Кабинет поставщика →" })).toBeVisible();
@@ -106,6 +117,7 @@ test("new supplier registration requires email verification before cabinet acces
 test("operator sees production assurance controls", async ({ page }) => {
   const errors = collectBrowserErrors(page);
   await page.goto(ADMIN_URL);
+  await expect(page).toHaveTitle(/PlatformaMarket/);
   await expect(page.locator("body")).not.toBeEmpty();
   await expectHealthyPage(page, errors);
 });

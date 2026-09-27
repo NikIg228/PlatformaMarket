@@ -23,7 +23,7 @@ export default function AboutPage() {
 
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
-          <p className={styles.eyebrow}>О DentMarket</p>
+          <p className={styles.eyebrow}>О PlatformaMarket</p>
           <h1>Закупки клиники под контролем</h1>
           <p>Каталог, условия поставщиков, заказ и документы работают как одна прозрачная цепочка.</p>
           <div className={styles.actions}>
@@ -34,13 +34,13 @@ export default function AboutPage() {
         <figure className={styles.heroVisual}>
           <img
             src="/catalog/illustrations/instruments-category.png"
-            alt="Стоматологические инструменты из каталога DentMarket"
+            alt="Стоматологические инструменты из каталога PlatformaMarket"
             fetchPriority="high"
           />
         </figure>
       </section>
 
-      <section className={styles.proof} aria-label="Что даёт DentMarket">
+      <section className={styles.proof} aria-label="Что даёт PlatformaMarket">
         {trustFacts.map(([title, description]) => (
           <article key={title}>
             <strong>{title}</strong>
@@ -94,12 +94,12 @@ export default function AboutPage() {
       <section className={styles.legal}>
         <p className={styles.eyebrow}>Проверка поставщиков</p>
         <h2>Коммерческий доступ появляется после проверки</h2>
-        <p>Подпишите договор с DentMarket через ЭЦП. Готовый договор действует 12 месяцев и остаётся в кабинете.</p>
+        <p>Подпишите договор с PlatformaMarket через ЭЦП. Готовый договор действует 12 месяцев и остаётся в кабинете.</p>
         <a href={registrationUrl("supplier")}>Стать поставщиком</a>
       </section>
 
       <footer className={styles.footer}>
-        <Link href="/">DentMarket KZ</Link>
+        <Link href="/">PlatformaMarket</Link>
         <span>Закупки для стоматологий Казахстана</span>
         <span>© 2026</span>
       </footer>

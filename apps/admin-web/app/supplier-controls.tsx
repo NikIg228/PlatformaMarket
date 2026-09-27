@@ -236,7 +236,7 @@ export function SupplierControls() {
       await request(`/moderation/product-candidates/${candidate.id}/reject`, {
         method: "POST",
         body: JSON.stringify({
-          reason: "Отклонено командой DentMarket",
+          reason: "Отклонено командой PlatformaMarket",
         }),
       });
       await load();
@@ -359,7 +359,7 @@ export function SupplierControls() {
           reason: data.get("reason"),
           source: data.get("source"),
           severity: data.get("severity"),
-          comment: "Создано командой DentMarket",
+          comment: "Создано командой PlatformaMarket",
         }),
       });
       await load();

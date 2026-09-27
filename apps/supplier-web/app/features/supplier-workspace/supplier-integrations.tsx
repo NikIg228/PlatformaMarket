@@ -198,7 +198,7 @@ export function SupplierIntegrations({
           <EmptyState
             icon={<PlugConnected24Regular />}
             title="Подключений пока нет"
-            description="Напишите команде DentMarket, чтобы подключить 1С, или обновляйте товары вручную."
+            description="Напишите команде PlatformaMarket, чтобы подключить 1С, или обновляйте товары вручную."
           />
         ) : (
           <div className={styles.integrationList}>

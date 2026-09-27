@@ -1588,7 +1588,7 @@ export default function BuyerWorkspace({
                         {isPublic
                           ? (product.brand ??
                             product.categories[0]?.name ??
-                            "DentMarket")
+                            "PlatformaMarket")
                           : (product.categories[0]?.name ?? "Стоматология")}
                       </span>
                       <h3>{product.name}</h3>
@@ -1602,7 +1602,7 @@ export default function BuyerWorkspace({
                             ),
                           ].join(" · ") ||
                             (product.sourceUrl
-                              ? "Карточка DentMarket"
+                              ? "Карточка PlatformaMarket"
                               : best?.verifiedDocuments === false
                                 ? "Внешний каталог · поставщик не верифицирован"
                                 : "Проверенная карточка каталога")}
@@ -1992,7 +1992,7 @@ export default function BuyerWorkspace({
                       "Проверяем состав и характеристики товара."}
                   </p>
                   <small>
-                    Описание проверено DentMarket. Цену, наличие и доставку
+                    Описание проверено PlatformaMarket. Цену, наличие и доставку
                     указывает продавец.
                   </small>
                   {selectedProduct.attributes?.length ? (
@@ -2433,7 +2433,7 @@ export default function BuyerWorkspace({
           {renderCatalog(true)}
         </main>
         <footer className={styles.publicFooter}>
-          <span>© DentMarket KZ</span>
+          <span>© PlatformaMarket</span>
           <span>Закупки для клиник и поставщиков</span>
         </footer>
       </div>
@@ -2442,8 +2442,8 @@ export default function BuyerWorkspace({
 
   return (
     <AppShell
-      productName="DentMarket"
-      productMark="DM"
+      productName="PlatformaMarket"
+      productMark="PM"
       workspaceLabel="Кабинет клиники"
       userName={handoff?.displayName ?? "Гость"}
       userMeta={

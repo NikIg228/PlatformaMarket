@@ -144,10 +144,10 @@ export async function generateMetadata({
   const product = await getProduct(decodeURIComponent(id));
   return product
     ? {
-        title: `${product.name} | DentMarket`,
+        title: `${product.name} | PlatformaMarket`,
         description: product.description,
       }
-    : { title: "Карточка товара | DentMarket" };
+    : { title: "Карточка товара | PlatformaMarket" };
 }
 
 export default async function ProductPage({
@@ -209,7 +209,7 @@ export default async function ProductPage({
             ) : null}
             <p className={styles.description}>
               {product.description ||
-                "Карточка товара DentMarket с описанием, характеристиками и предложениями поставщиков."}
+                "Карточка товара PlatformaMarket с описанием, характеристиками и предложениями поставщиков."}
             </p>
             <div className={styles.facts}>
               <span>

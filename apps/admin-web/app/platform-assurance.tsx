@@ -142,11 +142,11 @@ export function PlatformAssurance() {
   return (
     <section
       className={styles.section}
-      aria-label="Готовность DentMarket"
+      aria-label="Готовность PlatformaMarket"
     >
       <div className={styles.header}>
         <div>
-          <h2>Готовность DentMarket</h2>
+          <h2>Готовность PlatformaMarket</h2>
           <p>
             Поиск, документы, проверки, уведомления и платежи из действующего
             API.

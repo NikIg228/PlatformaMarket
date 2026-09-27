@@ -5,10 +5,10 @@ import type { AuthCapability, AuthFeedback } from "./auth-client";
 
 export function AuthBrand({ href = "/" }: { href?: string }) {
   return (
-    <a className="brand" href={href} aria-label="DentMarket KZ">
-      <span aria-hidden="true">DM</span>
+    <a className="brand" href={href} aria-label="PlatformaMarket">
+      <span aria-hidden="true">PM</span>
       <strong>
-        DentMarket <small>KZ</small>
+        PlatformaMarket
       </strong>
     </a>
   );

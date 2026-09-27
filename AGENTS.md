@@ -237,7 +237,7 @@ Docs-only: ссылки/согласованность правил, сохра�
 ## 8. Git и безопасность
 
 - Согласованная владельцем цель: `origin`
-  (`https://github.com/NikIg228/dentmarket_04.08.git`), ветка `main`.
+  (`https://github.com/NikIg228/PlatformaMarket.git`), ветка `main`.
 - Перед работой смотрите `git status --short --branch` и сохраняйте чужие
   незакоммиченные изменения.
 - Одна логическая задача — один понятный conventional commit

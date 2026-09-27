@@ -11,8 +11,8 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Marketplace Operations",
-  description: "Рабочий кабинет команды DentMarket",
+  title: "PlatformaMarket — кабинет оператора",
+  description: "Рабочий кабинет команды PlatformaMarket",
 };
 
 export default async function RootLayout({

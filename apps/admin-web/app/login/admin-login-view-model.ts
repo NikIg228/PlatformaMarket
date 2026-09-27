@@ -31,7 +31,7 @@ export function getAdminLoginCopy(mode: AdminLoginMode) {
 
   return {
     eyebrow: "Вход для команды",
-    title: "Войти в DentMarket",
+    title: "Войти в PlatformaMarket",
     description:
       "Используйте рабочую учётную запись с доступом оператора Marketplace.",
   };

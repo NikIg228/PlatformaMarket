@@ -11,7 +11,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "DentMarket для поставщиков",
+  title: "PlatformaMarket для поставщиков",
   description: "Управление продажами и исполнением заказов",
 };
 

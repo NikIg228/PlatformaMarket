@@ -190,7 +190,7 @@ export default function LoginPage() {
       <section className="loginIntro">
         <AuthBrand href={buyerAppUrl} />
         <div>
-          <p className="eyebrow">Вход в DentMarket</p>
+          <p className="eyebrow">Вход в PlatformaMarket</p>
           <h1>Продолжите работу в своём кабинете</h1>
           <p>Закупайте для клиники или управляйте продажами и заказами.</p>
         </div>

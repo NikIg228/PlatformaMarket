@@ -126,7 +126,7 @@ export class AuthSessionsService {
     try {
       const token = await this.issueEmailToken(user.id, "EMAIL_VERIFICATION", input.registrationToken ? { registrationToken: input.registrationToken } : undefined);
       const link = withWorkspaceReturn(`${environment().AUTH_EMAIL_BASE_URL}/verify-email?token=${encodeURIComponent(token.raw)}`, input.returnTo);
-      const delivery = await this.email(user.email, "Подтвердите email в DentMarket", `Здравствуйте, ${user.displayName}!\n\nПодтвердите email по ссылке:\n${link}\n\nСсылка действует до ${token.expiresAt.toISOString()}.`);
+      const delivery = await this.email(user.email, "Подтвердите email в PlatformaMarket", `Здравствуйте, ${user.displayName}!\n\nПодтвердите email по ссылке:\n${link}\n\nСсылка действует до ${token.expiresAt.toISOString()}.`);
       await this.prisma.securityEvent.create({ data: { type: "auth.email.registered", severity: "INFO", actorId: user.id, ipAddress: metadata.ipAddress, userAgent: metadata.userAgent } });
       return { ok: true as const, verificationRequired: true as const, email: user.email, delivery };
     } catch (error) {
@@ -189,7 +189,7 @@ export class AuthSessionsService {
     if (operatorOnly) {
       if (user.status !== "ACTIVE") throw new UnauthorizedException("Доступ оператора недоступен");
       const membership = await this.prisma.organizationMembership.findFirst({ where: { userId: user.id, status: "ACTIVE", organization: { status: "ACTIVE", capabilities: { some: { capability: "MARKETPLACE_OPERATOR" } } } }, select: { organizationId: true } });
-      if (!membership) throw new UnauthorizedException("Этот раздел доступен только команде DentMarket");
+      if (!membership) throw new UnauthorizedException("Этот раздел доступен только команде PlatformaMarket");
       await this.authority.assertPlatformOperator({ actorId: user.id, organizationId: membership.organizationId });
       operatorOrganizationId = membership.organizationId;
     }
@@ -205,7 +205,7 @@ export class AuthSessionsService {
       if (user) {
         const token = await this.issueEmailToken(user.id, "PASSWORD_RESET");
         const link = `${environment().AUTH_EMAIL_BASE_URL}/reset-password?token=${encodeURIComponent(token.raw)}`;
-        try { await this.email(user.email, "Восстановление пароля DentMarket", `Сбросить пароль: ${link}\nСсылка действует до ${token.expiresAt.toISOString()}.`); }
+        try { await this.email(user.email, "Восстановление пароля PlatformaMarket", `Сбросить пароль: ${link}\nСсылка действует до ${token.expiresAt.toISOString()}.`); }
         catch { await this.prisma.emailAuthToken.deleteMany({ where: { tokenHash: hash(token.raw), consumedAt: null } }); this.logger.warn("auth_password_reset_delivery_failed"); }
       }
       return { ok: true as const, message: "Запрос принят. Если аккаунт существует, письмо передано на доставку. Если письма нет, обратитесь к оператору.", delivery };

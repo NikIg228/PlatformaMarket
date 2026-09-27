@@ -51,7 +51,7 @@ export function BuyerServicesMenu({
             Поддержка
           </MenuItem>
           <MenuItem onClick={() => window.location.assign("/about")}>
-            О DentMarket
+            О PlatformaMarket
           </MenuItem>
         </MenuList>
       </MenuPopover>

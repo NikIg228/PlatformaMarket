@@ -118,7 +118,7 @@ export default function AdminLogin() {
         body: JSON.stringify({ provider, idToken }),
       });
       if (!session.activeOrganizationId) {
-        throw new Error("Для этого аккаунта не найден доступ к DentMarket.");
+        throw new Error("Для этого аккаунта не найден доступ к PlatformaMarket.");
       }
       setPrimary(session);
       setLocalPassword("");
@@ -235,7 +235,7 @@ export default function AdminLogin() {
         !hasOperatorOrganizationAccess(organizations, elevated.activeOrganizationId)
       ) {
         throw new Error(
-          "Этот раздел доступен только команде DentMarket.",
+          "Этот раздел доступен только команде PlatformaMarket.",
         );
       }
       sessionStorage.setItem(
@@ -269,9 +269,9 @@ export default function AdminLogin() {
       <section className={styles.card} aria-labelledby="admin-login-title">
         <header className={styles.cardHeader}>
           <div className={styles.brand}>
-            <span className={styles.brandMark}>DM</span>
+            <span className={styles.brandMark}>PM</span>
             <span>
-              <strong>DentMarket</strong>
+              <strong>PlatformaMarket</strong>
               <small>Операторский кабинет</small>
             </span>
           </div>

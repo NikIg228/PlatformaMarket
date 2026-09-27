@@ -114,7 +114,7 @@ export function OrganizationQuickCreate() {
               <DmField label="Юридическое название" required>
                 <DmInput name="legalName" required minLength={2} />
               </DmField>
-              <DmField label="Название в DentMarket" required>
+              <DmField label="Название в PlatformaMarket" required>
                 <DmInput name="displayName" required minLength={2} />
               </DmField>
               <DmField label="БИН" hint="12 цифр" required>

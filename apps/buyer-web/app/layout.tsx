@@ -10,7 +10,7 @@ import { SupplierCatalogSession } from "./supplier-catalog-session";
 const manrope = Manrope({ subsets: ["cyrillic", "latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "DentMarket для клиник",
+  title: "PlatformaMarket для клиник",
   description: "Каталог и закупки для стоматологических клиник",
 };
 

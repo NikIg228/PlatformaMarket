@@ -81,7 +81,7 @@ export function SupplierDocuments({
           <EmptyState
             icon={<Money24Regular />}
             title="Платёжный профиль не подключён"
-            description="Для настройки напишите команде DentMarket."
+            description="Для настройки напишите команде PlatformaMarket."
           />
         ) : (
           <DmTable

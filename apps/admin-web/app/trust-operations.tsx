@@ -289,7 +289,7 @@ export function TrustOperations() {
                             {suppliers.find(
                               ({ organizationId }) =>
                                 organizationId === incident.impactedOrganizationId,
-                            )?.organization.displayName ?? "DentMarket"}
+                            )?.organization.displayName ?? "PlatformaMarket"}
                           </span>
                         </div>
                         <StatusTag tone={severityTone(incident.severity)}>

@@ -149,11 +149,11 @@ export function ProductCorrectionsPanel({ api, offers, supplierId }: { api: Mark
       </form>
       <div className={styles.history}>
         <div className={styles.historyHeading}><div><span className={styles.kicker}>История обращений</span><h3>Мои исправления</h3></div><span className={styles.historyCount}>{items.length}</span></div>
-        {historyLoading ? <LoadingState label="Загружаем историю исправлений" /> : historyError ? <div className={styles.historyError} role="alert"><strong>{historyError}</strong><DmButton appearance="secondary" onClick={() => void load()}>Повторить</DmButton></div> : !items.length ? <EmptyState title="Исправлений пока нет" description="Здесь появятся ваши правки и решения DentMarket." /> : items.slice(0, 12).map((item) => <article className={styles.request} key={item.id}>
+        {historyLoading ? <LoadingState label="Загружаем историю исправлений" /> : historyError ? <div className={styles.historyError} role="alert"><strong>{historyError}</strong><DmButton appearance="secondary" onClick={() => void load()}>Повторить</DmButton></div> : !items.length ? <EmptyState title="Исправлений пока нет" description="Здесь появятся ваши правки и решения PlatformaMarket." /> : items.slice(0, 12).map((item) => <article className={styles.request} key={item.id}>
           <div className={styles.requestHeader}><strong>{item.product.canonicalName}</strong><StatusTag tone={item.status === "REJECTED" ? "danger" : item.status === "PENDING" ? "warning" : "success"}>{statusLabel[item.status]}</StatusTag></div>
           <small>{fieldLabel(item.field)} · {formatDate(item.createdAt, true)}</small>
           <p>{item.appliedValue ?? item.proposedValue}</p>
-          {item.moderatorComment ? <span>Комментарий DentMarket: {item.moderatorComment}</span> : null}
+          {item.moderatorComment ? <span>Комментарий PlatformaMarket: {item.moderatorComment}</span> : null}
         </article>)}
       </div>
     </div>

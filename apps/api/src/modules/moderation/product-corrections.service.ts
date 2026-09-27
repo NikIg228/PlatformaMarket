@@ -133,7 +133,7 @@ export class ProductCorrectionsService {
           field: request.field,
           value: acceptedValue,
           sourceType: "SUPPLIER_FEED",
-          sourceName: "Запрос поставщика, проверенный DentMarket",
+          sourceName: "Запрос поставщика, проверенный PlatformaMarket",
           sourceUrl: request.evidenceUrl,
           confidence: 0.9,
           verified: true,

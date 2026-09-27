@@ -13,7 +13,7 @@ const capabilities = [
 const onboarding = [
   ["Заявка", "Заполните профиль компании и укажите категории."],
   ["Проверка", "Мы проверим реквизиты и разрешительные документы."],
-  ["Договор", "Подпишите договор с DentMarket через ЭЦП."],
+  ["Договор", "Подпишите договор с PlatformaMarket через ЭЦП."],
   ["Продажи", "Загрузите остатки и откройте предложения для клиник."],
 ];
 
@@ -29,8 +29,8 @@ export default function SuppliersPage() {
         <div className={styles.actions}><a className={styles.primary} href={registrationUrl("supplier")}>Стать поставщиком</a><a className={styles.textLink} href={supplierAppUrl}>Открыть кабинет</a></div>
       </div>
       <aside className={styles.heroAside}>
-        <p>Продажи через DentMarket</p>
-        <figure><img src="/catalog/illustrations/implantology-category.png" alt="Материалы поставщика в каталоге DentMarket" fetchPriority="high" /></figure>
+        <p>Продажи через PlatformaMarket</p>
+        <figure><img src="/catalog/illustrations/implantology-category.png" alt="Материалы поставщика в каталоге PlatformaMarket" fetchPriority="high" /></figure>
         <strong>Цена → остаток → заказ → документ</strong>
         <dl><div><dt>География</dt><dd>Казахстан</dd></div><div><dt>Валюта</dt><dd>KZT</dd></div><div><dt>Договор</dt><dd>ЭЦП · 12 месяцев</dd></div></dl>
       </aside>
@@ -47,6 +47,6 @@ export default function SuppliersPage() {
     </section>
 
     <section className={styles.cta}><h2>Подключите ассортимент к новому каналу продаж</h2><a className={styles.primary} href={registrationUrl("supplier")}>Подать заявку</a></section>
-    <footer className={styles.footer}><Link href="/">DentMarket KZ</Link><Link href="/about">О DentMarket</Link><span>© 2026</span></footer>
+    <footer className={styles.footer}><Link href="/">PlatformaMarket</Link><Link href="/about">О PlatformaMarket</Link><span>© 2026</span></footer>
   </main>;
 }

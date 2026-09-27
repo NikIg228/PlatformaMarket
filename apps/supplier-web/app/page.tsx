@@ -564,8 +564,8 @@ export default function SupplierWorkspace() {
     <AppShell
       {...logout}
       onLogout={handoff ? logout.onLogout : undefined}
-      productName="DentMarket"
-      productMark="DM"
+      productName="PlatformaMarket"
+      productMark="PM"
       workspaceLabel="Кабинет поставщика"
       userName={supplier.name}
       userMeta={`${supplier.city} · Поставщик`}

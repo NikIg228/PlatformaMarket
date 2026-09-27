@@ -59,7 +59,7 @@ const navigation: Array<{ id: SectionId; label: string; icon: ReactNode }> = [
 const sectionMeta: Record<SectionId, { title: string; description: string }> = {
   overview: {
     title: "Обзор",
-    description: "Главные показатели и задачи команды DentMarket.",
+    description: "Главные показатели и задачи команды PlatformaMarket.",
   },
   organizations: {
     title: "Организации",
@@ -88,7 +88,7 @@ const sectionMeta: Record<SectionId, { title: string; description: string }> = {
       : "История действий оператора и изменений в системе.",
   },
   settings: {
-    title: "Настройки DentMarket",
+    title: "Настройки PlatformaMarket",
     description: "Основные настройки и доступность разделов.",
   },
 };
@@ -117,7 +117,7 @@ export default function OperationsWorkspace() {
 
   const overview = (
     <>
-      <section className={styles.statusPanel} aria-label="Состояние DentMarket">
+      <section className={styles.statusPanel} aria-label="Состояние PlatformaMarket">
         <div>
           <div className={styles.statusTitle}>Магазин работает</div>
           <div className={styles.statusText}>Поиск, корзина, заказы и документы доступны.</div>
@@ -177,10 +177,10 @@ export default function OperationsWorkspace() {
 
   return (
     <AppShell
-      productName="DentMarket"
-      productMark="DM"
+      productName="PlatformaMarket"
+      productMark="PM"
       workspaceLabel="Операторский кабинет"
-      userName="Команда DentMarket"
+      userName="Команда PlatformaMarket"
       userMeta="Оператор"
       navigation={navigation}
       activeNavigation={active}

@@ -830,7 +830,7 @@ export function IntegrationOperations() {
                           }
                         />
                       </DmField>
-                      <DmField label="Карточка в DentMarket" required>
+                      <DmField label="Карточка в PlatformaMarket" required>
                         <DmSelect name="internalId" required>
                           {mappingType === "WAREHOUSE"
                             ? warehouses.map((warehouse) => (

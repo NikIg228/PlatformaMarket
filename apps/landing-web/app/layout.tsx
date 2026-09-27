@@ -9,10 +9,10 @@ import "./styles.css";
 const manrope = Manrope({ subsets: ["cyrillic", "latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "DentMarket KZ: закупки для стоматологий",
+  title: "PlatformaMarket: закупки для стоматологий",
   description: "Материалы и оборудование для стоматологий Казахстана: сравнение цен, наличие, документы и договор с ЭЦП.",
   keywords: ["стоматология", "закупки", "B2B marketplace", "Казахстан", "стоматологические материалы"],
-  openGraph: { title: "DentMarket KZ", description: "Прозрачные закупки для клиник и единый канал продаж для поставщиков.", type: "website", locale: "ru_KZ" },
+  openGraph: { title: "PlatformaMarket", description: "Прозрачные закупки для клиник и единый канал продаж для поставщиков.", type: "website", locale: "ru_KZ" },
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {

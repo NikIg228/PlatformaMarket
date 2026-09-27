@@ -187,7 +187,7 @@ export function CatalogFoundation() {
         <div>
           <span className={styles.eyebrow}>Единый каталог</span>
           <h2 id="catalog-foundation-title">Мастер-карточки и варианты</h2>
-          <p>Создание и версионное управление canonical-данными DentMarket.</p>
+          <p>Создание и версионное управление canonical-данными PlatformaMarket.</p>
         </div>
         <DmButton appearance="secondary" icon={<ArrowClockwise20Regular />} onClick={() => void load()} disabled={loading || working}>
           {loading ? "Обновляем…" : "Обновить"}

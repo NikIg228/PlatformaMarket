@@ -49,7 +49,7 @@ export class RegistrationResumeService {
       const link = new URL("/register/resume", config.AUTH_EMAIL_BASE_URL);
       link.hash = new URLSearchParams({ token }).toString();
       try {
-        await deliverAuthMail(config, { to: registration.email, subject: "Продолжение регистрации DentMarket", text: `Чтобы завершить начатую регистрацию, откройте ${link.href}\nСсылка действует до ${record.expiresAt.toISOString()}. Если вы не отправляли запрос, проигнорируйте письмо.` });
+        await deliverAuthMail(config, { to: registration.email, subject: "Продолжение регистрации PlatformaMarket", text: `Чтобы завершить начатую регистрацию, откройте ${link.href}\nСсылка действует до ${record.expiresAt.toISOString()}. Если вы не отправляли запрос, проигнорируйте письмо.` });
       } catch {
         await this.prisma.idempotencyRecord.updateMany({ where: { id: record.id, responseCode: 200 }, data: { responseCode: 503 } });
         this.logger.warn("registration_resume_delivery_failed");

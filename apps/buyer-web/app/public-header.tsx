@@ -73,10 +73,10 @@ export function PublicHeader({ active, baseHref = "/", query = "", searching = f
 
   return (
     <header className={`${styles.header} ${onSearch ? styles.headerCatalog : styles.headerSimple}`}>
-      <Link className={styles.brand} href={baseHref} aria-label="DentMarket, магазин">
-        <span className={styles.mark}>DM</span>
+      <Link className={styles.brand} href={baseHref} aria-label="PlatformaMarket, магазин">
+        <span className={styles.mark}>PM</span>
         <span className={styles.brandCopy}>
-          <strong>DentMarket</strong>
+          <strong>PlatformaMarket</strong>
           <small>Закупки для стоматологий</small>
         </span>
       </Link>
@@ -88,7 +88,7 @@ export function PublicHeader({ active, baseHref = "/", query = "", searching = f
           Поставщикам
         </Link>
         <Link className={active === "about" ? styles.active : undefined} href="/about">
-          О DentMarket
+          О PlatformaMarket
         </Link>
       </nav>
       {onSearch ? (
