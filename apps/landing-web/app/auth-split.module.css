@@ -1,0 +1,10 @@
+@media (min-width: 901px) {
+  /* Override the shared auth layouts without changing their mobile stacking. */
+  .split.split {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .split > * {
+    min-width: 0;
+  }
+}

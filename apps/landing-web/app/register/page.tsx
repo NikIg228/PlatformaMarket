@@ -2,6 +2,7 @@
 import { authRegistrationAcceptedSchema } from "@marketplace/schemas";
 import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
 import { useProductReturn } from "../use-product-return";
+import styles from "../auth-split.module.css";
 
 import {
   DmButton,
@@ -196,7 +197,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="registrationPage">
+    <main className={`registrationPage ${styles.split}`}>
       <aside className="registrationAside">
         <AuthBrand />
         <div>

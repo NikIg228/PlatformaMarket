@@ -3,6 +3,7 @@ import { authForgotAcceptedSchema } from "@marketplace/schemas";
 import Link from "next/link";
 import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
 import { useProductReturn } from "../use-product-return";
+import styles from "../auth-split.module.css";
 
 import Script from "next/script";
 import { DmButton, DmField, DmInput, DmSelect } from "@marketplace/ui";
@@ -173,7 +174,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="loginPage">
+    <main className={`loginPage ${styles.split}`}>
       {hasGoogle ? (
         <Script
           src="https://accounts.google.com/gsi/client?hl=ru"
@@ -190,7 +191,6 @@ export default function LoginPage() {
       <section className="loginIntro">
         <AuthBrand href={buyerAppUrl} />
         <div>
-          <p className="eyebrow">Вход в PlatformaMarket</p>
           <h1>Продолжите работу в своём кабинете</h1>
           <p>Закупайте для клиники или управляйте продажами и заказами.</p>
         </div>
@@ -200,9 +200,7 @@ export default function LoginPage() {
       </section>
       <section className="loginPanel" aria-labelledby="login-title">
         <div className="loginCard">
-          <p className="eyebrow">Вход</p>
           <h2 id="login-title">Войдите в аккаунт</h2>
-          <p>Доступные организации и кабинеты определяются после входа.</p>
           <form className="emailLoginForm" onSubmit={emailLogin}>
             <DmField label="Рабочий email" required>
               <DmInput
@@ -273,7 +271,6 @@ export default function LoginPage() {
               finally { setBusyAction(null); }
             }}>Открыть выбранную организацию</DmButton>
           </div> : null}
-          <a className="backLink" href={buyerAppUrl}>Посмотреть публичный каталог</a>
           {feedback ? <AuthNotice feedback={feedback} /> : null}
           <p className="loginSignup">
             Нет аккаунта?{" "}
