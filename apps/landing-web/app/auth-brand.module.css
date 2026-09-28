@@ -1,0 +1,12 @@
+.logo {
+  display: block;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.link strong.name {
+  display: block;
+}

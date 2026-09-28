@@ -2,13 +2,14 @@
 
 import { DmButton } from "@marketplace/ui";
 import type { AuthCapability, AuthFeedback } from "./auth-client";
+import styles from "./auth-brand.module.css";
 
 export function AuthBrand({ href = "/" }: { href?: string }) {
   return (
-    <a className="brand" href={href} aria-label="PlatformaMarket">
-      <span aria-hidden="true">PM</span>
-      <strong>
-        PlatformaMarket
+    <a className={`brand ${styles.link}`} href={href} aria-label="Platforma Market">
+      <img className={styles.logo} src="/brand/platforma-logo.webp" width={56} height={56} alt="" />
+      <strong className={styles.name}>
+        Platforma Market
       </strong>
     </a>
   );
