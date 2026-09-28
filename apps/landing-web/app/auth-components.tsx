@@ -63,7 +63,7 @@ export function AuthNotice({ feedback }: { feedback: AuthFeedback }) {
       className={`authNotice authNotice-${feedback.kind}`}
       role={feedback.kind === "error" ? "alert" : "status"}
     >
-      <strong>{feedback.kind === "error" ? "Нужно исправить" : "Готово"}</strong>
+      <strong>{feedback.title ?? (feedback.kind === "error" ? "Нужно исправить" : "Готово")}</strong>
       <span>{feedback.message}</span>
       {feedback.requestId ? (
         <small>Код обращения: {feedback.requestId}</small>

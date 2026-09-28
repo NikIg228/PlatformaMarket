@@ -29,6 +29,7 @@ export class AuthRequestError extends Error {
 
 export type AuthFeedback = {
   kind: "error" | "success";
+  title?: string;
   message: string;
   requestId?: string;
 };
@@ -60,6 +61,9 @@ export function feedbackFromError(
   }
   return {
     kind: "error",
+    title: cause instanceof TypeError || (cause instanceof Error && ["TimeoutError", "AbortError"].includes(cause.name))
+      ? "Не удалось связаться с сервером"
+      : undefined,
     message: cause instanceof TypeError || (cause instanceof Error && ["TimeoutError", "AbortError"].includes(cause.name))
       ? "Сервер не ответил. Данные формы сохранены — проверьте соединение и повторите вход."
       : cause instanceof Error ? cause.message : fallback,
