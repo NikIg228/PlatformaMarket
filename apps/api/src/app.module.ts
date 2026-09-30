@@ -25,7 +25,6 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
 import { SearchModule } from "./modules/search/search.module";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { APP_FILTER, APP_GUARD } from "@nestjs/core";
-import { SentryGlobalFilter } from "@sentry/nestjs/setup";
 import { environment } from "./platform/config/environment";
 import { BackgroundJobsModule } from "./platform/jobs/background-jobs.module";
 import { SecurityModule } from "./platform/security/security.module";
@@ -47,6 +46,9 @@ import { RedisThrottlerStorage } from "./platform/security/rate-limit.storage";
 
 const config = environment();
 const runtime = runtimeCapabilities(config.PROCESS_ROLE);
+const sentryProviders = config.SENTRY_DSN
+  ? [{ provide: APP_FILTER, useClass: (require("@sentry/nestjs/setup") as typeof import("@sentry/nestjs/setup")).SentryGlobalFilter }]
+  : [];
 
 @Module({
   imports: [
@@ -120,7 +122,7 @@ const runtime = runtimeCapabilities(config.PROCESS_ROLE);
   providers: [
     RuntimeReadinessService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
-    { provide: APP_FILTER, useClass: SentryGlobalFilter },
+    ...sentryProviders,
   ],
 })
 export class AppModule {}

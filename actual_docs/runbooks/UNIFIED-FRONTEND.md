@@ -1,7 +1,7 @@
 # Единый frontend: локальный запуск и границы перехода
 
 Решение: [ADR 015](../architecture/adr/015-unified-frontend.md).
-Состояние проверок: [checkpoint](../governance/task-state/UNIFIED-APPLICATION-2026-09-28.md).
+Состояние проверок: [Acceptance Matrix](../governance/PROJECT_ACCEPTANCE_MATRIX.md).
 
 После обычной настройки PostgreSQL, Redis, API env и существующей схемы:
 
@@ -28,7 +28,9 @@ origin нужен повторный вход: cookies старых портов
 `npm run start --workspace=@marketplace/web` запускает production-артефакт;
 API запускается отдельно. Docker target `web` использует тот же новый build;
 его внутренний API endpoint настраивается до сборки, поскольку Next rewrites
-фиксируются в артефакте. Контейнерный выпуск и production ingress ещё не приняты.
+фиксируются в артефакте. Release matrix теперь api/web; production Compose и
+Caddy используют единый WEB_DOMAIN с /api на api4000. Эта конфигурация проверяется
+отдельно от live deployment, который ещё не принят.
 
 Исходные компоненты временно остаются в старых app-каталогах. Новый Next
 импортирует их напрямую; старые HTTP-процессы для него не нужны. Assets и
@@ -42,18 +44,34 @@ API запускается отдельно. Docker target `web` использ�
 порты освобождены, затем `npm run dev:legacy`. Для старых сборок —
 `npm run build:legacy`. Это возвращает прежние четыре web-процесса и gateway
 без отката схемы или данных. Старые Docker targets сохранены отдельным build.
-Реальный пробный запуск всего legacy runtime в текущей приёмке не выполнялся.
+Для production legacy images используется compose.production.legacy.yaml и
+infra/Caddyfile.legacy с прежними доменами. Применять только проверенный ранее
+выпущенный legacy tag: новый release выпускает api/web. Реальный пробный rollout/
+rollback и перенос cookies/origins требуют отдельной приёмки.
 
 ## Проверки и следующие границы
 
-`npm run typecheck`, `npm test`, scoped `playwright.unified.config.ts`,
+`npm run typecheck`, `npm test`, `npm run verify:web`,
 `node --test scripts/unified-frontend.test.mjs scripts/local-development-profile.test.mjs`
 и web build. Браузерные fixtures пишут только в разрешённую disposable test DB.
-Стандартный legacy `verify:web` пока остаётся отдельной исторической приёмкой;
-узкий unified smoke не заменяет весь набор продуктовых сценариев.
+verify:web через db:test проверяет адрес/имя disposable DB, выбирает существующего
+synthetic public buyer и запускает собственные API4012/web3000 с JWT/pilot.
+Занятые порты блокируют старт; dev-сервер не переиспользуется. Основной набор:
+unified-application, public-catalog, workspace-rebuild, supplier-capabilities.
+Legacy набор сохранён как verify:web:legacy. FlowB3 в основном CI также использует
+apps/web: публикация оператором с настоящим fixture JWT, публичный каталог и
+прежние API assertions импорта/отката. API-only части сохраняют development
+actor headers только на собственном isolated test API; browser использует JWT.
+Старый вариант доступен через verify:flow-b3:legacy, включая прежние build budgets.
+Это не полная продуктовая приёмка POST-FULL.
 
-До production: согласовать origin оператора/домены, включить новый web в release
-pipeline вместо старой матрицы, принять Docker/ingress, ограничения uploads и
+После production build `npm run verify:web-bundle` проверяет JS manifests обоих
+public catalog entries: максимум24 файлов,1,500,000raw/450,000gzip bytes. Лимит
+не повышался. Это консервативный граф client modules; фактические network bytes
+измеряет e2e:performance (3cold/warm samples на390/1440), а не этот manifest.
+
+До production: согласовать origin оператора/домены, принять Docker/ingress в живой
+среде, ограничения uploads и
 streaming, полную матрицу прав/отзыва/многовкладочности, миграцию внешних ссылок
-и пробный rollout/rollback. CI/release сейчас не запускались: push отложен
-владельцем. Новые внешние интеграции и отложенные оплаты не входят в переход.
+и пробный rollout/rollback. Код опубликован30.09 в2a816c3; CI и dependency
+audit завершились FAIL, CodeQL PASS. Release/deployment не запускались. Новые внешние интеграции и отложенные оплаты не входят в переход.

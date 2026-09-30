@@ -28,7 +28,7 @@ The adapter sends `Authorization: Bearer ...`, requires HTTPS, retries 429/5xx/n
 
 ## MySklad
 
-Use `provider: "MOYSKLAD"` and encrypted `credentials.accessToken`. The default API base is the official v1.2 endpoint; an HTTPS `configuration.baseUrl` may be supplied for a compatible sandbox. Order and reservation payloads must contain a mapped `externalPayload`; `idempotencyKey` is sent as a header and is never copied into the MySklad document body. Reservation release remains disabled until the tenant-specific order status mapping is configured.
+Use `provider: "MOYSKLAD"` and encrypted `credentials.accessToken`. The API base is fixed to the official v1.2 endpoint in moysklad.adapter.ts; configuration.baseUrl does not enable an alternative sandbox host (ADR007). Order and reservation payloads must contain a mapped `externalPayload`; `idempotencyKey` is sent as a header and is never copied into the MySklad document body. Reservation release remains disabled until the tenant-specific order status mapping is configured.
 
 ## EDS gateway
 

@@ -1,2 +1,1 @@
-import BuyerWorkspace from "../../../buyer-web/app/buyer-workspace";
-export default function CatalogPage() { return <BuyerWorkspace searchParams={Promise.resolve({})} publicCatalog />; }
+export { default } from "../../../buyer-web/app/features/catalog/public-catalog";

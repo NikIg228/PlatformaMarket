@@ -1,3 +1,4 @@
+import { workspaceCorrectionOfferPageSchema, workspaceInventoryPageSchema, workspaceLotPageSchema, workspaceReservationPageSchema, workspaceOverridePageSchema } from "@marketplace/schemas";
 import { orderWorkflowCommandSchema, orderWorkflowResponseSchema, orderWorkflowResultSchema } from "@marketplace/schemas";
 import { workspacePageQuerySchema, workspaceOrderQuerySchema, workspaceOrderPageSchema, workspaceOfferSchema, workspaceOfferPageSchema, workspaceCartPageSchema, workspaceSummarySchema } from "@marketplace/schemas";
 import { saveOfferCommercialSchema, offerCommercialStateSchema } from "@marketplace/schemas";
@@ -178,6 +179,11 @@ const coreZodSchemas = {
   WorkspaceOrderPage: workspaceOrderPageSchema,
   WorkspaceOffer: workspaceOfferSchema,
   WorkspaceOfferPage: workspaceOfferPageSchema,
+  WorkspaceCorrectionOfferPage: workspaceCorrectionOfferPageSchema,
+  WorkspaceInventoryPage: workspaceInventoryPageSchema,
+  WorkspaceLotPage: workspaceLotPageSchema,
+  WorkspaceReservationPage: workspaceReservationPageSchema,
+  WorkspaceOverridePage: workspaceOverridePageSchema,
   WorkspaceCartPage: workspaceCartPageSchema,
   WorkspaceSummary: workspaceSummarySchema,
   CartValidationResponse: cartValidationResponseSchema,

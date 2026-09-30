@@ -1,37 +1,25 @@
-# Admin web
+# Оператор площадки
 
-Операторский кабинет DentMarket: обзор платформы, организации и доступ,
-канонический каталог, импорт поставщиков, заказы и договоры, контроль доверия и
-настройки пилота.
+Актуально30.09.2026 для apps/web на2a816c3. /admin переиспользует
+apps/admin-web/app/page.tsx, /admin/login — отдельный операторский вход.
+Обычный пользовательский login/переключение организации не выдаёт operator
+authority. Привилегированная сессия/MFA и серверные permissions сохраняются.
 
-```bash
-npm run dev:admin
-```
+[admin-section-components.tsx](../../apps/admin-web/app/admin-section-components.tsx)
+уже динамически загружает разделы: организации/каталог, заявки/корректировки,
+договоры/поставщики, integration operations, assurance/settings/audit/trust.
+SupplierOperations разделён на setup/import/offers/inventory панели с общим
+hook внутри прежнего lazy section. Устранён измеренный двойной GET при выборе
+первого поставщика; устаревшие GET отменяются. Остальные крупные sections сами
+по себе не доказывают загрузку всех панелей на первом экране. Канонические
+требования панели — Product §23.4; полнота продукта не следует из этого refactor.
 
-В общем локальном окружении используйте `npm run dev` и открывайте
-`http://admin.localhost:3080`. Gateway также проксирует `/api` в core API.
+Операторский UI не является SQL-console, не подтверждает деньги на чужом
+банковском счёте по квитанции и не акцептует договор за клиента. Действия
+проходят защищённый API с actor/tenant/reason/audit.
 
-## Граница загрузки разделов
-
-Маршрут `/` синхронно подключает только оболочку и содержимое стартового
-overview: `LiveMetrics` и `OperationQueue`. Остальные 16 операторских панелей
-объявлены через `next/dynamic` в `app/admin-section-components.tsx` и загружаются
-после выбора соответствующего раздела. У каждой ленивой панели есть общий
-loading state из `packages/ui`.
-
-Fluent icons импортируются из family subpath, а не из root barrel. Это правило и
-список динамических границ проверяет `app/performance-boundaries.test.ts`.
-
-Production build автоматически запускает `scripts/verify-admin-bundle.mjs`.
-Для `/` закреплены пределы: не более 20 initial JS-файлов, 1 050 000 raw bytes и
-330 000 gzip bytes.
-
-Контрольное измерение 2026-09-04:
-
-- до разделения: 26 JS-файлов, 1 071 814 raw / 314 041 gzip bytes;
-- после разделения: 16 JS-файлов, 937 674 raw / 281 851 gzip bytes;
-- route page chunk: 151 336 → 17 676 raw bytes.
-
-Production browser smoke подтвердил overview с реальными метриками и очередью,
-а переход в «Организации» отдельно догрузил три JS-chunk и данные этого раздела;
-ошибок и предупреждений в console не было.
+Полнота всех панелей, аналитики/обращений и product metrics ещё не принята.
+Старые AUD-FIX08/09 не закрыты одним наличие UI.
+[Foundation](../backend/DENTMARKET_BACKEND_FOUNDATION_V2.md),
+[Matrix](../governance/PROJECT_ACCEPTANCE_MATRIX.md),
+[аудит](../architecture/CODEBASE-AUDIT-2026-09-30.md).

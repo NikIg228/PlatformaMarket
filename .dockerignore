@@ -9,4 +9,15 @@ node_modules
 backups
 coverage
 *.log
-.env
+.env*
+**/.env*
+.codex
+.tmp
+.turbo
+**/.turbo
+outputs
+actual_docs
+.local-storage*
+.local-pg*
+apps/e2e/test-results
+apps/e2e/playwright-report

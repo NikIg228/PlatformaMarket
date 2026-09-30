@@ -6,7 +6,7 @@ import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
 import { useBuyerSession } from "../../use-buyer-session";
 import { loginUrl, supplierAppUrl } from "../../public-links";
 import styles from "./header.module.css";
-import { workspacePath } from "@marketplace/api-client";
+import { workspacePath } from "@marketplace/api-client/frontend-routes";
 import { catalogContext } from "./navigation";
 import { resilientGet } from "../../resilient-get";
 

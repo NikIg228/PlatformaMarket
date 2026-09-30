@@ -1,5 +1,6 @@
 "use client";
 import { workspacePath } from "@marketplace/api-client";
+import { catalogMediaSource as mediaSource } from "./catalog/catalog-media-source";
 import { catalogPriceToMinor } from "./catalog/catalog-view-model";
 import { CompactCatalog } from "./features/catalog/compact-catalog";
 import { useVerifiedSession, sessionApiContext, logoutSession } from "./workspace-session";
@@ -119,26 +120,6 @@ const ruCount = (count: number, one: string, few: string, many: string) => {
 };
 
 
-const rejectedProductAsset = (value: string | null | undefined) =>
-  /(logo|favicon|icon|sprite|avatar|cart|basket|loading|pixel|captcha|phone[-_]?ico|placeholder|no[-_]?image|default[-_]?image|\/(?:themes?|templates?|assets\/icons?|images?\/icons?)\/)/i.test(
-    value ?? "",
-  );
-const mediaSource = (media: SearchMedia | undefined) => {
-  if (!media || media.metadata?.exactProductPhoto !== true) return null;
-  if (
-    rejectedProductAsset(
-      media.metadata.sourceImageUrl ?? media.sourceUrl ?? media.securePath,
-    )
-  )
-    return null;
-  if (media.securePath?.startsWith("/catalog/products/"))
-    return media.securePath;
-  if (media.securePath) {
-    const apiUrl = API_URL;
-    return `${apiUrl}${media.securePath}`;
-  }
-  return media.sourceUrl;
-};
 const bestPromotionPercent = (product: SearchProduct) =>
   frontendFeatures.promotions ? product.offers.reduce(
     (best, offer) => Math.max(best, offer.promotion?.percentage ?? 0),

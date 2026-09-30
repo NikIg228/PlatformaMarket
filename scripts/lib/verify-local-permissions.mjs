@@ -1,4 +1,5 @@
 import { localDevelopmentPermissions } from "./local-development-permissions.mjs";
+import { verifySupplierAuxiliaryReads } from "./verify-supplier-auxiliary-reads.mjs";
 
 export async function verifyLocalPermissions({ prisma, supplierId, offerId, createBuyer, request, runId, assert }) {
   const [fullUser, limitedUser, foreignUser] = await Promise.all([91, 92, 93].map(index => createBuyer(index)));
@@ -12,6 +13,7 @@ export async function verifyLocalPermissions({ prisma, supplierId, offerId, crea
   const full = await grant(fullUser, supplierId, localDevelopmentPermissions.supplier, "full");
   const limited = await grant(limitedUser, supplierId, ["organization.view", "catalog.product.view"], "minimal");
   const foreign = await grant(foreignUser, foreignUser.organizationId, localDevelopmentPermissions.supplier, "foreign");
+  await verifySupplierAuxiliaryReads({ prisma, supplierId, full: full.identity, limited: limited.identity, foreign: foreign.identity, request, assert });
   for (const [profile, codes] of Object.entries(localDevelopmentPermissions)) {
     assert(new Set(codes).size === codes.length, `${profile} fixture has duplicate permissions`);
     assert(await prisma.permission.count({ where: { code: { in: codes } } }) === codes.length, `${profile} fixture references unavailable permission`);

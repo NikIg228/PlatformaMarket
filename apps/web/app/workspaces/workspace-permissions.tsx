@@ -5,7 +5,7 @@ import type { MarketplaceApiClient } from "@marketplace/api-client";
 import { useResource } from "./use-resource";
 
 export function WorkspacePermissions({ api, organizationId, children }: { api: MarketplaceApiClient; organizationId: string; children: ReactNode }) {
-  const load = useCallback(() => api.get<string[]>("/access-control/permissions"), [api, organizationId]);
+  const load = useCallback((signal: AbortSignal) => api.get<string[]>("/access-control/permissions", { signal }), [api, organizationId]);
   const resource = useResource(load);
   if (!resource.data) return resource.error ? <ErrorState description="Не удалось проверить права доступа." action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : <LoadingState label="Проверяем доступ" />;
   return <PermissionsProvider permissions={resource.error ? [] : resource.data}>

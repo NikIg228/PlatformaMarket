@@ -18,7 +18,9 @@ async function fixture(page: Page, permissions = ["catalog.offer.edit", "catalog
       else body = { items: [candidate, ...(state.submitted ? [{ ...candidate, id: "44444444-4444-4444-8444-444444444444", status: "PENDING", rejectionReason: null }] : [])], nextCursor: null };
     } else if (path === `/suppliers/${organizationId}/inventory/balances`) body = [{ id: "balance", offerId: null, quantityOnHand: "10", quantityAvailable: "8", quantityReserved: "2", safetyStock: "0", freshnessStatus: "FRESH", updatedAt: candidate.createdAt, warehouse: { name: "Основной склад" }, productVariant: { product: { canonicalName: "Тестовая насадка" } }, lots: [{ id: "lot", lotNumber: "LOT-7", status: "AVAILABLE", quantityAvailable: "8", expirationDate: "2027-09-30T00:00:00.000Z" }], reservations: [{ id: "reserve", quantity: "2", expiresAt: "2026-10-01T10:00:00.000Z" }] }];
     else if (path === `/suppliers/${organizationId}/inventory/overrides` || path === `/suppliers/${organizationId}/offers` || path === "/moderation/product-corrections") body = [];
-    else if (path === "/workspaces/supplier/offers") body = { items: [], nextCursor: null };
+    else if (["/workspaces/supplier/offers", "/workspaces/supplier/correction-offers", "/workspaces/supplier/inventory-overrides"].includes(path)) body = { items: [], nextCursor: null };
+    else if (path === "/workspaces/supplier/inventory") body = { items: [{ id: "balance", offerId: null, quantityOnHand: "10", quantityAvailable: "8", quantityReserved: "2", safetyStock: "0", freshnessStatus: "FRESH", updatedAt: candidate.createdAt, warehouse: { name: "Основной склад" }, productVariant: { product: { canonicalName: "Тестовая насадка" } } }], nextCursor: null };
+    else if (path === "/workspaces/supplier/inventory/balance/lots") body = { items: [{ id: "lot", lotNumber: "LOT-7", status: "AVAILABLE", quantityAvailable: "8", expirationDate: "2027-09-30T00:00:00.000Z" }], nextCursor: null };
     else if (path === `/suppliers/${organizationId}/data-sources`) body = [{ id: "source", name: "Основной прайс", type: "CSV", status: "ACTIVE" }];
     else { state.unexpected.push(path); return route.fulfill({ status: 500, json: { message: `Unexpected fixture path ${path}` } }); }
     return route.fulfill({ json: body });
@@ -40,6 +42,7 @@ for (const width of [1440, 390]) test(`supplier restored functions and rejected 
   expect(state.writes).toEqual([{ proposedName: candidate.proposedName, proposedSku: "SKU-1", proposedBrand: candidate.proposedBrand, proposedGtin: null, rawSubmission: { description: "Упаковка 10 штук, исправленные сведения" } }]);
   await expect(page.getByRole("cell", { name: /Отклонено: Уточните упаковку/ })).toBeVisible();
   await page.getByRole("link", { name: "Партии и резервы", exact: true }).click();
+  await page.getByRole("button", { name: "Показать партии", exact: true }).click();
   await expect(page.getByRole("cell", { name: /LOT-7/ })).toBeVisible();
   await expect(page.getByText("10 / 8 / 2", { exact: false })).toBeVisible();
   await page.goBack();

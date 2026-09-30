@@ -1,3 +1,4 @@
+import { SupplierAuxiliaryReadsService } from "./supplier-auxiliary-reads.service";
 import { Module } from "@nestjs/common";
 import { InventoryModule } from "../inventory/inventory.module";
 import { SuppliersModule } from "../suppliers/suppliers.module";
@@ -11,5 +12,5 @@ import { OrderWorkflowService } from "./order-workflow.service";
 import { WorkspaceReadsController } from "./workspace-reads.controller";
 import { WorkspaceReadsService } from "./workspace-reads.service";
 
-@Module({ imports: [InventoryModule, SuppliersModule, IntegrationsModule, ComplianceModule, MarketplaceAgreementsModule], controllers: [CommerceController, OrderWorkflowController, WorkspaceReadsController], providers: [CommerceService, OrderWorkflowService, WorkspaceReadsService], exports: [CommerceService] })
+@Module({ imports: [InventoryModule, SuppliersModule, IntegrationsModule, ComplianceModule, MarketplaceAgreementsModule], controllers: [CommerceController, OrderWorkflowController, WorkspaceReadsController], providers: [SupplierAuxiliaryReadsService, CommerceService, OrderWorkflowService, WorkspaceReadsService], exports: [CommerceService] })
 export class CommerceModule {}

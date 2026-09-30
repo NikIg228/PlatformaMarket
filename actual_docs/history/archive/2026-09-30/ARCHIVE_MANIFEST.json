@@ -1,0 +1,2448 @@
+{
+  "sourceHead": "2a816c337bae15f6684318cf26d21bf6f71cb3c5",
+  "date": "2026-09-30",
+  "rule": "Historical text preserved; only Markdown link destinations rebased. semanticSha256 normalizes CRLF and excludes destinations.",
+  "entries": [
+    {
+      "original": "actual_docs/governance/task-state/CATALOG-FILTERS-2026-09-28.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/CATALOG-FILTERS-2026-09-28.md",
+      "kind": "archived",
+      "originalSha256": "f675fb39e1e3604db04698f1e6a79fb9966b301c70a0708eb3352d13e04b40b5",
+      "archivedSha256": "f675fb39e1e3604db04698f1e6a79fb9966b301c70a0708eb3352d13e04b40b5",
+      "semanticSha256": "5006d48e74b421fdf76fffd469f5c062dcfaa21c0569a1f5145941f7a542c48e"
+    },
+    {
+      "original": "actual_docs/governance/task-state/CATALOG-LAYOUT-2026-09-28.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/CATALOG-LAYOUT-2026-09-28.md",
+      "kind": "archived",
+      "originalSha256": "03ee644956711d0b91c2d9ad3ff15342e80f87c024e78c212df1b119c0cd721e",
+      "archivedSha256": "03ee644956711d0b91c2d9ad3ff15342e80f87c024e78c212df1b119c0cd721e",
+      "semanticSha256": "a852060a959f6d0e4bbb31965ba8d6ff920e75bfbfbaf00c382213fb6941b489"
+    },
+    {
+      "original": "actual_docs/governance/task-state/CATALOG-NAVIGATION-2026-09-28.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/CATALOG-NAVIGATION-2026-09-28.md",
+      "kind": "archived",
+      "originalSha256": "81a97c2647ac7b483f812cf40648637c49a833d5cb35802307c3fa7291b55b97",
+      "archivedSha256": "81a97c2647ac7b483f812cf40648637c49a833d5cb35802307c3fa7291b55b97",
+      "semanticSha256": "aafba55368ea9e219fd4fe97d1d7fe09456ab0b0a4cdb0a963093b9834197902"
+    },
+    {
+      "original": "actual_docs/governance/task-state/CLINIC-LOGOUT-2026-09-29.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/CLINIC-LOGOUT-2026-09-29.md",
+      "kind": "archived",
+      "originalSha256": "838c03f87afedd02432ad279f35d2996fced81b76dd5cab573d596a57163109b",
+      "archivedSha256": "838c03f87afedd02432ad279f35d2996fced81b76dd5cab573d596a57163109b",
+      "semanticSha256": "3568aa6e6766c44176d1a03d31be6b750eacb1325b2ec6ac775d8e174a3f7417"
+    },
+    {
+      "original": "actual_docs/governance/task-state/CLINIC-SHARED-CATALOG-2026-09-29.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/CLINIC-SHARED-CATALOG-2026-09-29.md",
+      "kind": "archived",
+      "originalSha256": "d00e5eb865d6e74fa92c294ea0259026623a135bd2d37ab2f9ad6975f8a79253",
+      "archivedSha256": "d00e5eb865d6e74fa92c294ea0259026623a135bd2d37ab2f9ad6975f8a79253",
+      "semanticSha256": "1fe8a553c41178337c39ef8a0b46ab2af16d54eef399e0ab1176c2b77a7978c6"
+    },
+    {
+      "original": "actual_docs/governance/task-state/CONSOLIDATION-2026-09-21.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/CONSOLIDATION-2026-09-21.md",
+      "kind": "archived",
+      "originalSha256": "f475453eba8daaeb77bc069d11608de428ced16647e3f30010a90c5d92550378",
+      "archivedSha256": "f475453eba8daaeb77bc069d11608de428ced16647e3f30010a90c5d92550378",
+      "semanticSha256": "43a823dabca0b3a6cc6eb087b0f808aeadfaeac7016e29ca588b168356eede6b"
+    },
+    {
+      "original": "actual_docs/governance/task-state/CORE-04-2026-09-25.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/CORE-04-2026-09-25.md",
+      "kind": "archived",
+      "originalSha256": "862f4999842b4ec2359138d1d9416cf5257566b73af36bcbef931c8fa2b1a2eb",
+      "archivedSha256": "862f4999842b4ec2359138d1d9416cf5257566b73af36bcbef931c8fa2b1a2eb",
+      "semanticSha256": "fcd23e5d02ad9872155aac6c0e61d575ce8799303fb0783e9752de17fb956de5"
+    },
+    {
+      "original": "actual_docs/governance/task-state/DEMO-CATALOG-RESTORE-2026-09-29.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/DEMO-CATALOG-RESTORE-2026-09-29.md",
+      "kind": "archived",
+      "originalSha256": "e54a6bbf9f3d1fca4861ff20aefaf2388058ed3356301f3802f4c5318fddeee5",
+      "archivedSha256": "e54a6bbf9f3d1fca4861ff20aefaf2388058ed3356301f3802f4c5318fddeee5",
+      "semanticSha256": "74ac75f758d0c58f77a8e67dde6238b6dc8e8dfd34662f95e70521aab671ad99"
+    },
+    {
+      "original": "actual_docs/governance/task-state/DEV-RECOVERY-2026-09-30.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/DEV-RECOVERY-2026-09-30.md",
+      "kind": "archived",
+      "originalSha256": "3f0c5f1f4a8ce485090159e24c8cd29647f3f0daff7cecf5fc6d258eaf968ddf",
+      "archivedSha256": "3f0c5f1f4a8ce485090159e24c8cd29647f3f0daff7cecf5fc6d258eaf968ddf",
+      "semanticSha256": "8b409a784e737499bc6ca8c5be50b12b6a53bb48b8f816e739f545228a22a418"
+    },
+    {
+      "original": "actual_docs/governance/task-state/FRONTEND-DEMO-2026-09-28.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/FRONTEND-DEMO-2026-09-28.md",
+      "kind": "archived",
+      "originalSha256": "2f1fa29ec1b48b8ae291b9008eeb1020cce3d7925fdbb76d1e0db0311aa3d161",
+      "archivedSha256": "2f1fa29ec1b48b8ae291b9008eeb1020cce3d7925fdbb76d1e0db0311aa3d161",
+      "semanticSha256": "1069dcafb073fdc16cedb9d8e939b7838748fe6580f1b4a426fb0f87d327c470"
+    },
+    {
+      "original": "actual_docs/governance/task-state/INTERNAL-PILOT-2026-09-28.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/INTERNAL-PILOT-2026-09-28.md",
+      "kind": "archived",
+      "originalSha256": "98261acdad985f35b167e82eda42efc18e77ceda2eb057f270c042dd2178bf0d",
+      "archivedSha256": "98261acdad985f35b167e82eda42efc18e77ceda2eb057f270c042dd2178bf0d",
+      "semanticSha256": "2c80a62918167101f2494d70d39898b5fa85ab5cd6cf023a717b6bfe680938d3"
+    },
+    {
+      "original": "actual_docs/governance/task-state/MARKET-CI-REMEDIATION-2026-09-21.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/MARKET-CI-REMEDIATION-2026-09-21.md",
+      "kind": "archived",
+      "originalSha256": "8b85b11551b8b9511fc7e2cafb2f072226baa6c81623b22857d922933a2348a9",
+      "archivedSha256": "8b85b11551b8b9511fc7e2cafb2f072226baa6c81623b22857d922933a2348a9",
+      "semanticSha256": "a8bce4ee8da4c5b3c76c9a361bc373147752cedbbe6d626586ecd34d689fe2f4"
+    },
+    {
+      "original": "actual_docs/governance/task-state/PILOT-DOCS-2026-09-28.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/PILOT-DOCS-2026-09-28.md",
+      "kind": "archived",
+      "originalSha256": "79aa79cdf5642b70de41f1c58f70ec1df5181050703769960091fd3a07c6071f",
+      "archivedSha256": "79aa79cdf5642b70de41f1c58f70ec1df5181050703769960091fd3a07c6071f",
+      "semanticSha256": "7ce1e56ca6bc7d56153e1d8adfbbd0b80ed7ab89558b8d80181ba06f11c537f7"
+    },
+    {
+      "original": "actual_docs/governance/task-state/REBRAND-2026-09-28.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/REBRAND-2026-09-28.md",
+      "kind": "archived",
+      "originalSha256": "2d7429bf2de4dfbc66c81ab6d0a7d71458c631c4c82c96e3b92eebe4ff6e0004",
+      "archivedSha256": "2d7429bf2de4dfbc66c81ab6d0a7d71458c631c4c82c96e3b92eebe4ff6e0004",
+      "semanticSha256": "ac9acd7e925effa538fe0ff8d300637f4851a607860a6bae69676523ca62fa8d"
+    },
+    {
+      "original": "actual_docs/governance/task-state/UNIFIED-APPLICATION-2026-09-28.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/UNIFIED-APPLICATION-2026-09-28.md",
+      "kind": "archived",
+      "originalSha256": "a9671d67303d734f47ffd0acdaa4ff970cc844cb924ec9a8b530ae56bfd26c08",
+      "archivedSha256": "a9671d67303d734f47ffd0acdaa4ff970cc844cb924ec9a8b530ae56bfd26c08",
+      "semanticSha256": "fee017a80603327fa6ef93b20f95137fcf7014291db8c3e950284856653ba006"
+    },
+    {
+      "original": "actual_docs/governance/task-state/WORKSPACE-AUDIT-REMEDIATION-2026-09-30.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/WORKSPACE-AUDIT-REMEDIATION-2026-09-30.md",
+      "kind": "archived",
+      "originalSha256": "2e7bbf1301e4a0e5e930ed836c7812963756ecf6438a2049ca37f6e33449d656",
+      "archivedSha256": "3cea268bb1b7bf27f00d0bfb7911484809b10483edb529c821d95d3d381451ed",
+      "semanticSha256": "d85a62bba54d17666bec7c3477092654b91127c340a160c420fd88c912939126"
+    },
+    {
+      "original": "actual_docs/governance/task-state/WORKSPACE-REBUILD-2026-09-30.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/task-state/WORKSPACE-REBUILD-2026-09-30.md",
+      "kind": "archived",
+      "originalSha256": "91c2e50ebe705864d8df9991c78a982a726da4561d1f44992131b9216617a7be",
+      "archivedSha256": "91c2e50ebe705864d8df9991c78a982a726da4561d1f44992131b9216617a7be",
+      "semanticSha256": "fb55e164eb6c122e3716cce8123a40f4e542bda65669167b740d6d11789b4d63"
+    },
+    {
+      "original": "actual_docs/governance/SECURITY_R2E_2026-08-20.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/SECURITY_R2E_2026-08-20.md",
+      "kind": "archived",
+      "originalSha256": "490367b44b224a8197a05ce1a34e6d0255a4ea7f370c32cb3ab9e50bf682cb47",
+      "archivedSha256": "7d8249d97dc1459eee9dfaa183a8ce1be86a1ebf2301dfcd2fd0127779e359c9",
+      "semanticSha256": "afb07c57c05f89245fdca9e37829a7a61d174c782b826777d3258d3128387cf2"
+    },
+    {
+      "original": "actual_docs/governance/SECURITY_AUDIT_B4_5_2026-08-19.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/SECURITY_AUDIT_B4_5_2026-08-19.md",
+      "kind": "archived",
+      "originalSha256": "2714bdd2df889d049eae51224f14beb646cb1467c31725c2e094c84ef4c16597",
+      "archivedSha256": "084e9bf0bbc6d856c3fd41de1e863e0e9c1480432227c6ab6f51131ca72af7f7",
+      "semanticSha256": "65fbedaab2407afe3d2d0b4e1456420f5ffabba5abe7fb56b53e006d1aad7a02"
+    },
+    {
+      "original": "actual_docs/governance/PROJECT_STATE_SNAPSHOT_2026-09-08.md",
+      "destination": "actual_docs/history/archive/2026-09-30/governance/PROJECT_STATE_SNAPSHOT_2026-09-08.md",
+      "kind": "archived",
+      "originalSha256": "eb0fa825aa0ca5cb9f2387bcf6a36f9ef7661e4edcf71a779d9fb4c911096cb7",
+      "archivedSha256": "6f3a0481123589fdb1bf243c9901194f598d6d57aba4b149510175a781fcffbe",
+      "semanticSha256": "367d632559a1ccb2dc53757be47e58b4ce1cb50e178cc6889250da09dfc81cf3"
+    },
+    {
+      "original": "actual_docs/backend/DENTMARKET_BACKEND_AUDIT_2026-09-08.md",
+      "destination": "actual_docs/history/archive/2026-09-30/backend/DENTMARKET_BACKEND_AUDIT_2026-09-08.md",
+      "kind": "archived",
+      "originalSha256": "2cabbbfb271151ddd57368d3c76c52390fe03026842b2a875c17ecb6472bd3d5",
+      "archivedSha256": "3222997b996fce03a92c054c4fad30f8a72ea5b7870cde11d13d9f214d4d1b84",
+      "semanticSha256": "e3a6abfbfd2df2bc1fed02f8324ecdf7ad72db24277c7bdd6893fa7c5d1b9a3b"
+    },
+    {
+      "original": "actual_docs/backend/AUDIT_ACCESS_REMEDIATION_2026-09-15.md",
+      "destination": "actual_docs/history/archive/2026-09-30/backend/AUDIT_ACCESS_REMEDIATION_2026-09-15.md",
+      "kind": "archived",
+      "originalSha256": "458f6d71b3e5bf96d8d890c96ac9892cc332c202b9490a5385d1826b0e56ccc4",
+      "archivedSha256": "a6b0c56108341bd6af9f82a4020e7a0d502b3156b804ce8fd30079540b9ff5ef",
+      "semanticSha256": "6b5bae371370ef8a7e7f522fff96d93ff4dfee45601f5262900bba7eda732d77"
+    },
+    {
+      "original": "actual_docs/backend/AUDIT_PURCHASING_DOCUMENTS_REMEDIATION_2026-09-15.md",
+      "destination": "actual_docs/history/archive/2026-09-30/backend/AUDIT_PURCHASING_DOCUMENTS_REMEDIATION_2026-09-15.md",
+      "kind": "archived",
+      "originalSha256": "cd34de875ed56d12073e6c40a813151c6ff6060c8da81d22bc14f90e5a453f3a",
+      "archivedSha256": "1dfb35bb1f72b8dd3fd7c453a491454a4085e6392982d7373b9aa84846fbdafd",
+      "semanticSha256": "3c9b1bb5bd40b891ad7259c07091af25ae361cab7f7ae2136e202b2ea7cd8af4"
+    },
+    {
+      "original": "actual_docs/ui-ux/AUDIT_UX_POLISH_2026-09-15.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/AUDIT_UX_POLISH_2026-09-15.md",
+      "kind": "archived",
+      "originalSha256": "2fbcc0bb42b651fa2773ea3227bb0312c7d91389fa85208d6ec3abb3fbbe084e",
+      "archivedSha256": "c8048bf98e0137a3fd9a754ff413580c7e7e0314fcdb7457698872da1c15c183",
+      "semanticSha256": "cb0efc573bf75150c1804409a28ca8bb58c290102821e1652689b827f638b910"
+    },
+    {
+      "original": "actual_docs/ui-ux/DENTMARKET_UI_UX_CONSOLIDATION_STANDARD.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/DENTMARKET_UI_UX_CONSOLIDATION_STANDARD.md",
+      "kind": "archived",
+      "originalSha256": "779c4f3307cb58a19b1c900a0d8e8932751649204c04520fbdf7c2035cffd7a5",
+      "archivedSha256": "74f20e1d31a7750e6e753368c00b36d477e18aab7e43bf844677ce85c5f1c450",
+      "semanticSha256": "9f73c72dc7428853fc5ac7a902a6c6dbc78f11eccaf9ed62d5eaf2ddb9ffd1fa"
+    },
+    {
+      "original": "actual_docs/architecture/UNIFIED-APPLICATION-PLAN.md",
+      "destination": "actual_docs/history/archive/2026-09-30/architecture/UNIFIED-APPLICATION-PLAN.md",
+      "kind": "archived",
+      "originalSha256": "f144ae015eafc3ca8ce78ab4548463231162921fdce00577f58d09760ab6ba3a",
+      "archivedSha256": "4e2581de1bb5e51141adcb02cb32d6b39e01d9d843f3318ed78a9c18320f03c0",
+      "semanticSha256": "61a446985826c35a34fb55346884ccd5392b0086ea35dbf5f96b0c29f0ea412f"
+    },
+    {
+      "original": "actual_docs/integrations/supabase.md",
+      "destination": "actual_docs/history/archive/2026-09-30/integrations/supabase.md",
+      "kind": "archived",
+      "originalSha256": "694bea0248bb29cef28d03796c0a123199bb2646a1c83435e859de75f266b3c8",
+      "archivedSha256": "694bea0248bb29cef28d03796c0a123199bb2646a1c83435e859de75f266b3c8",
+      "semanticSha256": "bed7738b16254c54cd4cc95e4a25248dea9f0eea2caa808a723eb604592ae930"
+    },
+    {
+      "original": "actual_docs/supplier-flows/pdf-supplier-cycle.md",
+      "destination": "actual_docs/history/archive/2026-09-30/supplier-flows/pdf-supplier-cycle.md",
+      "kind": "archived",
+      "originalSha256": "38c5434c2c0fda026bf7409db972cf2c9b0657c6749243dd34b3e51eb4793df0",
+      "archivedSha256": "38c5434c2c0fda026bf7409db972cf2c9b0657c6749243dd34b3e51eb4793df0",
+      "semanticSha256": "8653acde0a870f84c966c5a64e4cf98326dd77f47b6e807d5999381de015dbc7"
+    },
+    {
+      "original": "actual_docs/ui-ux/TEST-PRODUCT-DESCRIPTIONS-2026-09-29.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/TEST-PRODUCT-DESCRIPTIONS-2026-09-29.md",
+      "kind": "archived",
+      "originalSha256": "1a3b24e515421b6ec716bf2369efedc956716a7fa51ae99666ca1be442ee8332",
+      "archivedSha256": "1a3b24e515421b6ec716bf2369efedc956716a7fa51ae99666ca1be442ee8332",
+      "semanticSha256": "2c384fb1e2ed4142da93226a37eeee426dc72a85cee9a75d244cffb21b4ce281"
+    },
+    {
+      "original": "actual_docs/ui-ux/references/2026-09-14/generation-prompts.txt",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/2026-09-14/generation-prompts.txt",
+      "kind": "archived",
+      "originalSha256": "589110c0e0fce05fd0cf581be9610efff2b819e1c32b37ef06bb063bb5029422",
+      "archivedSha256": "589110c0e0fce05fd0cf581be9610efff2b819e1c32b37ef06bb063bb5029422",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/2026-09-14/reference-a-emerald-precision.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/2026-09-14/reference-a-emerald-precision.png",
+      "kind": "archived",
+      "originalSha256": "4651309d765969765819bbd56e5aba5ed345ff4b3aebd3c2e7c04f80f31332d1",
+      "archivedSha256": "4651309d765969765819bbd56e5aba5ed345ff4b3aebd3c2e7c04f80f31332d1",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/2026-09-14/reference-b-quiet-editorial.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/2026-09-14/reference-b-quiet-editorial.png",
+      "kind": "archived",
+      "originalSha256": "dbafd27eccbd0ec244d5a9eba0ef4a560e94e3010e7eb1a9a9769fe3c5558458",
+      "archivedSha256": "dbafd27eccbd0ec244d5a9eba0ef4a560e94e3010e7eb1a9a9769fe3c5558458",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/2026-09-14/top-header/01-catalog.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/2026-09-14/top-header/01-catalog.png",
+      "kind": "archived",
+      "originalSha256": "3bb4dc7fb4d2d60237b79119911a9bd4422e16f7406953d5fc70a216b4329129",
+      "archivedSha256": "3bb4dc7fb4d2d60237b79119911a9bd4422e16f7406953d5fc70a216b4329129",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/2026-09-14/top-header/02-product-offers.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/2026-09-14/top-header/02-product-offers.png",
+      "kind": "archived",
+      "originalSha256": "961848a0afc4a3eec6c26667f8d2200f579f6e0fc701e93a398a88d2bab2518d",
+      "archivedSha256": "961848a0afc4a3eec6c26667f8d2200f579f6e0fc701e93a398a88d2bab2518d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/2026-09-14/top-header/03-cart-reprice.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/2026-09-14/top-header/03-cart-reprice.png",
+      "kind": "archived",
+      "originalSha256": "16ca10e0777ab1bd121b1db6cc79a64f8ed63e717c7f6f0045aacd2cceadd826",
+      "archivedSha256": "16ca10e0777ab1bd121b1db6cc79a64f8ed63e717c7f6f0045aacd2cceadd826",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/2026-09-14/top-header/04-supplier-order.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/2026-09-14/top-header/04-supplier-order.png",
+      "kind": "archived",
+      "originalSha256": "25935ca2ef2a7706db481c0b7b3a90ae9027876c6749f2caf95ae33904a56f3c",
+      "archivedSha256": "25935ca2ef2a7706db481c0b7b3a90ae9027876c6749f2caf95ae33904a56f3c",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/2026-09-14/top-header/05-documents.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/2026-09-14/top-header/05-documents.png",
+      "kind": "archived",
+      "originalSha256": "464e7719aeea7bf2bf7dcfbaa1c3d2d5973a6d73e91d10c5042fc6509b0f6e98",
+      "archivedSha256": "464e7719aeea7bf2bf7dcfbaa1c3d2d5973a6d73e91d10c5042fc6509b0f6e98",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/2026-09-14/top-header/generation-prompts.txt",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/2026-09-14/top-header/generation-prompts.txt",
+      "kind": "archived",
+      "originalSha256": "4346b352cb2c18fb8e0a3669e2e9f13f95b7a391fb082133bec0291d5a651d95",
+      "archivedSha256": "4346b352cb2c18fb8e0a3669e2e9f13f95b7a391fb082133bec0291d5a651d95",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16.zip",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16.zip",
+      "kind": "archived",
+      "originalSha256": "5c5075dd826648a931b8d96aea47757945667736cd9ef781a81b852aeef7773c",
+      "archivedSha256": "5c5075dd826648a931b8d96aea47757945667736cd9ef781a81b852aeef7773c",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/CHECKPOINT.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/CHECKPOINT.md",
+      "kind": "archived",
+      "originalSha256": "211dc9a427622d9448f17cfcb4932442e641a4629b9e4f7a24dc2170e9639ce9",
+      "archivedSha256": "211dc9a427622d9448f17cfcb4932442e641a4629b9e4f7a24dc2170e9639ce9",
+      "semanticSha256": "49874b421f3e33b60ee4b2588036ea65b1167a0e833e1e220ce994117078e9e7"
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/COMPONENT_ATLAS.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/COMPONENT_ATLAS.md",
+      "kind": "archived",
+      "originalSha256": "65466e9b657fef40ffbd634647313b0141b27608c184bf3e7034afde28cdcf7b",
+      "archivedSha256": "65466e9b657fef40ffbd634647313b0141b27608c184bf3e7034afde28cdcf7b",
+      "semanticSha256": "a2db2c6b9e0dba6144f0a536ce51104a218166553c13eeeb8d238215d2597cc5"
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/COVERAGE_MATRIX.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/COVERAGE_MATRIX.md",
+      "kind": "archived",
+      "originalSha256": "07df581aee3bc3aae3388ebc8e5a1c45b9d40767ee0f6e6bcc0dcf8c1578a754",
+      "archivedSha256": "07df581aee3bc3aae3388ebc8e5a1c45b9d40767ee0f6e6bcc0dcf8c1578a754",
+      "semanticSha256": "33b81481a00f89a30d16273b7cc76207614b2cc87e98d9542741aa23f34f5b1c"
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/DESIGN_SYSTEM.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/DESIGN_SYSTEM.md",
+      "kind": "archived",
+      "originalSha256": "7ac9d27e3933672d8d88a15e18d5ee91d7998f55ed32e4e85a61b823e5e4cbc9",
+      "archivedSha256": "7ac9d27e3933672d8d88a15e18d5ee91d7998f55ed32e4e85a61b823e5e4cbc9",
+      "semanticSha256": "78d4f86695b8d1f5779cdd4dbad02f5130b224084f11016f38ef089093b05a8c"
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/PAGE_INVENTORY.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/PAGE_INVENTORY.md",
+      "kind": "archived",
+      "originalSha256": "20dfa0c71b90f9b76f2a5b85fc5d41ebcac4372ef81ffd6fccde797939dc5f09",
+      "archivedSha256": "20dfa0c71b90f9b76f2a5b85fc5d41ebcac4372ef81ffd6fccde797939dc5f09",
+      "semanticSha256": "f64ecaa8bc6e48ec0c57f15f93ef543aba6ecf0e57508e3673ad1bbf8ab680c3"
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/README.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/README.md",
+      "kind": "archived",
+      "originalSha256": "3543fbafdd7988fd470d77d7c264f12f7eb208afa15adf1e84716e38c3e0a8bc",
+      "archivedSha256": "e551871871a656e89a9ecfd70e1dbbebbaa7cce822b919c93521518c90541a7c",
+      "semanticSha256": "ad88b08ae01ab707ac24d6aef0a261f1e7c1359d06447eff8a078360f30f6086"
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/REFERENCE_ANALYSIS.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/REFERENCE_ANALYSIS.md",
+      "kind": "archived",
+      "originalSha256": "bf12d71d26fae91119cdee1334e519a23d72a03afdf88071de025267a01135e2",
+      "archivedSha256": "bf12d71d26fae91119cdee1334e519a23d72a03afdf88071de025267a01135e2",
+      "semanticSha256": "b6fdbd1d8185c8e8cb10dac63eda2be5b1e914a8a5c056193226499ae7603e80"
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/REVIEW_REPORT.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/REVIEW_REPORT.md",
+      "kind": "archived",
+      "originalSha256": "505cc1078aa1a5536d49f58dca5a126e60816e765ce87640246460ce252eff4d",
+      "archivedSha256": "505cc1078aa1a5536d49f58dca5a126e60816e765ce87640246460ce252eff4d",
+      "semanticSha256": "8557940ca2bbadb90a51f0f4dc7f66bc47ed392902ee2fdd92fd7dbacd8c266f"
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/STANDARD_AMENDMENT_PROPOSAL.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/STANDARD_AMENDMENT_PROPOSAL.md",
+      "kind": "archived",
+      "originalSha256": "9b08a1bf98240204a45cdecbf6487f05fc81f9599b1cc441d48f54f32ae8a58a",
+      "archivedSha256": "9b08a1bf98240204a45cdecbf6487f05fc81f9599b1cc441d48f54f32ae8a58a",
+      "semanticSha256": "c5f5940dd46aa2788714c91ac6103bc5c35bd4a71bd66aab7aa842c2a4612ea1"
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/app.js",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/app.js",
+      "kind": "archived",
+      "originalSha256": "b46c5338bbe232df9e5daf1b6a33c354503e215b3517868f1cec88f0c6db7058",
+      "archivedSha256": "b46c5338bbe232df9e5daf1b6a33c354503e215b3517868f1cec88f0c6db7058",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/assets/438aa629764e75f3-s.woff2",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/assets/438aa629764e75f3-s.woff2",
+      "kind": "archived",
+      "originalSha256": "e8c0b39992f06b3dc9a9834494088014859f363bf6ca8792b6bb07e17c7965f3",
+      "archivedSha256": "e8c0b39992f06b3dc9a9834494088014859f363bf6ca8792b6bb07e17c7965f3",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/assets/4c9affa5bc8f420e-s.p.woff2",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/assets/4c9affa5bc8f420e-s.p.woff2",
+      "kind": "archived",
+      "originalSha256": "e310b55a7fd9677f5e3555e6c6c4d064fa1f1d24393f0ddbe217cea12a8c432f",
+      "archivedSha256": "e310b55a7fd9677f5e3555e6c6c4d064fa1f1d24393f0ddbe217cea12a8c432f",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/assets/51251f8b9793cdb3-s.woff2",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/assets/51251f8b9793cdb3-s.woff2",
+      "kind": "archived",
+      "originalSha256": "40af11327fe5308166c6cb5787808b042db6da889abf602f0a4876c49675d87e",
+      "archivedSha256": "40af11327fe5308166c6cb5787808b042db6da889abf602f0a4876c49675d87e",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/assets/875ae681bfde4580-s.p.woff2",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/assets/875ae681bfde4580-s.p.woff2",
+      "kind": "archived",
+      "originalSha256": "95a493061fe0a8d0d027c2892747134ba747141112d3be4d5022e70ab7d3a1a6",
+      "archivedSha256": "95a493061fe0a8d0d027c2892747134ba747141112d3be4d5022e70ab7d3a1a6",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/assets/cc978ac5ee68c2b6-s.woff2",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/assets/cc978ac5ee68c2b6-s.woff2",
+      "kind": "archived",
+      "originalSha256": "ce093b341d9c10658ee1eaa85c5f8042ff3307bc6ccfc5f405616eb437f0009e",
+      "archivedSha256": "ce093b341d9c10658ee1eaa85c5f8042ff3307bc6ccfc5f405616eb437f0009e",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/assets/e857b654a2caa584-s.woff2",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/assets/e857b654a2caa584-s.woff2",
+      "kind": "archived",
+      "originalSha256": "bab757f8a0a1bc04055ee98cb5777f3254aab11f6d222366e1f40a36f390506a",
+      "archivedSha256": "bab757f8a0a1bc04055ee98cb5777f3254aab11f6d222366e1f40a36f390506a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/assets/fonts.css",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/assets/fonts.css",
+      "kind": "archived",
+      "originalSha256": "104dd936810b3b7baa2f488b87809ea4e1726f7d34c926dd5b2717885b522176",
+      "archivedSha256": "104dd936810b3b7baa2f488b87809ea4e1726f7d34c926dd5b2717885b522176",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/assets/icons.js",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/assets/icons.js",
+      "kind": "archived",
+      "originalSha256": "c30addb07e07028e80450523c6afd5d163b58be9f5c33bf87d3cde155cee29a8",
+      "archivedSha256": "c30addb07e07028e80450523c6afd5d163b58be9f5c33bf87d3cde155cee29a8",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/concepts/ATLAS_PROMPT.txt",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/concepts/ATLAS_PROMPT.txt",
+      "kind": "archived",
+      "originalSha256": "8facc0a24ff14c8340602414ecdeeb03647ee9e40157b0204c87441719a22745",
+      "archivedSha256": "8facc0a24ff14c8340602414ecdeeb03647ee9e40157b0204c87441719a22745",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/concepts/PROMPT.txt",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/concepts/PROMPT.txt",
+      "kind": "archived",
+      "originalSha256": "2c163b9b03b02e186db1c5d571e21414fc069ecedd95a260c62f74b284d1199c",
+      "archivedSha256": "2c163b9b03b02e186db1c5d571e21414fc069ecedd95a260c62f74b284d1199c",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/concepts/README.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/concepts/README.md",
+      "kind": "archived",
+      "originalSha256": "066bebc4322c8750c96cac6e9cf72bf2bda4ea2dc735de9d0620ff16e068d875",
+      "archivedSha256": "066bebc4322c8750c96cac6e9cf72bf2bda4ea2dc735de9d0620ff16e068d875",
+      "semanticSha256": "ab386f9735340825fd7568148831646bf20d849fc5b397f79dcd0acaf1c86ad1"
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/concepts/buyer-documents-ai.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/concepts/buyer-documents-ai.png",
+      "kind": "archived",
+      "originalSha256": "fcf96988d802e035b1b283d86f947b24b7c52c61b99af776057eee8cec5d489e",
+      "archivedSha256": "fcf96988d802e035b1b283d86f947b24b7c52c61b99af776057eee8cec5d489e",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/concepts/components-overlays-ai.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/concepts/components-overlays-ai.png",
+      "kind": "archived",
+      "originalSha256": "a9c9aeee6673def7f7a21965da86fd69ffbe494a5fee8165698d79cbb0d35d1f",
+      "archivedSha256": "a9c9aeee6673def7f7a21965da86fd69ffbe494a5fee8165698d79cbb0d35d1f",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/evidence/browser-layout-checks.json",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/evidence/browser-layout-checks.json",
+      "kind": "archived",
+      "originalSha256": "2823e6c2b03bffacee71fc65d03dc32eb2b2b1344dc2505c473a663aea3f6de2",
+      "archivedSha256": "2823e6c2b03bffacee71fc65d03dc32eb2b2b1344dc2505c473a663aea3f6de2",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/evidence/capture-scale-probe.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/evidence/capture-scale-probe.png",
+      "kind": "archived",
+      "originalSha256": "08a16e346b521827035f31ba3320e42ced95f605ab469f7b1c2e88050b51ea3d",
+      "archivedSha256": "08a16e346b521827035f31ba3320e42ced95f605ab469f7b1c2e88050b51ea3d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/evidence/dialog-check.json",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/evidence/dialog-check.json",
+      "kind": "archived",
+      "originalSha256": "bf4f7adec7ccebd195c29505e35f825f1200a30e2df3d34bb7f4691c6b03f984",
+      "archivedSha256": "bf4f7adec7ccebd195c29505e35f825f1200a30e2df3d34bb7f4691c6b03f984",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/evidence/document-responsive-fix.json",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/evidence/document-responsive-fix.json",
+      "kind": "archived",
+      "originalSha256": "eb057a0ed4b4982f7598ed270ed82ea71d28407a7df34e4814d1a89b3c0bbb5a",
+      "archivedSha256": "eb057a0ed4b4982f7598ed270ed82ea71d28407a7df34e4814d1a89b3c0bbb5a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/evidence/final-manifest.json",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/evidence/final-manifest.json",
+      "kind": "archived",
+      "originalSha256": "4fc5fcdbf6ac2d42c34d8429b097b779ca297a70e7ca191cd59e31f73f83f993",
+      "archivedSha256": "4fc5fcdbf6ac2d42c34d8429b097b779ca297a70e7ca191cd59e31f73f83f993",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/evidence/final-shared-header-layout.json",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/evidence/final-shared-header-layout.json",
+      "kind": "archived",
+      "originalSha256": "e19258ab3ac030a012bf14d5330608149b72df8ec0f1dfafe148c4421b6efa49",
+      "archivedSha256": "e19258ab3ac030a012bf14d5330608149b72df8ec0f1dfafe148c4421b6efa49",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/evidence/gallery-visible.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/evidence/gallery-visible.png",
+      "kind": "archived",
+      "originalSha256": "09f78419616274a99df363848e7a6f891a2c211057e27f46f9139808cdcb5448",
+      "archivedSha256": "09f78419616274a99df363848e7a6f891a2c211057e27f46f9139808cdcb5448",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/evidence/header-scroll.json",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/evidence/header-scroll.json",
+      "kind": "archived",
+      "originalSha256": "2d513f6dbaa05198aee5b247d5b710ffcd0bfa4fc444e00004652c831e23802f",
+      "archivedSha256": "2d513f6dbaa05198aee5b247d5b710ffcd0bfa4fc444e00004652c831e23802f",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/evidence/static-validation.json",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/evidence/static-validation.json",
+      "kind": "archived",
+      "originalSha256": "c58eb2c044f4e5d72f589b04dcfda8b7eb5b94ef856217196085e2d949c174ae",
+      "archivedSha256": "c58eb2c044f4e5d72f589b04dcfda8b7eb5b94ef856217196085e2d949c174ae",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/finalize.mjs",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/finalize.mjs",
+      "kind": "archived",
+      "originalSha256": "3439718b1a9b6aaeea86d84353e746eebf818a084682a816aea038fb95aeccac",
+      "archivedSha256": "3439718b1a9b6aaeea86d84353e746eebf818a084682a816aea038fb95aeccac",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/gallery.js",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/gallery.js",
+      "kind": "archived",
+      "originalSha256": "dcfa3ec00b4ed8efa933575f9437f73962f18155d14760541b1bd12c595667c4",
+      "archivedSha256": "dcfa3ec00b4ed8efa933575f9437f73962f18155d14760541b1bd12c595667c4",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/index.html",
+      "kind": "archived",
+      "originalSha256": "dac260ce900bc971a529187daae34a13779351000f7dcfd1feed0b1e4c394527",
+      "archivedSha256": "dac260ce900bc971a529187daae34a13779351000f7dcfd1feed0b1e4c394527",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/organize-review.mjs",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/organize-review.mjs",
+      "kind": "archived",
+      "originalSha256": "544c5ccc4df5f1fa1bfeefde4d6b9170da8d239de32c9c8904805a85021a0191",
+      "archivedSha256": "544c5ccc4df5f1fa1bfeefde4d6b9170da8d239de32c9c8904805a85021a0191",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/originals/01-supplier-order.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/originals/01-supplier-order.png",
+      "kind": "archived",
+      "originalSha256": "25935ca2ef2a7706db481c0b7b3a90ae9027876c6749f2caf95ae33904a56f3c",
+      "archivedSha256": "25935ca2ef2a7706db481c0b7b3a90ae9027876c6749f2caf95ae33904a56f3c",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/originals/02-cart-reprice.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/originals/02-cart-reprice.png",
+      "kind": "archived",
+      "originalSha256": "16ca10e0777ab1bd121b1db6cc79a64f8ed63e717c7f6f0045aacd2cceadd826",
+      "archivedSha256": "16ca10e0777ab1bd121b1db6cc79a64f8ed63e717c7f6f0045aacd2cceadd826",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/originals/03-product-offers.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/originals/03-product-offers.png",
+      "kind": "archived",
+      "originalSha256": "961848a0afc4a3eec6c26667f8d2200f579f6e0fc701e93a398a88d2bab2518d",
+      "archivedSha256": "961848a0afc4a3eec6c26667f8d2200f579f6e0fc701e93a398a88d2bab2518d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/originals/04-catalog.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/originals/04-catalog.png",
+      "kind": "archived",
+      "originalSha256": "dbafd27eccbd0ec244d5a9eba0ef4a560e94e3010e7eb1a9a9769fe3c5558458",
+      "archivedSha256": "dbafd27eccbd0ec244d5a9eba0ef4a560e94e3010e7eb1a9a9769fe3c5558458",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/pages.js",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/pages.js",
+      "kind": "archived",
+      "originalSha256": "9ecdcf3be3ad1c76b483cc46c245615211967927022c16c7918cbc1bd08de950",
+      "archivedSha256": "9ecdcf3be3ad1c76b483cc46c245615211967927022c16c7918cbc1bd08de950",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/prepare.mjs",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/prepare.mjs",
+      "kind": "archived",
+      "originalSha256": "ae232e1d4590d1fe77f3a9d19e1f6c1dbe5d1b15480e308cdee8f9e47c4d133d",
+      "archivedSha256": "ae232e1d4590d1fe77f3a9d19e1f6c1dbe5d1b15480e308cdee8f9e47c4d133d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/preview.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/preview.html",
+      "kind": "archived",
+      "originalSha256": "5dc8b5702e0a4b55f33f52d2887db2a5a7218c0374dddf2b4e0da01662732ccf",
+      "archivedSha256": "5dc8b5702e0a4b55f33f52d2887db2a5a7218c0374dddf2b4e0da01662732ccf",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/account.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/account.html",
+      "kind": "archived",
+      "originalSha256": "f7dae1e975f3e794dd9d95fd4eec7ccb9112820e4a17479b908c372aa38ac371",
+      "archivedSha256": "f7dae1e975f3e794dd9d95fd4eec7ccb9112820e4a17479b908c372aa38ac371",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-access.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-access.html",
+      "kind": "archived",
+      "originalSha256": "05bc7cc1c6c5251f2e9155f30e6537747b26062bbf108e117def81c1b9c7a019",
+      "archivedSha256": "05bc7cc1c6c5251f2e9155f30e6537747b26062bbf108e117def81c1b9c7a019",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-agreements.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-agreements.html",
+      "kind": "archived",
+      "originalSha256": "951947b3e25cee8a32ada2353fa71c61e04d06385519e9123c5321f23a4f3105",
+      "archivedSha256": "951947b3e25cee8a32ada2353fa71c61e04d06385519e9123c5321f23a4f3105",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-assurance.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-assurance.html",
+      "kind": "archived",
+      "originalSha256": "b7eda440925ee887c64476c55314afab10cd91e35d5dcdee3f01f5118d5c79bc",
+      "archivedSha256": "b7eda440925ee887c64476c55314afab10cd91e35d5dcdee3f01f5118d5c79bc",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-audit.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-audit.html",
+      "kind": "archived",
+      "originalSha256": "c88041a22cd2865dda77d0fea4e8ba0d76de1f2c4b9356dc8af1677087c4b6d2",
+      "archivedSha256": "c88041a22cd2865dda77d0fea4e8ba0d76de1f2c4b9356dc8af1677087c4b6d2",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-catalog-quality.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-catalog-quality.html",
+      "kind": "archived",
+      "originalSha256": "aadcc28d07519d97c4e6203a5feef78daa827d756082c8d61c3461495e61ee2b",
+      "archivedSha256": "aadcc28d07519d97c4e6203a5feef78daa827d756082c8d61c3461495e61ee2b",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-catalog.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-catalog.html",
+      "kind": "archived",
+      "originalSha256": "171b55c7e4d5286d838bf363813836a3e01bcab56d933b5310c5feefaefd3d52",
+      "archivedSha256": "171b55c7e4d5286d838bf363813836a3e01bcab56d933b5310c5feefaefd3d52",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-connector-readiness.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-connector-readiness.html",
+      "kind": "archived",
+      "originalSha256": "d22beefc683ef531d9f36ed88f346a15eb4637d19052bbeb68fdc142419ca27a",
+      "archivedSha256": "d22beefc683ef531d9f36ed88f346a15eb4637d19052bbeb68fdc142419ca27a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-connectors.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-connectors.html",
+      "kind": "archived",
+      "originalSha256": "cbfae51c3bcd53813c10ba425de5b17e7dfa2f3e5c57264621765407806c9ee4",
+      "archivedSha256": "cbfae51c3bcd53813c10ba425de5b17e7dfa2f3e5c57264621765407806c9ee4",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-controls.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-controls.html",
+      "kind": "archived",
+      "originalSha256": "bba66c242619cc2e63d87745fdf433d5c6bb44c069b8b4ae810193f8d4308111",
+      "archivedSha256": "bba66c242619cc2e63d87745fdf433d5c6bb44c069b8b4ae810193f8d4308111",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-corrections.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-corrections.html",
+      "kind": "archived",
+      "originalSha256": "30b74c8b9fb4c49303ca1ec8f71aa7a00c34a4ab3d3fe9972b7ea97fbe0a9635",
+      "archivedSha256": "30b74c8b9fb4c49303ca1ec8f71aa7a00c34a4ab3d3fe9972b7ea97fbe0a9635",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-imports.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-imports.html",
+      "kind": "archived",
+      "originalSha256": "8883f04c94ccf9bf2d5a36b374c3121b7c8cb05413c51ce3de51f78334775732",
+      "archivedSha256": "8883f04c94ccf9bf2d5a36b374c3121b7c8cb05413c51ce3de51f78334775732",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-lots.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-lots.html",
+      "kind": "archived",
+      "originalSha256": "18339600551be7604daf1f496ac28d3d3d1d2db8d73c4e841fa44b16a49d307f",
+      "archivedSha256": "18339600551be7604daf1f496ac28d3d3d1d2db8d73c4e841fa44b16a49d307f",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-metrics.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-metrics.html",
+      "kind": "archived",
+      "originalSha256": "9f2b66fd2a8b0b13eee143f2dda2d19535db592300ecdd8a64b674bd010931db",
+      "archivedSha256": "9f2b66fd2a8b0b13eee143f2dda2d19535db592300ecdd8a64b674bd010931db",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-organization-create.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-organization-create.html",
+      "kind": "archived",
+      "originalSha256": "5ed45f5184cf1b3b4a7f63c206b8ac58e3e83963b66e8f4aa0aac783311f42e8",
+      "archivedSha256": "5ed45f5184cf1b3b4a7f63c206b8ac58e3e83963b66e8f4aa0aac783311f42e8",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-organizations.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-organizations.html",
+      "kind": "archived",
+      "originalSha256": "3ff2fba6a36a6f11b6ce04885a5b378d62efe336d8e0e17e48f0937af1d8760b",
+      "archivedSha256": "3ff2fba6a36a6f11b6ce04885a5b378d62efe336d8e0e17e48f0937af1d8760b",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-overview.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-overview.html",
+      "kind": "archived",
+      "originalSha256": "8290c5c32cadbde0264743a15d935fe28f7ce950331f352d41c940636f2a3fd9",
+      "archivedSha256": "8290c5c32cadbde0264743a15d935fe28f7ce950331f352d41c940636f2a3fd9",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-settings.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-settings.html",
+      "kind": "archived",
+      "originalSha256": "8b840ea9621436e94deb32d6fd3c18a47a1786650c73fc7f5af0083686c5d0e6",
+      "archivedSha256": "8b840ea9621436e94deb32d6fd3c18a47a1786650c73fc7f5af0083686c5d0e6",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-supply.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-supply.html",
+      "kind": "archived",
+      "originalSha256": "1220ad1c2b125fda0f5ef5a70900177e0e19e426f7f6569bffc2bfb56d709260",
+      "archivedSha256": "1220ad1c2b125fda0f5ef5a70900177e0e19e426f7f6569bffc2bfb56d709260",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-taxonomy.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-taxonomy.html",
+      "kind": "archived",
+      "originalSha256": "e7c310c351c60c2379d3ab2b8a0125ac05a1fba9cf0d6ba9aef0ea2515485c80",
+      "archivedSha256": "e7c310c351c60c2379d3ab2b8a0125ac05a1fba9cf0d6ba9aef0ea2515485c80",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/admin-trust.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/admin-trust.html",
+      "kind": "archived",
+      "originalSha256": "b5e2d64e30c1b8fcb68cc9be8f0550bde64c03d6d056646acdfdc8c4bf0a926e",
+      "archivedSha256": "b5e2d64e30c1b8fcb68cc9be8f0550bde64c03d6d056646acdfdc8c4bf0a926e",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/auth-admin.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/auth-admin.html",
+      "kind": "archived",
+      "originalSha256": "a33d88c43d30dd0b0a69cbb127d6b42997c83d863ae3328fce22bc81978f869d",
+      "archivedSha256": "a33d88c43d30dd0b0a69cbb127d6b42997c83d863ae3328fce22bc81978f869d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/auth-login.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/auth-login.html",
+      "kind": "archived",
+      "originalSha256": "9eb5336f55655f629017b054299ad05ca09ca187ea52c42e2cdcd880758a80d3",
+      "archivedSha256": "9eb5336f55655f629017b054299ad05ca09ca187ea52c42e2cdcd880758a80d3",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/auth-register.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/auth-register.html",
+      "kind": "archived",
+      "originalSha256": "3dc9aae3d94aebcf2b2ecccd90c7769a759bf987dfa6615bbb93377b44bd355a",
+      "archivedSha256": "3dc9aae3d94aebcf2b2ecccd90c7769a759bf987dfa6615bbb93377b44bd355a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/auth-reset.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/auth-reset.html",
+      "kind": "archived",
+      "originalSha256": "f7e7ea8f4d9d63a58cbabb901fd13f52db94f9c1ce82b47f0e2981d401cac93c",
+      "archivedSha256": "f7e7ea8f4d9d63a58cbabb901fd13f52db94f9c1ce82b47f0e2981d401cac93c",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/auth-resume.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/auth-resume.html",
+      "kind": "archived",
+      "originalSha256": "a05aea6eb30d9b08d721ab0e5531e3ac95807928e861d11818a092e7a503f503",
+      "archivedSha256": "a05aea6eb30d9b08d721ab0e5531e3ac95807928e861d11818a092e7a503f503",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/auth-verify.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/auth-verify.html",
+      "kind": "archived",
+      "originalSha256": "8a5aabd61e95bfb61f1c25efa4ec12113958267f14584c60c406c6b62129b36b",
+      "archivedSha256": "8a5aabd61e95bfb61f1c25efa4ec12113958267f14584c60c406c6b62129b36b",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/billing.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/billing.html",
+      "kind": "archived",
+      "originalSha256": "075ffc66dd14d584c42d69a7ebccb801f10cbf13c3dde9b76e88255fa2216366",
+      "archivedSha256": "075ffc66dd14d584c42d69a7ebccb801f10cbf13c3dde9b76e88255fa2216366",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-assistant.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-assistant.html",
+      "kind": "archived",
+      "originalSha256": "6c925abb687cb18ae4547039836f387dc7a70b2cf6ef8774311401d56710ea58",
+      "archivedSha256": "6c925abb687cb18ae4547039836f387dc7a70b2cf6ef8774311401d56710ea58",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-cart.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-cart.html",
+      "kind": "archived",
+      "originalSha256": "b3ba0de74b84573577cef88a66d884b8e72d8e0df18c2eeb0722654ac59f621a",
+      "archivedSha256": "b3ba0de74b84573577cef88a66d884b8e72d8e0df18c2eeb0722654ac59f621a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-checkout.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-checkout.html",
+      "kind": "archived",
+      "originalSha256": "7631717cd8a99ad68675384c816eb1b35867fb2a59793da41fbafed9bad99a64",
+      "archivedSha256": "7631717cd8a99ad68675384c816eb1b35867fb2a59793da41fbafed9bad99a64",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-document-detail.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-document-detail.html",
+      "kind": "archived",
+      "originalSha256": "0311b5593b3cb7522767a96e70f355d35eec871abd9d5a1b2c1136e459134a2c",
+      "archivedSha256": "0311b5593b3cb7522767a96e70f355d35eec871abd9d5a1b2c1136e459134a2c",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-document-upload.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-document-upload.html",
+      "kind": "archived",
+      "originalSha256": "31aef384e89537239ee375e090ca57a2a6363466dc2bc0805bd336244a8021bd",
+      "archivedSha256": "31aef384e89537239ee375e090ca57a2a6363466dc2bc0805bd336244a8021bd",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-documents.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-documents.html",
+      "kind": "archived",
+      "originalSha256": "3cf1358a260e5cd033f4fe2f9b483b53949ee8fea6eb08dcc2500cc1e203930f",
+      "archivedSha256": "3cf1358a260e5cd033f4fe2f9b483b53949ee8fea6eb08dcc2500cc1e203930f",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-notifications.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-notifications.html",
+      "kind": "archived",
+      "originalSha256": "a571b133122b159ceec4ba500b61430a05754cfe087b689ce1cb6e327f2f0727",
+      "archivedSha256": "a571b133122b159ceec4ba500b61430a05754cfe087b689ce1cb6e327f2f0727",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-order-detail.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-order-detail.html",
+      "kind": "archived",
+      "originalSha256": "d27c53b487561efd2ae567eb3376f7f8e79c8903f78c8f92fdd863164909e316",
+      "archivedSha256": "d27c53b487561efd2ae567eb3376f7f8e79c8903f78c8f92fdd863164909e316",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-orders.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-orders.html",
+      "kind": "archived",
+      "originalSha256": "1181f395a1539afa45967371dcbd6bff72ac1e15be2c04fcd1910a17bb180288",
+      "archivedSha256": "1181f395a1539afa45967371dcbd6bff72ac1e15be2c04fcd1910a17bb180288",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-recommendations.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-recommendations.html",
+      "kind": "archived",
+      "originalSha256": "b49217df53ea61a75d33311a7be840e1d1e5a3a8b14c3b01d8f343cb51e9055c",
+      "archivedSha256": "b49217df53ea61a75d33311a7be840e1d1e5a3a8b14c3b01d8f343cb51e9055c",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-reviews.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-reviews.html",
+      "kind": "archived",
+      "originalSha256": "6726d7653e5910954f9dff37e9bf7c1c0b30591fbac73a07c88a97805601cc2d",
+      "archivedSha256": "6726d7653e5910954f9dff37e9bf7c1c0b30591fbac73a07c88a97805601cc2d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-support.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-support.html",
+      "kind": "archived",
+      "originalSha256": "d866b35d604e01173fe4028f2f4cd979126b14ce455e1ea9cf5fd9238ae6ac40",
+      "archivedSha256": "d866b35d604e01173fe4028f2f4cd979126b14ce455e1ea9cf5fd9238ae6ac40",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/buyer-workspace.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/buyer-workspace.html",
+      "kind": "archived",
+      "originalSha256": "f1f2ba0fbfa6da7f18dee2f7304cbea3a1def6909ad46cdef7b8bed3cdae98c2",
+      "archivedSha256": "f1f2ba0fbfa6da7f18dee2f7304cbea3a1def6909ad46cdef7b8bed3cdae98c2",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/components-controls.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/components-controls.html",
+      "kind": "archived",
+      "originalSha256": "30a6d1e9277464e5f5f10cb0d1ef04754359436b127a10f7154eb443cf0feaec",
+      "archivedSha256": "30a6d1e9277464e5f5f10cb0d1ef04754359436b127a10f7154eb443cf0feaec",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/components-feedback.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/components-feedback.html",
+      "kind": "archived",
+      "originalSha256": "a7fa1ccf37e4bfdd3014aaa91b210fc313956afd28cb07410e4490acbf00d721",
+      "archivedSha256": "a7fa1ccf37e4bfdd3014aaa91b210fc313956afd28cb07410e4490acbf00d721",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/components-navigation.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/components-navigation.html",
+      "kind": "archived",
+      "originalSha256": "95fc14b5108cddd8377a14fa1363b962eb75337aa1abc227084efb12f6f3f263",
+      "archivedSha256": "95fc14b5108cddd8377a14fa1363b962eb75337aa1abc227084efb12f6f3f263",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/components-overlays.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/components-overlays.html",
+      "kind": "archived",
+      "originalSha256": "59c2e420049155cd35cd7f74e2999d064002277f35c09e33cbc7ad7339fbdbe3",
+      "archivedSha256": "59c2e420049155cd35cd7f74e2999d064002277f35c09e33cbc7ad7339fbdbe3",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/legal-privacy.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/legal-privacy.html",
+      "kind": "archived",
+      "originalSha256": "5c3a3f8bdc2502baad02306b8dbffac247672b2e831c0907b7725f6abf2f768f",
+      "archivedSha256": "5c3a3f8bdc2502baad02306b8dbffac247672b2e831c0907b7725f6abf2f768f",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/legal-terms.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/legal-terms.html",
+      "kind": "archived",
+      "originalSha256": "bfec853f14fd3b2b32a0a53ee2fab3a7cb0305769a7d22d9ea04e2556c0f2176",
+      "archivedSha256": "bfec853f14fd3b2b32a0a53ee2fab3a7cb0305769a7d22d9ea04e2556c0f2176",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/manual-payment.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/manual-payment.html",
+      "kind": "archived",
+      "originalSha256": "8bee465d29e35083e4d74c2ccf41607a8bcd501ec0d549f05936ec9c93537cd9",
+      "archivedSha256": "8bee465d29e35083e4d74c2ccf41607a8bcd501ec0d549f05936ec9c93537cd9",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/product-offers.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/product-offers.html",
+      "kind": "archived",
+      "originalSha256": "6005e2af497461b8310fb2ce14aefb0490f2d3b3f5ad98481fa554bb6844ca86",
+      "archivedSha256": "6005e2af497461b8310fb2ce14aefb0490f2d3b3f5ad98481fa554bb6844ca86",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/public-about.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/public-about.html",
+      "kind": "archived",
+      "originalSha256": "49dfe3cf54ecf8e860a642f0a0db256d182fc345d0626623f5475e5c3afea34a",
+      "archivedSha256": "49dfe3cf54ecf8e860a642f0a0db256d182fc345d0626623f5475e5c3afea34a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/public-catalog.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/public-catalog.html",
+      "kind": "archived",
+      "originalSha256": "c9f7c81caa757c41a6e7e75861d19ad308739ccbffd34f68a9ff4d81afc05561",
+      "archivedSha256": "c9f7c81caa757c41a6e7e75861d19ad308739ccbffd34f68a9ff4d81afc05561",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/public-home.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/public-home.html",
+      "kind": "archived",
+      "originalSha256": "5dcb431c5be9e7dfa3d7e137f300d39ebe5887c3196b5e5e9a2f7c4679d396c7",
+      "archivedSha256": "5dcb431c5be9e7dfa3d7e137f300d39ebe5887c3196b5e5e9a2f7c4679d396c7",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/public-suppliers.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/public-suppliers.html",
+      "kind": "archived",
+      "originalSha256": "d7440673ddff90b9536c3a9a55b4f347d0899cea341c512f6c92b22f05461486",
+      "archivedSha256": "d7440673ddff90b9536c3a9a55b4f347d0899cea341c512f6c92b22f05461486",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-agreement.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-agreement.html",
+      "kind": "archived",
+      "originalSha256": "82fb0695fb9c0079f6c5a6af7b102549b9a7066377e7687e964a6d838d1a7aea",
+      "archivedSha256": "82fb0695fb9c0079f6c5a6af7b102549b9a7066377e7687e964a6d838d1a7aea",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-compliance.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-compliance.html",
+      "kind": "archived",
+      "originalSha256": "897ec6204e7dbfe4dc3166644a57c4d83a1572f00c67e301f1e460a08a730011",
+      "archivedSha256": "897ec6204e7dbfe4dc3166644a57c4d83a1572f00c67e301f1e460a08a730011",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-connectors.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-connectors.html",
+      "kind": "archived",
+      "originalSha256": "2aa3288c046161733e966ac4713eab8d7dde2b6f666f57a4636a6f91018573df",
+      "archivedSha256": "2aa3288c046161733e966ac4713eab8d7dde2b6f666f57a4636a6f91018573df",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-corrections.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-corrections.html",
+      "kind": "archived",
+      "originalSha256": "f7ab320ed9f8515f6a41ed04fc07d39b635b0969d0ccdc23867882c9c2df81c2",
+      "archivedSha256": "f7ab320ed9f8515f6a41ed04fc07d39b635b0969d0ccdc23867882c9c2df81c2",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-dashboard.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-dashboard.html",
+      "kind": "archived",
+      "originalSha256": "29e3a30fed895d0a9ab6aaf540c3f4c8191edc18d5981a8bff44306acf4f117c",
+      "archivedSha256": "29e3a30fed895d0a9ab6aaf540c3f4c8191edc18d5981a8bff44306acf4f117c",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-document-detail.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-document-detail.html",
+      "kind": "archived",
+      "originalSha256": "ab2c77bd239a22b420e2a0d222fbf2028b491c2e083b86d56dd17793d0bc87f7",
+      "archivedSha256": "ab2c77bd239a22b420e2a0d222fbf2028b491c2e083b86d56dd17793d0bc87f7",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-documents.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-documents.html",
+      "kind": "archived",
+      "originalSha256": "a44472f4f4464b69f47fd996766d1b17e3d73c4cd61b859991f9f75ae324602d",
+      "archivedSha256": "a44472f4f4464b69f47fd996766d1b17e3d73c4cd61b859991f9f75ae324602d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-import-review.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-import-review.html",
+      "kind": "archived",
+      "originalSha256": "84db81c2721ba831481b4d7a682dcc39626bd37c0ac1e0e45ba10213266fc191",
+      "archivedSha256": "84db81c2721ba831481b4d7a682dcc39626bd37c0ac1e0e45ba10213266fc191",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-imports.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-imports.html",
+      "kind": "archived",
+      "originalSha256": "210bf3a26fc67651b4288255280986ff963428e1d30468d6a9d5f75271148960",
+      "archivedSha256": "210bf3a26fc67651b4288255280986ff963428e1d30468d6a9d5f75271148960",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-inventory.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-inventory.html",
+      "kind": "archived",
+      "originalSha256": "7c8938468c8148e612a9f5c21bb99def1a298d198f364a6d503a97228edac783",
+      "archivedSha256": "7c8938468c8148e612a9f5c21bb99def1a298d198f364a6d503a97228edac783",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-offer-editor.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-offer-editor.html",
+      "kind": "archived",
+      "originalSha256": "9dc4b7ea4885391c8c1b940554e3bfa7ceaf0d4558dde4c584f9fda7ff91d423",
+      "archivedSha256": "9dc4b7ea4885391c8c1b940554e3bfa7ceaf0d4558dde4c584f9fda7ff91d423",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-offers.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-offers.html",
+      "kind": "archived",
+      "originalSha256": "f601546212a92723ec3bb1b06ac071d38ddf41b866a0504f3dbeb236dfad22d8",
+      "archivedSha256": "f601546212a92723ec3bb1b06ac071d38ddf41b866a0504f3dbeb236dfad22d8",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-onboarding.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-onboarding.html",
+      "kind": "archived",
+      "originalSha256": "b48f2fbd189a2d5e07b4dafb8b06bfd1ce6fa1db62cbfc182e66924cfa023cd3",
+      "archivedSha256": "b48f2fbd189a2d5e07b4dafb8b06bfd1ce6fa1db62cbfc182e66924cfa023cd3",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-order-detail.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-order-detail.html",
+      "kind": "archived",
+      "originalSha256": "e14e15d5a96bd877ae3533cde4e5821ecfc3e6a9954c5f5200ce546369c3dfb8",
+      "archivedSha256": "e14e15d5a96bd877ae3533cde4e5821ecfc3e6a9954c5f5200ce546369c3dfb8",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-orders.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-orders.html",
+      "kind": "archived",
+      "originalSha256": "9a54dc6484f319641e6b082ab248b47c2a14d3a2df7c5f096243590f4965f0f5",
+      "archivedSha256": "9a54dc6484f319641e6b082ab248b47c2a14d3a2df7c5f096243590f4965f0f5",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-promotions.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-promotions.html",
+      "kind": "archived",
+      "originalSha256": "2a4ef9f76df934deafa6d107c6bece404adf035c8c72eee9e98f68404f5c6941",
+      "archivedSha256": "2a4ef9f76df934deafa6d107c6bece404adf035c8c72eee9e98f68404f5c6941",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-shipment.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-shipment.html",
+      "kind": "archived",
+      "originalSha256": "5b98d881591cc7c16cac97b5a6da231da4a78d3c4e9ecae0578754d7216d6dbe",
+      "archivedSha256": "5b98d881591cc7c16cac97b5a6da231da4a78d3c4e9ecae0578754d7216d6dbe",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/supplier-trust.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/supplier-trust.html",
+      "kind": "archived",
+      "originalSha256": "bed92d8a14c45260641774eaf3d48d4cb659e4bcdc1f6a1d98ccbdbeb7475f9e",
+      "archivedSha256": "bed92d8a14c45260641774eaf3d48d4cb659e4bcdc1f6a1d98ccbdbeb7475f9e",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/system-empty.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/system-empty.html",
+      "kind": "archived",
+      "originalSha256": "9d6b7532fb3c0d3ebd2aefd85978ed7fbad39805eb017dc4271f02dfd351b373",
+      "archivedSha256": "9d6b7532fb3c0d3ebd2aefd85978ed7fbad39805eb017dc4271f02dfd351b373",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/system-error.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/system-error.html",
+      "kind": "archived",
+      "originalSha256": "b56d1c2aabcc08c39fa7f9f58d49562e796b73b12fae0729e71d6d0b85b950d2",
+      "archivedSha256": "b56d1c2aabcc08c39fa7f9f58d49562e796b73b12fae0729e71d6d0b85b950d2",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/system-forbidden.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/system-forbidden.html",
+      "kind": "archived",
+      "originalSha256": "25f7c94e0c9d7f1ea92d1eca77ca7b96788b17147ec4d5b0f978ea3be8017f39",
+      "archivedSha256": "25f7c94e0c9d7f1ea92d1eca77ca7b96788b17147ec4d5b0f978ea3be8017f39",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/system-loading.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/system-loading.html",
+      "kind": "archived",
+      "originalSha256": "e238db10be8a5f41aa1e4b267a01039d39cc46dd3e3f90937f3c1fcddbff91c1",
+      "archivedSha256": "e238db10be8a5f41aa1e4b267a01039d39cc46dd3e3f90937f3c1fcddbff91c1",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/system-not-found.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/system-not-found.html",
+      "kind": "archived",
+      "originalSha256": "f963d95b167e39e9084f8ddad9d3bf92e6d7edb3f83a9ba61bcbdfb5be8a9faf",
+      "archivedSha256": "f963d95b167e39e9084f8ddad9d3bf92e6d7edb3f83a9ba61bcbdfb5be8a9faf",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/system-session.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/system-session.html",
+      "kind": "archived",
+      "originalSha256": "0de2fd62410a5092b9f936330760e28437302f18d35d9032eee88bf161f1f7c2",
+      "archivedSha256": "0de2fd62410a5092b9f936330760e28437302f18d35d9032eee88bf161f1f7c2",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/rendered/team.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/rendered/team.html",
+      "kind": "archived",
+      "originalSha256": "4cd0b24347e35f6daa487badafb795fe4e56aac00012a68f80949bc1ed3873f0",
+      "archivedSha256": "4cd0b24347e35f6daa487badafb795fe4e56aac00012a68f80949bc1ed3873f0",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/00-исходное-направление/01-supplier-order.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/00-исходное-направление/01-supplier-order.png",
+      "kind": "archived",
+      "originalSha256": "25935ca2ef2a7706db481c0b7b3a90ae9027876c6749f2caf95ae33904a56f3c",
+      "archivedSha256": "25935ca2ef2a7706db481c0b7b3a90ae9027876c6749f2caf95ae33904a56f3c",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/00-исходное-направление/02-cart-reprice.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/00-исходное-направление/02-cart-reprice.png",
+      "kind": "archived",
+      "originalSha256": "16ca10e0777ab1bd121b1db6cc79a64f8ed63e717c7f6f0045aacd2cceadd826",
+      "archivedSha256": "16ca10e0777ab1bd121b1db6cc79a64f8ed63e717c7f6f0045aacd2cceadd826",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/00-исходное-направление/03-product-offers.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/00-исходное-направление/03-product-offers.png",
+      "kind": "archived",
+      "originalSha256": "961848a0afc4a3eec6c26667f8d2200f579f6e0fc701e93a398a88d2bab2518d",
+      "archivedSha256": "961848a0afc4a3eec6c26667f8d2200f579f6e0fc701e93a398a88d2bab2518d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/00-исходное-направление/04-catalog.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/00-исходное-направление/04-catalog.png",
+      "kind": "archived",
+      "originalSha256": "dbafd27eccbd0ec244d5a9eba0ef4a560e94e3010e7eb1a9a9769fe3c5558458",
+      "archivedSha256": "dbafd27eccbd0ec244d5a9eba0ef4a560e94e3010e7eb1a9a9769fe3c5558458",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/00-исходное-направление/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/00-исходное-направление/index.html",
+      "kind": "archived",
+      "originalSha256": "3e0b4d3ca665bdb4c48d63068c0276991b170657debbb7e212144e89abbc6b9f",
+      "archivedSha256": "3e0b4d3ca665bdb4c48d63068c0276991b170657debbb7e212144e89abbc6b9f",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/01-публичные-страницы/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/01-публичные-страницы/index.html",
+      "kind": "archived",
+      "originalSha256": "f4e86b81743f222c5b2a617d4c141bbbdfe2022e826f3e557d35ff669cbcee15",
+      "archivedSha256": "f4e86b81743f222c5b2a617d4c141bbbdfe2022e826f3e557d35ff669cbcee15",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/01-публичные-страницы/public-about.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/01-публичные-страницы/public-about.html",
+      "kind": "archived",
+      "originalSha256": "7347a50fb3e9dc8f44b393cb77cf1b0520850a4582f455e00cb13140077c04d9",
+      "archivedSha256": "7347a50fb3e9dc8f44b393cb77cf1b0520850a4582f455e00cb13140077c04d9",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/01-публичные-страницы/public-home.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/01-публичные-страницы/public-home.html",
+      "kind": "archived",
+      "originalSha256": "0094e10b8d63d3fde67e99664aeaa1093723fd0c48355b92c2cc7334c9c5d0dc",
+      "archivedSha256": "0094e10b8d63d3fde67e99664aeaa1093723fd0c48355b92c2cc7334c9c5d0dc",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/01-публичные-страницы/public-suppliers.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/01-публичные-страницы/public-suppliers.html",
+      "kind": "archived",
+      "originalSha256": "bc6ce215f001a46853d937893e4e436e098d1fa094a41d6ef250d388487ad77d",
+      "archivedSha256": "bc6ce215f001a46853d937893e4e436e098d1fa094a41d6ef250d388487ad77d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/account.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/account.html",
+      "kind": "archived",
+      "originalSha256": "3c4689b22c950957171a5a0c70470d649018962666a17c0db88892d978d93ae3",
+      "archivedSha256": "3c4689b22c950957171a5a0c70470d649018962666a17c0db88892d978d93ae3",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-assistant.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-assistant.html",
+      "kind": "archived",
+      "originalSha256": "89a13803a212062cff9723362e9293e48947eeb71ac14a27c815f8a3cad98f37",
+      "archivedSha256": "89a13803a212062cff9723362e9293e48947eeb71ac14a27c815f8a3cad98f37",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-cart.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-cart.html",
+      "kind": "archived",
+      "originalSha256": "48eb3968dfdd4de9928b070d2b57a114f5fc5ac828b8642789d9325230e5d0c2",
+      "archivedSha256": "48eb3968dfdd4de9928b070d2b57a114f5fc5ac828b8642789d9325230e5d0c2",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-checkout.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-checkout.html",
+      "kind": "archived",
+      "originalSha256": "82b01f90d4e7098d40cc03d6e88e20a9d4dd6dc3f0aad42b9a4e0e1313d085cb",
+      "archivedSha256": "82b01f90d4e7098d40cc03d6e88e20a9d4dd6dc3f0aad42b9a4e0e1313d085cb",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-documents.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-documents.html",
+      "kind": "archived",
+      "originalSha256": "74986bbcc708eb32aa82e4ec0d68bf4c1c68acf45adc4f229769e9e1932c353e",
+      "archivedSha256": "74986bbcc708eb32aa82e4ec0d68bf4c1c68acf45adc4f229769e9e1932c353e",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-notifications.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-notifications.html",
+      "kind": "archived",
+      "originalSha256": "a77ebd4a7e504aff56f2e24e58546355f35e12ad65395cb820e3a31fd6a5b917",
+      "archivedSha256": "a77ebd4a7e504aff56f2e24e58546355f35e12ad65395cb820e3a31fd6a5b917",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-orders.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-orders.html",
+      "kind": "archived",
+      "originalSha256": "69e7a978c44ffe8d801bda48d3107d53694c2d61263c41058f703be45ce638a5",
+      "archivedSha256": "69e7a978c44ffe8d801bda48d3107d53694c2d61263c41058f703be45ce638a5",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-recommendations.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-recommendations.html",
+      "kind": "archived",
+      "originalSha256": "8d0dc201681ae8297f0077fc0e73bfc447707a01e682d333d89b94225fa63ada",
+      "archivedSha256": "8d0dc201681ae8297f0077fc0e73bfc447707a01e682d333d89b94225fa63ada",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-support.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-support.html",
+      "kind": "archived",
+      "originalSha256": "184f5a6fb5e2141fac6d7bd2e61e8098cab1e2ac6728fc76bd3920d9bc7560e3",
+      "archivedSha256": "184f5a6fb5e2141fac6d7bd2e61e8098cab1e2ac6728fc76bd3920d9bc7560e3",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-workspace.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/buyer-workspace.html",
+      "kind": "archived",
+      "originalSha256": "b14de68391a3bfaf669219522e6891e5b2c7f37f2744842e9c5149ca790d0bff",
+      "archivedSha256": "b14de68391a3bfaf669219522e6891e5b2c7f37f2744842e9c5149ca790d0bff",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/index.html",
+      "kind": "archived",
+      "originalSha256": "933c5bdce84fa3ae4e43c118068f658fbf178f3412e374936c827d9e9b09439d",
+      "archivedSha256": "933c5bdce84fa3ae4e43c118068f658fbf178f3412e374936c827d9e9b09439d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/manual-payment.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/manual-payment.html",
+      "kind": "archived",
+      "originalSha256": "e7437a917a5e4c9c2e41496c736e503bc84ea8d4b68721892f0a2502c6ef581a",
+      "archivedSha256": "e7437a917a5e4c9c2e41496c736e503bc84ea8d4b68721892f0a2502c6ef581a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/product-offers.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/product-offers.html",
+      "kind": "archived",
+      "originalSha256": "dc289b7ec3eae559d840a39058b41337c6ca68c38ecff607fafb587f9ab4dfb1",
+      "archivedSha256": "dc289b7ec3eae559d840a39058b41337c6ca68c38ecff607fafb587f9ab4dfb1",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/public-catalog.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/public-catalog.html",
+      "kind": "archived",
+      "originalSha256": "4f2d07ecdef95adb28447b4c4b8719bc5e770a15c62d1f5e65d1f2813cad53b4",
+      "archivedSha256": "4f2d07ecdef95adb28447b4c4b8719bc5e770a15c62d1f5e65d1f2813cad53b4",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/team.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/02-покупатель/team.html",
+      "kind": "archived",
+      "originalSha256": "95b544db78a9e43f635acdbc8acadf2262b86f20875bda9e2a91e61163f262c7",
+      "archivedSha256": "95b544db78a9e43f635acdbc8acadf2262b86f20875bda9e2a91e61163f262c7",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/billing.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/billing.html",
+      "kind": "archived",
+      "originalSha256": "ddd2328c7684afd7be40db52a0a75ac7938599926e0938ba7fb18d4e7d78cc72",
+      "archivedSha256": "ddd2328c7684afd7be40db52a0a75ac7938599926e0938ba7fb18d4e7d78cc72",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/index.html",
+      "kind": "archived",
+      "originalSha256": "0f30d6260da7d97f1819f4d55eafeb2925dbe05cc2a596e5595e8a00c5687e88",
+      "archivedSha256": "0f30d6260da7d97f1819f4d55eafeb2925dbe05cc2a596e5595e8a00c5687e88",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-compliance.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-compliance.html",
+      "kind": "archived",
+      "originalSha256": "6e69e667e98177e7946be16286fe5205700de2accb2ab4f3d25910e8a64d8a73",
+      "archivedSha256": "6e69e667e98177e7946be16286fe5205700de2accb2ab4f3d25910e8a64d8a73",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-connectors.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-connectors.html",
+      "kind": "archived",
+      "originalSha256": "cd732816517d3da666c51a77d8ff238c8999965b88be5f457af7d6bde0a1b5a9",
+      "archivedSha256": "cd732816517d3da666c51a77d8ff238c8999965b88be5f457af7d6bde0a1b5a9",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-dashboard.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-dashboard.html",
+      "kind": "archived",
+      "originalSha256": "4fff8410932a7bfa207742692bad0a70f1cdaa0c16d7e7b12a606fadf4c57ba6",
+      "archivedSha256": "4fff8410932a7bfa207742692bad0a70f1cdaa0c16d7e7b12a606fadf4c57ba6",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-documents.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-documents.html",
+      "kind": "archived",
+      "originalSha256": "4c9c68ed5705ce502986f926ccdb7a1c14cba114b50eecec99bc1ea6125db34f",
+      "archivedSha256": "4c9c68ed5705ce502986f926ccdb7a1c14cba114b50eecec99bc1ea6125db34f",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-imports.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-imports.html",
+      "kind": "archived",
+      "originalSha256": "3ff5d06898854ec795b8b0bc97f0a3fbb17b080abc0e4409239d347c95800e7a",
+      "archivedSha256": "3ff5d06898854ec795b8b0bc97f0a3fbb17b080abc0e4409239d347c95800e7a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-inventory.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-inventory.html",
+      "kind": "archived",
+      "originalSha256": "b289395b59225cc1618b7d4c8be62f95b9eb31a2323bb0435eaedebea649f716",
+      "archivedSha256": "b289395b59225cc1618b7d4c8be62f95b9eb31a2323bb0435eaedebea649f716",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-offers.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-offers.html",
+      "kind": "archived",
+      "originalSha256": "24c620c2d1c5cc3f73bdaffbd3e6e61494d9c0b78c104b6e8660687e2643a01e",
+      "archivedSha256": "24c620c2d1c5cc3f73bdaffbd3e6e61494d9c0b78c104b6e8660687e2643a01e",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-orders.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-orders.html",
+      "kind": "archived",
+      "originalSha256": "c30330aa389eda4bb804ad9f0ab6cd45e09e600199bc413e8f5d94d59b7b6a2e",
+      "archivedSha256": "c30330aa389eda4bb804ad9f0ab6cd45e09e600199bc413e8f5d94d59b7b6a2e",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-promotions.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-promotions.html",
+      "kind": "archived",
+      "originalSha256": "cee348acb9b1f6ca610192b6125aabfc26b27c103bf38d06aeb874fc9400c1ea",
+      "archivedSha256": "cee348acb9b1f6ca610192b6125aabfc26b27c103bf38d06aeb874fc9400c1ea",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-trust.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/03-поставщик/supplier-trust.html",
+      "kind": "archived",
+      "originalSha256": "8ed1987caaa40682d839d47a913d2cc257f6a564fac42328f6dc703db80501b2",
+      "archivedSha256": "8ed1987caaa40682d839d47a913d2cc257f6a564fac42328f6dc703db80501b2",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-access.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-access.html",
+      "kind": "archived",
+      "originalSha256": "6981970319390d8cd127e237b3cf55a12166d217e1eb5cbdc245f3e9b5415637",
+      "archivedSha256": "6981970319390d8cd127e237b3cf55a12166d217e1eb5cbdc245f3e9b5415637",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-agreements.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-agreements.html",
+      "kind": "archived",
+      "originalSha256": "db7d3fb91ae84bf7b73653ca66a8eaaf960cfaadcefd7334c3a42ca98f3bdde2",
+      "archivedSha256": "db7d3fb91ae84bf7b73653ca66a8eaaf960cfaadcefd7334c3a42ca98f3bdde2",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-assurance.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-assurance.html",
+      "kind": "archived",
+      "originalSha256": "96ee9bd3555d6b3a492062f22fa7aaf035e9042a76626826dd22efbae2895065",
+      "archivedSha256": "96ee9bd3555d6b3a492062f22fa7aaf035e9042a76626826dd22efbae2895065",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-audit.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-audit.html",
+      "kind": "archived",
+      "originalSha256": "a8cf6556f51d964f8f4b0a16652adfa4ff93b191ceb0c51adfe152ee79d48178",
+      "archivedSha256": "a8cf6556f51d964f8f4b0a16652adfa4ff93b191ceb0c51adfe152ee79d48178",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-catalog-quality.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-catalog-quality.html",
+      "kind": "archived",
+      "originalSha256": "0823be95ca8a3c06d866710846c0f34d97f86bb896b770f78f1c81ca27143ca8",
+      "archivedSha256": "0823be95ca8a3c06d866710846c0f34d97f86bb896b770f78f1c81ca27143ca8",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-catalog.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-catalog.html",
+      "kind": "archived",
+      "originalSha256": "f54a4ecd4a7b3154cc2c889069ad3920982aa43fc2038bcf23e9e6e01a71cadb",
+      "archivedSha256": "f54a4ecd4a7b3154cc2c889069ad3920982aa43fc2038bcf23e9e6e01a71cadb",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-connector-readiness.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-connector-readiness.html",
+      "kind": "archived",
+      "originalSha256": "3dcaea0eb0530c89b3240c08b62c6adb3518de68dd43dcdae81febbb5b884e16",
+      "archivedSha256": "3dcaea0eb0530c89b3240c08b62c6adb3518de68dd43dcdae81febbb5b884e16",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-connectors.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-connectors.html",
+      "kind": "archived",
+      "originalSha256": "d5e30f66f6d659148db6663907b45acd2360f3b1e67a36ebef896a493e5b19e5",
+      "archivedSha256": "d5e30f66f6d659148db6663907b45acd2360f3b1e67a36ebef896a493e5b19e5",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-controls.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-controls.html",
+      "kind": "archived",
+      "originalSha256": "0294e582d73c5d1dc6ad565c9662607d206ca301483458fb11b7a461a5aba327",
+      "archivedSha256": "0294e582d73c5d1dc6ad565c9662607d206ca301483458fb11b7a461a5aba327",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-corrections.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-corrections.html",
+      "kind": "archived",
+      "originalSha256": "ce3af43554fbf9b824599166cd7ce5b311219cc6d6cc5ca26f04fa2a880a9cc8",
+      "archivedSha256": "ce3af43554fbf9b824599166cd7ce5b311219cc6d6cc5ca26f04fa2a880a9cc8",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-imports.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-imports.html",
+      "kind": "archived",
+      "originalSha256": "0de213a970256e10f321e2a363c0a9e94a833b25479bdb20fd6966100efa9bf5",
+      "archivedSha256": "0de213a970256e10f321e2a363c0a9e94a833b25479bdb20fd6966100efa9bf5",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-lots.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-lots.html",
+      "kind": "archived",
+      "originalSha256": "9a493e8ce49032ddcd3885b54630f59831afbf451ab23e4728f0f6a578a15625",
+      "archivedSha256": "9a493e8ce49032ddcd3885b54630f59831afbf451ab23e4728f0f6a578a15625",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-metrics.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-metrics.html",
+      "kind": "archived",
+      "originalSha256": "e5fe6f04c6ec7ab4869fa83552a179cf387e44ae03301afabbe486d1bd9d2687",
+      "archivedSha256": "e5fe6f04c6ec7ab4869fa83552a179cf387e44ae03301afabbe486d1bd9d2687",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-organizations.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-organizations.html",
+      "kind": "archived",
+      "originalSha256": "c5d753029c4944a1942f4013fb0ca784e04065e0df7361695e5aef2a053eefc6",
+      "archivedSha256": "c5d753029c4944a1942f4013fb0ca784e04065e0df7361695e5aef2a053eefc6",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-overview.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-overview.html",
+      "kind": "archived",
+      "originalSha256": "48259b2c536dc0bd945e26f1f4e5ce1efe1815bbbddfcd8dfcd6c8d500dfd7a2",
+      "archivedSha256": "48259b2c536dc0bd945e26f1f4e5ce1efe1815bbbddfcd8dfcd6c8d500dfd7a2",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-settings.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-settings.html",
+      "kind": "archived",
+      "originalSha256": "d64bfa05e506e7610e4e0573cb7605ce9cfd140016e574abdce6245e90070504",
+      "archivedSha256": "d64bfa05e506e7610e4e0573cb7605ce9cfd140016e574abdce6245e90070504",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-supply.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-supply.html",
+      "kind": "archived",
+      "originalSha256": "7a38e4d473e261507411c08776a1975081a2d1d0c7962e74f97536d5c348dd96",
+      "archivedSha256": "7a38e4d473e261507411c08776a1975081a2d1d0c7962e74f97536d5c348dd96",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-taxonomy.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-taxonomy.html",
+      "kind": "archived",
+      "originalSha256": "284ffbb29ef58b2103b4114d98f2bb4f99b167448204555a2984e1cd89e825fe",
+      "archivedSha256": "284ffbb29ef58b2103b4114d98f2bb4f99b167448204555a2984e1cd89e825fe",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-trust.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/admin-trust.html",
+      "kind": "archived",
+      "originalSha256": "aeba9cf6c43ffa7f780b19bf6302b6f2b3ca15e91505f359a89b5ee96cf1047c",
+      "archivedSha256": "aeba9cf6c43ffa7f780b19bf6302b6f2b3ca15e91505f359a89b5ee96cf1047c",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/04-оператор/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/04-оператор/index.html",
+      "kind": "archived",
+      "originalSha256": "3a29aae887c5e48d10c27d87f91878fa0eff27f04b7e16ba239b630ada9781ca",
+      "archivedSha256": "3a29aae887c5e48d10c27d87f91878fa0eff27f04b7e16ba239b630ada9781ca",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/auth-admin.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/auth-admin.html",
+      "kind": "archived",
+      "originalSha256": "6bbb019aa33b521b15a54c6cd14572ad3306900e78abff572375254804754dc8",
+      "archivedSha256": "6bbb019aa33b521b15a54c6cd14572ad3306900e78abff572375254804754dc8",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/auth-login.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/auth-login.html",
+      "kind": "archived",
+      "originalSha256": "88177c58ead93b88b3eff10eb5f138d4938e4413cd313534923e61b0e106007c",
+      "archivedSha256": "88177c58ead93b88b3eff10eb5f138d4938e4413cd313534923e61b0e106007c",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/auth-register.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/auth-register.html",
+      "kind": "archived",
+      "originalSha256": "d2bd0b1dfd58e78783b7297e6953095f6b08c9e6d67aa4b741c3bc981e1c57de",
+      "archivedSha256": "d2bd0b1dfd58e78783b7297e6953095f6b08c9e6d67aa4b741c3bc981e1c57de",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/auth-reset.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/auth-reset.html",
+      "kind": "archived",
+      "originalSha256": "f0c06b2c71d1fc24bab976878b860e8c0050a1838253c544d79a05d81ba09698",
+      "archivedSha256": "f0c06b2c71d1fc24bab976878b860e8c0050a1838253c544d79a05d81ba09698",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/auth-resume.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/auth-resume.html",
+      "kind": "archived",
+      "originalSha256": "60cf15b64871822e14dc32ac4c5c14b7757dc301ec3c7258d99ae7d06bc5bc2a",
+      "archivedSha256": "60cf15b64871822e14dc32ac4c5c14b7757dc301ec3c7258d99ae7d06bc5bc2a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/auth-verify.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/auth-verify.html",
+      "kind": "archived",
+      "originalSha256": "60aad4a743b611668c04dc4a16853beeb2cf07a7935947c68db8d5b991cd562d",
+      "archivedSha256": "60aad4a743b611668c04dc4a16853beeb2cf07a7935947c68db8d5b991cd562d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/05-авторизация/index.html",
+      "kind": "archived",
+      "originalSha256": "96e6de8b3dfd5c868a03c0696222edc2bb2d2478ec050031ca0e821754f58709",
+      "archivedSha256": "96e6de8b3dfd5c868a03c0696222edc2bb2d2478ec050031ca0e821754f58709",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/admin-organization-create.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/admin-organization-create.html",
+      "kind": "archived",
+      "originalSha256": "2f3796d354256561d7e27f01839095d07b07d14adba4718aeb63d104c2fefa0a",
+      "archivedSha256": "2f3796d354256561d7e27f01839095d07b07d14adba4718aeb63d104c2fefa0a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/buyer-document-detail.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/buyer-document-detail.html",
+      "kind": "archived",
+      "originalSha256": "abdc5b28ca65d95c32f26799e480bfe6f63e9be6d15a9bfadf82569c7b8329e3",
+      "archivedSha256": "abdc5b28ca65d95c32f26799e480bfe6f63e9be6d15a9bfadf82569c7b8329e3",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/buyer-document-upload.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/buyer-document-upload.html",
+      "kind": "archived",
+      "originalSha256": "d20bd31caf117cf061b5b52a98a1dfa4b26b1bf45e0fc08fff6925e9c51649f5",
+      "archivedSha256": "d20bd31caf117cf061b5b52a98a1dfa4b26b1bf45e0fc08fff6925e9c51649f5",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/buyer-order-detail.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/buyer-order-detail.html",
+      "kind": "archived",
+      "originalSha256": "c5b3b397cb6bf291b99a10b569855aa9620f48fa092228b3f2168a197dfe9ba7",
+      "archivedSha256": "c5b3b397cb6bf291b99a10b569855aa9620f48fa092228b3f2168a197dfe9ba7",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/buyer-reviews.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/buyer-reviews.html",
+      "kind": "archived",
+      "originalSha256": "8e7ab0a3b19de31b78577378e6d11f6907b581dd130640787d86d5b838d055bc",
+      "archivedSha256": "8e7ab0a3b19de31b78577378e6d11f6907b581dd130640787d86d5b838d055bc",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/index.html",
+      "kind": "archived",
+      "originalSha256": "0ba53981863d20753e448a828b8e8b94df8ce36fef906188c225a96853e8646b",
+      "archivedSha256": "0ba53981863d20753e448a828b8e8b94df8ce36fef906188c225a96853e8646b",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-agreement.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-agreement.html",
+      "kind": "archived",
+      "originalSha256": "f1d168f6e97f0893e03a4a72fa9a85c0de08f220baf61e51c21d7d5fedc73fe6",
+      "archivedSha256": "f1d168f6e97f0893e03a4a72fa9a85c0de08f220baf61e51c21d7d5fedc73fe6",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-corrections.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-corrections.html",
+      "kind": "archived",
+      "originalSha256": "11fe51fe8f133e4aecd9cf25d4f2a6b81963d59465ca353d9938f42f10bb38c1",
+      "archivedSha256": "11fe51fe8f133e4aecd9cf25d4f2a6b81963d59465ca353d9938f42f10bb38c1",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-document-detail.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-document-detail.html",
+      "kind": "archived",
+      "originalSha256": "b8c1055f916662a2b0bfdb4a34b7411ad93b71fa3c736e1db30ddb5c06818f80",
+      "archivedSha256": "b8c1055f916662a2b0bfdb4a34b7411ad93b71fa3c736e1db30ddb5c06818f80",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-import-review.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-import-review.html",
+      "kind": "archived",
+      "originalSha256": "1b87cfb4ec8953a54342f32fabc1a68cdaab1e56b2d71b145e6daf2b1c4867ad",
+      "archivedSha256": "1b87cfb4ec8953a54342f32fabc1a68cdaab1e56b2d71b145e6daf2b1c4867ad",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-offer-editor.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-offer-editor.html",
+      "kind": "archived",
+      "originalSha256": "2733cef4781168f34988486bd9d7cc7f293f9d4be5bcf9e908d4d3e168543c19",
+      "archivedSha256": "2733cef4781168f34988486bd9d7cc7f293f9d4be5bcf9e908d4d3e168543c19",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-onboarding.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-onboarding.html",
+      "kind": "archived",
+      "originalSha256": "509d783f04b1cb97d790161c7d61bbc1815c90a103c735e69cd85a96c639858f",
+      "archivedSha256": "509d783f04b1cb97d790161c7d61bbc1815c90a103c735e69cd85a96c639858f",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-order-detail.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-order-detail.html",
+      "kind": "archived",
+      "originalSha256": "96118731478bbe3144ed86ac4f25d2d73b8e1e728f54acfb2218ddf0168eec4e",
+      "archivedSha256": "96118731478bbe3144ed86ac4f25d2d73b8e1e728f54acfb2218ddf0168eec4e",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-shipment.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/06-модальные-окна-и-панели/supplier-shipment.html",
+      "kind": "archived",
+      "originalSha256": "c2b156d6ff7ea8d6634458d924892508ceb0e9cf1391737cf382c8fe96552f1a",
+      "archivedSha256": "c2b156d6ff7ea8d6634458d924892508ceb0e9cf1391737cf382c8fe96552f1a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/07-компоненты/components-controls.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/07-компоненты/components-controls.html",
+      "kind": "archived",
+      "originalSha256": "08dbc134e1bf489efcd1b159485e29471b2195139109e0fa097e23d6527b7fd1",
+      "archivedSha256": "08dbc134e1bf489efcd1b159485e29471b2195139109e0fa097e23d6527b7fd1",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/07-компоненты/components-feedback.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/07-компоненты/components-feedback.html",
+      "kind": "archived",
+      "originalSha256": "8b40c2b21c8ee24033e3ba105bb7a8ec5b872195d8ad6737c248885c7752dd72",
+      "archivedSha256": "8b40c2b21c8ee24033e3ba105bb7a8ec5b872195d8ad6737c248885c7752dd72",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/07-компоненты/components-navigation.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/07-компоненты/components-navigation.html",
+      "kind": "archived",
+      "originalSha256": "bed0202a9121de942f046b6f11d23a81a705b5c6a89330ab62c942c47b8f26c9",
+      "archivedSha256": "bed0202a9121de942f046b6f11d23a81a705b5c6a89330ab62c942c47b8f26c9",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/07-компоненты/components-overlays.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/07-компоненты/components-overlays.html",
+      "kind": "archived",
+      "originalSha256": "8e1fe089c44d19266f3c3deda5f1e3c498ef5773e9d6b442f7d968907657c29a",
+      "archivedSha256": "8e1fe089c44d19266f3c3deda5f1e3c498ef5773e9d6b442f7d968907657c29a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/07-компоненты/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/07-компоненты/index.html",
+      "kind": "archived",
+      "originalSha256": "6a55eee86fe7f03b42ea176e36fa8457d80c994779350010215438259fbdbd35",
+      "archivedSha256": "6a55eee86fe7f03b42ea176e36fa8457d80c994779350010215438259fbdbd35",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/index.html",
+      "kind": "archived",
+      "originalSha256": "3233aebd474423589e63171e2ac86a698e365b037b30a57486a141a3c6b22b66",
+      "archivedSha256": "3233aebd474423589e63171e2ac86a698e365b037b30a57486a141a3c6b22b66",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/system-empty.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/system-empty.html",
+      "kind": "archived",
+      "originalSha256": "491cdae2848d629113406d3fc8e3b34fc2d8a27a42635f975b11ddc20b756f2a",
+      "archivedSha256": "491cdae2848d629113406d3fc8e3b34fc2d8a27a42635f975b11ddc20b756f2a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/system-error.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/system-error.html",
+      "kind": "archived",
+      "originalSha256": "66acde712d570373ab6b093b96ac8eaf683e429fa1eb92d90534f219b425b705",
+      "archivedSha256": "66acde712d570373ab6b093b96ac8eaf683e429fa1eb92d90534f219b425b705",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/system-forbidden.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/system-forbidden.html",
+      "kind": "archived",
+      "originalSha256": "a1dea7083cff252a251212c13f38d6d620ead8a8b5e83bbe968f03dcf7ab89f3",
+      "archivedSha256": "a1dea7083cff252a251212c13f38d6d620ead8a8b5e83bbe968f03dcf7ab89f3",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/system-loading.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/system-loading.html",
+      "kind": "archived",
+      "originalSha256": "8127626d0e011f19aac67034101b5cb8e9f265320c1583853b1cf0ebda74bd4d",
+      "archivedSha256": "8127626d0e011f19aac67034101b5cb8e9f265320c1583853b1cf0ebda74bd4d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/system-not-found.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/system-not-found.html",
+      "kind": "archived",
+      "originalSha256": "024186fa59a4a86a3cd301ef9b2397b882e4e859dd12de30efddc1f1fe0286dc",
+      "archivedSha256": "024186fa59a4a86a3cd301ef9b2397b882e4e859dd12de30efddc1f1fe0286dc",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/system-session.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/08-системные-состояния/system-session.html",
+      "kind": "archived",
+      "originalSha256": "730c606762c83d701cc7b37126689ac1cbd75d66bae8dde10be8dd6ee58f7bb8",
+      "archivedSha256": "730c606762c83d701cc7b37126689ac1cbd75d66bae8dde10be8dd6ee58f7bb8",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/09-юридические-страницы/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/09-юридические-страницы/index.html",
+      "kind": "archived",
+      "originalSha256": "6bbef56ee0658de385bb39eb7b0761451ad46877ec36293e1b9d6cafddcc31a7",
+      "archivedSha256": "6bbef56ee0658de385bb39eb7b0761451ad46877ec36293e1b9d6cafddcc31a7",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/09-юридические-страницы/legal-privacy.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/09-юридические-страницы/legal-privacy.html",
+      "kind": "archived",
+      "originalSha256": "87aaf31d9a886e90fc96ab1d8c44763983bc3397216a7531fcef77e54b445f5e",
+      "archivedSha256": "87aaf31d9a886e90fc96ab1d8c44763983bc3397216a7531fcef77e54b445f5e",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/09-юридические-страницы/legal-terms.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/09-юридические-страницы/legal-terms.html",
+      "kind": "archived",
+      "originalSha256": "d10e89793e20da362ed6469b804caa2dd68e1a764bf3ba37b2e829b9126dfe55",
+      "archivedSha256": "d10e89793e20da362ed6469b804caa2dd68e1a764bf3ba37b2e829b9126dfe55",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/10-дополнительные-концепты/buyer-documents-ai.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/10-дополнительные-концепты/buyer-documents-ai.png",
+      "kind": "archived",
+      "originalSha256": "fcf96988d802e035b1b283d86f947b24b7c52c61b99af776057eee8cec5d489e",
+      "archivedSha256": "fcf96988d802e035b1b283d86f947b24b7c52c61b99af776057eee8cec5d489e",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/10-дополнительные-концепты/components-overlays-ai.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/10-дополнительные-концепты/components-overlays-ai.png",
+      "kind": "archived",
+      "originalSha256": "a9c9aeee6673def7f7a21965da86fd69ffbe494a5fee8165698d79cbb0d35d1f",
+      "archivedSha256": "a9c9aeee6673def7f7a21965da86fd69ffbe494a5fee8165698d79cbb0d35d1f",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/10-дополнительные-концепты/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/10-дополнительные-концепты/index.html",
+      "kind": "archived",
+      "originalSha256": "91ab1ea3012d60780a5f95302ca379ed0777103d56cbc9cb1242dea7ee0d86b0",
+      "archivedSha256": "91ab1ea3012d60780a5f95302ca379ed0777103d56cbc9cb1242dea7ee0d86b0",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/CHECKLIST.md",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/CHECKLIST.md",
+      "kind": "archived",
+      "originalSha256": "bdea0f630c510e2d6b1ab9be9facd93c354436e4fb716cdd71ebc6afc0c0af65",
+      "archivedSha256": "a4c48fc3353cb8c311b302a2a26235ff72b666adfb401285588a9211e54f78ad",
+      "semanticSha256": "3a1d229f90719f015f7b2f10b67fccf3c62419340f0f8ff895700019cc7dfe11"
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/index.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/index.html",
+      "kind": "archived",
+      "originalSha256": "a569b7cf93eb7d072994191c90ba7b1c8af909b1a63f03e4d3d06fe977b6cec5",
+      "archivedSha256": "a569b7cf93eb7d072994191c90ba7b1c8af909b1a63f03e4d3d06fe977b6cec5",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/manifest.json",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/manifest.json",
+      "kind": "archived",
+      "originalSha256": "e96fa43736a58969d96503bad3f713b4e9dc3713da21871ff5c8895e8a8f2b6b",
+      "archivedSha256": "e96fa43736a58969d96503bad3f713b4e9dc3713da21871ff5c8895e8a8f2b6b",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/review.css",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/review.css",
+      "kind": "archived",
+      "originalSha256": "536fa12cd5259cd913084cbc945c03a3fadacad1be61547a38de5cb167e3711f",
+      "archivedSha256": "536fa12cd5259cd913084cbc945c03a3fadacad1be61547a38de5cb167e3711f",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/review/snapshot-navigation.css",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/snapshot-navigation.css",
+      "kind": "archived",
+      "originalSha256": "840e39ed016cddef35829f08b0cf58587444c1d89b2056f277b9d9ccc45dc70e",
+      "archivedSha256": "840e39ed016cddef35829f08b0cf58587444c1d89b2056f277b9d9ccc45dc70e",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/screens/buyer-documents-desktop-1536.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/screens/buyer-documents-desktop-1536.png",
+      "kind": "archived",
+      "originalSha256": "92e84809d817bc2c8190ea3f10e706dca4b2fb9d2673816c619d38bd612eb72d",
+      "archivedSha256": "92e84809d817bc2c8190ea3f10e706dca4b2fb9d2673816c619d38bd612eb72d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/screens/buyer-orders-desktop-1536.png",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/screens/buyer-orders-desktop-1536.png",
+      "kind": "archived",
+      "originalSha256": "7a5a3991faf2cfcaf4d9849afc70903aecbe57b1ba1ec7862dadd7e0d2b6ace9",
+      "archivedSha256": "7a5a3991faf2cfcaf4d9849afc70903aecbe57b1ba1ec7862dadd7e0d2b6ace9",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/serve.mjs",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/serve.mjs",
+      "kind": "archived",
+      "originalSha256": "1788b4bd631fdba06183aacaee802c864a32ee18d9115a5c1436f1f69ea36ab0",
+      "archivedSha256": "1788b4bd631fdba06183aacaee802c864a32ee18d9115a5c1436f1f69ea36ab0",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/source-manifest.json",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/source-manifest.json",
+      "kind": "archived",
+      "originalSha256": "41e23dc8fe55c24055212796491d0d230809b6ec0adcf33b54b870116859c83b",
+      "archivedSha256": "41e23dc8fe55c24055212796491d0d230809b6ec0adcf33b54b870116859c83b",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/style.css",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/style.css",
+      "kind": "archived",
+      "originalSha256": "19f87727810ceb9201f56a0d78a07ba57dcb5cd3c7a44af6164465f7641632fc",
+      "archivedSha256": "19f87727810ceb9201f56a0d78a07ba57dcb5cd3c7a44af6164465f7641632fc",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/templates.js",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/templates.js",
+      "kind": "archived",
+      "originalSha256": "5a43f4d49b3e83a6449a3559b3a800e1f52af392d65757f2ad4822ee32dfc9cc",
+      "archivedSha256": "5a43f4d49b3e83a6449a3559b3a800e1f52af392d65757f2ad4822ee32dfc9cc",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/validate.mjs",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/validate.mjs",
+      "kind": "archived",
+      "originalSha256": "3a0a411ed506239c0b720478e8721e5e57aada0e9f14bc0b064ebf9c4b4f148a",
+      "archivedSha256": "3a0a411ed506239c0b720478e8721e5e57aada0e9f14bc0b064ebf9c4b4f148a",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/viewer.html",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/viewer.html",
+      "kind": "archived",
+      "originalSha256": "ce20869002f9120c79e77e6607e642400843da11ed739018d45dec9d0d758a69",
+      "archivedSha256": "ce20869002f9120c79e77e6607e642400843da11ed739018d45dec9d0d758a69",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/ui-ux/references/production-preview-2026-09-16/viewer.js",
+      "destination": "actual_docs/history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/viewer.js",
+      "kind": "archived",
+      "originalSha256": "82112db76e25374261852139acec2fa9026bb1c4ef6a9f199f18dec131c5b5ef",
+      "archivedSha256": "82112db76e25374261852139acec2fa9026bb1c4ef6a9f199f18dec131c5b5ef",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/applications/admin-web.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/applications/admin-web.md",
+      "kind": "previous-version",
+      "originalSha256": "0ab3c92c58136b3d15db1c8da130193addd1fa18e3d1c98067c98c35d9472ec9",
+      "archivedSha256": "0ab3c92c58136b3d15db1c8da130193addd1fa18e3d1c98067c98c35d9472ec9",
+      "semanticSha256": "aab9d98be5f7929f53045d94596f3f4a5fd230430e345bf6d2e199e5fcd41732"
+    },
+    {
+      "original": "actual_docs/applications/buyer-web.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/applications/buyer-web.md",
+      "kind": "previous-version",
+      "originalSha256": "46cc973f953848fe8491ccd8ea1e2829d90ce5a3d733a6d0e8660f0f99d3a2e4",
+      "archivedSha256": "46cc973f953848fe8491ccd8ea1e2829d90ce5a3d733a6d0e8660f0f99d3a2e4",
+      "semanticSha256": "51cef0827e0be8ce85120cadeb6fb6ad3865a9b824802b498280f1332ac05f0f"
+    },
+    {
+      "original": "actual_docs/applications/supplier-web.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/applications/supplier-web.md",
+      "kind": "previous-version",
+      "originalSha256": "d27c1df15346e1614c01cba91e860b48e1fd1ea737728ebd988739bfce1ce7cc",
+      "archivedSha256": "d27c1df15346e1614c01cba91e860b48e1fd1ea737728ebd988739bfce1ce7cc",
+      "semanticSha256": "c5cc3fcba6a46c2ea136d0a6371a78639f3afbfac5e4f7458fc3625242d68d4c"
+    },
+    {
+      "original": "actual_docs/architecture/adr/010-frontend-deployment-profile.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/architecture/adr/010-frontend-deployment-profile.md",
+      "kind": "previous-version",
+      "originalSha256": "9588fb058495a3be2bacbe607d43bd26a1c8d5b073b29391b845a23a3a47ca64",
+      "archivedSha256": "8e78db73c0917a72925354be7f2d253d860ed312f9c6863a9335c78766be1e61",
+      "semanticSha256": "e06ccdbc0405f0ce293a25e7957c7eccb4446fa6151a010cea70a1e5360bc542"
+    },
+    {
+      "original": "actual_docs/architecture/adr/014-local-workspace-sessions.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/architecture/adr/014-local-workspace-sessions.md",
+      "kind": "previous-version",
+      "originalSha256": "53f4c067c13edd13133f05e10fe284fb98e9dc3aa3d0524c7befaab99df2b226",
+      "archivedSha256": "53f4c067c13edd13133f05e10fe284fb98e9dc3aa3d0524c7befaab99df2b226",
+      "semanticSha256": "022b8605c8d962e66c058f3e6e82ca56e22ecdf163eb6778cec418fb8d35df2a"
+    },
+    {
+      "original": "actual_docs/architecture/adr/015-unified-frontend.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/architecture/adr/015-unified-frontend.md",
+      "kind": "previous-version",
+      "originalSha256": "5fef21e982b156f7ff8ccacffdacda8a7ca6e1828841e07d163ba834f6f438e7",
+      "archivedSha256": "5fef21e982b156f7ff8ccacffdacda8a7ca6e1828841e07d163ba834f6f438e7",
+      "semanticSha256": "f17e4155058a97ffae22f48382f958e0606966e5007ccd81dcca2cbe408d507a"
+    },
+    {
+      "original": "actual_docs/architecture/architecture.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/architecture/architecture.md",
+      "kind": "previous-version",
+      "originalSha256": "54cb1173a4a73e2f8b2ab5c49b810f959ca1f079cab6f9a1f94692f9f4fa8f06",
+      "archivedSha256": "1af7668ba76811c5bc429cda31017a228ba07f8181230fe0f6593d15bfa4cfe7",
+      "semanticSha256": "f27493850f145e7acb0f6c23febed15611c13ee561e948473a628f4a367bc3ff"
+    },
+    {
+      "original": "actual_docs/architecture/er.mmd",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/architecture/er.mmd",
+      "kind": "previous-version",
+      "originalSha256": "b324bef6458a8660b505125fc6643c9a01f8d1cc5900c98db15b44fc8574ed1d",
+      "archivedSha256": "b324bef6458a8660b505125fc6643c9a01f8d1cc5900c98db15b44fc8574ed1d",
+      "semanticSha256": null
+    },
+    {
+      "original": "actual_docs/backend/DENTMARKET_BACKEND_FOUNDATION_V2.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/backend/DENTMARKET_BACKEND_FOUNDATION_V2.md",
+      "kind": "previous-version",
+      "originalSha256": "1cc8390527b884f2a3278fa4063f9088a6f7cc075bd6aeb7175e5ff6e42e5281",
+      "archivedSha256": "ae54a174f2c9b05e8193c19b14c0179b7de1dfb586eca8423e102bcd13fa5488",
+      "semanticSha256": "75d416e81ef52bf6e5c58174550323d2dfac8e2f062a51f1819df6a22dccc0cf"
+    },
+    {
+      "original": "actual_docs/governance/DEVELOPMENT_WORKFLOW.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/governance/DEVELOPMENT_WORKFLOW.md",
+      "kind": "previous-version",
+      "originalSha256": "ac97df1b1f846491d7ea4da52804403356dcf542fda5e1d6daf27f5b6dafee19",
+      "archivedSha256": "a3b24b13fcfc60b7e986e6dbc85063dc4f46048a1efe14b27ce27ef3ec6f8245",
+      "semanticSha256": "c55cc315da8f88ddb89f33451916cbda498f9ffcfe5619f417a4245661a384fe"
+    },
+    {
+      "original": "actual_docs/governance/PROJECT_ACCEPTANCE_MATRIX.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/governance/PROJECT_ACCEPTANCE_MATRIX.md",
+      "kind": "previous-version",
+      "originalSha256": "eeb40ea4d3a7fcbed85e77c040b3205d329139113aad5d2e164088bf7b57ae10",
+      "archivedSha256": "d35942172cb8528afe1920f51f43d5994c96613164b14c97df7fb541c9e1be45",
+      "semanticSha256": "f254feb38030f93e905a5fff74789ebe038758890fff33f8eb755544ca1008d5"
+    },
+    {
+      "original": "actual_docs/governance/task-state/PRIMARY-SESSION.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/governance/task-state/PRIMARY-SESSION.md",
+      "kind": "previous-version",
+      "originalSha256": "1ee25cac6a3498fb44f58a8411db04d732f502baff8dfddee1286065bc7ff5be",
+      "archivedSha256": "944c7c19c6ed1085ea9a682e1591c62ea6d999f193f9a17f12195ee82441056e",
+      "semanticSha256": "08e84c02a9669f3a08b91f285afa6ea9e9e394eab84217048d048dea70e094ff"
+    },
+    {
+      "original": "actual_docs/integrations/connector-readiness.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/integrations/connector-readiness.md",
+      "kind": "previous-version",
+      "originalSha256": "56396b00b0074448b9bf7fa0f0972c9e1312668e70ba72c9ba5d42acef4c71c1",
+      "archivedSha256": "56396b00b0074448b9bf7fa0f0972c9e1312668e70ba72c9ba5d42acef4c71c1",
+      "semanticSha256": "f5829831fc18659d19b07b12d2483a0595cf72abb5e1792f3146174c26915f37"
+    },
+    {
+      "original": "actual_docs/integrations/eds-and-1c-integration-technical-spec.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/integrations/eds-and-1c-integration-technical-spec.md",
+      "kind": "previous-version",
+      "originalSha256": "56091765c37f589ee5dc34d06d3c62c2c29572ea4c5a56d3c06cf4a54d9ddf1b",
+      "archivedSha256": "7f2bf151eada6e0b53d20fc9f0178513f82f4293bbc1ff5336f6f5c3cfc9e8b4",
+      "semanticSha256": "6631738ce7e449525481ca919d26ab7546abc9020af9c742dbb40f48d7afbbd2"
+    },
+    {
+      "original": "actual_docs/integrations/runbooks/custom-api.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/integrations/runbooks/custom-api.md",
+      "kind": "previous-version",
+      "originalSha256": "e377f455ab30cc0567bb1a13b8dd94bbc6aa646546f110d0c1c26be53d6a8a47",
+      "archivedSha256": "e377f455ab30cc0567bb1a13b8dd94bbc6aa646546f110d0c1c26be53d6a8a47",
+      "semanticSha256": "1b771dc95184faa2d7df3d52787f55517dcf224545fa92b4e89e0c19dbbdba0d"
+    },
+    {
+      "original": "actual_docs/integrations/runbooks/external-adapters.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/integrations/runbooks/external-adapters.md",
+      "kind": "previous-version",
+      "originalSha256": "4fd80e925540825c8b2875d36b6a89e5ae1e83e9fad131d57fe3ce47bdded15c",
+      "archivedSha256": "4fd80e925540825c8b2875d36b6a89e5ae1e83e9fad131d57fe3ce47bdded15c",
+      "semanticSha256": "a82fc85bd1dd40a5962563d8feede68da9617f9aec272316d5aa878cde977cb1"
+    },
+    {
+      "original": "actual_docs/integrations/runbooks/file-import.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/integrations/runbooks/file-import.md",
+      "kind": "previous-version",
+      "originalSha256": "ad210564589f86934dbb2c4a372dfac45584d9bfc97254ab06d810c99490d36b",
+      "archivedSha256": "ad210564589f86934dbb2c4a372dfac45584d9bfc97254ab06d810c99490d36b",
+      "semanticSha256": "211e43dba5cf384ab1e00d559a586f0def1cb3f67d155c9cbe9101a270b9ed8a"
+    },
+    {
+      "original": "actual_docs/integrations/runbooks/manual-supplier.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/integrations/runbooks/manual-supplier.md",
+      "kind": "previous-version",
+      "originalSha256": "23e84aa0950e13a6da68446b1e6879623c11bd9703dea5a9b05eccb2efa365d4",
+      "archivedSha256": "23e84aa0950e13a6da68446b1e6879623c11bd9703dea5a9b05eccb2efa365d4",
+      "semanticSha256": "841a5db376f11d5f907bb37a1063dd6f841e367bca8254730ef3afeee41db880"
+    },
+    {
+      "original": "actual_docs/operations/b4-6-load-profile.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/operations/b4-6-load-profile.md",
+      "kind": "previous-version",
+      "originalSha256": "2e98fa9a44ae103ad3496bb876c426f2fe04ad8fde0a80c97bf1fb5b92dc8bbc",
+      "archivedSha256": "2e98fa9a44ae103ad3496bb876c426f2fe04ad8fde0a80c97bf1fb5b92dc8bbc",
+      "semanticSha256": "008bff07f28b74857e77054c141a407ab29375f0f62df81d87fcf92efed3c9da"
+    },
+    {
+      "original": "actual_docs/operations/deployment-profiles.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/operations/deployment-profiles.md",
+      "kind": "previous-version",
+      "originalSha256": "4b6844cd15fd697e3833ef553f5dcc959ca5d1df1d2d1f58925d9d857a3354fc",
+      "archivedSha256": "21dad2d9bb7ca21018d36e1ab4b32b32535a7958e1ab57777704e12954476a89",
+      "semanticSha256": "840b030316c18add082713f47ca93eadbfe286e7633cca3d255834ca492647dd"
+    },
+    {
+      "original": "actual_docs/operations/operations.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/operations/operations.md",
+      "kind": "previous-version",
+      "originalSha256": "cf9fa4a92bdd3ae1ef1038eee74a468430a36c642eae83f97c9cff00f004e4b4",
+      "archivedSha256": "05d647c458f0e68951701a91c4739a56e26a8062a8568c244ddec0748714f26e",
+      "semanticSha256": "5ad04905e07e0e1c18c5d9cf601d6a087f6d49795aea22cb4da7cb21562104e8"
+    },
+    {
+      "original": "actual_docs/operations/production-deployment.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/operations/production-deployment.md",
+      "kind": "previous-version",
+      "originalSha256": "71506dae727fe6607763d43f1890231338384500fe1177caef0c655473863697",
+      "archivedSha256": "bac7b02fce4df7cf51ed2984242e928c7bb00c61eb10d6ced3424b7e8b25db05",
+      "semanticSha256": "47cc2abf0d554563d8c9501574ca09683257bd93cf671b7d119abe6a7e0be189"
+    },
+    {
+      "original": "actual_docs/operations/sla-incident-response.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/operations/sla-incident-response.md",
+      "kind": "previous-version",
+      "originalSha256": "fc7b2d11303f0ccf389f93b9f07e5f6a78df080ab8f6a1ef2a6269689ffb271f",
+      "archivedSha256": "ab5ef7e5d32bf96f510ac74135b7e3a6978ddd87e86eeead5145530b83bee117",
+      "semanticSha256": "1c0c583af82880f954252a984d14e88760268c31273c90c15c2fd06ed1ee9dd5"
+    },
+    {
+      "original": "actual_docs/product/DENTMARKET_OUT_OF_PILOT_FEATURES.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/product/DENTMARKET_OUT_OF_PILOT_FEATURES.md",
+      "kind": "previous-version",
+      "originalSha256": "580ca3dd7171712ffa3b11f7d20c15ca3e848783eca7289c9a9887189a48cb86",
+      "archivedSha256": "c4e8a0184700e10adb54db87ff141aebb612cda04304deac1acad6dcfe9a4d60",
+      "semanticSha256": "2b3a97417a31f827322ae6d4a188d58b0001c500ac05387ee08b6e586f2f44af"
+    },
+    {
+      "original": "actual_docs/product/DENTMARKET_PRODUCT_V2.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/product/DENTMARKET_PRODUCT_V2.md",
+      "kind": "previous-version",
+      "originalSha256": "433c271e548da4e43f58281026fdf2cd2d198d789afa6adb0b2113bc80c982f7",
+      "archivedSha256": "04cf88b52607f17be914d02343958bbde99e500e0b0c4a23b06e3f99ee47a0a3",
+      "semanticSha256": "22a98c87137a42cc10b80bbff9bb4a0ee0daec7e7392face0ee4a86141dedb5c",
+      "formatNormalization": "Line 8: equivalent Markdown hard break uses backslash instead of two trailing spaces. Semantic hash retains the original hard-break spelling."
+    },
+    {
+      "original": "actual_docs/product/PILOT-OPEN-QUESTIONS.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/product/PILOT-OPEN-QUESTIONS.md",
+      "kind": "previous-version",
+      "originalSha256": "fa0a7bedc88371f8cb1ffe6ed0018df38aad3824ff11759f0189be6411b3ebd5",
+      "archivedSha256": "fa0a7bedc88371f8cb1ffe6ed0018df38aad3824ff11759f0189be6411b3ebd5",
+      "semanticSha256": "a3fe855bdb1a467ee9bdddfd593e82fe35945ff11535d41f736e64a4de03263a"
+    },
+    {
+      "original": "actual_docs/product-cards/CATALOG_MEDIA_PIPELINE_AUDIT.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/product-cards/CATALOG_MEDIA_PIPELINE_AUDIT.md",
+      "kind": "previous-version",
+      "originalSha256": "21621dc95cda88fc45b8bc30ec80bbe4b1f875cd2ecfcd3716ca6addbf1097f4",
+      "archivedSha256": "21621dc95cda88fc45b8bc30ec80bbe4b1f875cd2ecfcd3716ca6addbf1097f4",
+      "semanticSha256": "dda7a8e6afbc0c425ff55f1994ffd9684a9b2e2b8bc93c06d860cf3f0bc8d3d4"
+    },
+    {
+      "original": "actual_docs/product-cards/pilot-catalog.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/product-cards/pilot-catalog.md",
+      "kind": "previous-version",
+      "originalSha256": "fc01081dbc7f8f5baacd9c6d13030bfa43f8df455d560ade3a185c8d323c8641",
+      "archivedSha256": "fc01081dbc7f8f5baacd9c6d13030bfa43f8df455d560ade3a185c8d323c8641",
+      "semanticSha256": "4886f49c470fa77283fe69961c8140730833120db2ba80881d3b6389531f2b4e"
+    },
+    {
+      "original": "actual_docs/PROJECT_HANDOFF.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/PROJECT_HANDOFF.md",
+      "kind": "previous-version",
+      "originalSha256": "fdb2355609ec23cddae1e318e9e4156b050bb15f8efe658264acf5d1e9c27532",
+      "archivedSha256": "9cc3809e679db2810baee3802454462976a8b7bdf21ea273a99608bf6a14763d",
+      "semanticSha256": "7f86dfdde7b26b58640f58fa555a12d5379a1dc3bec07da9b03ec5e7d1b1baf3"
+    },
+    {
+      "original": "actual_docs/README.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/README.md",
+      "kind": "previous-version",
+      "originalSha256": "e35e952fa9be27a0a4785b116dec90b5d32536dfd01f4b36d179e90243d47e4f",
+      "archivedSha256": "185b2420070df2c70db3e7adc252700e303233a88a78cfc3dd7df29ca12bee66",
+      "semanticSha256": "cbc67c76b8696f98ef019b7e013c941fb59391f6ea14e9eaee742924e9d81b9e"
+    },
+    {
+      "original": "actual_docs/runbooks/LOCAL-DEV-DATABASE.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/runbooks/LOCAL-DEV-DATABASE.md",
+      "kind": "previous-version",
+      "originalSha256": "77b55664ab9fd1c53515a8d56047d34911dd59eb90a493d1c09251823f835187",
+      "archivedSha256": "77b55664ab9fd1c53515a8d56047d34911dd59eb90a493d1c09251823f835187",
+      "semanticSha256": "56638b212de9748619d7ba81072b5dee3d83741a5b0fb54be09e91a86b6403f6"
+    },
+    {
+      "original": "actual_docs/runbooks/UNIFIED-FRONTEND.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/runbooks/UNIFIED-FRONTEND.md",
+      "kind": "previous-version",
+      "originalSha256": "4d7980f91400641d6de376f01d16c203accc3025e3ad1c7b98015de65714b5b1",
+      "archivedSha256": "89d65e38d1939b0866d11b01093bbc60c7a4339f597bfbd143103e98c9068a3f",
+      "semanticSha256": "813d6919ad4c58de2c23c4033d6476d41f208c5a3b5739ebb7568f06f2d01c14"
+    },
+    {
+      "original": "actual_docs/security/security.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/security/security.md",
+      "kind": "previous-version",
+      "originalSha256": "8b907ccd076f9cd9964012cb139142c693e7093a9e9d85636bbae65280145e14",
+      "archivedSha256": "8b907ccd076f9cd9964012cb139142c693e7093a9e9d85636bbae65280145e14",
+      "semanticSha256": "ece899f8f503e8ee5cd0fb48dfe66421a2bd49d348b05a304face58c7154250f"
+    },
+    {
+      "original": "actual_docs/ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/actual_docs/ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md",
+      "kind": "previous-version",
+      "originalSha256": "58265b919d9361fedf7e68c2d9919ec286c69977393385a07260e11e3871b3cb",
+      "archivedSha256": "e9f10f7b99a87208e4f56c244bda79c1ccb933782fd6360d31463ebc0f49b329",
+      "semanticSha256": "34b3ba459e7a213e2f8d55ee4f856323cc5106aadf53a271242f912168570694"
+    },
+    {
+      "original": "AGENTS.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/AGENTS.md",
+      "kind": "previous-version",
+      "originalSha256": "e0e276f9a532cd3e971d5dd6063eda2e33e51ba79411a80b2b806f678009fed7",
+      "archivedSha256": "e0e276f9a532cd3e971d5dd6063eda2e33e51ba79411a80b2b806f678009fed7",
+      "semanticSha256": "74586ee381da4be60dea5bd747ef10c0963e3686abcffc90db3b33bfcae66150"
+    },
+    {
+      "original": "README.md",
+      "destination": "actual_docs/history/archive/2026-09-30/snapshots/README.md",
+      "kind": "previous-version",
+      "originalSha256": "ded07ed2f3ab83abfdfe88e6d26358fbca2dde37a5b1dbcb0f980997b9e6ca9b",
+      "archivedSha256": "ebe4c1699884cf8daabe26a9dd4e0939d0e8cd4a321474f0286feaf24addd11e",
+      "semanticSha256": "33c51267e917f528308c14d7cdedfae4d1a4d38ec85523e1924851fa2bbd29c7"
+    }
+  ]
+}

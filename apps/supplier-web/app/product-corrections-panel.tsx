@@ -60,8 +60,9 @@ const statusLabel: Record<Correction["status"], string> = {
 };
 
 export function ProductCorrectionsPanel({ api, offers, supplierId }: { api: MarketplaceApiClient; offers: Offer[]; supplierId: string }) {
-  const products = useMemo(() => [...new Map(offers.map((offer) => [offer.productVariant.product.id, offer.productVariant.product])).values()], [offers]);
-  const [productId, setProductId] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const products = useMemo(() => [...new Map([...(selectedProduct ? [selectedProduct] : []), ...offers.map(offer => offer.productVariant.product)].map(product => [product.id, product])).values()], [offers, selectedProduct]);
+  const productId = selectedProduct?.id ?? "";
   const [field, setField] = useState<(typeof fields)[number][0]>("DESCRIPTION");
   const [proposedValue, setProposedValue] = useState("");
   const [reason, setReason] = useState("");
@@ -72,7 +73,7 @@ export function ProductCorrectionsPanel({ api, offers, supplierId }: { api: Mark
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ tone: "success" | "error"; text: string } | null>(null);
 
-  useEffect(() => { if (!productId && products[0]) setProductId(products[0].id); }, [productId, products]);
+  useEffect(() => { if (!productId && products[0]) setSelectedProduct(products[0]); }, [productId, products]);
 
   const load = useCallback(async () => {
     setHistoryLoading(true);
@@ -120,7 +121,7 @@ export function ProductCorrectionsPanel({ api, offers, supplierId }: { api: Mark
         {!products.length ? <EmptyState title="Нет доступных карточек" description="Здесь появятся товары поставщика, для которых можно предложить исправление." /> : null}
         {products.length ? <>
         <DmField label="Товар" required>
-          <DmSelect value={productId} onChange={(_, data) => setProductId(data.value)}>
+          <DmSelect value={productId} onChange={(_, data) => setSelectedProduct(products.find(product => product.id === data.value) ?? null)}>
             {products.map((product) => <option value={product.id} key={product.id}>{product.canonicalName}</option>)}
           </DmSelect>
         </DmField>

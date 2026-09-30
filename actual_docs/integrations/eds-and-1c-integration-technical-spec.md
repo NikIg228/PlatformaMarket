@@ -1,5 +1,14 @@
 # ЭЦП НУЦ РК и 1С — техническая спецификация интеграций
 
+Статус30.09.2026: EXT specification/reference, не очередь текущей реализации.
+NCALayer client, gateway verification и 1C protocol slice уже существуют
+(раздел13); повторять их по старым phase lists нельзя. Не подтверждены реальный
+verifier/certificates, signed installer, source adapter и infobase/E2E.
+Новый supplier onboarding определяется ADR013: общие условия + допуск, не
+обязательные две ЭЦП. Внешние SDK/API/сроки ниже требуют проверки у выбранного
+провайдера при отдельном EXT scope; текущий аудит их не сертифицирует.
+
+
 **Статус:** draft target architecture; production readiness не подтверждает
 **Дата:** 21 августа 2026
 **Область:** DentMarket KZ, supplier integrations, documents, catalog matching
@@ -182,7 +191,7 @@ Backend не доверяет `certificate.subject`, `status` или `organizati
 
 | Документ | Стороны | Подпись |
 |---|---|---|
-| Marketplace supplier agreement | DentMarket + supplier | Две ЭЦП |
+| Новый supplier admission | PlatformaMarket + supplier | Общие версии условий/акцепт и отдельный допуск ADR013; legacy ЭЦП отдельно |
 | Framework supply agreement | Buyer + supplier | Две ЭЦП, если выбран рамочный режим |
 | Order specification/confirmation | Buyer/supplier | По утверждённой политике акцепта |
 | Invoice/waybill | Supplier/buyer | Отдельно от общего договора; зависит от процесса учёта |

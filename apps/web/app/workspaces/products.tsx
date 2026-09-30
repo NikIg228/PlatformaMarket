@@ -33,7 +33,7 @@ export default function Products() {
   const [query, setQuery] = useState("");
   const [appliedQuery, setAppliedQuery] = useState("");
   const load = useCallback(
-    () => api.workspaceOffers({ q: appliedQuery, cursor: navigation.cursor }),
+    (signal: AbortSignal) => api.workspaceOffers({ q: appliedQuery, cursor: navigation.cursor }, { signal }),
     [api, organizationId, appliedQuery, navigation.cursor],
   );
   const resource = useResource(load);
@@ -41,7 +41,7 @@ export default function Products() {
   const searchParams = useSearchParams();
   const selectedOfferId = searchParams.get("offer");
   const selectedEditor = searchParams.get("editor");
-  const loadSelected = useCallback(() => selectedOfferId ? api.workspaceOffer(selectedOfferId) : Promise.resolve(null), [api, organizationId, selectedOfferId]);
+  const loadSelected = useCallback((signal: AbortSignal) => selectedOfferId ? api.workspaceOffer(selectedOfferId, { signal }) : Promise.resolve(null), [api, organizationId, selectedOfferId]);
   const selected = useResource(loadSelected, { automatic: false });
   const appliedSelection = useRef<string | null>(null);
   useEffect(() => {

@@ -9,6 +9,7 @@ COPY apps/buyer-web/package.json apps/buyer-web/package.json
 COPY apps/supplier-web/package.json apps/supplier-web/package.json
 COPY apps/landing-web/package.json apps/landing-web/package.json
 COPY apps/web/package.json apps/web/package.json
+COPY apps/e2e/package.json apps/e2e/package.json
 COPY packages/api-client/package.json packages/api-client/package.json
 COPY packages/eds-client/package.json packages/eds-client/package.json
 COPY packages/one-c-agent/package.json packages/one-c-agent/package.json
@@ -45,7 +46,10 @@ CMD ["npm", "run", "start", "--workspace=@marketplace/web"]
 FROM workspace AS legacy-build
 RUN npm run build:legacy
 
-FROM unified-build AS api
+FROM workspace AS api-build
+RUN npm run build --workspace=@marketplace/schemas && npm run build --workspace=@marketplace/api
+
+FROM api-build AS api
 EXPOSE 4000
 CMD ["npm", "run", "start", "--workspace=@marketplace/api"]
 

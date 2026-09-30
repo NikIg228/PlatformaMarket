@@ -1,3 +1,4 @@
+%% Core overview, 2026-09-30; authoritative full schema: apps/api/prisma/schema.prisma
 erDiagram
   User ||--o{ OrganizationMembership : joins
   User ||--o| UserMfaFactor : secures
@@ -70,3 +71,12 @@ erDiagram
   Warehouse ||--o{ IntegrationDataBinding : scopes
   SupplierOffer ||--o{ IntegrationDataBinding : scopes
   InventoryReservation ||--o| ExternalReservation : mirrors
+
+  Organization ||--o{ SupplierTermsAcceptance : accepts
+  User ||--o{ SupplierTermsAcceptance : records
+  SupplierOrder ||--o{ OrderTransferClaim : receives
+  SupplierOrder ||--o{ OrderWorkflowEvent : records
+  SupplierOrder ||--o{ Shipment : ships
+  Shipment ||--o{ ShipmentItem : contains
+  SupplierOrderItem ||--o{ ShipmentItem : fulfilledBy
+  Shipment ||--o{ FulfillmentStep : progresses

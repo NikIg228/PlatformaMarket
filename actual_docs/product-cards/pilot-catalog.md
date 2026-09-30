@@ -1,64 +1,34 @@
-# Pilot catalog
+# Пилотный каталог: fixture и текущий runtime
 
-The Buyer runtime uses a curated 500-card catalog during recovery and pilot testing.
+Сверено30.09.2026 по JSON и scripts, без чтения/изменения рабочей БД.
+Активный public-catalog-fallback.json содержит total500; media manifest total429.
+Это статический fixture, не текущее число опубликованных товаров в PostgreSQL.
+Builder выбирает500 карточек,10 demo suppliers и50 продуктов на поставщика;
+технический sample500 offers не является реальными коммерческими данными.
 
-The fixture contains 10 explicitly named demo suppliers. The same 50 pilot products
-receive one offer from every supplier, producing 500 offers and a useful price-comparison
-sample. The remaining 450 cards intentionally have no price or inventory. Demo values
-must never be represented as real supplier data.
+## Источники
 
-## Sources
+- data/archive/public-catalog-full.json и public-catalog-media-full.json — полный источник отбора.
+- apps/buyer-web/app/data/public-catalog-fallback.json и public-catalog-media.json — активные JSON snapshots.
+- data/pilot/pilot-catalog-report.json — результат deterministic selection.
+- scripts/build-pilot-catalog.mjs — policy отбора: название/описание/вариант/media, category/reuse limits.
 
-- `data/archive/public-catalog-full.json` is the complete normalized source snapshot.
-- `data/archive/public-catalog-media-full.json` is the complete media manifest.
-- `apps/buyer-web/app/data/public-catalog-fallback.json` is the active pilot catalog.
-- `apps/buyer-web/app/data/public-catalog-media.json` is the active pilot media manifest.
-- `data/pilot/pilot-catalog-report.json` records the deterministic selection result.
+Основной frontend — apps/web, использующий buyer-web features и подготовленные
+assets. Live API, публикация/freshness и JSON fallback — разные уровни. Ошибка
+API не даёт разрешения незаметно reseed базу или продлить остатки.
 
-The archive is not a publication queue. Archived cards must not appear in Buyer search,
-product pages, seed data or production sync unless they pass the pilot policy again.
+## Команды по отдельному scope
 
-## Rebuild
+npm run catalog:build-pilot пересоздаёт JSON fixture, а не рабочую БД.
+npm run catalog:prune-media — dry run; вариант :apply удаляет assets и требует
+отдельно выбранной области. Это не команда обычной UI-проверки.
 
-Run `pnpm catalog:build-pilot` to rebuild the active 500-card snapshot from the archived
-source. The selection requires a usable name, a description of at least 60 characters,
-a variant and exact local media. It rejects highly reused placeholder-like media and caps
-dominant categories before filling the remainder by quality score.
+Подготовка local marketplace описана в [Local DB](../runbooks/LOCAL-DEV-DATABASE.md).
+Она сохраняет заполненный каталог и делает backup перед согласованной подготовкой.
+Reference/operator/pilot/test seed profiles раздельны. Проверки с DB writes
+выполняются только на verified disposable test DB. Старую последовательность
+migrate/seed/sync-production не запускать над текущей рабочей БД из этого файла.
 
-Run `pnpm catalog:prune-media` for a dry run and
-`pnpm catalog:prune-media:apply` to remove public product images not referenced by the
-active pilot manifest. Deleted media remains recoverable from the Git baseline until the
-repository history is intentionally compacted.
-
-## Clean local database
-
-Use PostgreSQL with the `DATABASE_URL` from `.env.example`, then run:
-
-1. `pnpm --filter @marketplace/api exec prisma migrate deploy --schema prisma/schema.prisma`
-2. `pnpm db:seed` (reference + operator profiles)
-3. `pnpm catalog:sync-production:apply`
-4. `pnpm db:seed-pilot` (pilot profile and manifest assertion)
-
-On the prepared Windows workstation, `pnpm db:prepare-pilot` runs this sequence
-idempotently. Use `pnpm dev:local` to start the local pilot profile without manually
-setting environment variables. PostgreSQL must already be running.
-
-The seed profiles have distinct responsibilities: `db:seed:reference` creates
-system dictionaries and permissions; `db:seed:operator` creates the local
-marketplace operator; `db:seed:test` adds only a deterministic test clinic; and
-`db:seed:pilot` creates and verifies the 10×10 pilot market. Run
-`pnpm verify:seed-profiles` only after the pilot catalog has been synced.
-
-The last command creates 10 demo clinic organizations, 10 demo supplier organizations,
-their warehouses, and 500 published demo offers. It is local fixture data, not a source
-for production publication.
-
-The root `pnpm build` intentionally runs workspace builds one at a time. Four concurrent
-Next.js production builds exceed the memory available on common 8 GB Windows development
-machines; deterministic local builds are more important than maximum build throughput.
-
-## Publication boundary
-
-Selection into the technical pilot fixture is not legal or commercial verification.
-Before a real pilot, every active SKU still requires confirmed naming, category,
-packaging, price, inventory freshness, supplier ownership and media usage rights.
+Root npm run build собирает canonical apps/web, legacy сборки отдельны.
+Наличие фото/цены/fixture не подтверждает supplier ownership, фактический stock,
+media rights и юридический допуск. Реальные данные — отдельная приёмка.

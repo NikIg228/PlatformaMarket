@@ -35,6 +35,7 @@ function assertSchema(schema, value, label) {
 
 function assertOpenApiContract(openApi) {
   const requiredComponents = [
+    "WorkspaceCorrectionOfferPage", "WorkspaceInventoryPage", "WorkspaceLotPage", "WorkspaceReservationPage", "WorkspaceOverridePage",
     "SaveOrganizationProfileRequest", "OrganizationProfileResponse", "OrganizationOnboardingResponse", "CurrentSessionResponse",
     "HealthResponse",
     "ReadinessResponse",
@@ -65,6 +66,11 @@ function assertOpenApiContract(openApi) {
   }
 
   const coreOperations = [
+    ["/api/workspaces/supplier/correction-offers", "get", "200", "WorkspaceCorrectionOfferPage"],
+    ["/api/workspaces/supplier/inventory", "get", "200", "WorkspaceInventoryPage"],
+    ["/api/workspaces/supplier/inventory/{balanceId}/lots", "get", "200", "WorkspaceLotPage"],
+    ["/api/workspaces/supplier/inventory/{balanceId}/reservations", "get", "200", "WorkspaceReservationPage"],
+    ["/api/workspaces/supplier/inventory-overrides", "get", "200", "WorkspaceOverridePage"],
     ["/api/carts/{cartId}/recover", "post", "201", "CartResponse", "RecoverCartRequest"],
     ["/api/suppliers/{supplierOrganizationId}/offers/{offerId}/commercial/{warehouseId}", "get", "200", "OfferCommercialState"],
     ["/api/suppliers/{supplierOrganizationId}/offers/{offerId}/commercial", "put", "200", "OfferCommercialState", "SaveOfferCommercialRequest"],

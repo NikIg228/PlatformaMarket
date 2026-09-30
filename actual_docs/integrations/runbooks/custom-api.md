@@ -4,5 +4,5 @@
 2. Настроить mapping всех используемых сущностей и направления read/write.
 3. Прогнать smoke на 10–50 товаров, цену, остаток и партию.
 4. Выполнить заказ, резерв, shipment/document при поддержке, отмену и release.
-5. Проверить повтор запроса, timeout, 4xx/5xx retry, DLQ и reconciliation.
+5. Проверить повтор запроса, timeout, retry только допустимых временных ошибок (429/5xx), permanent4xx,  DLQ и reconciliation.
 6. Сохранить endpoint version, evidence, owner и ограничения в readiness registry.

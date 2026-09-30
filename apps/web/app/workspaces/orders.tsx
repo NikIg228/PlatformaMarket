@@ -27,7 +27,7 @@ export default function Orders() {
   const [appliedQuery, setAppliedQuery] = useState("");
   const [status, setStatus] = useState<"" | typeof workspaceOrderStatusSchema._output>("");
   const load = useCallback(
-    () => api.workspaceOrders(role === "clinic" ? "buyer" : "supplier", { q: appliedQuery, status: status || undefined, cursor: navigation.cursor }),
+    (signal: AbortSignal) => api.workspaceOrders(role === "clinic" ? "buyer" : "supplier", { q: appliedQuery, status: status || undefined, cursor: navigation.cursor }, { signal }),
     [api, role, organizationId, appliedQuery, status, navigation.cursor],
   );
   const resource = useResource(load, { intervalMs: 30_000 });

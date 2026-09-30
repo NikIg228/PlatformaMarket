@@ -54,3 +54,22 @@ Launcher не останавливает чужой процесс на заня
 Навигация отменяет запросы/таймеры. HTTP4xx и операции записи не повторяются.
 После исчерпания попыток показывается честное сообщение с ручным повтором;
 ошибка проверки сессии не считается успешной авторизацией или выходом.
+
+## Выбор тестовой БД и CI
+
+Wrapper принимает TEST_DATABASE_URL или POSTGRES_TEST_DATABASE_URL; если заданы
+оба, значения должны совпадать. Локальный default audit DB и запрет совпадения
+dev/test сохраняются. Wrapper передаёт выбранное подключение в DATABASE_URL и
+POSTGRES_TEST_DATABASE_URL дочернего процесса. NODE_ENV=production запрещён.
+
+В GitHub Actions требуется RUNNER_ENVIRONMENT=github-hosted и явный test URL:
+PostgreSQL localhost:5432, пользователь/БД marketplace, только schema=public.
+DATABASE_URL, если задан, должен совпадать с test URL. Отсутствие настройки,
+self-hosted runner, другой адрес/БД/schema или конфликт останавливают запуск
+до дочерней команды. Оба CI job используют собственный disposable PostgreSQL
+service; это исключение не применяется к локальной рабочей marketplace.
+Fixture guard продолжает проверять фактическую БД соединения.
+
+Исторический FAIL CI36737223743: прежний wrapper игнорировал PostgreSQL alias
+и выбирал локальную audit DB. Исправление и фактические проверки:
+[CI-DATABASE](../governance/task-state/CI-DATABASE-2026-09-30.md).

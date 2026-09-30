@@ -41,7 +41,7 @@ Remove-Item Env:B46_ADMIN_DATABASE_URL
 
 Runner принимает `POSTGRES_TEST_DATABASE_URL` или `DATABASE_URL` как источник
 application role, создаёт БД с префиксом `dentmarket_b46_`, назначает её
-владельцем application role, применяет 32 migrations, загружает reference /
+владельцем application role, применяет миграции текущего checkout (число32 ниже относится к baseline08.09), загружает reference /
 operator / 500-card catalog / pilot market и удаляет БД в `finally`. Remote
 PostgreSQL запрещён по умолчанию; явный `B46_ALLOW_REMOTE=true` допустим только
 для заранее выделенного disposable load environment.

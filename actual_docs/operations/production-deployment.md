@@ -1,5 +1,12 @@
 # Production deployment and rollback
 
+Status01.10.2026: configuration now targets api + one apps/web image. Caddy
+serves WEB_DOMAIN with same-origin /api; operator login is /admin/login.
+This is a deferred production procedure, not a deployment authorization or
+live acceptance. The actual domain/operator-origin decision, provider callbacks,
+and live rollout remain open. See deployment-profiles.md and the delivery task.
+
+
 Authentication and abuse-control checks are defined in
 [`production-auth-runbook.md`](production-auth-runbook.md). Complete that
 runbook together with this release procedure; a successful image build alone
@@ -7,7 +14,9 @@ does not prove production auth or shared rate limiting.
 
 ## Release contract
 
-Production is deployed only from an immutable `v*` image tag built by `.github/workflows/release.yml`. Configure GitHub repository variables `DEPLOYMENT_PROFILE`, `PUBLIC_API_URL`, `BUYER_APP_URL`, `SUPPLIER_APP_URL`, `GOOGLE_CLIENT_ID`, `APPLE_CLIENT_ID`, and `APPLE_REDIRECT_URI`. Set `DEPLOYMENT_PROFILE=go_live` for the approved production contour; the API runtime and every web image must use the same profile (see [deployment profiles](deployment-profiles.md)). Copy `.env.production.example` to `.env.production` on the host and replace every `CHANGE_ME` value through the secret manager.
+Production uses an immutable image tag built by `.github/workflows/release.yml` from a `v*` tag or an explicitly authorized manual release. Configure GitHub repository variables `DEPLOYMENT_PROFILE`, `PUBLIC_WEB_URL`, `GOOGLE_CLIENT_ID`, `APPLE_CLIENT_ID`, and `APPLE_REDIRECT_URI`. The web origin must be HTTPS; Apple return must use that origin. Browser API calls use `/api`; Docker's fixed upstream is `http://api:4000/api`. Set `DEPLOYMENT_PROFILE=go_live` for the approved production contour; API and web must use the same profile (see [deployment profiles](deployment-profiles.md)). Copy `.env.production.example` to `.env.production` on the host and replace every placeholder through the secret manager. Set WEB_DOMAIN to the approved host. These instructions do not authorize that deployment.
+
+CI builds both `api` and `web` Docker targets without publishing images and validates production Compose/Caddy with example configuration. Release publishes those two images; worker uses the API image. Docker build context excludes `.env*`, local storage, temporary evidence and session files. No production secrets belong in build arguments.
 
 The API refuses to start when production would use development auth, localhost CORS, mock payments, local object storage, optional antivirus, unencrypted storage, missing EDS/payment/email/SMS endpoints, missing signed PSP webhooks, missing MFA, PostgreSQL/Redis without required TLS, missing observability exporters, or cleartext HTTP for a secret-bearing provider endpoint. Development and test environments may continue to use explicit localhost HTTP endpoints.
 
@@ -16,10 +25,10 @@ The API refuses to start when production would use development auth, localhost C
 ## First deployment
 
 1. Create managed PostgreSQL with PITR, managed Redis with TLS, an encrypted S3-compatible private bucket, DNS records, EDS gateway credentials, PSP credentials, transactional email credentials, Sentry and OTLP projects.
-2. Pre-provision at least two corporate operator users as active members of the `MARKETPLACE_OPERATOR` organization. Their Google/Apple verified emails must match the users. Both must enroll TOTP at `/login`.
+2. Pre-provision at least two corporate operator users as active members of the `MARKETPLACE_OPERATOR` organization. Their Google/Apple verified emails must match the users. Both must enroll TOTP at `/admin/login`.
 3. Validate configuration with `npm run build && npm run verify:production-config && npm run verify:production-readiness-contract && npm run verify:production-connectors && npm run verify:rate-limit-auth` and `docker compose --env-file .env.production -f compose.production.yaml config --quiet`.
 4. Take a backup, set `REGISTRY` and immutable `APP_RELEASE`, then run `docker compose --env-file .env.production -f compose.production.yaml pull` and `docker compose --env-file .env.production -f compose.production.yaml up -d`.
-5. Check `/api/health`, `/api/health/ready`, social login + MFA, supplier onboarding, two-party EDS callback, search, checkout against PSP sandbox, document download, notification delivery and operator queues.
+5. Check `/api/health`, `/api/health/ready`, social login + MFA, supplier common-terms acceptance and separate operator admission (ADR013), selected legacy/external EDS callback where applicable, search, checkout against PSP sandbox, document download, notification delivery and operator queues.
 
 ## Backup and restore drill
 
@@ -36,9 +45,11 @@ evidence. Never run a rehearsal restore against the live database or bucket.
 
 Application rollback changes `APP_RELEASE` to the previous immutable tag and runs `compose pull/up` again. Database migrations must be backward-compatible expand/contract changes; application rollback does not reverse migrations. If a destructive data incident occurred, close traffic, preserve the affected database, restore the last verified backup into a new database, run smoke verification, then switch `DATABASE_URL` and reopen traffic.
 
+For a previously released multi-app version, use `compose.production.legacy.yaml` and `infra/Caddyfile.legacy` with its matching immutable legacy images and domains. The new release matrix does not publish those old targets. This separate configuration preserves the rollback recipe; a real rollback drill and origin/cookie migration still require deployment acceptance.
+
 ## External go-live blockers
 
-The repository cannot manufacture third-party acceptance. Production remains blocked until real tenant evidence exists for MySklad, a signed 1C agent build and customer database, qualified Kazakhstan EDS, the selected PSP, transactional email/SMS, DNS/TLS, managed PostgreSQL/Redis/S3, monitoring alerts and a timed restore drill. Connector status stays `CONNECTOR_NEEDED` or `PILOT` until evidence is attached; it must never be marked `LIVE_VERIFIED` from mocks.
+The repository cannot manufacture third-party acceptance. Production remains blocked until evidence exists for the explicitly selected external providers and legal flow, DNS/TLS, managed PostgreSQL/Redis/S3, monitoring alerts and a timed restore drill. MySklad and 1C are separate optional supplier channels; both are not universally required for the internal/manual core. Active production configuration guards remain binding until an approved contract change. Connector status stays `CONNECTOR_NEEDED` or `PILOT` until evidence is attached; it must never be marked `LIVE_VERIFIED` from mocks.
 
 Follow [`live-provider-readiness.md`](live-provider-readiness.md). After
 injecting production environment variables and explicit provider healthcheck

@@ -1,3 +1,4 @@
+import { createActiveCart } from "./create-active-cart";
 import {
   BadRequestException,
   ConflictException,
@@ -403,49 +404,7 @@ export class CommerceService {
   ) {
     await this.assertBuyerAccess(buyerOrganizationId, context);
     await assertOrganizationProfileComplete(this.prisma, buyerOrganizationId);
-    const existing = await this.prisma.cart.findFirst({
-      where: { buyerOrganizationId, status: "ACTIVE" },
-      include: { items: true, checkout: true },
-    });
-    if (existing) {
-      if (existing.currency !== input.currency)
-        throw new ConflictException(
-          "Active cart already uses another currency",
-        );
-      return existing;
-    }
-    try {
-      return await this.prisma.$transaction(async (tx) => {
-        const cart = await tx.cart.create({
-          data: {
-            buyerOrganizationId,
-            currency: input.currency,
-            createdById: context.actorId,
-          },
-          include: { items: true, checkout: true },
-        });
-        await tx.auditLog.create({
-          data: {
-            ...context,
-            action: "cart.created",
-            entityType: "Cart",
-            entityId: cart.id,
-            after: cart,
-          },
-        });
-        return cart;
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2002"
-      )
-        return this.prisma.cart.findFirstOrThrow({
-          where: { buyerOrganizationId, status: "ACTIVE" },
-          include: { items: true, checkout: true },
-        });
-      throw error;
-    }
+    return createActiveCart(this.prisma, buyerOrganizationId, input, context);
   }
 
   private async requireCart(cartId: string, context: SupplierActorContext) {

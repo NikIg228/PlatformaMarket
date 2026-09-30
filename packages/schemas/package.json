@@ -6,10 +6,26 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
-    "./deployment-policy": { "types": "./dist/deployment-policy.d.ts", "default": "./dist/deployment-policy.js" },
-    "./workspace-session": { "types": "./dist/workspace-session.d.ts", "default": "./dist/workspace-session.js" },
-    "./product-navigation": { "types": "./dist/product-navigation.d.ts", "default": "./dist/product-navigation.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./deployment-policy": {
+      "types": "./dist/deployment-policy.d.ts",
+      "default": "./dist/deployment-policy.js"
+    },
+    "./workspace-session": {
+      "types": "./dist/workspace-session.d.ts",
+      "default": "./dist/workspace-session.js"
+    },
+    "./product-navigation": {
+      "types": "./dist/product-navigation.d.ts",
+      "default": "./dist/product-navigation.js"
+    },
+    "./document-upload-limits": {
+      "types": "./dist/document-upload-limits.d.ts",
+      "default": "./dist/document-upload-limits.js"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -17,6 +33,10 @@
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests"
   },
-  "dependencies": { "zod": "^4.1.12" },
-  "devDependencies": { "vitest": "^3.2.4" }
+  "dependencies": {
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
 }

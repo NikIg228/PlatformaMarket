@@ -1,16 +1,17 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 /** Each page owns its request; late responses from a previous page cannot replace it. */
-export function useResource<T>(load: () => Promise<T>, { intervalMs = 0, automatic = true, retainDataOnChange = false } = {}) {
+export function useResource<T>(load: (signal: AbortSignal) => Promise<T>, { intervalMs = 0, automatic = true, retainDataOnChange = false } = {}) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastSuccessAt, setLastSuccessAt] = useState<number | null>(null);
   const [offline, setOffline] = useState(false);
   const sequence = useRef(0);
-  const flight = useRef<{ load: typeof load; promise: Promise<void> } | null>(null);
+  const flight = useRef<{ load: typeof load; promise: Promise<void>; controller: AbortController } | null>(null);
   const refresh = useCallback((): Promise<void> => {
     if (flight.current?.load === load) return flight.current.promise;
+    flight.current?.controller.abort();
     if (!navigator.onLine) {
       setOffline(true);
       setLoading(false);
@@ -18,18 +19,19 @@ export function useResource<T>(load: () => Promise<T>, { intervalMs = 0, automat
       return Promise.resolve();
     }
     const request = ++sequence.current;
+    const controller = new AbortController();
     setOffline(false);
     setLoading(true);
     setError(null);
     const promise = (async () => {
     try {
-      const result = await load();
+      const result = await load(controller.signal);
       if (request === sequence.current) {
         setData(result);
         setLastSuccessAt(Date.now());
       }
     } catch (cause) {
-      if (request === sequence.current)
+      if (request === sequence.current && !controller.signal.aborted)
         setError(
           cause instanceof Error
             ? cause.message
@@ -39,7 +41,7 @@ export function useResource<T>(load: () => Promise<T>, { intervalMs = 0, automat
       if (request === sequence.current) setLoading(false);
     }
     })();
-    const current = { load, promise };
+    const current = { load, promise, controller };
     flight.current = current;
     void promise.finally(() => { if (flight.current === current) flight.current = null; });
     return promise;
@@ -57,6 +59,7 @@ export function useResource<T>(load: () => Promise<T>, { intervalMs = 0, automat
     void refresh();
     return () => {
       sequence.current++;
+      flight.current?.controller.abort();
       flight.current = null;
     };
   }, [refresh, retainDataOnChange]);

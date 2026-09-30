@@ -82,9 +82,13 @@ JWT_REQUIRE_MFA применяется ко всем защищённым мар
   PostgreSQL: retryable-ошибка получает exponential backoff, постоянная ошибка
   или исчерпание `maxAttempts` переводит событие в `DEAD_LETTER`, а
   просроченный `PROCESSING` lease может быть безопасно reclaimed.
-- Sentry включается только при наличии `SENTRY_DSN`.
+- Sentry и его Nest filter загружаются только при наличии `SENTRY_DSN`;
+  OTEL SDK/exporter/instrumentations — только при `OTEL_EXPORTER_OTLP_ENDPOINT`.
+  Включённые SDK инициализируются синхронно до загрузки приложения API/worker.
+  Production validation этих настроек остаётся обязательной; отсутствие
+  телеметрии в test/local не должно загружать её тяжёлый dependency graph.
 
-Scheduler `MarketplaceAgreementsService.processRenewals` ежедневно закрывает истёкшие договоры либо переносит активный AUTO_ANNUAL договор на следующий год. После длительного простоя он догоняет все пропущенные годовые периоды за один idempotent transaction. Новая версия обязательного шаблона переводит договор в `SUPERSEDED` и требует повторной ЭЦП.
+Scheduler `MarketplaceAgreementsService.processRenewals` ежедневно закрывает истёкшие договоры либо переносит активный AUTO_ANNUAL договор на следующий год. После длительного простоя он догоняет все пропущенные годовые периоды за один idempotent transaction. В legacy signed-contract path новая версия шаблона переводит договор в SUPERSEDED. Новый onboarding использует версионный акцепт общих условий и отдельный допуск ADR013; повторную ЭЦП нельзя объявлять универсальным требованием.
 
 ## Backup policy
 
@@ -106,6 +110,9 @@ $env:RESTORE_DRILL_ADMIN_DATABASE_URL="postgresql://ADMIN_USER:ADMIN_PASSWORD@12
 $env:RESTORE_DRILL_USE_OBJECT_FIXTURE="true"
 npm run verify:backup-restore
 ```
+
+Ниже legacy multi-app compose maintenance-контур; это не инструкция остановки
+нынешнего native unified dev. Source процессов и target отдельно проверяются.
 
 Docker-based локальный backup для maintenance-контура:
 

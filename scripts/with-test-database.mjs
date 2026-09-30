@@ -1,8 +1,9 @@
 import { spawn } from "node:child_process";
-import { localDatabaseProfile, databaseLabel } from "./lib/local-database-profile.mjs";
+import { databaseLabel } from "./lib/local-database-profile.mjs";
+import { testDatabaseUrl as resolveTestDatabaseUrl } from "./lib/test-database-profile.mjs";
 import { assertPortsAvailable } from "./lib/local-readiness.mjs";
 
-const { testDatabaseUrl } = localDatabaseProfile();
+const testDatabaseUrl = resolveTestDatabaseUrl();
 const args = process.argv.slice(2);
 if (!process.env.npm_execpath || !args.length) throw new Error("Use npm run db:test -- run <verification-script>.");
 // The legacy E2E config reuses occupied ports. Never let that silently attach

@@ -28,6 +28,7 @@ jobs:
           --health-interval 5s --health-timeout 3s --health-retries 10
     env:
       DATABASE_URL: postgresql://marketplace:marketplace@localhost:5432/marketplace?schema=public
+      POSTGRES_TEST_DATABASE_URL: postgresql://marketplace:marketplace@localhost:5432/marketplace?schema=public
       REDIS_URL: redis://localhost:6379
       API_PORT: 4012
       API_URL: http://127.0.0.1:4012/api
@@ -50,6 +51,10 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Verify test database selection and isolation
+        run: node --test scripts/local-database-profile.test.mjs scripts/test-database-profile.test.mjs scripts/lib/organization-profile-fixture.test.mjs
+      - name: Verify canonical delivery configuration
+        run: node --test scripts/canonical-delivery.test.mjs
       - run: npx --no-install playwright install --with-deps chromium
       - run: npm run db:generate
       - run: npm exec --workspace=@marketplace/api -- prisma migrate deploy
@@ -68,6 +73,10 @@ jobs:
       - run: npm run verify:outbound-security
       - run: npm run verify:outbox
       - run: npm run build
+      - name: Canonical web JavaScript budget
+        run: |
+          mkdir -p outputs/ci
+          npm run verify:web-bundle | tee outputs/ci/web-bundle.json
       - run: npm run verify:observability
       - run: npm run verify:runtime-split
       - run: npm run verify:pilot-composition
@@ -79,6 +88,10 @@ jobs:
       - run: npm run verify:rate-limit-auth
       - run: npm audit --omit=dev --audit-level=high
       - run: docker compose config --quiet
+      - name: Validate production Compose and ingress without starting services
+        run: |
+          ENV_FILE=.env.production.example docker compose --env-file .env.production.example -f compose.production.yaml config --quiet
+          docker run --rm --network none -e WEB_DOMAIN=market.example.kz -v "$PWD/infra/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2.10-alpine caddy adapt --config /etc/caddy/Caddyfile --validate > /dev/null
       - name: Prepare legacy fixtures in disposable CI PostgreSQL
         timeout-minutes: 5
         env:
@@ -155,10 +168,10 @@ jobs:
             kill -0 "$API_PID"
             kill -0 "$WORKER_PID"
           done
-      - name: Pilot browser verification
-        run: |
-          npm run verify:flow-b3
-          npm run verify:web
+      - name: Canonical import publication and rollback (apps/web)
+        run: npm run verify:flow-b3
+      - name: Canonical pilot browser verification (apps/web)
+        run: npm run verify:web
       - name: Upload failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
@@ -169,8 +182,31 @@ jobs:
             /tmp/marketplace-worker.log
             apps/e2e/test-results/
             apps/e2e/playwright-report/
+            outputs/ci/web-bundle.json
           if-no-files-found: ignore
           retention-days: 14
+
+  container-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [api, web]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          push: false
+          build-args: |
+            DEPLOYMENT_PROFILE=pilot
+            NEXT_PUBLIC_API_URL=/api
+            INTERNAL_API_URL=http://api:4000/api
+          cache-from: type=gha,scope=${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.target }}
 
   postgres-integration:
     runs-on: ubuntu-latest

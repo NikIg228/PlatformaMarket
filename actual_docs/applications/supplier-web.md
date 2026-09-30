@@ -1,31 +1,38 @@
-# Supplier web
+# Кабинет поставщика
 
-Рабочий кабинет поставщика: offers/prices, inventory/lots, supplier orders, integrations, compliance, documents и payment profile.
+Актуально30.09.2026 для apps/web на2a816c3. Основной runtime один; исходные
+features apps/supplier-web импортируются новым приложением. Старый page.tsx
+не является основной новой supplier page и не должен определять приоритет
+оптимизации только по длине файла.
 
-```bash
-npm run dev:supplier
-```
+| URL | Текущий маршрут |
+| --- | --- |
+| /supplier | workspaces/dashboard, сводка |
+| /supplier/products | workspaces/products: bounded offers, editor/import/manual proposal |
+| /supplier/products/proposals | История заявки нового товара и повтор после отказа |
+| /supplier/products/corrections | Исправления мастер-карточки; bounded correction-offers с поиском и сохранением draft |
+| /supplier/products/inventory | Bounded summaries; отдельные страницы lots/reservations при раскрытии строки |
+| /supplier/orders, /supplier/orders/[id] | Orders/detail, confirmation/invoice/manual payment/shipment |
+| /supplier/documents | Общий document workspace |
+| /supplier/settings, /supplier/settings/sources | Организация и источники товаров |
+| /supplier/legal/[code] | Версионные условия; DRAFT нельзя принять |
 
-Demo selector содержит пять поставщиков из dentistry seed.
+Shell использует подтверждённую supplier session и permissions. Sidebar/mobile
+menu соответствует решению владельца30.09. Новые общие условия принимаются
+отдельно от операторского допуска (ADR013); две ЭЦП не обязательный onboarding.
+Публикация по-прежнему требует допуска и готового offer/цены/fresh stock.
 
-## Загрузка рабочих разделов
+Редактирование цены/остатка versioned/atomic; смена склада не переносит
+количество другого склада. Supplier confirmation фактического банковского
+поступления отличается от покупательской квитанции и внешнего PSP.
 
-Корневой экран не запрашивает весь кабинет сразу. `app/supplier-section-data.ts`
-загружает только данные активного раздела:
-
-- dashboard — семь наборов данных для метрик и приоритетов;
-- offers и orders — по одному набору;
-- inventory, compliance и documents — по два набора;
-- integrations — четыре набора;
-- promotions и trust загружают данные внутри собственных панелей и не создают
-  корневых запросов.
-
-Dashboard остаётся в initial JavaScript. Остальные рабочие разделы подключаются
-через `next/dynamic` после выбора пользователем. Все Fluent icons импортируются
-из family subpath, а не из root barrel.
-
-Production build автоматически запускает `scripts/verify-supplier-bundle.mjs`.
-Для маршрута `/` закреплены пределы: не более 20 initial JS-файлов,
-1 250 000 raw bytes и 380 000 gzip bytes. Контракт загрузки разделов и запрет
-root icon barrel покрыты тестами в `app/supplier-section-data.test.ts` и
-`app/performance-boundaries.test.ts`.
+Основные offers/orders и вспомогательные inventory/corrections используют
+cursor reads. Новые auxiliary страницы показывают25 записей, API допускает1–100;
+курсор привязан к tenant/filter/parent. Ручные overrides тоже имеют страницы.
+Legacy full reads сохранены для прежних callers и не используются этими страницами.
+Доступ к деталям проверяется по владельцу balance до чтения, отмена GET не
+повторяет и не отменяет write-операции. Статус текущего выпуска —
+[PERFORMANCE-CI-DELIVERY](../governance/task-state/PERFORMANCE-CI-DELIVERY-2026-09-30.md).
+[Аудит](../architecture/CODEBASE-AUDIT-2026-09-30.md),
+[приёмка](../governance/PROJECT_ACCEPTANCE_MATRIX.md),
+[оставшиеся требования](../backend/DENTMARKET_BACKEND_FOUNDATION_V2.md).

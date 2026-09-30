@@ -1,3 +1,4 @@
+import type { WorkspaceCorrectionOfferPage, WorkspaceInventoryPage, WorkspaceLotPage, WorkspaceReservationPage, WorkspaceOverridePage } from "@marketplace/schemas";
 import type { WorkspacePageQuery, WorkspaceOrderQuery, WorkspaceOrderPage, WorkspaceOffer, WorkspaceOfferPage, WorkspaceCartPage, WorkspaceSummary } from "@marketplace/schemas";
 import { deploymentFeatures, isDeploymentApiPathEnabled, type DeploymentProfile } from "@marketplace/schemas/deployment-policy";
 
@@ -182,6 +183,7 @@ export class MarketplaceApiClient {
     let response = await send();
     // Only safe reads can be replayed. Writes refresh before sending and never retry.
     if (response.status === 401 && this.context.getAccessToken && ["GET", "HEAD"].includes((init.method ?? "GET").toUpperCase())) {
+      init.signal?.throwIfAborted();
       await this.context.getAccessToken(true);
       response = await send();
     }
@@ -240,8 +242,8 @@ export class MarketplaceApiClient {
     }
   }
 
-  get<T>(path: string) {
-    return this.request<T>(path);
+  get<T>(path: string, options?: Pick<RequestInit, "signal">) {
+    return this.request<T>(path, options);
   }
   requestRegistrationResume(input: RegistrationResumeRequest) {
     return this.post<RegistrationResumeRequested>("/auth/registration/resume/request", input);
@@ -438,23 +440,38 @@ export class MarketplaceApiClient {
     return this.get<import("@marketplace/schemas").OfferOptionsResponse>(this.withQuery("/catalog/offer-options", input));
   }
 
-  workspaceOrders(role: "buyer" | "supplier", query: WorkspaceOrderQuery = {}) {
-    return this.get<WorkspaceOrderPage>(this.withQuery(`/workspaces/${role}/orders`, query));
+  workspaceCorrectionOffers(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
+    return this.get<WorkspaceCorrectionOfferPage>(this.withQuery(`/workspaces/supplier/correction-offers`, query), options);
   }
-  workspaceOffers(query: WorkspacePageQuery = {}) {
-    return this.get<WorkspaceOfferPage>(this.withQuery("/workspaces/supplier/offers", query));
+  workspaceInventory(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
+    return this.get<WorkspaceInventoryPage>(this.withQuery(`/workspaces/supplier/inventory`, query), options);
   }
-  workspaceOffer(offerId: string) {
-    return this.get<WorkspaceOffer>(`/workspaces/supplier/offers/${offerId}`);
+  workspaceLots(balanceId: string, query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
+    return this.get<WorkspaceLotPage>(this.withQuery(`/workspaces/supplier/inventory/${encodeURIComponent(balanceId)}/lots`, query), options);
   }
-  workspaceCarts(query: WorkspacePageQuery = {}) {
-    return this.get<WorkspaceCartPage>(this.withQuery("/workspaces/buyer/carts", query));
+  workspaceReservations(balanceId: string, query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
+    return this.get<WorkspaceReservationPage>(this.withQuery(`/workspaces/supplier/inventory/${encodeURIComponent(balanceId)}/reservations`, query), options);
   }
-  workspaceCart(cartId: string) {
-    return this.get<CartResponse>(`/workspaces/buyer/carts/${cartId}`);
+  workspaceOverrides(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
+    return this.get<WorkspaceOverridePage>(this.withQuery(`/workspaces/supplier/inventory-overrides`, query), options);
   }
-  workspaceSummary() {
-    return this.get<WorkspaceSummary>("/workspaces/supplier/summary");
+  workspaceOrders(role: "buyer" | "supplier", query: WorkspaceOrderQuery = {}, options?: Pick<RequestInit, "signal">) {
+    return this.get<WorkspaceOrderPage>(this.withQuery(`/workspaces/${role}/orders`, query), options);
+  }
+  workspaceOffers(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
+    return this.get<WorkspaceOfferPage>(this.withQuery("/workspaces/supplier/offers", query), options);
+  }
+  workspaceOffer(offerId: string, options?: Pick<RequestInit, "signal">) {
+    return this.get<WorkspaceOffer>(`/workspaces/supplier/offers/${offerId}`, options);
+  }
+  workspaceCarts(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
+    return this.get<WorkspaceCartPage>(this.withQuery("/workspaces/buyer/carts", query), options);
+  }
+  workspaceCart(cartId: string, options?: Pick<RequestInit, "signal">) {
+    return this.get<CartResponse>(`/workspaces/buyer/carts/${cartId}`, options);
+  }
+  workspaceSummary(options?: Pick<RequestInit, "signal">) {
+    return this.get<WorkspaceSummary>("/workspaces/supplier/summary", options);
   }
 
   recoverCart(cartId: string, input: RecoverCartRequest) {

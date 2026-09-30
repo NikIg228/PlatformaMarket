@@ -26,8 +26,10 @@ test("password login, cookie refresh and legacy return use the same-origin proxy
     const post = await login.request.post("/documents", { maxRedirects: 0 });
     expect(post.status()).toBe(405);
     await login.goto("/catalog");
-    await login.locator("header summary").filter({ hasText: "Личный кабинет" }).click();
-    await login.locator("header").getByRole("button", { name: "Выйти", exact: true }).click();
+    await login.locator("header").getByRole("link", { name: /Личный кабинет/ }).click();
+    await login.getByRole("button", { name: "Выйти", exact: true }).click();
+    await expect(login).toHaveURL(/\/login$/);
+    await login.goto("/catalog");
     await expect(login.locator("header").getByRole("link", { name: "Войти", exact: true })).toBeVisible();
     await login.reload();
     await expect(login.locator("header").getByRole("link", { name: "Войти", exact: true })).toBeVisible();
@@ -43,7 +45,7 @@ test("public catalog, product and auth stay on one origin", async ({ page }) => 
   await page.goto("/catalog?sort=PRICE_ASC");
   const cards = page.getByTestId("product-card");
   await expect(cards).toHaveCount(24);
-  await cards.first().getByRole("link").click();
+  await cards.first().getByRole("link", { name: /Открыть карточку/ }).click();
   await expect(page).toHaveURL(/:3000\/products\//);
   await page.getByRole("link", { name: "← Вернуться в каталог" }).click();
   await expect(page).toHaveURL(/sort=PRICE_ASC/);
@@ -58,7 +60,7 @@ for (const [capability, root] of [["BUYER", "/clinic"], ["SUPPLIER", "/supplier"
     const fixture = await installPilotWorkspace(page, capability);
     try {
       await page.goto(root);
-      if (capability === "BUYER") await expect(page.locator("header summary").filter({ hasText: "Личный кабинет" })).toHaveAttribute("aria-label", new RegExp(fixture.displayName));
+      if (capability === "BUYER") await expect(page.getByText(fixture.displayName, { exact: true }).first()).toBeVisible();
       else await expect(page.getByText(fixture.displayName, { exact: true }).first()).toBeVisible();
       await page.goto(root + "/documents");
       await expect(page.getByRole("heading", { name: /Документы/ }).first()).toBeVisible();

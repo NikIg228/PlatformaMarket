@@ -1,6 +1,6 @@
 import { connection } from "next/server";
 import { Manrope } from "next/font/google";
-import { MarketplaceProvider } from "@marketplace/ui";
+import { MarketplaceProvider } from "@marketplace/ui/provider";
 import "@marketplace/ui/styles.css";
 import type { ReactNode } from "react";
 const font = Manrope({ subsets: ["cyrillic", "latin"], variable: "--font-sans" });

@@ -9,7 +9,7 @@ import styles from "./workspace.module.css";
 
 export default function Dashboard() {
   const { api, organizationId, session } = useWorkspace();
-  const load = useCallback(() => api.workspaceSummary(), [api, organizationId]);
+  const load = useCallback((signal: AbortSignal) => api.workspaceSummary({ signal }), [api, organizationId]);
   const resource = useResource(load, { intervalMs: 30_000 });
   return <div className={styles.stack}>
     <header className={styles.heading}>

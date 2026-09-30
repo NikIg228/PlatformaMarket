@@ -1,4 +1,35 @@
 import { test, expect, type Page } from "@playwright/test";
+import { writeFile } from "node:fs/promises";
+
+test("performance admin supplier loads once and preserves operations", async ({ page }, testInfo) => {
+  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "admin-ui-fixture" })));
+  const supplierId = "44444444-4444-4444-8444-444444444444";
+  const reads: string[] = [];
+  await page.route("**/api/**", async route => {
+    const path = new URL(route.request().url()).pathname.replace(/^\/api/, "");
+    reads.push(path);
+    if (path !== "/suppliers" && !path.startsWith(`/suppliers/${supplierId}/`) && path !== "/catalog/products" && path !== "/moderation/import-reviews")
+      return route.fulfill({ status: 503, json: { message: "Виджет не участвует в измерении" } });
+    const data = path === "/suppliers" ? [{ organizationId: supplierId, organization: { displayName: "Поставщик измерения", bin: "970000000002" }, warehouses: [], dataSources: [], _count: { importBatches: 0 } }]
+      : path === "/moderation/import-reviews" ? { items: [], options: { industries: [], categories: [], units: [] } } : [];
+    await route.fulfill({ json: data });
+  });
+  await page.goto("/admin");
+  await page.getByRole("button", { name: "Загрузка товаров", exact: true }).click();
+  const section = page.getByRole("region", { name: "Товары поставщика", exact: true });
+  await expect(section.getByRole("heading", { name: "Партии и резервы", exact: true })).toBeVisible();
+  await expect(section.getByRole("button", { name: "Обновить", exact: true })).toBeEnabled();
+  const measurements = Object.fromEntries([...new Set(reads)].map(path => [path, reads.filter(item => item === path).length]));
+  const output = testInfo.outputPath("admin-requests.json");
+  await writeFile(output, JSON.stringify(measurements, null, 2));
+  await testInfo.attach("admin-requests", { path: output, contentType: "application/json" });
+  expect(measurements[`/suppliers/${supplierId}/inventory/balances`]).toBe(1);
+  expect(measurements[`/suppliers/${supplierId}/import-batches`]).toBe(1);
+  expect(measurements[`/suppliers/${supplierId}/external-items`]).toBe(1);
+  await expect(section.getByRole("button", { name: "Добавить склад", exact: true })).toBeVisible();
+  await expect(section.getByRole("button", { name: "Загрузить и обработать", exact: true })).toBeVisible();
+  await expect(section.getByRole("button", { name: "Создать предложение", exact: true })).toBeVisible();
+});
 
 const organizationId = "11111111-1111-4111-8111-111111111111";
 const sessionId = "22222222-2222-4222-8222-222222222222";
@@ -208,6 +239,93 @@ async function fixture(
   });
   return { calls, unexpected };
 }
+
+test("bounded supplier inventory loads and pages details only when expanded", async ({ page }) => {
+  const state = await fixture(page, "SUPPLIER");
+  const balance = { id: "balance-a", offerId: "offer-a", warehouse: { name: "Основной склад" }, productVariant: { product: { canonicalName: "Первый товар" } }, quantityOnHand: "5", quantityReserved: "1", quantityAvailable: "4", safetyStock: "0", freshnessStatus: "FRESH", updatedAt: "2026-01-01T00:00:00Z" };
+  const details: string[] = [];
+  await page.route(/\/api\/workspaces\/supplier\/inventory(?:\?|$)/, route => {
+    const next = new URL(route.request().url()).searchParams.get("cursor");
+    return route.fulfill({ json: { items: [next ? { ...balance, id: "balance-b", productVariant: { product: { canonicalName: "Второй товар" } } } : balance], nextCursor: next ? null : "balance-page-2" } });
+  });
+  await page.route("**/api/workspaces/supplier/inventory-overrides*", route => route.fulfill({ json: { items: [], nextCursor: null } }));
+  await page.route("**/api/workspaces/supplier/inventory/balance-a/lots*", route => {
+    details.push("lots");
+    const next = new URL(route.request().url()).searchParams.get("cursor");
+    return route.fulfill({ json: { items: [{ id: next ? "lot-b" : "lot-a", lotNumber: next ? "LOT-B" : "LOT-A", status: "AVAILABLE", quantityAvailable: "4", expirationDate: null }], nextCursor: next ? null : "lot-page-2" } });
+  });
+  await page.route("**/api/workspaces/supplier/inventory/balance-a/reservations*", route => {
+    details.push("reservations");
+    return details.filter(item => item === "reservations").length === 1
+      ? route.fulfill({ status: 503, json: { message: "Повторите загрузку резервов" } })
+      : route.fulfill({ json: { items: [], nextCursor: null } });
+  });
+  await page.goto("/supplier/products/inventory");
+  const row = page.getByRole("row").filter({ hasText: "Первый товар" });
+  await expect(row).toBeVisible(); expect(details).toEqual([]);
+  await row.getByRole("button", { name: "Показать партии", exact: true }).click();
+  await expect(row.getByText(/LOT-A/)).toBeVisible(); expect(details).toEqual(["lots"]);
+  await row.getByRole("button", { name: "Следующая страница", exact: true }).click();
+  await expect(row.getByText(/LOT-B/)).toBeVisible();
+  await row.getByRole("button", { name: "Показать резервы", exact: true }).click();
+  await row.getByRole("button", { name: "Повторить загрузку резервов", exact: true }).click();
+  await expect(row.getByText("Активных резервов нет.")).toBeVisible();
+  await row.getByRole("button", { name: "Скрыть партии", exact: true }).click();
+  await page.getByRole("button", { name: "Следующая страница", exact: true }).click();
+  await expect(page.getByRole("row").filter({ hasText: "Второй товар" })).toBeVisible();
+  expect(details).toEqual(["lots", "lots", "reservations", "reservations"]);
+  expect(state.calls.some(path => path.endsWith("/inventory/balances"))).toBe(false);
+  expect(state.unexpected).toEqual([]);
+});
+
+test("bounded correction pages preserve selected product and unsent draft", async ({ page }) => {
+  const state = await fixture(page, "SUPPLIER");
+  let submitted: { productId: string; proposedValue: string } | undefined;
+  const product = { id: "product-a", canonicalName: "Карточка А", description: null, manufacturerSku: null, gtin: null, productType: "MATERIAL", regulatoryClass: null };
+  await page.route("**/api/workspaces/supplier/correction-offers*", route => {
+    const next = new URL(route.request().url()).searchParams.get("cursor");
+    return route.fulfill({ json: { items: [{ id: next ? "offer-b" : "offer-a", productVariant: { product: next ? { ...product, id: "product-b", canonicalName: "Карточка Б" } : product } }], nextCursor: next ? null : "corrections-page-2" } });
+  });
+  await page.route("**/api/moderation/product-corrections", route => {
+    if (route.request().method() === "POST") { submitted = route.request().postDataJSON(); return route.fulfill({ json: {} }); }
+    return route.fulfill({ json: [] });
+  });
+  await page.goto("/supplier/products/corrections");
+  const selection = page.getByRole("combobox", { name: "Товар", exact: true });
+  await expect(selection).toHaveValue("product-a");
+  await page.getByRole("textbox", { name: "Предлагаемая редакция", exact: true }).fill("Сохранённый черновик");
+  await page.getByRole("textbox", { name: "Почему нужна правка", exact: true }).fill("Проверено по документу производителя");
+  await page.getByRole("button", { name: "Следующая страница", exact: true }).click();
+  await expect(selection.locator('option[value="product-b"]')).toHaveCount(1);
+  await expect(selection).toHaveValue("product-a");
+  await expect(page.getByRole("textbox", { name: "Предлагаемая редакция", exact: true })).toHaveValue("Сохранённый черновик");
+  await page.getByRole("button", { name: "Отправить исправление", exact: true }).click();
+  await expect(page.getByText("Исправление отправлено на проверку.")).toBeVisible();
+  expect(submitted).toMatchObject({ productId: "product-a", proposedValue: "Сохранённый черновик" });
+  expect(state.calls.some(path => path.endsWith(`/suppliers/${organizationId}/offers`))).toBe(false);
+  expect(state.unexpected).toEqual([]);
+});
+
+test("workspace GET is aborted when its filter is superseded", async ({ page }) => {
+  await fixture(page, "SUPPLIER");
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route("**/api/workspaces/supplier/orders*", async route => {
+    if (new URL(route.request().url()).searchParams.get("q") === "old") await held;
+    await route.fulfill({ json: { items: [], nextCursor: null } }).catch(() => {});
+  });
+  await page.goto("/supplier/orders");
+  await expect(page.getByRole("heading", { name: "Заказы", exact: true })).toBeVisible();
+  const input = page.getByLabel("Поиск заказа", { exact: true });
+  await input.fill("old");
+  const sent = page.waitForRequest(request => request.url().includes("/workspaces/supplier/orders") && new URL(request.url()).searchParams.get("q") === "old");
+  await page.getByRole("button", { name: "Найти", exact: true }).click(); await sent;
+  const aborted = page.waitForEvent("requestfailed", { predicate: request => request.url().includes("/workspaces/supplier/orders") && new URL(request.url()).searchParams.get("q") === "old" });
+  await input.fill("new"); await page.getByRole("button", { name: "Найти", exact: true }).click();
+  try { expect((await aborted).failure()?.errorText).toMatch(/ABORTED|CANCELLED/i); }
+  finally { release(); }
+  await expect(page.getByText("Нет подключения к сети", { exact: false })).toHaveCount(0);
+});
 
 for (const width of [1440, 390]) test(`A08 orders retain data offline, deduplicate focus and refresh on reconnect ${width}`, async ({ page, context }) => {
   await page.setViewportSize({ width, height: 900 });

@@ -28,8 +28,8 @@
 - Commit/push выполняются по постоянному разрешению из §8 после проверок.
   Изменение рабочих данных и удаление деревьев требуют отдельного scope.
   Само правило не является технической блокировкой.
-- Состояние консолидации и владелец:
-  `actual_docs/governance/task-state/CONSOLIDATION-2026-09-21.md`.
+- Текущие задача и владелец:
+  `actual_docs/governance/task-state/PRIMARY-SESSION.md`.
 
 ### Обязательное восстановление контекста
 
@@ -86,11 +86,25 @@ go_live; ограниченный pilot сохраняется. Это не ра
 заготовки AI/trust/promotions/billing/recommendations или запускать production.
 Договор площадка–поставщик обязателен до публикации товаров.
 
+### Архив документации — решение владельца 30.09.2026
+
+- Рабочая навигация — `actual_docs/README.md`; полный реестр —
+  `actual_docs/DOCUMENTATION_INDEX.md`. Текущие незакрытые обязательства ведутся
+  в Foundation, результаты проверок — в Acceptance Matrix.
+- `actual_docs/history/` и датированные `ui-ux/references/` — исторические
+  материалы, не источник задач и не инструкции реализации. Не включать их
+  в обычное чтение/search для новой разработки; обращаться только по явному
+  запросу на историю или восстановление конкретного evidence.
+- Завершённую карточку не выполнять снова. Открытые части смешанного плана
+  перед архивированием переносятся в действующий реестр с ID и ограничениями.
+
 ## 2. Карта репозитория
 
 - `apps/api` — NestJS API, Prisma schema и доменная логика.
-- `apps/buyer-web`, `apps/supplier-web`, `apps/admin-web` — Next.js кабинеты.
-- `apps/landing-web` — публичные и маркетинговые страницы.
+- `apps/web` — основной единый Next.js frontend: public/clinic/supplier/admin.
+- `apps/buyer-web`, `apps/supplier-web`, `apps/admin-web` — импортируемые features
+  и отдельные legacy entry points; не удалять как неиспользуемые.
+- `apps/landing-web` — импортируемые public/auth features и legacy entry point.
 - `apps/e2e` — Playwright критических сценариев.
 - `packages/schemas` — общие Zod-схемы и типы контрактов.
 - `packages/api-client` — типизированный клиент core API.

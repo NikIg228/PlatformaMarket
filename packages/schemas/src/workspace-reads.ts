@@ -39,3 +39,30 @@ export type WorkspaceOffer = z.infer<typeof workspaceOfferSchema>;
 export type WorkspaceOfferPage = z.infer<typeof workspaceOfferPageSchema>;
 export type WorkspaceCartPage = z.infer<typeof workspaceCartPageSchema>;
 export type WorkspaceSummary = z.infer<typeof workspaceSummarySchema>;
+
+// Auxiliary screens do not need prices, warehouses or the full offer editor graph.
+export const workspaceCorrectionOfferSchema = workspaceOfferSchema.pick({ id: true, createdAt: true, productVariant: true });
+export const workspaceCorrectionOfferPageSchema = page(workspaceCorrectionOfferSchema);
+export const workspaceInventorySchema = z.object({
+  id: z.uuid(), offerId: z.uuid().nullable(), createdAt: date, updatedAt: date,
+  warehouse: z.object({ name: z.string() }),
+  productVariant: z.object({ product: z.object({ canonicalName: z.string() }) }),
+  quantityOnHand: decimal, quantityAvailable: decimal, quantityReserved: decimal,
+  safetyStock: decimal, freshnessStatus: z.string(),
+});
+export const workspaceInventoryPageSchema = page(workspaceInventorySchema);
+export const workspaceLotPageSchema = page(z.object({
+  id: z.uuid(), createdAt: date, lotNumber: z.string(), status: z.string(),
+  quantityAvailable: decimal, expirationDate: date.nullable(),
+}));
+export const workspaceReservationPageSchema = page(z.object({
+  id: z.uuid(), createdAt: date, quantity: decimal, expiresAt: date,
+}));
+export const workspaceOverridePageSchema = page(z.object({
+  id: z.uuid(), createdAt: date, reason: z.string(), status: z.string(), validUntil: date.nullable(),
+}));
+export type WorkspaceCorrectionOfferPage = z.infer<typeof workspaceCorrectionOfferPageSchema>;
+export type WorkspaceInventoryPage = z.infer<typeof workspaceInventoryPageSchema>;
+export type WorkspaceLotPage = z.infer<typeof workspaceLotPageSchema>;
+export type WorkspaceReservationPage = z.infer<typeof workspaceReservationPageSchema>;
+export type WorkspaceOverridePage = z.infer<typeof workspaceOverridePageSchema>;

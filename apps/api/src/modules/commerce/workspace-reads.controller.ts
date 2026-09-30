@@ -1,3 +1,4 @@
+import { SupplierAuxiliaryReadsService } from "./supplier-auxiliary-reads.service";
 import { BadRequestException, Controller, Get, Headers, Param, ParseUUIDPipe, Query, UseGuards } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { workspaceOrderQuerySchema, workspacePageQuerySchema } from "@marketplace/schemas";
@@ -18,7 +19,7 @@ function parse<T extends z.ZodType>(schema: T, query: unknown): z.output<T> {
 @UseGuards(PermissionsGuard)
 @Controller("workspaces")
 export class WorkspaceReadsController {
-  constructor(private readonly reads: WorkspaceReadsService) {}
+  constructor(private readonly reads: WorkspaceReadsService, private readonly auxiliary: SupplierAuxiliaryReadsService) {}
   @Get("buyer/orders")
   @RequirePermissions("order.create")
   @ApiCoreQuery("WorkspaceOrderQuery")
@@ -49,6 +50,33 @@ export class WorkspaceReadsController {
   @ApiUuidParam("cartId")
   @ApiCoreResponse("CartResponse")
   cart(@Headers("x-organization-id") id: string, @Param("cartId", ParseUUIDPipe) cartId: string) { return this.reads.cart(id, cartId); }
+  @Get("supplier/correction-offers")
+  @RequirePermissions("catalog.product.view")
+  @ApiCoreQuery("WorkspacePageQuery")
+  @ApiCoreResponse("WorkspaceCorrectionOfferPage")
+  correctionOffers(@Headers("x-organization-id") id: string, @Query() query: unknown) { return this.auxiliary.correctionOffers(id, parse(workspacePageQuerySchema, query)); }
+  @Get("supplier/inventory")
+  @RequirePermissions("inventory.view")
+  @ApiCoreQuery("WorkspacePageQuery")
+  @ApiCoreResponse("WorkspaceInventoryPage")
+  inventory(@Headers("x-organization-id") id: string, @Query() query: unknown) { return this.auxiliary.inventory(id, parse(workspacePageQuerySchema, query)); }
+  @Get("supplier/inventory/:balanceId/lots")
+  @RequirePermissions("inventory.view")
+  @ApiCoreQuery("WorkspacePageQuery")
+  @ApiCoreResponse("WorkspaceLotPage")
+  @ApiUuidParam("balanceId")
+  lots(@Headers("x-organization-id") id: string, @Query() query: unknown, @Param("balanceId", ParseUUIDPipe) balanceId: string) { return this.auxiliary.lots(id, balanceId, parse(workspacePageQuerySchema, query)); }
+  @Get("supplier/inventory/:balanceId/reservations")
+  @RequirePermissions("inventory.view")
+  @ApiCoreQuery("WorkspacePageQuery")
+  @ApiCoreResponse("WorkspaceReservationPage")
+  @ApiUuidParam("balanceId")
+  reservations(@Headers("x-organization-id") id: string, @Query() query: unknown, @Param("balanceId", ParseUUIDPipe) balanceId: string) { return this.auxiliary.reservations(id, balanceId, parse(workspacePageQuerySchema, query)); }
+  @Get("supplier/inventory-overrides")
+  @RequirePermissions("inventory.view")
+  @ApiCoreQuery("WorkspacePageQuery")
+  @ApiCoreResponse("WorkspaceOverridePage")
+  overrides(@Headers("x-organization-id") id: string, @Query() query: unknown) { return this.auxiliary.overrides(id, parse(workspacePageQuerySchema, query)); }
   @Get("supplier/summary")
   @RequirePermissions("order.confirm", "catalog.product.view")
   @ApiCoreResponse("WorkspaceSummary")

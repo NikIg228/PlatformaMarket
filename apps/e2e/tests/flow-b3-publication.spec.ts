@@ -1,4 +1,5 @@
 import { importFile } from "../fixtures/import-file";
+import { installOperatorSession } from "../fixtures/operator-session";
 import { randomUUID } from "node:crypto";
 import { unlink } from "node:fs/promises";
 import { resolve, sep } from "node:path";
@@ -26,6 +27,7 @@ let agreementId = "";
 let documentId = "";
 let templateId = "";
 let uniqueName = "";
+let revokeOperator: (() => Promise<void>) | undefined;
 
 function assertLocalDatabase() {
   const hostname = new URL(databaseUrl).hostname;
@@ -89,6 +91,7 @@ async function removeStoredAssets() {
 }
 
 async function cleanup() {
+  if (revokeOperator) { await revokeOperator(); revokeOperator = undefined; }
   if (!supplier?.organizationId) return;
   const complianceIds = (await prisma.complianceCheck.findMany({ where: { sellerOrganizationId: supplier.organizationId }, select: { id: true } })).map(({ id }) => id);
   const aggregateIds = [batchId, candidateId, offerId, agreementId, ...complianceIds].filter(Boolean);
@@ -148,7 +151,8 @@ for (const fileType of ["CSV", "EXCEL"] as const) test(`operator approves ${file
 
   page.on("pageerror", (error) => console.error(`[admin pageerror] ${error.message}`));
   page.on("console", (message) => { if (message.type() === "error") console.error(`[admin console] ${message.text()}`); });
-  await page.goto("http://127.0.0.1:3010");
+  if (process.env.FLOW_B3_UNIFIED === "true") revokeOperator = await installOperatorSession(page, prisma, operator);
+  await page.goto(process.env.FLOW_B3_UNIFIED === "true" ? "http://127.0.0.1:3000/admin" : "http://127.0.0.1:3010");
   await expect(page.getByText("Проверяем вход...")).toBeHidden({ timeout: 15_000 });
   await page.getByRole("button", { name: "Загрузка товаров", exact: true }).click();
   const card = page.getByTestId(`import-review-${candidateId}`);
@@ -198,7 +202,7 @@ for (const fileType of ["CSV", "EXCEL"] as const) test(`operator approves ${file
   expect(await prisma.outboxEvent.count({ where: { aggregateType: "SupplierOffer", aggregateId: offerId, eventType: "OfferPublicationChanged" } })).toBe(publicationEvents);
 
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto(`http://127.0.0.1:3001/?q=${encodeURIComponent(uniqueName)}`);
+  await page.goto(`${process.env.FLOW_B3_UNIFIED === "true" ? "http://127.0.0.1:3000/catalog" : "http://127.0.0.1:3001/"}?q=${encodeURIComponent(uniqueName)}`);
   await expect(page.getByTestId("product-card").filter({ hasText: uniqueName })).toBeVisible();
   const afterSearch = await json<{ total: number; items: Array<{ id: string; name: string }> }>(await request.get(`${API_URL}/catalog/search?q=${encodeURIComponent(uniqueName)}`));
   expect(afterSearch.items).toEqual(expect.arrayContaining([expect.objectContaining({ id: productId, name: uniqueName })]));

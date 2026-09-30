@@ -1,11 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { DocumentRendererService } from "./document-renderer.service";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+let getDocument: typeof import("pdfjs-dist/legacy/build/pdf.mjs")["getDocument"];
+// PDF.js initializes its parser/worker on a cold process. Keep setup out of
+// the rendering assertions' normal five-second deadline during parallel CI.
+beforeAll(async () => {
+  ({ getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs"));
+}, 30_000);
+
 async function readPdf(bytes: Buffer) {
-  const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const task = getDocument({ data: new Uint8Array(bytes), useSystemFonts: false });
   const pdf = await task.promise;
   try {

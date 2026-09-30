@@ -1,0 +1,398 @@
+# Platforma.Market — единая база контекста
+
+## Передача завершена — 30.09.2026, 20:56 +05:00
+
+Ручной переход generation3→4 завершён по прямому поручению владельца;
+незавершённый CI не объявляется PASS. Единственный primary/finalizer:
+`01a0f302-2d38-75d1-b79c-141e7428b533`. Source
+`01a0c957-1f23-7b70-9dc9-226afbb5c0b1` остановлен и архивирован.
+Native evidence: `wait_threads` подтвердил `idle`, turn
+`01a0f300-6fb4-7192-bd51-45dcb04913cb` — `completed`;
+`set_thread_archived` вернул для source `archived=true`, затем
+`list_archived_threads` подтвердил тот же ID в архиве под именем PlatformaMarket.
+Реестр: generation4, transition=idle, successorThreadId=null; source retired.
+Main/remote `2a816c337bae15f6684318cf26d21bf6f71cb3c5`, A01–A18 LOCAL_PASS,
+CI36737223743 FAIL и Security36737223539 FAIL (CodeQL PASS) сохранены.
+Исходные служебные dirty сохранены; четыре next-env совпали по SHA-256.
+JSON/пути реестра, единственность receipt и `git diff --check` — PASS.
+Ограничение dev: до архива PID26204/28360/11992 существовали, после архива
+финальная сверка20:56 не нашла ни этих PID, ни listeners3000/4012.
+Причина исчезновения не установлена; finalizer не выполнял stop/restart.
+Сохранение dev33798 не подтверждено, восстановление требует задачи владельца.
+Receipt локальный, без commit/push. Следующий шаг — ждать задачи владельца;
+исправление CI, новые тесты и продуктовая работа этой передачей не разрешены.
+Ниже сохранена история подготовки и её тогдашние состояния.
+
+## Передача по явному поручению владельца — 30.09.2026
+
+Владелец после отчёта push/красного CI прямо попросил «перенеси в новый чат».
+Это разрешение на ручную передачу незавершённого состояния, не автоматическая
+ротация и не объявление CI PASS. Source:01a0c957-1f23-7b70-9dc9-226afbb5c0b1,
+ключ перехода: local-affe45ff7ccd29c6dcc081e3663d7082/source/generation3.
+Один fresh successor в том же saved project/local; сначала read-only comprehension.
+
+Опубликовано: main@2a816c337bae15f6684318cf26d21bf6f71cb3c5, origin/main exact SHA
+подтверждён.317 файлов двух чатов (PlatformaMarket и PlatformaMarket UI).
+A01–A18 LOCAL_PASS: typecheck13/13, full unit12/12, canonical/API builds,
+CONTRACT/PG/RUNTIME и затронутые live/browser flows. Подробный журнал в
+WORKSPACE-AUDIT-REMEDIATION-2026-09-30.md; не повторять неизменённые checks.
+
+Actual GitHub CI на этом SHA завершён с ошибками (первая попытка, rerun не было):
+- CI36737223743, verify109961988677: verify:core-contract выбрал
+  dentmarket_audit_20260914, которого нет в этом CI job; CI готовил marketplace.
+- Тот же run, postgres-integration109961989049: все36 migrations применились,
+  затем organization-profile-fixture.mjs:9 отказал в допустимости fixture DB.
+  Wrapper выбрал audit DB вопреки CI POSTGRES_TEST_DATABASE_URL.
+- Security36737223539: CodeQL109961991908 PASS; dependencies109961991970 FAIL,
+  npm audit production:2 high/4 moderate (brace-expansion; js-yaml; multer и dependents).
+- Legacy buyer standalone bundle budget FAIL сохранён отдельно. CI также ещё
+  содержит legacy frontend paths; не считать последующие непройденные steps PASS.
+
+Scope передачи: сохранить понимание, завершить ровно этот переход и ждать владельца.
+Исправление CI/зависимостей, новая продуктовая фаза и повторный push не начинаются
+автоматически по просьбе переноса. Следующий шаг после финализации — сообщить
+готовность новому чату; при запросе владельца сначала сверить CI DB wrapper/guard.
+Не ослаблять isolation guards, не запускать npm audit fix --force и массовые suites.
+
+Исходные5 dirty paths сохраняются: .codex/project-session.json (старый receipt
+оркестратора) и apps/{admin,buyer,landing,supplier}-web/next-env.d.ts (generated).
+Передача дополнительно меняет только registry, PROJECT_HANDOFF, PRIMARY-SESSION
+и этот audit checkpoint; governance receipt остаётся локальным, не публикуется
+ради переноса при красном CI. Index до передачи пуст; новых исходников нет.
+Работающая dev-сессия33798: npm run dev из canonical root, launcher26204,
+API28360:4012, web11992:3000; JWT/go_live, marketplace DB, role all. Сохранить.
+Никаких DB writes/reseed, worktrees/clones, остановки чужих процессов, hook/trust
+и automation изменений. Внешних операций в полёте нет; CI completed.
+
+Источник прекращает продуктовую запись сейчас. После read-only READY назначить
+преемника finalizer: дождаться фактического idle source, архивировать только
+source штатным инструментом, проверить архив, завершить generation4/idle.
+До этого только governance-передача; user authorization приоритетнее запрета
+автоматической ротации на FAIL в SESSION_ROLLOVER.
+
+
+## Актуальный результат — аудит кабинетов, 30.09.2026
+
+A01–A18 локально проверены для единого приложения; [итог и evidence](../../governance/task-state/WORKSPACE-AUDIT-REMEDIATION-2026-09-30.md).
+Typecheck/unit/canonical build/contract/PG/runtime и затронутые browser flows PASS.
+Отдельный legacy buyer bundle budget FAIL остаётся ограничением вне canonical
+runtime. Production/release и отложенные платёжные правила не принимаются этой записью.
+Main646dab5 + сохранённый WIP, commit/push отложены; CI NOT_RUN. Primary прежний,
+передача/архивация не начаты. Следующую задачу автоматически не запускать.
+Более ранние «текущая задача» и BLOCKED записи ниже — исторические.
+
+## Текущая задача — компактный каталог, 28.09.2026
+
+Локальная реализация готова, остаток browser acceptance BLOCKED:5/7 PASS,
+fixture JWT mismatch исправлен в scoped config, два сценария кабинета ещё не
+перепроверены по лимиту3 запусков. [Checkpoint](../../governance/task-state/CATALOG-LAYOUT-2026-09-28.md).
+Types/unit/build/contracts PASS; main26edf45, без commit/push, dev82593 оставлен.
+Платежи и остальные прежние WIP сохранены; продолжать только указанный scope.
+
+## CORE-04 — CLOSED, 25.09.2026
+
+Каталог и Excel/CSV проверены; main278be21 опубликован. CI36127372917 и Security36127373128 SUCCESS.
+[Подробный результат](../../governance/task-state/CORE-04-2026-09-25.md).
+Search48/50; synthetic matching100/0 wrong auto. Дубли demo-названий и два
+пропуска поиска записаны как ограничения, не скрыты. Оплата CORE-02 и CORE-03
+остаются отложенными. Следующую фазу автоматически не начинать.
+Primary generation3, та же canonical main; прежний WIP сохранён.
+## Завершённый этап — ORGANIZATION-READY, 24.09.2026
+
+**CLOSED:** exact `7f06914f87aa465a0e09f08e2bcdb7c34c0327f0` опубликован в main;
+remote SHA подтверждён. [CI36035175719](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36035175719)
+и [Security36035175682](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36035175682)
+SUCCESS на этом коммите. Разрешённый isolated retry прошёл2/2 без ослабления теста;
+полный npm test затем прошёл в CI. Подробный итог и сохранённая история попыток —
+в верхнем [checkpoint](governance/task-state/PRIMARY-SESSION.md).
+Следующий scope не начат. Ниже сохранён ход этапа, а не новая очередь.
+
+Владелец разрешил законченный этап «Организация готова к работе»: подключение
+клиники/поставщика, анкета и отдельный допуск, вход по серверным полномочиям,
+сохранение прямых ссылок и переход поставщика каталог↔кабинет. Затем попросил
+зафиксировать выполненное и продолжить завтра;24.09 явно разрешил продолжить
+с места остановки. Подготовка и конкретные пробелы
+сохранены в верхнем [checkpoint](governance/task-state/PRIMARY-SESSION.md).
+Реализованы анкета/API/миграция, восстановление сессии, выбор доступного кабинета,
+buyer gate, пять шагов поставщика, операторская проверка и каталог↔кабинет.
+Владелец подтвердил юридический адрес + адрес доставки (допустимо совпадение).
+Typecheck12/12, API370 unit, regular browser42 и supplier-terms browser/JWT5 PASS.
+После явного разрешения владельца isolated buyer order-profile PASS2/2;
+остальные результаты npm test переиспользованы по неизменным входам. История
+timeout5s сохранена, тест/таймаут не ослаблялись. Final review и CI fixture guard
+проверены. Состояние READY_FOR_PUBLICATION; этап закрывается после push и actual
+CI/Security. Точные SHA/результаты публикации — в checkpoint; следующие CORE не начаты.
+Продолжать с текущего checkpoint, без полного повторного аудита.
+Primary generation3 сохраняется; HEAD main4cd87a5. Локальные governance receipt,
+четыре прежних next-env сохранены; commit/push не выполнялись. При проверке24.09
+listeners стенда отсутствовали; старые PID ниже не считать актуальным окружением.
+Ниже — квитанция завершённой передачи и предыдущий принятый продуктовый результат.
+
+## Актуальный вход — 22.09.2026, плановая передача после CLOSED
+
+Единственный checkout: `C:\Users\user\Desktop\dentmarket-kz-main`, ветка `main`.
+Источник передачи: прежний primary `01a0c415-1c3c-73e3-a270-5ad591fa9ca7`, generation2.
+Передача завершена: generation3 / `idle`, единственный primary
+`01a0c957-1f23-7b70-9dc9-226afbb5c0b1` — «Platforma.Market — основной».
+Source прекратил записи и завершил turn; Оркестратор подтвердил его архив
+через set_thread_archived и list_archived_threads. Новый primary прошёл READY
+и ждёт конкретную задачу владельца; новый продуктовый scope не разрешён.
+Текущую фазу и successor проверять в `.codex/project-session.json` и верхнем
+[checkpoint](governance/task-state/PRIMARY-SESSION.md). Владелец через Оркестратор
+разрешил только governance-подготовку новой основной задачи. Продуктовый scope
+следующего этапа **не выбран**. Единственный finalizer — Оркестратор
+`01a02859-08f3-7082-920d-49400f0fbb09` завершил тот же переход без нового поколения.
+Опубликован handoff4cd87a5 с успешным CI; финальная operational-квитанция
+и переключение реестра локальные, не закоммичены. Автоматически backlog не начинать.
+
+Продукт — B2B-закупки стоматологических товаров: клиника сравнивает предложения,
+оформляет заказ; поставщик поддерживает данные и исполняет заказы; оператор
+контролирует допуски и спорные ситуации. Цель владельца — внутренние backend и
+frontend до26.09.2026. Интеграции и production-приёмка отдельно. Источник решений —
+[Product V2](product/DENTMARKET_PRODUCT_V2.md), техническая очередь — Foundation,
+доказательства — Acceptance Matrix и checkpoint. Ускорение означает reuse
+подтверждённых проверок для неизменных входов, предварительную сверку окружения
+и сообщения о существенных результатах; обязательные gates не отменены.
+
+Последний продуктовый результат **CLOSED** на exact
+`267be7f1f4d9b2f7aced348ed4f6dbdee061cfad`, опубликован в `origin/main`:
+возврат к товару после входа/текущей регистрации и подтверждения email в новой
+вкладке; путь обратно в каталог сохраняется, автоматической покупки нет.
+Предшествующая гонка Escape устранена. Исправлен локальный landing URL в CI.
+[CI35731694388](https://github.com/NikIg228/dentmarket_04.08/actions/runs/35731694388)
+и [Security35731694259](https://github.com/NikIg228/dentmarket_04.08/actions/runs/35731694259)
+SUCCESS: regular39PASS/38 opt-in SKIP, flow-b3 3PASS, без flaky failures;
+typecheck/unit/build/API/runtime/PostgreSQL gates прошли. Эта приёмка относится
+к указанному продуктовому SHA; последующая docs-публикация имеет свой статус CI.
+
+В последнем scope незавершённой продуктовой работы нет. Полная анкета §22.8,
+автоматический выбор кабинета и переход поставщика каталог → кабинет остаются
+отдельными непринятыми частями §22.1. Контекстные диалоги §22.12 утверждены как
+требования22.09; их реализация этим поручением не начата. Общие условия для новых
+поставщиков и допуск оператора — разные состояния (§9.7); пустые DRAFT-документы
+не дают фиктивного акцепта. Не возвращать индивидуальное подписание без нового
+решения. Акции включают скидки и N+M, комиссия — модель дохода без утверждённого
+тарифа; AI/рекомендации/подписки/платное продвижение отложены. Это контекст,
+**не разрешение выполнять весь backlog**.
+
+Сохранить working runtime из канонической папки: `npm run dev` PID30968,
+dev-local/all PID31284, gateway PID14696; API4012, web3000–3003, gateway3080.
+PID/source перепроверять перед действием. Это пользовательский serving stand,
+не незавершённый тест; его остановка не требуется для передачи. Четыре прежних
+`apps/{admin,buyer,landing,supplier}-web/next-env.d.ts` сохранены byte-for-byte,
+не stage/overwrite. Собственные dirty при старте — итоговые записи checkpoint;
+governance-пакет ограничен этим файлом, PROJECT_HANDOFF и registry. Не менять
+рабочую БД, секреты, hooks/trust/автоматизацию; не создавать worktree/clone,
+не повторять завершённые gates и не сбрасывать лимиты попыток из-за новой задачи.
+Один writer; архивацию и окончательное переключение завершает только finalizer
+по [SESSION_ROLLOVER](../../../../../governance/SESSION_ROLLOVER.md) после проверенного READY.
+
+Документный preparing snapshot опубликован как
+`4cd87a554793ea1fa7daffc483f473312d95d5e1`, HEAD=origin/main;
+CI35735454544 и Security35735454536 SUCCESS на этом SHA. Финальные operational
+поля awaiting_archive и итоговый checkpoint сохранены локально, не закоммичены:
+Оркестратор явно запретил source новый commit/CI цикл и принимает этот diff
+для завершения передачи. CI опубликованного snapshot не выдаётся за проверку
+неопубликованного состояния реестра. Hooks/trust и serving stand не изменены.
+
+## Исторический снимок 21.09.2026 — не текущая очередь
+
+Ниже сохранено происхождение решений. Старые фразы «текущее поручение»,
+seed/CI pending, BLOCKED и implementation not started не переопределяют свежий
+верхний checkpoint. Старое общее исключение чата уточнено Product§22.12.
+
+Дата снимка: 2026-09-21. Историческое имя: DentMarket KZ.
+Каноническая папка: `C:\Users\user\Desktop\dentmarket-kz-main`.
+Это стартовый handoff четырёх задач, не второй backlog и не новая приёмка продукта.
+
+**Актуальное владение и правило продолжения, 21.09.2026:** primary —
+01a0c415-1c3c-73e3-a270-5ad591fa9ca7, generation=2 / idle. Архив source
+01a0c36e-38a1-7942-957b-9e8620c01442 подтверждён нативным списком; ранее проверенный
+преемник завершил тот же переход по явному аварийному разрешению владельца.
+Новое правило отменяет немедленную ротацию после сжатия: восстановить checkpoint
+и продолжить всю текущую задачу. Передача — только после полного DoD, checks/review,
+согласованной публикации/фактического CI где требуются, завершения операций и
+проверки понимания преемника. FAIL/BLOCKED/PENDING/unknown не означают завершение;
+тест или governance-правка не сокращают исходный scope. Точный идемпотентный
+порядок финализации без работы архивированного source —
+[SESSION_ROLLOVER](../../../../../governance/SESSION_ROLLOVER.md). Hook остаётся read-only;
+runtime review/trust не подтверждён. Это не изменение auto-compaction движка.
+
+**Текущее поручение после фиксации требований:** продолжить CI remediation, затем
+обновить карту экранов под Product §22. Цель владельца — внутренние backend/frontend
+до 26.09.2026; интеграции отдельно, production readiness требует собственных gates.
+Governance опубликован a438ffe; seed fix готовится отдельным scoped commit.
+Unit 7/7 PASS; repeat-seed attempt2 PASS20.945с на отдельной схеме test DB:
+500 offer mappings сохранены при смене порядка вариантов, cleanup/public
+preservation PASS. Setup использовал неизменённые SQL через psql с session
+search_path; Prisma deploy и общий CI ещё требуют фактического remote результата.
+Точный WIP, попытки и передача primary — [PRIMARY-SESSION](governance/task-state/PRIMARY-SESSION.md).
+Эта запись новее исторических запретов продолжать CI ниже: продолжение CI сейчас
+прямо разрешено, но весь backlog этим поручением не запускается.
+
+**Последнее решение владельца 21.09.2026:** после просмотра референсов утверждены
+компактный B2B-состав и все правила итогового обсуждения. Уточнение: акции — общая
+сущность с N + M и скидками на товар, «3 + 1» только пример; резервирование всех
+товаров оформленного заказа, включая подарки, обязательно (Product §22.7).
+Текущая задача — сохранить решение, не реализовать
+все экраны одновременно. Статус: `requirements approved; implementation not started`.
+Канонический текст — [Product V2 §22](product/DENTMARKET_PRODUCT_V2.md#22-утверждённый-состав-b2b-и-правила-кабинетов--2026-09-21),
+источники цены/остатка — [ADR 012](../../../../../architecture/adr/012-offer-data-authority.md),
+компоновка — UI Standard §2.2. Snapshot до фиксации: main @
+05c97f50c9c1e1be9154c100982502445c01dc3e, чисто; фактический HEAD проверять.
+
+AI/умные рекомендации/подписки/платное продвижение отложены; обычные акции,
+минимальные споры и аналитика продаж/закупок входят в согласованные требования.
+Комиссия с продаж — модель заработка, 10% — только пример; база/момент начисления,
+возвраты/оплата ещё требуют решения. Runtime flags и интеграции не менялись.
+Не повторять запрос об утверждении уже принятой компоновки. Исторический набор
+78 референсов не является 78 страницами меню или новым runtime PASS.
+
+## Порядок чтения новой основной задачей
+
+1. Корневой AGENTS.md и [Development Workflow](governance/DEVELOPMENT_WORKFLOW.md).
+2. Этот документ, [текущий checkpoint](governance/task-state/PRIMARY-SESSION.md)
+   и `.codex/project-session.json`.
+3. [Product V2](product/DENTMARKET_PRODUCT_V2.md),
+   [Foundation V2](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) и
+   [Acceptance matrix](governance/PROJECT_ACCEPTANCE_MATRIX.md).
+4. [Протокол передачи](../../../../../governance/SESSION_ROLLOVER.md).
+5. Только профильные документы выбранной задачи.
+
+## Продукт и утверждённые границы
+
+B2B-платформа закупок стоматологических товаров в Казахстане.
+Клиника-покупатель сравнивает реальные предложения; поставщик ведёт предложения,
+остатки и заказы; оператор контролирует допуски и спорные/ошибочные ситуации.
+
+Цикл: товар/предложение → поиск и сравнение цены за единицу/упаковку → корзина
+с повторной проверкой цены и остатка → разделение по поставщикам → полное/
+частичное подтверждение или отказ → фиксация оплаты → доставка/получение →
+документы и повторная закупка. Договор платформы с поставщиком обязателен
+до публикации предложений. Наличие экрана не заменяет ограничения на backend.
+
+Первый пилот не требует ИИ, рекламной системы, сложных рекомендаций, финансового
+посредничества/автовыплат и полной автоматизации 1C. Дополнительные локальные
+go_live5-поверхности ограничены ADR-011 и не делают систему production-ready.
+Текущая техническая очередь — внутреннее ядро без новых live-интеграций.
+Конкретный платёж пилота (счёт/внешняя оплата или PSP sandbox) ещё требует
+решения владельца по Product V2 §16. Ручное подтверждение оплаты без PSP —
+предложение, не автоматически утверждённая финансовая модель.
+
+## Что существует и что принято
+
+- Покупательский каталог/предложения/корзина/заказы, поставщик и оператор,
+  импорт CSV/XLSX, финансы и документы имеют реализацию. Показ фото в каталоге
+  использует точное соответствие; данные цен/остатков берутся из API, а не макета.
+- UI переведён на общие Fluent v9/Manrope паттерны; workspace-модули, lazy loading
+  и bundle-ограничения имеют отдельные предыдущие проверки.
+- AUD-FIX-01…06 приняты в границах, записанных в Foundation/Acceptance matrix.
+  AUD-FIX-07.1 и 07.2 также приняты: документы/суммы/черновики/загрузка,
+  order/contract lookup и mixed-tenant исправления. **Родительский AUD-FIX-07
+  всё ещё открыт**. Не считать весь документный цикл завершённым.
+- NCALayer/client callback, server gateway с fail-closed проверками, remote/mobile
+  signing foundation и контракты 1C существуют по отчётам задач. Это не
+  LIVE_VERIFIED удалённая подпись, платёжный провайдер или 1C.
+- Исторический security-пакет и недостающие проверки графа документов
+  адаптированы при консолидации. Старые числа security findings не показывают
+  остаток у сегодняшнего HEAD; полного нового security-аудита здесь не было.
+- Консолидация сохранена в main; старые worktrees убраны после резервирования.
+  Не повторять перенос исходников из старых задач.
+
+## Git и последние проверки
+
+Снимок перед этой реорганизацией: `main`,
+HEAD `16af5ca06ebc9a951fa5da39fb47f6f2e5eac5b4`,
+checkout чистый, origin/main соответствует ему.
+Remote: `https://github.com/NikIg228/dentmarket_04.08.git`.
+После изменения handoff будет отдельный scoped diff; проверять настоящий HEAD.
+
+Последняя проверка CI: backup/restore smoke прошёл на реальной изолированной
+CI PostgreSQL (150 таблиц/2 fixture files, исходные данные не затронуты),
+CodeQL и dependency checks зелёные. **Общий CI не зелёный**:
+verify:search-commerce обращается к отсутствующему старому buyer fixture
+с окончанием 030; текущие seed-идентификаторы другие. Проверка истории
+и результат — в [MARKET-CI-REMEDIATION](../../governance/task-state/MARKET-CI-REMEDIATION-2026-09-21.md).
+Исторические runs: CI 35582630314, Security 35582630385.
+Важно: CI-карточка внутри репозитория остановлена на pre-publication checkpoint.
+Её «pending in CI» — исторический момент, а не итог запуска. Поздний результат
+подтверждён этими runs, локальным ignored evidence
+`outputs/ci-remediation-20260921/backup-restore-ci.json` и отчётом Оркестратора
+`C:\Users\user\Documents\Codex\2026-08-22\zeny-main-dentmarket-kz\MARKET_CI_REMEDIATION_2026-09-21.md`.
+Не начинать повторное исправление backup/restore из-за старого pending.
+Пользователь остановил эту реализацию перед текущей организационной задачей.
+Не исправлять fixture автоматически как продолжение старого «приступай».
+
+## Что осталось и куда смотреть
+
+| Оставшееся | Канонический источник / граница |
+| --- | --- |
+| Остаток AUD-FIX-07: payment/refund lookup, навигация/detail, accounting errors/demo-labels | Foundation §8 и AUDIT_PURCHASING_DOCUMENTS_REMEDIATION_2026-09-15.md |
+| AUD-FIX-08: field help, admin states, responsive | Foundation и UI/UX audit; не закрыто прежней миграцией компонентов |
+| AUD-FIX-09: целевые проверки | Foundation и Acceptance matrix; только существующий scope |
+| CORE-01…09, POST-BE | POST-BE после backend-ядра/CORE-09, не по одному зелёному smoke |
+| B5.1–B5.3 и POST-FULL | POST-FULL после backend и frontend приёмки |
+| Live EDS, PSP, email/SMS, storage, monitoring | Профильные integration/runbook требования; нужны провайдеры и отдельное разрешение среды |
+| CI verify:search-commerce | Доказанный незакрытый verification blocker; следующая реализация требует нового поручения |
+
+Предшествующее решение владельца 21.09: **редизайн нужен максимально близко к прежним
+визуальным референсам**, сначала предъявить и подтвердить полный найденный набор.
+Статус: `redesign direction requested; reference set approval pending; implementation not started`.
+[Галерея 78 поверхностей / 69 шаблонов](../../ui-ux/references/production-preview-2026-09-16/index.html),
+[карта происхождения и различий](../../ui-ux/DENTMARKET_UI_UX_CONSOLIDATION_STANDARD.md#20-повторный-запрос-редизайна-и-набор-на-подтверждение-2026-09-21).
+Дополнительное поручение 21.09: организовать существующие референсы физически
+для просмотра. Новый вход — [набор по папкам](../../ui-ux/references/production-preview-2026-09-16/review/index.html),
+[чеклист 78/78](../../ui-ux/references/production-preview-2026-09-16/review/CHECKLIST.md).
+Он генерируется из прежних источников; все элементы ожидают утверждения.
+Оригиналы/прежние точки входа сохранены, приложение не изменяется.
+Четыре originals совпадают с Desktop PNG; каталог с фильтрами слева отличается
+от top-header/01-catalog.png с горизонтальными фильтрами. Выбор ещё не подтверждён.
+Новые макеты PROPOSED; реальный UI и engineering acceptance этим не меняются.
+
+Историческая UI-итерация по решению 15.09: **сохранить существующий дизайн и выполнять
+только конкретную полировку**, без полного редизайна. **B Quiet Editorial,
+header-only без sidebar** — исторический референс 14.09, не критерий нынешней
+приёмки и не поручение перестроить экраны. Источник:
+[UI/UX Consolidation Standard](../../ui-ux/DENTMARKET_UI_UX_CONSOLIDATION_STANDARD.md).
+При текущей задаче внутренние API, UI, БД и продуктовые тесты не менялись.
+Проценты готовности не выдумывать.
+
+## Происхождение контекста: четыре задачи
+
+| Задача (название сохранено) | ID | Что учтено |
+| --- | --- | --- |
+| Backend | 019fc298-67f6-77c3-bd13-456defdc513c | Product/core этапы, supplier agreement, AUD-FIX, последние UI-референсы и ограничения закрытия фаз |
+| UI/UX | 01a020bb-35e2-76e3-8ae5-b7932e9e7909 | Общий UI/тема, workspace, каталог и реальные данные, bundle/lazy, границы сделанного |
+| Интеграции | 01a02551-6288-7e10-b66f-d67bd887ff05 | NCALayer/remote signing/1C foundation; отсутствие доказательства live-подключений |
+| Безопасность | 01a025b2-389e-78a2-90fe-8ca01b056de4 | Исторические tenant/access/signature/upload findings и fixes; не подменяют свежую проверку main |
+
+Прочитана доступная история всех четырёх задач и актуальная документация.
+У Backend после 33 turns штатная пагинация дала ошибку; доступные сохранённые
+финальные ответы дополнительно прочитаны локально read-only, без изменения
+служебных хранилищ. Полная дословная история до старых сжатий не восстановлена
+и не объявляется сохранённой; продуктовые выводы привязаны к документам/evidence.
+Архив исходных задач сохраняется.
+
+## Текущее разрешение владельца
+
+Передача основной задачи завершена; организационный этап опубликован в main
+как 74f503ee12297c10e22cf543003c0c2daa33daa7. Новое поручение 21.09 — найти и
+классифицировать прежние референсы; последующее поручение разрешает организацию
+reference assets, воспроизводимый review-набор и связанную документацию.
+После предъявления владелец обсудил набор и утвердил состав/правила Product §22;
+текущий порученный результат — их фиксация в канонических документах и публикация.
+Это не blanket acceptance старых макетов и не команда реализовать весь backlog.
+Следующая ограниченная реализация выбирается по Foundation/Workflow; известный
+CI-blocker, live-интеграции и рабочие данные этим docs-scope не изменяются.
+
+28.09: активный scope — [единый frontend](../../governance/task-state/UNIFIED-APPLICATION-2026-09-28.md), [runbook](runbooks/UNIFIED-FRONTEND.md). Прежняя отметка об отложенной миграции отменена новым поручением владельца. Проверки локальные; push отложен.
+
+30.09 transfer READY: successor 01a0f302-2d38-75d1-b79c-141e7428b533 completed read-only turn
+01a0f302-306b-7c21-ad5a-729f5390c80f; source checked substantive comprehension
+(product, exact commit, LOCAL_PASS vs CI FAIL, attempts, dirty8 paths and dev).
+Registry now generation4/awaiting_archive, primary=successor, source retired.
+Finalizer is successor only. Source stops ALL filesystem/product writes after
+this receipt and finalizer dispatch; successor must observe source turn completed/idle
+before archiving it. Archive not yet confirmed at this receipt. Keep all CI failures,
+no product/CI/dependency fix or commit/push in this handoff. Finish same transition
+to idle only after native archive confirmation; then await owner's next request.

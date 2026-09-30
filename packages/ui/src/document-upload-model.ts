@@ -1,4 +1,4 @@
-import { DOCUMENT_UPLOAD_MAX_BYTES } from "@marketplace/schemas";
+import { DOCUMENT_UPLOAD_MAX_BYTES } from "@marketplace/schemas/document-upload-limits";
 /** Document money uses two minor-unit digits. Never coerce user money to Number. */
 export function parseDocumentAmount(value: string): { minor?: string; error?: string } {
   const text = value.trim();

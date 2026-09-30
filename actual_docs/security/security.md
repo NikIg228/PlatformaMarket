@@ -10,7 +10,7 @@ permissions/изоляции и не отключение security guards. До�
 
 ## Идентификация и tenant context
 
-Локальный `AUTH_MODE=development` принимает фиксированные `x-user-id` и `x-organization-id`. Этот режим блокируется при `NODE_ENV=production`.
+Изолированный development/test `AUTH_MODE=development` принимает фиксированные `x-user-id` и `x-organization-id`. Этот режим блокируется при `NODE_ENV=production`; обычный local launcher использует JWT и не разрешает development identity.
 
 `AUTH_MODE=jwt` проверяет HS256 либо RS256/ES256 подпись, срок жизни, issuer, audience, subject и tenant claims `organization_id`/`organization_ids`. Переданный клиентом user header удаляется и заменяется проверенным `sub`. Активная организация должна входить в подписанный список, после чего `PermissionsGuard` дополнительно проверяет активную membership и permissions.
 

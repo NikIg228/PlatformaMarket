@@ -1,0 +1,162 @@
+# PlatformaMarket
+
+Название утверждено владельцем28.09.2026: PlatformaMarket, слитно, без точки и KZ.
+Исторические названия DentMarket/Platforma.Market в evidence и стабильных
+технических идентификаторах не означают другой продукт. Переименование не
+меняет действующие домены, договорные акцепты и ключи пользовательских сессий.
+
+B2B-маркетплейс для закупок стоматологических клиник Казахстана. Кодовая база остаётся отраслево-независимым TypeScript-монорепозиторием, а стоматология подключена как первая конфигурация каталога, атрибутов, правил и demo data.
+
+## Приложения
+
+- `apps/api` — NestJS modular monolith, OpenAPI и background workers.
+- `apps/buyer-web` — поиск, сравнение, корзина, заказы, документы и уведомления клиники.
+- `apps/supplier-web` — предложения, цены, остатки, заказы, интеграции и комплаенс поставщика.
+- `apps/admin-web` — операционный control plane платформы.
+- `apps/landing-web` — публичный двухаудиторный лендинг с SEO и FAQ.
+- `apps/e2e` — Playwright-проверки пяти web-приложений и сквозной регистрации.
+- `packages/schemas` — общие Zod DTO.
+- `packages/api-client` — общий browser API client.
+- `packages/ui` — общая Fluent UI дизайн-система.
+
+## Быстрый запуск через Docker
+
+```bash
+docker compose up --build
+```
+
+Первый запуск ClamAV может занять несколько минут: контейнер загружает актуальные сигнатуры. Миграции применяются API автоматически, затем `seed` создаёт демонстрационный контур.
+
+После запуска:
+
+- API: `http://127.0.0.1:4012/api`
+- OpenAPI: `http://127.0.0.1:4012/docs`
+- Admin: `http://127.0.0.1:3000`
+- Buyer: `http://127.0.0.1:3001`
+- Supplier: `http://127.0.0.1:3002`
+- Landing: `http://127.0.0.1:3003`
+- MinIO console: `http://127.0.0.1:9001`
+
+## Нативный запуск для разработки
+
+```bash
+cp .env.example .env
+npm install
+npm run db:generate
+npm exec --workspace=@marketplace/api -- prisma migrate deploy
+npm run db:seed
+npm run dev
+```
+
+Локальный `npm run dev` включает все пять дополнительных блоков (AI,
+trust/reviews, promotions, billing, smart recommendations) единым профилем
+`go_live` для API и web. Это локальная демонстрация, не production go-live:
+права организаций и обязательный договор поставщика сохраняются, внешние
+интеграции и реальные списания не подключаются. Ограниченный вариант —
+`npm run dev:pilot`; перед переключением остановите текущий launcher.
+Явный process env `DEPLOYMENT_PROFILE=pilot` также сохраняет ограниченный набор.
+
+Нужны PostgreSQL 17, Redis 7 и, если `AV_SCAN_MODE` не `disabled`, ClamAV. Для локального файлового режима установите `OBJECT_STORAGE_DRIVER=local`.
+
+`npm run dev` и `npm run dev:local` поднимают весь проект: API, Admin, Buyer,
+Supplier и Landing. Для экономии ресурсов можно запустить только API и один
+интерфейс: `npm run dev:buyer`, `npm run dev:supplier`, `npm run dev:admin` или
+`npm run dev:landing`. После чистой установки первый watch-build API на Windows
+может занять несколько минут; веб-приложения стартуют автоматически после
+успешного ответа API health-check.
+
+Полный нативный запуск доступен через один локальный gateway и один внешний
+порт:
+
+- Landing: `http://dentmarket.localhost:3080`
+- Marketplace / Buyer: `http://marketplace.localhost:3080`
+- Supplier: `http://supplier.localhost:3080`
+- Admin: `http://admin.localhost:3080`
+- API на любом из этих доменов: `/api/*`
+
+Next.js-приложения сохраняют внутренние порты для маршрутизации и hot reload,
+но открывать их напрямую не требуется.
+
+Seed создаёт development context:
+
+```text
+x-user-id: 00000000-0000-4000-8000-000000000002
+x-organization-id: 00000000-0000-4000-8000-000000000001
+```
+
+Для кабинета клиники создаётся отдельная tenant-role, без операторских прав:
+
+```text
+x-user-id: 00000000-0000-4000-8000-000000000500
+x-organization-id: 00000000-0000-4000-8000-000000000030
+```
+
+В `NODE_ENV=production` такой режим запрещён валидатором конфигурации. Используется `AUTH_MODE=jwt` с проверкой подписи, tenant claims, issuer/audience и опциональным обязательным MFA claim.
+
+## Реализованные контуры
+
+- организации, memberships, RBAC, approval policies, audit и transactional outbox;
+- гибридный каталог, типизированные атрибуты, упаковки, PostgreSQL FTS и `pg_trgm`;
+- CSV/XLSX import, raw rows, matching, moderation и повторный запуск;
+- offers, publication, price history, quantity tiers, contract pricing и freshness policies;
+- balances, партии, FEFO, recalls, conditional reservations и manual overrides;
+- cart, repricing, split checkout, supplier order state machine;
+- payment providers, sessions, authorization, capture, cancellation, partial refunds, allocations, payouts, reconciliation и immutable ledger;
+- МойСклад, Mock и pull-only 1С Agent, encrypted credentials, signed webhook inbox, external reservations и DLQ;
+- delivery zones/rules/options, quotes, shipments и fulfillment steps;
+- PDF/DOCX, S3/MinIO, immutable versions, SHA-256 и подписи Mock/ЭЦП/eGov/external;
+- compliance credentials, versioned rules, automatic recheck и publication blocking;
+- in-app/email/SMS/webhook notifications с retry/backoff;
+- TOTP 2FA и одноразовые recovery codes;
+- Google/Apple OIDC linking, проверка email, refresh rotation, CSRF и отзыв сессий;
+- годовой договор поставщика с платформой: две ЭЦП, проверенный callback, автоматическая пролонгация и блокировка повторного окна подписи;
+- promotions/promocodes, saved lists, cost centers, budgets, SLA support, billing/entitlements и tenant-aware AI assistant;
+- закрытые отзывы только по исполненным B2B-заказам, ответ поставщика, модерация и апелляции;
+- объяснимый рейтинг поставщика с Bayesian prior, временным затуханием и статусом «недостаточно данных»;
+- верифицированная география адресов и складов, delivery zones и фактическая ETA-статистика;
+- smart-commerce рекомендации в режимах срочности, цены, баланса, доверия и персональной цены; платное размещение отделено от organic ranking;
+- Redis/BullMQ workers для imports/matching, integrations/outbox, search projection и notifications;
+- structured JSON logging, request/correlation/trace IDs, OpenTelemetry, Sentry, Helmet и rate limiting;
+- quarantine + magic-byte/OOXML validation и ClamAV INSTREAM-проверка загружаемых импортов, документов и сертификатов.
+
+Единый индекс актуальной технической документации: [`actual_docs/README.md`](actual_docs/README.md). Историческая карта Trust/Geo/AI: [`actual_docs/history/trust-geo-ai.md`](../../../trust-geo-ai.md).
+
+Историческая матрица покрытия ТЗ: [`actual_docs/history/traceability.md`](../../../traceability.md). Эксплуатация: [`actual_docs/operations/operations.md`](actual_docs/operations/operations.md). Модель безопасности: [`actual_docs/security/security.md`](actual_docs/security/security.md).
+
+## Проверки
+
+Ниже каталог доступных команд, **не обязательная последовательность для каждой
+задачи**. Выбор gates, пределы попыток и повторное использование evidence —
+[Development Workflow](actual_docs/governance/DEVELOPMENT_WORKFLOW.md).
+Docs-only изменения проверяются статически, без сборки/seed/браузера.
+
+```bash
+npm run typecheck
+npm test
+npm run build
+npm run verify:search-commerce
+npm run verify:document-compliance
+npm run verify:security
+npm run verify:onboarding-agreement
+npm run verify:trust-geo
+npm run verify:production-config
+npm run verify:postgres
+npm run verify:web
+```
+
+`npm run verify:postgres` — обязательный integration gate для изменений Prisma,
+checkout, tenant isolation и idempotency. Он применяет миграции и создаёт/удаляет
+fixtures, поэтому требует проверенной disposable test DB, не рабочей demo-БД.
+Изоляция идентификаторов не заменяет проверку назначения базы. Docker и внешние
+сервисы для этого локального gate не требуются.
+
+## Backup и restore
+
+```bash
+./scripts/backup.sh
+RESTORE_CONFIRM=20260717T000000Z ./scripts/restore.sh /absolute/path/to/backups/20260717T000000Z
+```
+
+Скрипты сохраняют PostgreSQL custom dump, объектный bucket и manifest с количеством применённых миграций.
+
+Production deployment, immutable image release, managed-service backup and rollback: [`actual_docs/operations/production-deployment.md`](actual_docs/operations/production-deployment.md).
