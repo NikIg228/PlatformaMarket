@@ -2,7 +2,7 @@
 
 Обновлено01.10.2026. Единственная рабочая папка:
 C:\Users\user\Desktop\dentmarket-kz-main. Ветка main, кодовый снимок
-2a816c337bae15f6684318cf26d21bf6f71cb3c5.
+75e0e21bca206c05c4eb76fc2477fd872d384973 (CI/Security PASS).
 
 Primary:01a0f302-2d38-75d1-b79c-141e7428b533, generation4, transition=idle.
 Ручная передача завершена30.09 в20:56+05:00: source
@@ -10,17 +10,17 @@ Primary:01a0f302-2d38-75d1-b79c-141e7428b533, generation4, transition=idle.
 штатным инструментом; list_archived_threads подтвердил тот же ID.
 Source больше не writer. Реестр .codex/project-session.json сохраняется.
 
-Текущая разрешённая задача: согласованный выпуск dependencies, canonical CI,
+Завершённая задача: согласованный выпуск dependencies, canonical CI,
 каталога, bounded supplier reads и измеренных frontend/backend improvements.
 Владелец30.09 разрешил весь перечисленный scope без промежуточных подтверждений;
 push после всех gates. Рабочая БД и чужие dev-процессы не меняются.
 Checkpoint: [PERFORMANCE-CI-DELIVERY](governance/task-state/PERFORMANCE-CI-DELIVERY-2026-09-30.md).
-Реализация и выбранные локальные runtime gates PASS. Последние browser cases
-закрыты точечным test-only retry; FlowB3 теперь canonical7/7 PASS. До завершения
-остаются финальный review, публикация и фактический hosted CI. Рабочие процессы
-проверок завершены. Нельзя выдавать PENDING/NOT_RUN CI за успешную приёмку.
-Предыдущий [CI-DATABASE](governance/task-state/CI-DATABASE-2026-09-30.md) LOCAL_PASS.
-Предыдущая документационная работа готова локально и сохраняется как WIP:
+Реализация опубликована в8045225/75e0e21. CI36772750254 и Security36772750368
+SUCCESS, включая typecheck/unit/build/budget, API/PG/runtime, оба Docker targets,
+canonical browser38/38 и FlowB3 7/7. Все собственные проверки завершены.
+Итоговая запись docs-only переиспользует gates этого кодового снимка.
+Предыдущий [CI-DATABASE](governance/task-state/CI-DATABASE-2026-09-30.md) опубликован и CI_PASS.
+Предыдущая документационная работа опубликована:
 [DOCS-ARCHITECTURE-AUDIT](governance/task-state/DOCS-ARCHITECTURE-AUDIT-2026-09-30.md).
 
 Опубликованный старый baseline: A01–A18 LOCAL_PASS; CI36737223743 FAIL,

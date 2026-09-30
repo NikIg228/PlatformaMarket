@@ -1,10 +1,26 @@
 # PERFORMANCE-CI-DELIVERY — согласованный выпуск
 
-Обновлено: 01.10.2026. Состояние: ACTIVE — опубликовано, hosted CI выполняется.
+Обновлено: 01.10.2026 01:42+05:00. Состояние: CLOSED — опубликовано, CI/Security PASS.
 Владелец: 01a0f302-2d38-75d1-b79c-141e7428b533, единственный writer.
 Основание: владелец30.09 разрешил весь перечисленный объём за один проход,
 без промежуточных подтверждений, с проверками и push после всех проверок.
-Checkout: C:\Users\user\Desktop\dentmarket-kz-main; main@2a816c337bae15f6684318cf26d21bf6f71cb3c5.
+Checkout: C:\Users\user\Desktop\dentmarket-kz-main; main@75e0e21bca206c05c4eb76fc2477fd872d384973.
+Исходный baseline:2a816c337bae15f6684318cf26d21bf6f71cb3c5.
+
+Fix75e0e21 опубликован и remote SHA подтверждён. Hosted container attempt2
+PASS api/web. [Security36772750368](https://github.com/NikIg228/PlatformaMarket/actions/runs/36772750368)
+PASS dependencies и CodeQL. [CI36772750254](https://github.com/NikIg228/PlatformaMarket/actions/runs/36772750254)
+SUCCESS: verify110082987071, postgres-integration110082986692, api110082986928,
+web110082987231. Hosted typecheck13/13, полный unit graph, build7/7, JS budget,
+core/runtime/production/extended API PASS; FlowB3 7/7 и canonical browser38/38
+PASS едиными запусками. PostgreSQL включает authority и backup/restore.
+DoD согласованного выпуска закрыт. Production deploy, полный CORE и legacy
+release readiness не принимались. Рабочая БД и чужие процессы не менялись.
+Собственных процессов/незавершённых Git-операций нет; пять исходных WIP сохранены.
+Итоговый docs-only receipt переиспользует gates75e0e21 по Workflow4.2: код,
+lockfile, fixtures и CI конфигурация не меняются. Для него проверены ссылки,
+согласованность статусов и diff; [skip ci] предотвращает повтор полного runtime
+набора только из-за записи результата. Следующий продуктовый scope не открыт.
 
 Публикация01.10 01:24+05:00: commit8045225adbffa1d825366865676bce5d509abe9d
 отправлен обычным push в origin/main; remote SHA подтверждён. Staged review,

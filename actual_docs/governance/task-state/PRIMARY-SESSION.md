@@ -2,33 +2,36 @@
 
 Обновлено01.10.2026. Primary01a0f302-2d38-75d1-b79c-141e7428b533,
 generation4/idle. Canonical root C:\Users\user\Desktop\dentmarket-kz-main,
-main@2a816c337bae15f6684318cf26d21bf6f71cb3c5.
+Последний проверенный код: main@75e0e21bca206c05c4eb76fc2477fd872d384973.
 
-Единственная активная задача — [PERFORMANCE-CI-DELIVERY](PERFORMANCE-CI-DELIVERY-2026-09-30.md).
+Завершена задача — [PERFORMANCE-CI-DELIVERY](PERFORMANCE-CI-DELIVERY-2026-09-30.md).
 Владелец30.09 разрешил весь перечисленный выпуск: dependencies, canonical CI,
 каталог, ограниченные reads, измеренные frontend/backend improvements; push
-после всех gates. Предыдущий [CI-DATABASE](CI-DATABASE-2026-09-30.md) LOCAL_PASS.
+после всех gates. Предыдущий [CI-DATABASE](CI-DATABASE-2026-09-30.md) опубликован и CI_PASS.
 Новые агенты и worktrees не создавать. Предыдущая документационная работа
-[DOCS-ARCHITECTURE-AUDIT](DOCS-ARCHITECTURE-AUDIT-2026-09-30.md) сохранена как WIP.
+[DOCS-ARCHITECTURE-AUDIT](DOCS-ARCHITECTURE-AUDIT-2026-09-30.md) опубликована с выпуском.
 
-A01–A18 опубликованы и LOCAL_PASS; CI/Dependency audit и legacy buyer budget
-FAIL. Не повторять A01–A18 и не считать весь CORE/production принятым.
+A01–A18 опубликованы; прежние CI/Dependency blockers исправлены в выпуске.
+Legacy buyer budget FAIL сохраняется. Не повторять A01–A18 и не считать весь
+CORE/production принятым.
 [Acceptance Matrix](../PROJECT_ACCEPTANCE_MATRIX.md) — статусы/evidence;
 [Foundation](../../backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) — остаток;
 [Handoff](../../PROJECT_HANDOFF.md) — завершённая передача и сохранённый WIP.
 
-Выпуск01.10 реализован и локально проверен: dependencies audit0, typecheck,
-составной full unit graph, canonical build/budget, core/PG/runtime/production,
-browser38 и canonical FlowB3 7/7. Подробные попытки — текущая карточка.
+Выпуск01.10 опубликован в8045225/75e0e21: dependencies audit0, typecheck,
+полный unit graph, canonical build/budget, core/PG/runtime/production,
+browser38/38 и canonical FlowB3 7/7. Подробные попытки — текущая карточка.
 CI-DATABASE и docs reconciliation входят в этот выпуск, не новые задачи.
-Старый CI2a816c3 FAIL; новый CI NOT_RUN до публикации. Legacy buyer compile
+CI36772750254 и Security36772750368 SUCCESS на75e0e21, включая оба контейнера.
+Старый CI2a816c3 FAIL сохранён как история. Legacy buyer compile
 PASS/budget FAIL сохраняется отдельно; основной FlowB3 перенесён на apps/web
-с прежними assertions. Лимиты JS не ослаблены. Полный DoD пока не закрыт.
+с прежними assertions. Лимиты JS не ослаблены. DoD этого выпуска закрыт.
 
 Единственный writer — эта primary задача. Registry и четыре исходных legacy
 next-env.d.ts не stage и не менять. Собственных running процессов нет;
-рабочая БД/чужой dev не тронуты. Fetch:HEAD...origin/main0/0.
-Следующий шаг: закончить финальный docs/staged review, commit/push main и CI.
+рабочая БД/чужой dev не тронуты. Remote кодового commit подтверждён.
+Итоговый docs-only receipt переиспользует CI по неизменным runtime inputs.
+Новых разрешённых задач нет; ждать следующего scope владельца.
 
 Не начинать новый продуктовый этап и не ротировать задачу автоматически.
 Архив содержит исторические поручения/блокеры, не действующие инструкции.

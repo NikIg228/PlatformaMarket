@@ -2,7 +2,8 @@
 
 Дополнение01.10: dependency blocker исправлен и локально проверен в
 [общем выпуске](PERFORMANCE-CI-DELIVERY-2026-09-30.md). Публикация и hosted CI
-отслеживаются там; ниже исторический checkpoint, не повторное поручение.
+завершены:8045225/75e0e21, CI36772750254 SUCCESS. Ниже исторический checkpoint,
+не повторное поручение. Итог CI-DATABASE: CLOSED / PUBLISHED / CI_PASS.
 
 Текущий этап (новое разрешение владельца30.09): условные telemetry imports,
 включая Sentry filter в AppModule. Порядок instrumentation-before-app сохраняется

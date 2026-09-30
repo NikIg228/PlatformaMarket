@@ -12,7 +12,7 @@ Baseline30.09.2026: main@2a816c337bae15f6684318cf26d21bf6f71cb3c5.
 | CORE04.1–04.4 | ACCEPTED в ограниченном scope | 278be21; CI36127372917 и Security36127373128 SUCCESS |
 | CORE04.5 | ACCEPTED в ограниченном scope | 73ac601; CI36355260705 и Security36355260722 SUCCESS |
 | A01–A18, canonical web/API/worker | LOCAL_PASS | Опубликованы в2a816c3; исправления цены/партии/offer/order/UI/TTL/read models и проверки ниже |
-| Unified frontend | LOCAL_PASS / live rollout NOT_ACCEPTED | apps/web, canonical build/browser/budget, release api/web и ingress; Docker image build ожидает hosted CI |
+| Unified frontend | CI_PASS / live rollout NOT_ACCEPTED | apps/web, canonical build/browser/budget, release api/web и ingress; оба Docker targets PASS на75e0e21 |
 | Полный CORE01–09 | NOT_ACCEPTED | Наличие agreement/manual order/auth/operations кода не закрывает Product §23.6 и полный цикл |
 | POST-BE / POST-FULL | NOT_ACCEPTED | Отдельные приёмки одной revision/data/environment; не закрываются этим аудитом |
 | Optional go_live blocks | COMPOSED / PARTIAL | Локальная видимость не означает полноту продукта, LIVE_VERIFIED или production |
@@ -21,8 +21,13 @@ Baseline30.09.2026: main@2a816c337bae15f6684318cf26d21bf6f71cb3c5.
 ## Выпуск PERFORMANCE-CI-DELIVERY01.10
 
 [Карточка и журнал попыток](task-state/PERFORMANCE-CI-DELIVERY-2026-09-30.md).
-Локальный кандидат основан на2a816c3. Commit/push и новый hosted CI ещё NOT_RUN;
-старые CI failures ниже не заменяются предположением о новом PASS.
+Выпуск8045225 и container fix75e0e21 опубликованы в origin/main; remote SHA
+подтверждён. [CI36772750254](https://github.com/NikIg228/PlatformaMarket/actions/runs/36772750254)
+и [Security36772750368](https://github.com/NikIg228/PlatformaMarket/actions/runs/36772750368)
+SUCCESS на75e0e21: verify, PostgreSQL/authority/backup-restore, api/web images,
+dependencies/storage и CodeQL. Первый container FAIL исправлен, attempt2 PASS.
+Итоговый docs-only receipt использует REUSED_PASS тех же runtime inputs;
+собственные docs checks PASS. Исторические failures ниже сохранены.
 
 | Проверка | Фактический результат |
 | --- | --- |
@@ -32,7 +37,8 @@ Baseline30.09.2026: main@2a816c337bae15f6684318cf26d21bf6f71cb3c5.
 | Core / PostgreSQL | PASS119 schemas/43 verified operations; PG tenant/rollback/concurrency и новые supplier pages PASS. Один core startup retry с неизменным45s timeout |
 | Browser | Canonical38:32 сразу +4 focused PASS после test-only исправлений +2 comparison/login/cart retry на390/1440; FlowB3 canonical7/7 PASS; финальные measurements2/2 PASS |
 | Runtime / configuration | Runtime split3roles PASS; production-config и readiness8/8 PASS; Compose/Caddy native validation canonical/legacy PASS; container build локально NOT_RUN, нет Docker engine |
-| Документация | Archive305 entries/hash/semantics, active/archive links; финальный diff и protected WIP review перед staging |
+| Hosted full graph | typecheck13/13, npm test, build7/7 и все настроенные API/runtime gates PASS; FlowB3 7/7 и browser38/38 едиными запусками |
+| Документация | Archive305 entries/hash/semantics, active/archive links; финальный diff и protected WIP review PASS |
 | Legacy rollback | Admin build PASS; buyer compile PASS, прежний budget FAIL25/1,733,332raw/481,814gzip. Не основной release gate; legacy release readiness не принята |
 
 Manifest/catalog gzip504557→340740(-32.5%); browser encoded JS466527→429517

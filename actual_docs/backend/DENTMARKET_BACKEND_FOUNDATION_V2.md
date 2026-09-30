@@ -26,7 +26,8 @@ A01–A18 опубликованы в2a816c3 и имеют LOCAL_PASS в сог�
 предложения, свежесть, permissions, TTL резервов, дата документов, основные
 cursor lists, единица продажи, mobile menu, PDF, восстановление корзины,
 stale versions и их проверки. Старые задания «исправить A01–A18» не активны.
-CI этого SHA красный — это отдельное ограничение.
+Исторический CI этого SHA красный; исправления опубликованы в8045225/75e0e21,
+полный CI/Security последнего кодового снимка PASS (см. Matrix).
 
 ## 2. CORE: реализованное и точный остаток
 
@@ -91,14 +92,14 @@ confirmation drafts, money formatting, выбор order/agreement в докум�
   guard также ожидает другое имя. Нужна настройка конфигурации, не обход guard.
   Исправление30.09 локально внесено в [CI-DATABASE](../governance/task-state/CI-DATABASE-2026-09-30.md):
   DB regression14/14 и conditional telemetry fix PASS; typecheck/unit/API build,
-  core/PG/runtime split/observability локально PASS. Публикация/CI не выполнены
-  на момент той карточки из-за dependency audit FAIL; startup/DB fix не выполнять повторно.
+  core/PG/runtime split/observability локально PASS. Опубликовано в8045225;
+  CI36772750254 на75e0e21 SUCCESS. Startup/DB fix не выполнять повторно.
 - Security36737223539: dependencies FAIL (2 high/4 moderate), CodeQL PASS.
-  В текущем выпуске patched dependencies установлены, локальный audit0; новый CI
-  пока не подтверждён. Не повторять исправление зависимостей по старому run.
+  В текущем выпуске patched dependencies установлены, локальный audit0;
+  Security36772750368 dependencies/CodeQL SUCCESS. Не повторять fix по старому run.
 - Legacy buyer bundle budget FAIL; canonical web build PASS его не закрывает.
 - Release matrix и основной browser gate переведены на api/web; canonical budget
-  PASS. Native Compose/Caddy config PASS, container build ещё ожидает CI.
+  PASS. Native Compose/Caddy config PASS, hosted container api/web PASS на75e0e21.
   Live production parity, operator origin и rollout/rollback остаются отдельными.
 
 Предложения и измерения — [архитектурный аудит](../architecture/CODEBASE-AUDIT-2026-09-30.md).
