@@ -5,6 +5,14 @@ import { emailRegisterSchema } from "./commercial";
 const product = "/products/00000000-0000-4000-8000-000000000001";
 const target = `${product}?${new URLSearchParams({ returnTo: "/catalog?q=боры&sort=PRICE_ASC&count=48" })}`;
 describe("workspace return allowlist", () => {
+  it("preserves unified routes only for their verified workspace", () => {
+    expect(workspaceReturnPath("/clinic?count=48", "BUYER")).toBe("/clinic?count=48");
+    expect(workspaceReturnPath("/clinic/catalog?q=test", "BUYER")).toBe("/clinic/catalog?q=test");
+    expect(workspaceReturnPath("/supplier/documents", "SUPPLIER")).toBe("/supplier/documents");
+    expect(workspaceReturnPath("/supplier/documents", "BUYER")).toBeUndefined();
+    expect(workspaceReturnPath("/clinic", "SUPPLIER")).toBeUndefined();
+  });
+  it.each(["/clinic/supplier/documents", "/supplier/clinic", "/clinic/../admin", "/clinic//outside.invalid", "/supplier/orders/delete", "/clinic?organizationId=other"])("rejects unsafe unified return: %s", value => expect(workspaceReturnPath(value)).toBeUndefined());
   it("retains documents for either verified capability and catalog only for buyers", () => {
     for (const capability of ["BUYER", "SUPPLIER"] as const) expect(workspaceReturnPath("/documents", capability)).toBe("/documents");
     expect(workspaceReturnPath("/catalog?count=48", "BUYER")).toBe("/catalog?count=48");

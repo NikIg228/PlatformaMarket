@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, Get, Headers, Param, Patch, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { offerOptionsQuerySchema } from "@marketplace/schemas";
-import { ApiCoreProtected, ApiCoreErrors, ApiCoreQuery, ApiCoreResponse } from "../../platform/openapi/core-openapi";
+import { ApiCoreProtected, ApiCoreErrors, ApiCoreQuery, ApiCoreResponse, ApiCoreBody, ApiUuidParam } from "../../platform/openapi/core-openapi";
 import { ApiTags } from "@nestjs/swagger";
 import { createAttributeDefinitionSchema, createCategorySchema, createProductPackagingSchema, createProductSchema, createVariantSchema, setAttributeValueSchema, updateProductSchema, upsertCategoryAttributeRuleSchema } from "@marketplace/schemas";
 import { PermissionsGuard } from "../access-control/permissions.guard";
@@ -108,6 +108,11 @@ export class CatalogController {
   }
 
   @Patch("products/:productId")
+  @ApiCoreProtected()
+  @ApiCoreErrors()
+  @ApiUuidParam("productId", "Canonical product identifier")
+  @ApiCoreBody("UpdateProductRequest")
+  @ApiCoreResponse("UpdatedCatalogProduct")
   @RequirePermissions("catalog.product.create")
   updateProduct(@Param("productId") productId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     const parsed = updateProductSchema.safeParse(body);

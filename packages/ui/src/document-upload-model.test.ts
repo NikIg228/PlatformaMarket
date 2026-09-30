@@ -8,6 +8,7 @@ describe("document upload money and validation", () => {
     expect(documentUploadFileError(null)).toBeTruthy();
     expect(documentUploadFileError({name:"test.exe",size:2})).toContain("PDF");
     expect(documentUploadFileError({name:"test.pdf",size:0})).toContain("пуст");
+    expect(documentUploadFileError({name:"test.pdf",size:9_999_999})).toBeNull();
     expect(documentUploadFileError({name:"test.PDF",size:10_000_000})).toBeNull();
     expect(documentUploadFileError({name:"test.docx",size:10_000_001})).toContain("10 МБ");
   });

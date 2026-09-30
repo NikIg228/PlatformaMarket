@@ -2,6 +2,7 @@ import type {
   OrderDocumentResponse,
 } from "@marketplace/api-client";
 import type { BuyerShipment } from "../../order-shipments";
+import type { CartLineSnapshotResponse } from "@marketplace/schemas";
 
 export type CartItem = {
   id: string;
@@ -27,20 +28,7 @@ export type Cart = {
   createdAt: string;
 };
 
-export type CartLineSnapshot = {
-  resolvedAt: string;
-  offerVersion: number;
-  source: string;
-  ruleId: string | null;
-  unitPriceMinor: string;
-  quantity: string;
-  totalPriceMinor: string;
-  currency: string;
-  minimumOrderQuantity: string;
-  orderIncrement: string;
-  availableQuantity: string | null;
-  fulfillmentStatus: "AVAILABLE" | "INSUFFICIENT_STOCK" | "OUT_OF_STOCK";
-};
+export type CartLineSnapshot = CartLineSnapshotResponse;
 
 export type CartValidationItem = {
   cartItemId: string;

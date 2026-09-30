@@ -14,8 +14,9 @@ import {
   StatusTag,
 } from "@marketplace/ui";
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { MarketplaceApiClient } from "@marketplace/api-client";
 import { formatAdminStatus } from "./admin-labels";
-import { adminAuthHeaders } from "./admin-auth";
+import { adminAuthHeaders, adminApiContext } from "./admin-auth";
 import styles from "./catalog-foundation.module.css";
 
 type Industry = { id: string; nameRu: string };
@@ -24,6 +25,7 @@ type Unit = { id: string; nameRu: string; symbol: string };
 type Product = {
   id: string;
   canonicalName: string;
+  catalogName?: string | null;
   status: string;
   version: number;
   variants: Array<{ id: string; sku?: string | null }>;
@@ -42,6 +44,8 @@ export function CatalogFoundation() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [nameProductId, setNameProductId] = useState("");
+  const [catalogName, setCatalogName] = useState("");
   const [loading, setLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [working, setWorking] = useState(false);
@@ -225,6 +229,15 @@ export function CatalogFoundation() {
                 <DmSelect name="categoryId" required><option value="">Выберите</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.nameRu}</option>)}</DmSelect>
               </DmField>
               <DmButton className={styles.wide} type="submit" appearance="primary" icon={<Add20Regular />} disabled={working}>{working ? "Сохраняем…" : "Создать карточку"}</DmButton>
+            </form>
+            <form className={styles.form} onSubmit={event => {
+              event.preventDefault(); const product = products.find(p => p.id === nameProductId); if (!product) return;
+              void act(() => new MarketplaceApiClient(apiUrl, adminApiContext()).updateCatalogProduct(product.id, { version: product.version, catalogName: catalogName.trim() || null }), "Название для каталога утверждено. Исходное наименование сохранено.");
+            }}>
+              <DmField label="Товар для названия каталога" required><DmSelect value={nameProductId} onChange={event => { const id = event.target.value; setNameProductId(id); setCatalogName(products.find(p => p.id === id)?.catalogName ?? ""); }} required><option value="">Выберите товар</option>{products.map(p => <option key={p.id} value={p.id}>{p.canonicalName}</option>)}</DmSelect></DmField>
+              <DmField label="Название для каталога"><DmInput value={catalogName} onChange={event => setCatalogName(event.target.value)} maxLength={240} minLength={3} /></DmField>
+              <p className={styles.wide}>Сохраните бренд, модель, оттенок, размер, объём и комплектацию, если они указаны в исходном названии. Пустое поле возвращает полное название. Утверждение применяется только к выбранному товару.</p>
+              <DmButton type="submit" appearance="primary" disabled={working || !nameProductId}>Утвердить название для каталога</DmButton>
             </form>
             <form className={styles.form} onSubmit={(event) => void updateProduct(event)}>
               <DmField label="Карточка" required>

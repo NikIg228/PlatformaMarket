@@ -13,6 +13,8 @@ import type {
   CreateCartInput,
   UpdateCartItemRequest,
   CartVersionRequest,
+  RepriceCartRequest,
+  RecoverCartRequest,
 } from "@marketplace/schemas";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
@@ -35,6 +37,7 @@ import {
 import { MarketplaceAgreementsService } from "../agreements/marketplace-agreements.service";
 import { documentReferenceInclude, hasConsistentDocumentReferences, withoutReferenceRelations } from "../documents/document-reference-graph";
 import { assertOrganizationProfileComplete } from "../organizations/organization-profile.service";
+import { recoveredCartId, recoverFailedCart } from "./cart-recovery";
 
 @Injectable()
 export class CommerceService {
@@ -91,9 +94,10 @@ export class CommerceService {
     quantity: number,
     context: SupplierActorContext,
     expectedCurrency?: string,
+    db: Prisma.TransactionClient = this.prisma,
   ) {
     const at = new Date();
-    const offer = await this.prisma.supplierOffer.findFirst({
+    const offer = await db.supplierOffer.findFirst({
       where: {
         id: offerId,
         status: "ACTIVE",
@@ -106,6 +110,8 @@ export class CommerceService {
       },
       include: {
         publication: true,
+        packaging: true,
+        saleUnit: true,
         supplier: { include: { organization: true } },
         productVariant: { include: { product: true } },
         prices: {
@@ -148,6 +154,7 @@ export class CommerceService {
           where: { freshnessStatus: "FRESH" },
           include: {
             warehouse: true,
+            _count: { select: { lots: true } },
             lots: {
               where: {
                 status: "ACTIVE",
@@ -239,7 +246,7 @@ export class CommerceService {
             ) ?? null,
         }))
         .find(
-          ({ balance, lot }) => balance.lots.length === 0 || lot !== null,
+          ({ balance, lot }) => balance._count.lots === 0 || lot !== null,
         ) ?? null;
     const balance = selected?.balance ?? null;
     const lot = selected?.lot ?? null;
@@ -260,6 +267,17 @@ export class CommerceService {
       currency: decision.currency,
       minimumOrderQuantity: offer.minimumOrderQuantity.toString(),
       orderIncrement: offer.orderIncrement.toString(),
+      commercialTerms: {
+        saleUnitId: offer.saleUnitId,
+        saleUnitName: offer.saleUnit?.nameRu ?? null,
+        packagingId: offer.packagingId,
+        packagingName: offer.packaging?.name ?? null,
+        baseUnitsPerSaleUnit: offer.baseUnitsPerSaleUnit.toString(),
+        packagingUnitId: offer.packaging?.unitId ?? null,
+        packagingQuantity: offer.packaging?.quantityInBaseUnit.toString() ?? null,
+        includesVat: offer.prices[0]?.includesVat ?? null,
+        vatRate: offer.prices[0]?.vatRate?.toString() ?? null,
+      },
       availableQuantity: availableQuantity.toString(),
       fulfillmentStatus,
     };
@@ -272,6 +290,7 @@ export class CommerceService {
     quantity: number,
     context: SupplierActorContext,
     expectedCurrency?: string,
+    db: Prisma.TransactionClient = this.prisma,
   ) {
     const current = await this.resolveCurrentOffer(
       buyerOrganizationId,
@@ -279,12 +298,13 @@ export class CommerceService {
       quantity,
       context,
       expectedCurrency,
+      db,
     );
     if (!current.balance)
       throw new ConflictException(
         "No fresh warehouse balance can fulfill this quantity",
       );
-    if (current.balance.lots.length > 0 && !current.lot)
+    if (current.balance._count.lots > 0 && !current.lot)
       throw new ConflictException(
         "No single active FEFO lot can fulfill this quantity",
       );
@@ -350,7 +370,7 @@ export class CommerceService {
 
   async carts(buyerOrganizationId: string, context: SupplierActorContext) {
     await this.assertBuyerAccess(buyerOrganizationId, context);
-    return this.prisma.cart.findMany({
+    const carts = await this.prisma.cart.findMany({
       where: { buyerOrganizationId },
       include: {
         items: {
@@ -367,6 +387,13 @@ export class CommerceService {
       },
       orderBy: { createdAt: "desc" },
     });
+    const ids = new Set(carts.map(cart => cart.id));
+    return carts.map(cart => ({ ...cart, recoveredCartId: cart.checkout?.status === "FAILED" && ids.has(recoveredCartId(cart.id)) ? recoveredCartId(cart.id) : null }));
+  }
+
+  async recoverCart(cartId: string, input: RecoverCartRequest, context: SupplierActorContext) {
+    const source = await this.requireCart(cartId, context);
+    return recoverFailedCart(this.prisma, cartId, source.buyerOrganizationId, input.expectedVersion, context);
   }
 
   async createCart(
@@ -530,6 +557,14 @@ export class CommerceService {
     const cart = await this.requireCart(cartId, context);
     if (cart.status !== "ACTIVE")
       throw new ConflictException("Only an active cart can be validated");
+    return (await this.resolveCart(cart, context)).validation;
+  }
+
+  private async resolveCart(
+    cart: Awaited<ReturnType<CommerceService["requireCart"]>>,
+    context: SupplierActorContext,
+    db: Prisma.TransactionClient = this.prisma,
+  ) {
     const validatedAt = new Date().toISOString();
     const items = await Promise.all(
       cart.items.map(async (item) => {
@@ -541,6 +576,7 @@ export class CommerceService {
             Number(item.quantity),
             context,
             cart.currency,
+            db,
           );
           const current = result.pricingSnapshot;
           const changes = compareCartLineSnapshots(previous, current);
@@ -554,10 +590,14 @@ export class CommerceService {
                 ? "Текущего остатка недостаточно для выбранного количества"
                 : changes.includes("PRICE")
                   ? "Цена товара изменилась — подтвердите новую цену"
+                  : changes.includes("OFFER_RULES")
+                    ? "Условия предложения изменились — проверьте и подтвердите изменения"
                   : changes.includes("STOCK")
                     ? "Остаток товара изменился"
                     : null;
           return {
+            item,
+            result,
             cartItemId: item.id,
             offerId: item.offerId,
             status:
@@ -573,6 +613,8 @@ export class CommerceService {
           };
         } catch (error) {
           return {
+            item,
+            result: null,
             cartItemId: item.id,
             offerId: item.offerId,
             status: "UNAVAILABLE" as const,
@@ -590,6 +632,8 @@ export class CommerceService {
       }),
     );
     return {
+      lines: items.map(({ item, result }) => ({ item, result })),
+      validation: {
       cartId: cart.id,
       cartVersion: cart.version,
       validatedAt,
@@ -598,37 +642,32 @@ export class CommerceService {
         ({ requiresAcceptance }) => requiresAcceptance,
       ),
       canCheckout: items.length > 0 && items.every(({ canCheckout }) => canCheckout),
-      items,
+      items: items.map(({ item: _item, result: _result, ...validation }) => validation),
+      },
     };
   }
 
-  async reprice(cartId: string, context: SupplierActorContext, expectedVersion?: number) {
+  async reprice(cartId: string, context: SupplierActorContext, expectedVersion?: number, acceptedItems?: RepriceCartRequest["acceptedItems"]) {
     const cart = await this.requireCart(cartId, context);
     this.assertCartVersion(cart, expectedVersion);
-    const attempts = await Promise.all(
-      cart.items.map(async (item) => {
-        try {
-          return {
-            item,
-            result: await this.resolveCurrentOffer(
-              cart.buyerOrganizationId,
-              item.offerId,
-              Number(item.quantity),
-              context,
-              cart.currency,
-            ),
-          };
-        } catch {
-          return null;
-        }
-      }),
-    );
-    const resolved = attempts.filter(
-      (line): line is NonNullable<typeof line> => line !== null,
-    );
-    if (resolved.length === 0) return this.requireCart(cartId, context);
+    if (acceptedItems?.some(({ cartItemId }) => !cart.items.some(({ id }) => id === cartItemId)))
+      throw new BadRequestException("Accepted item does not belong to this cart");
     await this.prisma.$transaction(async (tx) => {
       await this.claimCartVersion(tx, cartId, cart.version);
+      const current = await this.resolveCart(cart, context, tx);
+      const resolved = current.lines.filter(
+        (line): line is typeof line & { result: NonNullable<typeof line.result> } => line.result !== null,
+      );
+      for (const line of resolved) {
+        const accepted = acceptedItems?.find(({ cartItemId }) => cartItemId === line.item.id)?.snapshot ?? cartItemSnapshot(line.item);
+        const changes = compareCartLineSnapshots(accepted, line.result.pricingSnapshot);
+        if (changes.includes("PRICE") || changes.includes("OFFER_RULES"))
+          throw new ConflictException({
+            code: "CART_REVALIDATION_REQUIRED",
+            message: "Offer terms changed since they were displayed; review the latest values before accepting",
+            validation: current.validation,
+          });
+      }
       for (const line of resolved)
         await tx.cartItem.update({
           where: { id: line.item.id },
@@ -660,7 +699,7 @@ export class CommerceService {
           },
         },
       });
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     return this.requireCart(cartId, context);
   }
 
@@ -681,46 +720,9 @@ export class CommerceService {
       throw new ConflictException("Cart is not active");
     this.assertCartVersion(cart, input.expectedVersion);
     if (cart.items.length === 0) throw new BadRequestException("Cart is empty");
-    const validation = await this.validateCart(cartId, context);
-    if (validation.requiresAcceptance)
-      throw new ConflictException({
-        code: "CART_REVALIDATION_REQUIRED",
-        message:
-          "Cart prices or offer rules changed; accept the latest values before checkout",
-        validation,
-      });
-    if (!validation.canCheckout)
-      throw new ConflictException({
-        code: "CART_ITEMS_UNAVAILABLE",
-        message:
-          "One or more cart items are unavailable in the requested quantity",
-        validation,
-      });
-    const lines = await Promise.all(
-      cart.items.map(async (item) => ({
-        item,
-        result: await this.resolveOffer(
-          cart.buyerOrganizationId,
-          item.offerId,
-          Number(item.quantity),
-          context,
-          cart.currency,
-        ),
-      })),
-    );
-    const total = lines.reduce(
-      (sum, line) => sum.plus(line.result.total),
-      new Prisma.Decimal(0),
-    );
-    const groups = new Map<string, typeof lines>();
-    for (const line of lines)
-      groups.set(line.result.offer.supplierOrganizationId, [
-        ...(groups.get(line.result.offer.supplierOrganizationId) ?? []),
-        line,
-      ]);
-
     let created: {
       checkoutId: string;
+      supplierCount: number;
       reservations: Array<{
         supplierOrganizationId: string;
         balanceId: string;
@@ -733,6 +735,34 @@ export class CommerceService {
       created = await this.prisma.$transaction(
         async (tx) => {
           await this.claimCartVersion(tx, cartId, cart.version);
+          // All price/offer/packaging reads share this transaction's snapshot.
+          // Never resolve prices again after validating the accepted cart.
+          const resolved = await this.resolveCart(cart, context, tx);
+          const { validation } = resolved;
+          if (validation.requiresAcceptance)
+            throw new ConflictException({
+              code: "CART_REVALIDATION_REQUIRED",
+              message: "Cart prices or offer rules changed; accept the latest values before checkout",
+              validation,
+            });
+          if (!validation.canCheckout)
+            throw new ConflictException({
+              code: "CART_ITEMS_UNAVAILABLE",
+              message: "One or more cart items are unavailable in the requested quantity",
+              validation,
+            });
+          const lines = resolved.lines.filter(
+            (line): line is typeof line & { result: NonNullable<typeof line.result> } => line.result !== null,
+          );
+          for (const { result } of lines) {
+            if (!result.balance) throw new ConflictException("No fresh warehouse balance can fulfill this quantity");
+            await this.compliance.assertOfferAllowed(cart.buyerOrganizationId,
+              result.offer.id, result.balance.warehouseId, result.lot?.id ?? null, context);
+          }
+          const total = lines.reduce((sum, line) => sum.plus(line.result.total), new Prisma.Decimal(0));
+          const groups = new Map<string, typeof lines>();
+          for (const line of lines) groups.set(line.result.offer.supplierOrganizationId,
+            [...(groups.get(line.result.offer.supplierOrganizationId) ?? []), line]);
           const checkout = await tx.checkout.create({
             data: {
               cartId,
@@ -783,6 +813,7 @@ export class CommerceService {
               },
             });
             for (const { item, result } of supplierLines) {
+              if (!result.balance) throw new ConflictException("No fresh warehouse balance can fulfill this quantity");
               const orderItem = await tx.supplierOrderItem.create({
                 data: {
                   supplierOrderId: order.id,
@@ -835,11 +866,18 @@ export class CommerceService {
               },
             },
           });
-          return { checkoutId: checkout.id, reservations };
+          return { checkoutId: checkout.id, supplierCount: groups.size, reservations };
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
     } catch (error) {
+      // Preserve the actionable validation envelope instead of disguising a
+      // known terms conflict as an unknown concurrent transaction failure.
+      if (error instanceof ConflictException) {
+        const response = error.getResponse();
+        if (typeof response === "object" && "code" in response &&
+          (response.code === "CART_REVALIDATION_REQUIRED" || response.code === "CART_ITEMS_UNAVAILABLE")) throw error;
+      }
       if (
         error instanceof ConflictException ||
         (error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -931,7 +969,7 @@ export class CommerceService {
             buyerOrganizationId: cart.buyerOrganizationId,
             cartId,
             checkoutId: created.checkoutId,
-            supplierOrderCount: groups.size,
+            supplierOrderCount: created.supplierCount,
           },
         },
       });
@@ -1216,6 +1254,9 @@ export class CommerceService {
           throw new ConflictException(
             "Supplier order quantity cannot change after payment processing starts",
           );
+        if (!current.checkout.paymentIntent && currentNormalized.some(({ item, acceptedQuantity }) => acceptedQuantity > 0 &&
+          (!item.reservation || item.reservation.status !== "ACTIVE" || (!item.reservation.externalReservation && item.reservation.expiresAt <= new Date()))))
+          throw new ConflictException("Срок локального резерва истёк или резерв освобождён. Обновите заказ перед подтверждением.");
         for (const { item, acceptedQuantity } of currentNormalized) {
           const releaseQuantity = new Prisma.Decimal(item.quantity).minus(
             acceptedQuantity,

@@ -1,3 +1,4 @@
+import type { OrderWorkflowResponse, OrderWorkflowResult, ShipmentResponse } from "@marketplace/schemas";
 import { workspaceFixture } from "../fixtures/workspace-session";
 import { completeFixtureOrganization } from "../../../scripts/lib/organization-profile-fixture.mjs";
 import { randomUUID } from "node:crypto";
@@ -50,6 +51,7 @@ const buyerPermissionCodes = [
   "recommendation.use",
 ];
 const supplierPermissionCodes = [
+  "payment.transfer.confirm",
   "organization.view", "catalog.product.view", "catalog.offer.edit", "catalog.offer.publish",
   "import.manage", "matching.manage", "compliance.view", "compliance.credential.manage",
   "inventory.view", "inventory.adjust", "inventory.freshness.manage", "order.confirm",
@@ -515,6 +517,10 @@ async function restoreInventoryAndDeleteFixtures() {
 
   await prisma.$transaction(async (tx) => {
     for (const reservation of reservations) {
+      if (reservation.status === "CONSUMED") {
+        await tx.inventoryBalance.update({ where: { id: reservation.inventoryBalanceId }, data: { quantityOnHand: { increment: reservation.quantity }, quantityAvailable: { increment: reservation.quantity }, availabilityStatus: "IN_STOCK", version: { increment: 1 } } });
+        if (reservation.inventoryLotId) await tx.inventoryLot.update({ where: { id: reservation.inventoryLotId }, data: { quantityOnHand: { increment: reservation.quantity }, quantityAvailable: { increment: reservation.quantity }, status: "ACTIVE", version: { increment: 1 } } });
+      }
       if (reservation.status !== "ACTIVE") continue;
       await tx.inventoryBalance.update({
         where: { id: reservation.inventoryBalanceId },
@@ -587,6 +593,9 @@ async function restoreInventoryAndDeleteFixtures() {
     await tx.complianceCheck.deleteMany({
       where: { id: { in: complianceCheckIds } },
     });
+    await tx.orderTransferClaim.deleteMany({ where: { supplierOrderId: { in: orderIds } } });
+    await tx.orderWorkflowEvent.deleteMany({ where: { supplierOrderId: { in: orderIds } } });
+    await tx.uploadAsset.deleteMany({ where: { storageKey: { in: documents.flatMap(document => document.storageKey ? [document.storageKey] : []) } } });
     await tx.document.deleteMany({ where: { id: { in: documentIds } } });
     await tx.shipment.deleteMany({
       where: { id: { in: shipmentIds } },
@@ -1120,4 +1129,69 @@ test.describe.serial("@flow-b2 supplier order confirmation", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     expect(errors).toEqual([]);
   });
+  test("internal transfer, supplier confirmation, buyer receipt and safe cancellation", async ({ page, request, browser }) => {
+    const order = await createOrder(request, "internal-transfer");
+    const path = API_URL + "/supplier-orders/" + order.orderId + "/workflow";
+    const read = async () => responseJson<OrderWorkflowResponse>(await request.get(path, { headers: identityHeaders(buyer) }));
+    await responseJson(await request.post(API_URL + "/supplier-orders/" + order.orderId + "/confirm", { headers: identityHeaders(supplier), data: { decisions: [{ itemId: order.itemId, acceptedQuantity: 2, reason: "Есть две упаковки" }] } }));
+    const buyerPage = await browser.newPage();
+    const session = await workspaceFixture(prisma, "BUYER", buyer);
+    await buyerPage.addInitScript(session => sessionStorage.setItem("dentmarket:buyer-session", JSON.stringify(session)), session);
+    await buyerPage.goto(BUYER_URL + "/orders/" + order.orderId);
+    await buyerPage.getByRole("button", { name: "Принять состав и сумму" }).click();
+    await expect.poll(async () => (await read()).status).toBe("CONFIRMED");
+    expect((await request.get(path, { headers: identityHeaders(foreignSupplier) })).status()).toBe(404);
+    await openSupplierOrder(page, order.orderNumber);
+    await page.goto(SUPPLIER_URL + "/orders/" + order.orderId);
+    const pdf = Buffer.from("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF");
+    await page.getByLabel("Счёт, PDF до 10 МБ").setInputFiles({ name: "invoice.pdf", mimeType: "application/pdf", buffer: pdf });
+    await page.getByRole("button", { name: "Выставить счёт", exact: true }).click();
+    await expect.poll(async () => (await read()).status).toBe("AWAITING_PAYMENT");
+    await expect(buyerPage.getByLabel("Квитанция, PDF до 10 МБ")).toBeVisible({ timeout: 15000 });
+    await buyerPage.getByLabel("Квитанция, PDF до 10 МБ").setInputFiles({ name: "proof.pdf", mimeType: "application/pdf", buffer: pdf });
+    await buyerPage.getByLabel("Дата и время перевода").fill("2026-09-27T12:00");
+    await buyerPage.getByRole("button", { name: "Отправить квитанцию" }).click();
+    await expect.poll(async () => (await read()).claims.length).toBe(1);
+    let state = await read();
+    expect(state.paymentStatus).toBe("UNPAID");
+    expect((await request.post(path, { headers: identityHeaders(buyer), data: { action: "CANCEL", expectedVersion: state.version, idempotencyKey: randomUUID(), reason: "Недопустимая отмена", transferNotMade: true } })).status()).toBe(409);
+    const before = await prisma.inventoryBalance.findUniqueOrThrow({ where: { id: order.balanceId } });
+    const command = { action: "CONFIRM_TRANSFER", expectedVersion: state.version, claimId: state.claims[0]!.id, idempotencyKey: randomUUID() };
+    const responses = await Promise.all([command, { ...command, idempotencyKey: randomUUID() }].map(data => request.post(path, { headers: identityHeaders(supplier), data })));
+    expect(responses.map(response => response.status()).sort()).toEqual([201,409]);
+    const winningIndex = responses.findIndex(response => response.status() === 201);
+    const result = await responses[winningIndex]!.json() as OrderWorkflowResult;
+    const winningCommand = winningIndex === 0 ? command : null;
+    if (winningCommand) expect(await responseJson(await request.post(path, { headers: identityHeaders(supplier), data: winningCommand }))).toEqual(result);
+    const after = await prisma.inventoryBalance.findUniqueOrThrow({ where: { id: order.balanceId } });
+    expect(before.quantityOnHand.minus(after.quantityOnHand).toString()).toBe("2");
+    expect(before.quantityReserved.minus(after.quantityReserved).toString()).toBe("2");
+    expect(await prisma.paymentAllocation.count({ where: { supplierOrderId: order.orderId } })).toBe(0);
+    await expect(buyerPage.getByText("поступление подтверждено поставщиком", { exact: false })).toBeVisible({ timeout: 15000 });
+    const shipmentInput = { warehouseId: order.warehouseId, method: "CARRIER", recipientName: "Клиника", items: [{ supplierOrderItemId: order.itemId, quantity: 2 }], fulfillmentSteps: [] };
+    const shipmentResponses = await Promise.all([1,2].map(() => request.post(API_URL + "/supplier-orders/" + order.orderId + "/shipments", { headers: identityHeaders(supplier), data: shipmentInput })));
+    expect(shipmentResponses.map(response => response.status()).sort()).toEqual([201,409]);
+    let shipment = await shipmentResponses.find(response => response.status() === 201)!.json() as ShipmentResponse;
+    for (const status of ["PLANNED", "PACKING", "READY", "DISPATCHED", "IN_TRANSIT"]) shipment = await responseJson<ShipmentResponse>(await request.post(API_URL + "/shipments/" + shipment.id + "/transitions", { headers: identityHeaders(supplier), data: { version: shipment.version, status, trackingNumber: "PILOT-TRACK" } }));
+    await expect(buyerPage.getByRole("button", { name: "Подтвердить фактическое получение" })).toBeVisible({ timeout: 15000 });
+    const quantity = buyerPage.getByRole("textbox", { name: /Позиция 1: отправлено/ });
+    await quantity.fill("1");
+    await buyerPage.getByRole("button", { name: "Подтвердить фактическое получение" }).click();
+    await expect.poll(async () => (await read()).status).toBe("PARTIALLY_FULFILLED");
+    await quantity.fill("2");
+    await buyerPage.getByRole("button", { name: "Подтвердить фактическое получение" }).click();
+    await expect.poll(async () => (await read()).status).toBe("DELIVERED");
+    await buyerPage.setViewportSize({ width: 390, height: 844 });
+    expect(await buyerPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await buyerPage.close();
+    const cancel = await createOrder(request, "cancel");
+    const cancelPath = API_URL + "/supplier-orders/" + cancel.orderId + "/workflow";
+    const cancelState = await responseJson<OrderWorkflowResponse>(await request.get(cancelPath, { headers: identityHeaders(buyer) }));
+    const cancelCommand = { action: "CANCEL", expectedVersion: cancelState.version, idempotencyKey: randomUUID(), reason: "Закупка отменена", transferNotMade: true };
+    const cancelResults = await Promise.all([1,2].map(() => request.post(cancelPath, { headers: identityHeaders(buyer), data: cancelCommand })));
+    expect(cancelResults.every(response => response.status() === 201)).toBe(true);
+    expect(await cancelResults[0]!.json()).toEqual(await cancelResults[1]!.json());
+    expect((await prisma.inventoryReservation.findUniqueOrThrow({ where: { id: cancel.reservationId } })).status).toBe("RELEASED");
+  });
+
 });

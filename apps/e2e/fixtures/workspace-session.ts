@@ -35,6 +35,6 @@ export async function installPilotWorkspace(page: Page, capability: "BUYER" | "S
     await db.organizationMembership.create({ data: { userId: user.id, organizationId: org.id, status: "ACTIVE", acceptedAt: new Date(), roles: { create: { roleId: role.id } } } });
     const session = await workspaceFixture(db, capability, { userId: user.id, organizationId: org.id, displayName: org.displayName });
     await page.addInitScript(({ session, capability }) => sessionStorage.setItem(`dentmarket:${capability.toLowerCase()}-session`, JSON.stringify(session)), { session, capability });
-    return { organizationId: org.id, displayName: org.displayName, dispose: async () => { const cleanup = new PrismaClient(); try { await cleanup.authSession.updateMany({ where: { id: session.sessionId }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "browser_fixture_finished" } }); } finally { await cleanup.$disconnect(); } } };
+    return { userId: user.id, email: user.email, organizationId: org.id, displayName: org.displayName, dispose: async () => { const cleanup = new PrismaClient(); try { await cleanup.authSession.updateMany({ where: { userId: user.id }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "browser_fixture_finished" } }); } finally { await cleanup.$disconnect(); } } };
   } finally { await db.$disconnect(); }
 }

@@ -76,13 +76,14 @@ describe("workspace context before handoff", () => {
     await openWorkspace(session, "SUPPLIER");
     expect(fetcher.mock.calls[1][1]?.body).toBe('{"capability":"SUPPLIER"}');
   });
-  it.each(["BUYER", "SUPPLIER"] as const)("keeps product intent only within the verified buyer workspace: %s", async capability => {
+  it.each(["BUYER", "SUPPLIER"] as const)("returns to the public product without installing supplier credentials as buyer: %s", async capability => {
     const { assign, fetcher } = setup({ organizationId, organizationDisplayName: "Test", capabilities: [capability] });
     const returnTo = "/products/00000000-0000-4000-8000-000000000001?returnTo=%2Fcatalog%3Fcount%3D48";
     await openWorkspace(session, capability, undefined, returnTo);
     const url = new URL(assign.mock.calls[0][0]);
-    expect(url.pathname + url.search).toBe(capability === "BUYER" ? returnTo : "/");
-    expect(url.hash).toMatch(/^#session=/);
+    expect(url.pathname + url.search).toBe(returnTo);
+    if (capability === "BUYER") expect(url.hash).toMatch(/^#session=/);
+    else expect(url.hash).toBe("");
     expect(fetcher).toHaveBeenCalledTimes(2); // Context and handoff only; no cart or purchase.
   });
   it("ignores an external return hint without issuing a different capability", async () => {

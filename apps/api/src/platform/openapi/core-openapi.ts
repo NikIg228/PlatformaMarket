@@ -1,3 +1,7 @@
+import { orderWorkflowCommandSchema, orderWorkflowResponseSchema, orderWorkflowResultSchema } from "@marketplace/schemas";
+import { workspacePageQuerySchema, workspaceOrderQuerySchema, workspaceOrderPageSchema, workspaceOfferSchema, workspaceOfferPageSchema, workspaceCartPageSchema, workspaceSummarySchema } from "@marketplace/schemas";
+import { saveOfferCommercialSchema, offerCommercialStateSchema } from "@marketplace/schemas";
+import { updateProductSchema, updatedCatalogProductSchema } from "@marketplace/schemas";
 import { applyDecorators } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
@@ -55,6 +59,7 @@ import {
   createImportBatchSchema,
   createShipmentSchema,
   createCartSchema,
+  recoverCartSchema,
   documentArchiveItemSchema,
   documentArchivePageResponseSchema,
   documentArchiveQuerySchema,
@@ -100,6 +105,11 @@ const authenticatedCompareOffersQuerySchema = compareOffersSchema.omit({
 const supplierOrdersQuerySchema = z.object({ checkoutId: z.uuid().optional() });
 
 const coreZodSchemas = {
+  UpdateProductRequest: updateProductSchema,
+  UpdatedCatalogProduct: updatedCatalogProductSchema,
+  OrderWorkflowCommand: orderWorkflowCommandSchema,
+  OrderWorkflowResponse: orderWorkflowResponseSchema,
+  OrderWorkflowResult: orderWorkflowResultSchema,
   SaveOrganizationProfileRequest: saveOrganizationProfileSchema,
   OrganizationProfileResponse: organizationProfileResponseSchema,
   OrganizationOnboardingResponse: organizationOnboardingSchema,
@@ -141,6 +151,7 @@ const coreZodSchemas = {
   AuthenticatedCompareOffersQuery: authenticatedCompareOffersQuerySchema,
   SupplierOrdersQuery: supplierOrdersQuerySchema,
   CreateCartRequest: createCartSchema,
+  RecoverCartRequest: recoverCartSchema,
   AddCartItemRequest: addCartItemSchema,
   UpdateCartItemRequest: updateCartItemSchema,
   CartVersionRequest: cartVersionSchema,
@@ -162,6 +173,13 @@ const coreZodSchemas = {
   OfferComparisonResponse: offerComparisonResponseSchema,
   CartResponse: cartResponseSchema,
   CartListResponse: cartListResponseSchema,
+  WorkspacePageQuery: workspacePageQuerySchema,
+  WorkspaceOrderQuery: workspaceOrderQuerySchema,
+  WorkspaceOrderPage: workspaceOrderPageSchema,
+  WorkspaceOffer: workspaceOfferSchema,
+  WorkspaceOfferPage: workspaceOfferPageSchema,
+  WorkspaceCartPage: workspaceCartPageSchema,
+  WorkspaceSummary: workspaceSummarySchema,
   CartValidationResponse: cartValidationResponseSchema,
   CartItemResponse: cartItemResponseSchema,
   CheckoutResponse: checkoutResponseSchema,
@@ -185,6 +203,8 @@ const coreZodSchemas = {
   OfferDeliveryOptionsResponse: offerDeliveryOptionsResponseSchema,
   OfferOptionsQuery: offerOptionsQuerySchema,
   SetInventoryBalanceRequest: setInventoryBalanceSchema,
+  SaveOfferCommercialRequest: saveOfferCommercialSchema,
+  OfferCommercialState: offerCommercialStateSchema,
   SupplierImportDiagnosticsResponse: supplierImportDiagnosticsResponseSchema,
   SupplierImportRollbackResponse: supplierImportRollbackResponseSchema,
   CatalogImportReviewQueueResponse: catalogImportReviewQueueResponseSchema,

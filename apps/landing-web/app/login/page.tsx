@@ -4,6 +4,7 @@ import Link from "next/link";
 import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
 import { useProductReturn } from "../use-product-return";
 import styles from "../auth-split.module.css";
+import { LoginHeading } from "./login-heading";
 
 import Script from "next/script";
 import { DmButton, DmField, DmInput, DmSelect } from "@marketplace/ui";
@@ -188,17 +189,16 @@ export default function LoginPage() {
           strategy="afterInteractive"
         />
       ) : null}
-      <section className="loginIntro">
+      <section className={`loginIntro ${styles.loginIntro}`}>
         <AuthBrand href={buyerAppUrl} />
         <div>
-          <h1>Продолжите работу в своём кабинете</h1>
-          <p>Закупайте для клиники или управляйте продажами и заказами.</p>
+          <LoginHeading />
         </div>
         <a className="backLink" href={buyerAppUrl}>
           ← Вернуться в магазин
         </a>
       </section>
-      <section className="loginPanel" aria-labelledby="login-title">
+      <section className={`loginPanel ${styles.loginPanel}`} aria-labelledby="login-title">
         <div className="loginCard">
           <h2 id="login-title">Войдите в аккаунт</h2>
           <form className="emailLoginForm" onSubmit={emailLogin}>
@@ -223,17 +223,25 @@ export default function LoginPage() {
               />
             </DmField>
             <DmButton type="submit" appearance="primary" disabled={busy}>
-              {busyAction === "email" ? "Входим…" : "Войти по email"}
+              {busyAction === "email" ? "Входим…" : "Войти"}
             </DmButton>
-            <DmButton
-              type="button"
-              appearance="subtle"
-              className="linkButton"
-              onClick={() => void forgotPassword()}
-              disabled={busy}
-            >
-              {busyAction === "forgot" ? "Отправляем…" : "Забыли пароль?"}
-            </DmButton>
+            <div className={styles.loginLinks}>
+              <DmButton
+                type="button"
+                appearance="subtle"
+                className="linkButton"
+                onClick={() => void forgotPassword()}
+                disabled={busy}
+              >
+                {busyAction === "forgot" ? "Отправляем…" : "Забыли пароль?"}
+              </DmButton>
+              <p className={`loginSignup ${styles.signup}`}>
+                Нет аккаунта?{" "}
+                <Link href={withWorkspaceReturn("/register", returnTo)}>
+                  Зарегистрироваться
+                </Link>
+              </p>
+            </div>
           </form>
           {hasSocialLogin ? (
             <>
@@ -272,14 +280,6 @@ export default function LoginPage() {
             }}>Открыть выбранную организацию</DmButton>
           </div> : null}
           {feedback ? <AuthNotice feedback={feedback} /> : null}
-          <p className="loginSignup">
-            Нет аккаунта?{" "}
-            <Link
-              href={withWorkspaceReturn("/register", returnTo)}
-            >
-              Зарегистрироваться
-            </Link>
-          </p>
         </div>
       </section>
     </main>

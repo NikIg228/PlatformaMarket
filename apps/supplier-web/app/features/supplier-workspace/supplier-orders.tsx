@@ -1,3 +1,4 @@
+import { workspacePath } from "@marketplace/api-client";
 import { ClipboardTaskListLtr24Regular } from "@fluentui/react-icons/svg/clipboard-task-list-ltr";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import {
@@ -75,7 +76,7 @@ export function SupplierOrders({
               <Fragment key={order.id}>
                 <tr id={`supplier-order-${order.id}`} tabIndex={-1}>
                   <td data-label="Заказ">
-                    <strong>{order.orderNumber}</strong>
+                    <a href={workspacePath("SUPPLIER", `/orders/${order.id}`)}><strong>{order.orderNumber}</strong></a>
                     <small>{formatDate(order.createdAt, true)}</small>
                   </td>
                   <td data-label="Покупатель">{order.buyer.displayName}</td>

@@ -1,4 +1,5 @@
 import type { ApiContext } from "@marketplace/api-client";
+import { unifiedFrontend } from "@marketplace/api-client";
 
 const SESSION_KEY = "dentmarket_admin_session";
 const DEV_ACTOR = process.env.NEXT_PUBLIC_DEV_USER_ID ?? "00000000-0000-4000-8000-000000000002";
@@ -17,6 +18,7 @@ export function readAdminSession(): AdminSession | null {
 }
 
 export function isLocalAdminDevelopment() {
+  if (unifiedFrontend) return false;
   return typeof window !== "undefined" && ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
 }
 

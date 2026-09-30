@@ -42,6 +42,13 @@ export class PaymentsService {
     const total = payableOrders.reduce((sum, order) => sum.plus(order.subtotalAmountMinor), new Prisma.Decimal(0));
     try {
       const intent = await this.prisma.$transaction(async (tx) => {
+        // Share the order lock with manual invoice/payment/cancellation. Re-read
+        // after acquiring it: the preflight above is not a concurrency guard.
+        for (const order of [...payableOrders].sort((a, b) => a.id.localeCompare(b.id))) {
+          await tx.$queryRaw`SELECT id FROM "SupplierOrder" WHERE id = ${order.id}::uuid FOR UPDATE`;
+          const current = await tx.supplierOrder.findUniqueOrThrow({ where: { id: order.id } });
+          if (current.version !== order.version || current.paymentStatus !== "UNPAID" || current.manualInvoiceDocumentId) throw new ConflictException("Order payment conditions changed; refresh before paying");
+        }
         const created = await tx.paymentIntent.create({ data: { checkoutId, buyerOrganizationId: checkout.buyerOrganizationId, providerId: provider.id, totalAmountMinor: total, currency: checkout.currency, idempotencyKey: input.idempotencyKey, expiresAt: new Date(Date.now() + 30 * 60_000) } });
         for (const order of payableOrders) {
           const allocation = calculateAllocation(order.subtotalAmountMinor.toString());

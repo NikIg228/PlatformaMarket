@@ -24,6 +24,7 @@ import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "rea
 import { documentDateValid, documentUploadError, documentUploadFileError, formatDocumentAmount, parseDocumentAmount } from "./document-upload-model";
 import { DocumentRelationSelect } from "./document-relation-select";
 import type { DocumentRelationLoader, DocumentRelationOption } from "./document-relations";
+import { usePermissions } from "./permissions";
 
 export type DocumentArchiveParticipantView = {
   organizationId: string;
@@ -92,6 +93,7 @@ const kindLabels: Record<string, string> = {
   ORDER_SPECIFICATION: "Спецификация",
   ORDER_CONFIRMATION: "Подтверждение заказа",
   INVOICE: "Счёт на оплату",
+  PAYMENT_PROOF: "Квитанция о заявленном переводе",
   PAYMENT_CONFIRMATION: "Подтверждение оплаты",
   REFUND_CONFIRMATION: "Подтверждение возврата",
   WAYBILL: "Накладная",
@@ -127,7 +129,7 @@ const statusLabels: Record<string, string> = {
   DISPUTED: "Есть расхождение",
 };
 
-const formatDate = (value: string) => new Intl.DateTimeFormat("ru-KZ", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(value));
+const formatDate = (value: string, timeZone?: string) => new Intl.DateTimeFormat("ru-KZ", { day: "2-digit", month: "short", year: "numeric", timeZone }).format(new Date(value));
 const formatMoney = formatDocumentAmount;
 
 function DocumentStatus({ value }: { value: string }) {
@@ -195,6 +197,7 @@ export function DocumentArchiveUpload({
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const submitLock = useRef(false);
+  const has = usePermissions();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -220,6 +223,7 @@ export function DocumentArchiveUpload({
   useEffect(() => { if (open && error && !pending) errorRef.current?.focus(); }, [open, error, pending]);
 
   const submit = async () => {
+    if (!has("document.upload")) { setError("Загрузка недоступна вашей роли. Ввод сохранён."); return; }
     if (submitLock.current || busy || !file || !title.trim() || !documentNumber.trim()) return;
     if (kind === "CONTRACT_ADDENDUM" && !selectedAgreement || kind === "REFUND_CONFIRMATION" && !referenceId.trim()) {
       setError(kind === "CONTRACT_ADDENDUM" ? "Выберите основной договор из списка." : "Для выбранного типа документа укажите ID связанного основания.");
@@ -271,7 +275,7 @@ export function DocumentArchiveUpload({
   };
 
   return <>
-    <Button ref={triggerRef} appearance="primary" icon={<Document24Regular />} onClick={() => { setSuccess(false); setOpen(true); }}>Загрузить документ</Button>
+    <Button ref={triggerRef} disabled={!has("document.upload")} appearance="primary" icon={<Document24Regular />} onClick={() => { setSuccess(false); setOpen(true); }}>Загрузить документ</Button>
     {success ? <span role="status">Документ загружен в архив.</span> : null}
     <Dialog open={open} onOpenChange={(_, data) => { if (!data.open) close(); }}>
       <DialogSurface className="dm-document-dialog">
@@ -294,9 +298,10 @@ export function DocumentArchiveUpload({
               {file ? <span>Выбран: {file.name}</span> : null}
             </Field>
             </fieldset>
+            {!has("document.upload") ? <p role="status">Загрузка недоступна вашей роли. Ввод сохранён.</p> : null}
             {error ? <div ref={errorRef} tabIndex={-1} className="dm-document-message dm-document-message-error" role="alert" aria-label="Ошибка загрузки документа">{error}</div> : null}
           </DialogContent>
-          <DialogActions><Button appearance="primary" disabled={pending || !!fileError || !!parsedAmount.error || !file || title.trim().length < 2 || !documentNumber.trim() || !documentDateValid(documentDate) || kind === "CONTRACT_ADDENDUM" && !selectedAgreement} onClick={() => void submit()}>{pending ? "Загружаем…" : "Загрузить"}</Button><Button disabled={pending} onClick={close}>Закрыть, сохранив черновик</Button></DialogActions>
+          <DialogActions><Button appearance="primary" disabled={!has("document.upload") || pending || !!fileError || !!parsedAmount.error || !file || title.trim().length < 2 || !documentNumber.trim() || !documentDateValid(documentDate) || kind === "CONTRACT_ADDENDUM" && !selectedAgreement} onClick={() => void submit()}>{pending ? "Загружаем…" : "Загрузить"}</Button><Button disabled={pending} onClick={close}>Закрыть, сохранив черновик</Button></DialogActions>
         </DialogBody>
       </DialogSurface>
     </Dialog>
@@ -322,6 +327,8 @@ export function DocumentArchiveWorkspace({
   onDownload,
   onOpenDocument,
   onAccountingStatus,
+  calendarTimeZone,
+  filterError,
 }: {
   roleLabel: string;
   organizationId: string;
@@ -341,7 +348,11 @@ export function DocumentArchiveWorkspace({
   onDownload: (document: DocumentArchiveItemView) => void;
   onOpenDocument: (documentId: string) => Promise<DocumentArchiveItemView>;
   onAccountingStatus?: (document: DocumentArchiveItemView, status: "REVIEWED" | "RECONCILED" | "DISPUTED", reason: string) => Promise<void>;
+  calendarTimeZone?: string;
+  filterError?: string | null;
 }) {
+  const has = usePermissions();
+  const showDate = (value: string) => formatDate(value, calendarTimeZone);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedDetail, setSelectedDetail] = useState<DocumentArchiveItemView | null>(null);
   const [detailFailed, setDetailFailed] = useState(false);
@@ -379,6 +390,7 @@ export function DocumentArchiveWorkspace({
         ].map(([label, value]) => <div className="dm-document-summary-card" key={String(label)}><span>{label}</span><strong>{value}</strong></div>)}
       </div>
 
+      {calendarTimeZone ? <p>Даты в часовом поясе: {calendarTimeZone}.</p> : null}
       <form className="dm-document-filters" onSubmit={(event) => { event.preventDefault(); onApplyFilters(); }}>
         <Input aria-label="Поиск документов" contentBefore={<Search24Regular />} placeholder="Номер, название, заказ, контрагент или БИН" value={filters.q} onChange={(_, data) => onFiltersChange({ ...filters, q: data.value })} />
         <Select aria-label="Категория документа" value={filters.category} onChange={(_, data) => onFiltersChange({ ...filters, category: data.value })}>
@@ -405,6 +417,7 @@ export function DocumentArchiveWorkspace({
         <Button type="submit" appearance="primary">Применить</Button>
         <Button type="button" appearance="subtle" onClick={onResetFilters}>Сбросить</Button>
       </form>
+      {filterError ? <p role="alert">{filterError}</p> : null}
 
       {error ? <div className="dm-document-message dm-document-message-error" role="alert"><strong>Архив не загрузился</strong><span>{error}</span><Button onClick={onRefresh}>Повторить</Button></div> : null}
       {loading && !items.length ? <div className="dm-document-loading"><Spinner label="Загружаем документы" /></div> : null}
@@ -420,7 +433,7 @@ export function DocumentArchiveWorkspace({
               return <tr key={document.id} tabIndex={0} onDoubleClick={() => openDocument(document.id)} onKeyDown={(event) => { if (event.key === "Enter") openDocument(document.id); }}>
                 <td data-label="Документ"><button className="dm-document-link" onClick={() => openDocument(document.id)}><strong>{document.title}</strong><span>{kindLabels[document.kind] ?? document.kind} · № {document.documentNumber} · v{document.version}</span></button></td>
                 <td data-label="Контрагент">{counterparty ? <><strong>{counterparty.displayName}</strong><span className="dm-document-muted">БИН {counterparty.bin}</span></> : "—"}</td>
-                <td data-label="Дата">{formatDate(document.documentDate)}</td>
+                <td data-label="Дата">{showDate(document.documentDate)}</td>
                 <td data-label="Сумма">{formatMoney(document.amountMinor, document.currency)}</td>
                 <td data-label="Статус"><div className="dm-document-statuses"><DocumentStatus value={document.status} />{document.accountingStatus !== "NOT_APPLICABLE" ? <DocumentStatus value={document.accountingStatus} /> : null}</div></td>
                 <td><Button appearance="subtle" icon={<ArrowDownload24Regular />} aria-label={`Скачать ${document.title}`} disabled={busyDocumentId === document.id} onClick={() => onDownload(document)} /></td>
@@ -439,15 +452,15 @@ export function DocumentArchiveWorkspace({
               <dl>
                 <div><dt>Номер</dt><dd>{selected.documentNumber}</dd></div>
                 <div><dt>Тип</dt><dd>{kindLabels[selected.kind] ?? selected.kind}</dd></div>
-                <div><dt>Дата</dt><dd>{formatDate(selected.documentDate)}</dd></div>
+                <div><dt>Дата</dt><dd>{showDate(selected.documentDate)}</dd></div>
                 <div><dt>Сумма</dt><dd>{formatMoney(selected.amountMinor, selected.currency)}</dd></div>
                 <div><dt>Версия</dt><dd>{selected.version}</dd></div>
                 <div><dt>Заказ</dt><dd>{selected.supplierOrder?.orderNumber ?? "Не связан"}</dd></div>
               </dl>
               <section><h3>Стороны документа</h3>{counterparties.length ? counterparties.map((party) => <p key={`${party.organizationId}:${party.role}`}><strong>{party.organization.displayName}</strong><span>БИН {party.organization.bin} · {party.role}</span></p>) : <p>Контрагент не указан.</p>}</section>
-              <section><h3>Подписи</h3>{selected.signatures.length ? selected.signatures.map((signature) => <p key={signature.id}><strong>{signature.signerName ?? "Подписант"}</strong><span>{signature.method} · {statusLabels[signature.status] ?? signature.status}{signature.signedAt ? ` · ${formatDate(signature.signedAt)}` : ""}</span></p>) : <p>Подписи для документа не зарегистрированы.</p>}</section>
-              <section><h3>История версий</h3>{selected.versions.length ? selected.versions.map((version) => <p key={version.id}><strong>Версия {version.version}</strong><span>{statusLabels[version.status] ?? version.status} · {formatDate(version.documentDate)}</span></p>) : <p>{detailFailed ? "Историю версий загрузить не удалось." : "Загружаем цепочку версий…"}</p>}</section>
-              {onAccountingStatus && selected.accountingStatus !== "NOT_APPLICABLE" ? <section className="dm-document-accounting"><h3>Бухгалтерская обработка</h3><Select aria-label="Новый бухгалтерский статус" value={accountingStatus} onChange={(_, data) => setAccountingStatus(data.value as typeof accountingStatus)}><option value="REVIEWED">Проверен</option><option value="RECONCILED">Сверен</option><option value="DISPUTED">Есть расхождение</option></Select><Textarea aria-label="Комментарий к бухгалтерской отметке" placeholder="Основание изменения" value={accountingReason} onChange={(_, data) => setAccountingReason(data.value)} /><Button appearance="primary" disabled={accountingReason.trim().length < 2 || busyDocumentId === selected.id} onClick={() => void onAccountingStatus(selected, accountingStatus, accountingReason).then(() => setAccountingReason(""))}>Сохранить отметку</Button></section> : null}
+              <section><h3>Подписи</h3>{selected.signatures.length ? selected.signatures.map((signature) => <p key={signature.id}><strong>{signature.signerName ?? "Подписант"}</strong><span>{signature.method} · {statusLabels[signature.status] ?? signature.status}{signature.signedAt ? ` · ${showDate(signature.signedAt)}` : ""}</span></p>) : <p>Подписи для документа не зарегистрированы.</p>}</section>
+              <section><h3>История версий</h3>{selected.versions.length ? selected.versions.map((version) => <p key={version.id}><strong>Версия {version.version}</strong><span>{statusLabels[version.status] ?? version.status} · {showDate(version.documentDate)}</span></p>) : <p>{detailFailed ? "Историю версий загрузить не удалось." : "Загружаем цепочку версий…"}</p>}</section>
+              {onAccountingStatus && selected.accountingStatus !== "NOT_APPLICABLE" ? <section className="dm-document-accounting"><h3>Бухгалтерская обработка</h3><Select aria-label="Новый бухгалтерский статус" value={accountingStatus} onChange={(_, data) => setAccountingStatus(data.value as typeof accountingStatus)}><option value="REVIEWED">Проверен</option><option value="RECONCILED">Сверен</option><option value="DISPUTED">Есть расхождение</option></Select><Textarea aria-label="Комментарий к бухгалтерской отметке" placeholder="Основание изменения" value={accountingReason} onChange={(_, data) => setAccountingReason(data.value)} /><Button appearance="primary" disabled={!has("document.accounting.review") || accountingReason.trim().length < 2 || busyDocumentId === selected.id} onClick={() => void onAccountingStatus(selected, accountingStatus, accountingReason).then(() => setAccountingReason(""))}>Сохранить отметку</Button></section> : null}
             </DialogContent> : null}
             <DialogActions><Button appearance="primary" icon={<ArrowDownload24Regular />} disabled={!selected || busyDocumentId === selected?.id} onClick={() => selected && onDownload(selected)}>Скачать</Button><Button onClick={() => setSelectedId(null)}>Закрыть</Button></DialogActions>
           </DialogBody>

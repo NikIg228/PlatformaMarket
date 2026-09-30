@@ -67,10 +67,13 @@ for (const width of [1280, 390]) test(`supplier onboarding and catalog return us
   await page.screenshot({ path: test.info().outputPath(`supplier-onboarding-${width}.png`) });
   await page.getByRole("link", { name: "Публичный каталог", exact: true }).click();
   await expect(page).toHaveURL(`${buyer}/catalog`);
-  await expect(page.getByRole("link", { name: "Кабинет поставщика", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Каталог для стоматологий" })).toBeVisible();
   expect(await page.evaluate(() => sessionStorage.getItem("dentmarket:buyer-session"))).toBeNull();
   await page.reload();
-  await page.getByRole("link", { name: "Кабинет поставщика", exact: true }).click();
+  const accountMenu = page.locator("header summary").filter({ hasText: "Личный кабинет" });
+  await expect(accountMenu).toHaveAttribute("aria-label", /Test SUPPLIER · Поставщик/);
+  await accountMenu.click();
+  await page.getByRole("link", { name: "Открыть личный кабинет", exact: true }).click();
   await expect(onboarding.getByText("2 из 5 шагов завершено", { exact: true })).toBeVisible();
   const tab = await context.newPage();
   await tab.goto(supplier);
@@ -100,4 +103,28 @@ test("chooses only actual workspaces, retains documents and does not silently sw
   await expect(page.getByRole("link", { name: "Войти", exact: true })).toBeVisible();
   expect(new URL(page.url()).pathname).toBe("/documents");
   expect(await page.evaluate(() => sessionStorage.getItem("dentmarket:buyer-session"))).toBeNull();
+});
+
+test("marketplace header switches between server-confirmed organizations", async ({ page }) => {
+  const owner = await account(["BUYER", "SUPPLIER"]);
+  await page.goto(`${landing}/login?returnTo=%2Fcatalog`);
+  await page.getByLabel("Рабочий email").fill(owner.user.email);
+  await page.getByLabel("Пароль").fill(owner.password);
+  await page.getByRole("button", { name: "Войти по email" }).click();
+  const selector = page.getByRole("combobox", { name: "Организация и кабинет" });
+  await expect(selector.locator("option")).toHaveCount(2);
+  await selector.selectOption({ label: "Test BUYER · Клиника" });
+  await page.getByRole("button", { name: "Открыть выбранную организацию" }).click();
+  await page.waitForURL(url => url.origin === buyer && url.pathname === "/catalog" && !url.hash);
+  const menu = page.locator("header summary").filter({ hasText: "Личный кабинет" });
+  await expect(menu).toHaveAttribute("aria-label", /Test BUYER · Клиника/);
+  await menu.click();
+  await page.locator("header").getByRole("button", { name: "Test SUPPLIER · Поставщик", exact: true }).click();
+  await page.waitForURL(url => url.origin === supplier && !url.hash);
+  await page.getByRole("link", { name: "Публичный каталог", exact: true }).click();
+  await expect(menu).toHaveAttribute("aria-label", /Test SUPPLIER · Поставщик/);
+  await menu.click();
+  await page.locator("header").getByRole("button", { name: "Test BUYER · Клиника", exact: true }).click();
+  await page.waitForURL(url => url.origin === buyer && !url.hash);
+  await expect(menu).toHaveAttribute("aria-label", /Test BUYER · Клиника/);
 });

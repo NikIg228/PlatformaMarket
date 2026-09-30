@@ -3,13 +3,19 @@ import { localDevelopmentProfile } from "./lib/local-development-profile.mjs";
 import { localAuthConfig } from "./lib/local-auth-config.mjs";
 import { assertPortsAvailable, waitForSurface } from "./lib/local-readiness.mjs";
 import { assertLocalSchema } from "./lib/local-schema.mjs";
+import { localDatabaseProfile, databaseLabel } from "./lib/local-database-profile.mjs";
+import { localDataReadiness } from "./lib/local-data-readiness.mjs";
+
+const databases = localDatabaseProfile();
+const watchApi = process.argv.includes("--watch-api");
 
 const surface = process.argv[2] ?? "buyer";
 const apiPort = Number(process.env.API_PORT ?? 4012);
 const gatewayPort = Number(process.env.DEV_GATEWAY_PORT ?? 3080);
 if (![apiPort, gatewayPort].every(port => Number.isInteger(port) && port > 0 && port <= 65535)) throw new Error("API_PORT/DEV_GATEWAY_PORT must be valid ports");
-const webPorts = { admin: 3000, buyer: 3001, supplier: 3002, landing: 3003 };
+const webPorts = { admin: 3000, buyer: 3001, supplier: 3002, landing: 3003, unified: 3000 };
 const workspaceBySurface = {
+  unified: "@marketplace/web",
   admin: "@marketplace/admin-web",
   buyer: "@marketplace/buyer-web",
   landing: "@marketplace/landing-web",
@@ -18,12 +24,12 @@ const workspaceBySurface = {
 
 if (surface !== "all" && !workspaceBySurface[surface]) {
   console.error(
-    `Unknown surface "${surface}". Use buyer, supplier, admin, landing, or all.`,
+    `Unknown surface "${surface}". Use unified, buyer, supplier, admin, landing, or all.`,
   );
   process.exit(1);
 }
 
-const selectedSurfaces = surface === "all" ? Object.keys(webPorts) : [...new Set([surface, "landing"])];
+const selectedSurfaces = surface === "all" ? ["admin", "buyer", "supplier", "landing"] : surface === "unified" ? ["unified"] : [...new Set([surface, "landing"])];
 const startupDeadline = Date.now() + 300_000;
 
 const env = {
@@ -34,17 +40,14 @@ const env = {
     ...(process.argv.includes("--pilot") ? { DEPLOYMENT_PROFILE: "pilot" } : {}),
   }),
   PROCESS_ROLE: process.env.PROCESS_ROLE ?? "all",
-  DATABASE_URL:
-    process.env.DATABASE_URL ??
-    "postgresql://marketplace:marketplace@127.0.0.1:5432/marketplace?schema=public",
+  DATABASE_URL: databases.databaseUrl,
   API_HOST: process.env.API_HOST ?? "127.0.0.1",
   API_PORT: process.env.API_PORT ?? "4012",
   ...localAuthConfig(process.env),
   BACKGROUND_QUEUE_ENABLED: process.env.BACKGROUND_QUEUE_ENABLED ?? "false",
   OBJECT_STORAGE_DRIVER: process.env.OBJECT_STORAGE_DRIVER ?? "local",
   PUBLIC_CATALOG_ORGANIZATION_ID:
-    process.env.PUBLIC_CATALOG_ORGANIZATION_ID ??
-    "00000000-0000-4000-8000-000000000030",
+    process.env.PUBLIC_CATALOG_ORGANIZATION_ID,
   NEXT_PUBLIC_API_URL:
     process.env.NEXT_PUBLIC_API_URL ??
     "/api",
@@ -71,6 +74,15 @@ env.CORS_ORIGINS = process.env.CORS_ORIGINS ?? [
   ...Object.values(webPorts).flatMap(port => [`http://localhost:${port}`, `http://127.0.0.1:${port}`]),
 ].join(",");
 env.AUTH_EMAIL_BASE_URL = process.env.AUTH_EMAIL_BASE_URL ?? env.NEXT_PUBLIC_LANDING_APP_URL;
+if (surface === "unified") {
+  env.NEXT_PUBLIC_UNIFIED_APP = "true";
+  env.NEXT_PUBLIC_API_URL = "/api";
+  env.NEXT_PUBLIC_BUYER_APP_URL = "http://127.0.0.1:3000";
+  env.NEXT_PUBLIC_SUPPLIER_APP_URL = "http://127.0.0.1:3000/supplier";
+  env.NEXT_PUBLIC_LANDING_APP_URL = "http://127.0.0.1:3000";
+  env.NEXT_PUBLIC_LOGIN_URL = "http://127.0.0.1:3000/login";
+  env.AUTH_EMAIL_BASE_URL = "http://127.0.0.1:3000";
+}
 if (process.env.DEV_GATEWAY_HOST && process.env.DEV_GATEWAY_HOST !== "127.0.0.1") throw new Error("The standard local profile listens on loopback. LAN requires a separately configured trusted Host/Origin profile.");
 
 if (env.API_HOST !== "127.0.0.1") throw new Error("API_HOST must use loopback in the standard local profile.");
@@ -146,12 +158,23 @@ console.log(
   `Starting DentMarket locally with deployment profile ${env.DEPLOYMENT_PROFILE}...`,
 );
 await assertPortsAvailable([apiPort, ...selectedSurfaces.map(name => webPorts[name]), ...(surface === "all" ? [gatewayPort] : [])]);
-await assertLocalSchema(env.DATABASE_URL);
 // Shared CommonJS schemas are the only runtime package output required by dev.
 const schemas = spawnNpm(["run", "build", "--workspace=@marketplace/schemas"]);
 const schemaExit = await new Promise(resolve => schemas.once("exit", resolve));
 if (schemaExit !== 0) shutdown(1, "Shared schemas failed to build; API/frontend were not started.");
-const api = spawnNpm(["run", "dev", "--workspace=@marketplace/api"]);
+if (!watchApi) {
+  const build = spawnNpm(["run", "build", "--workspace=@marketplace/api"]);
+  const code = await new Promise(resolve => build.once("exit", resolve));
+  if (code !== 0) shutdown(1, "API build failed; frontend was not started.");
+}
+// On Windows a Prisma query loads its native DLL for the lifetime of this
+// launcher. Generate/build first so prebuild can replace that DLL safely.
+await assertLocalSchema(env.DATABASE_URL);
+const data = await localDataReadiness(env.DATABASE_URL, env.PUBLIC_CATALOG_ORGANIZATION_ID);
+env.PUBLIC_CATALOG_ORGANIZATION_ID = data.publicOrganizationId;
+console.log(`Dev database: ${databaseLabel(env.DATABASE_URL)}; test database: ${databaseLabel(databases.testDatabaseUrl)}. Catalog: ${data.products} products, ${data.publishedOffers} published offers.`);
+console.log(watchApi ? "API watch enabled explicitly: source changes may interrupt requests." : "Stable API: frontend hot reload stays enabled; restart npm run dev after backend changes.");
+const api = spawnNpm(["run", watchApi ? "dev" : "start", "--workspace=@marketplace/api"]);
 
 let healthUrl;
 try {
@@ -205,5 +228,11 @@ try {
     console.log(`${name}: ready`);
   }
   if (gateway) await waitForSurface(`http://127.0.0.1:${gatewayPort}/__gateway/health`, () => gateway.exitCode !== null, Math.max(0, startupDeadline - Date.now()));
+  if (selectedSurfaces.includes("unified") || selectedSurfaces.includes("buyer")) {
+    const port = selectedSurfaces.includes("unified") ? webPorts.unified : webPorts.buyer;
+    const response = await fetch(`http://127.0.0.1:${port}/catalog-search?limit=1&offset=0&priceBasis=SALE_UNIT`, { signal: AbortSignal.timeout(15000) });
+    const catalog = response.ok ? await response.json() : null;
+    if (!catalog || !Array.isArray(catalog.items) || !catalog.items.length) throw new Error("Public catalog readiness failed. Check publication, stock freshness and PUBLIC_CATALOG_ORGANIZATION_ID; existing data was not modified.");
+  }
   console.log(`DentMarket ${surface} is ready. Auth: JWT; public catalog; no demo login.`);
 } catch (error) { shutdown(1, error instanceof Error ? error.message : "Local readiness failed"); }

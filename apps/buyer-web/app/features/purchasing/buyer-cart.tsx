@@ -25,6 +25,7 @@ import type { Cart, CartValidation } from "./types";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import { CartQuantityEditor, useCartCorrection } from "./cart-correction";
 import { useCartAutoRefresh } from "./use-cart-auto-refresh";
+import { cartCommercialChanges } from "./cart-commercial-changes";
 
 type BuyerCartProps = {
   api: MarketplaceApiClient;
@@ -70,7 +71,7 @@ export function BuyerCart({
     if (!editor.pending && editor.notice === "Позиция удалена из корзины.") root.current?.querySelector<HTMLButtonElement>('[data-cart-refresh]')?.focus();
   }, [editor.pending, editor.notice]);
   const locked = Boolean(busy) || editor.pending || cart?.status !== "ACTIVE" || Boolean(cart.checkout);
-  useCartAutoRefresh(cart?.id, locked || validationLoading, editor.reload);
+  useCartAutoRefresh(cart?.id, locked || validationLoading, () => editor.reload(true));
   const checkedValidation = validation?.cartId === cart?.id && validation?.cartVersion === cart?.version ? validation : null;
   const validationByItem = new Map(
     (checkedValidation?.items ?? []).map((item) => [item.cartItemId, item]),
@@ -181,6 +182,10 @@ export function BuyerCart({
                             {itemValidation.message}
                           </small>
                         ) : null}
+                        {itemValidation?.changes.includes("OFFER_RULES") && itemValidation.current
+                          ? cartCommercialChanges(itemValidation.previous, itemValidation.current).map((change) => (
+                            <small key={change} className={styles.changeMessage}>{change}</small>
+                          )) : null}
                       </td>
                       <td data-label="Поставщик">
                         {item.offer?.supplier?.organization?.displayName ??

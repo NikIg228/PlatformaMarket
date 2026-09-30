@@ -5,7 +5,7 @@ import { CheckmarkCircle20Regular } from "@fluentui/react-icons/svg/checkmark-ci
 import { Circle20Regular } from "@fluentui/react-icons/svg/circle";
 import { MarketplaceApiClient, type ApiContext } from "@marketplace/api-client";
 import type { OrganizationOnboarding } from "@marketplace/schemas";
-import { DmButton as Button, DmFeedback, DmField as Field, DmInput as Input, DmSelect as Select, LoadingState, OrganizationProfileForm, errorMessage } from "@marketplace/ui";
+import { DmButton as Button, DmFeedback, DmField as Field, DmInput as Input, DmSelect as Select, LoadingState, OrganizationProfileForm, PermissionFields, errorMessage } from "@marketplace/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./onboarding-progress.module.css";
 
@@ -40,7 +40,7 @@ export function OnboardingProgress({ apiContext, supplierId, onNavigate }: { api
       {!step.complete && (step.action === "compliance" || step.action === "documents") ? <Button size="small" onClick={() => onNavigate(step.action)}>{step.action === "compliance" ? "Документы организации" : "Открыть условия"}</Button> : null}
     </div>)}</div>
     {!progress.organization.complete || editing ? <OrganizationProfileForm key={progress.organization.version} value={progress.organization} cities={cities} onSave={input => api.saveOrganizationProfile(input)} onSaved={() => { setEditing(false); setFeedback("Анкета сохранена"); window.dispatchEvent(new Event("dentmarket:onboarding-changed")); }} /> : null}
-    {progress.organization.complete && warehouseMissing ? <form className={styles.formAction} onSubmit={async event => {
+    {progress.organization.complete && warehouseMissing ? <PermissionFields required={["supplier.warehouse.manage"]}><form className={styles.formAction} onSubmit={async event => {
       event.preventDefault(); setBusy(true); setError(null); setFeedback(null);
       try { await api.post(`/suppliers/${supplierId}/warehouses`, { ...warehouse, timezone: "Asia/Almaty" }); setFeedback("Склад сохранён"); window.dispatchEvent(new Event("dentmarket:onboarding-changed")); }
       catch (cause) { setError(errorMessage(cause)); } finally { setBusy(false); }
@@ -50,7 +50,7 @@ export function OnboardingProgress({ apiContext, supplierId, onNavigate }: { api
       <Field label="Город склада" required><Select required value={warehouse.cityId} onChange={(_, data) => setWarehouse(value => ({ ...value, cityId: data.value }))}><option value="">Выберите город</option>{cities.map(city => <option key={city.id} value={city.id}>{city.nameRu}</option>)}</Select></Field>
       <Field label="Адрес склада" required><Input required minLength={5} maxLength={500} value={warehouse.addressLine} onChange={(_, data) => setWarehouse(value => ({ ...value, addressLine: data.value }))} /></Field>
       <Button type="submit" appearance="primary" disabled={busy}>{busy ? "Сохраняем…" : "Сохранить склад"}</Button>
-    </div></form> : null}
+    </div></form></PermissionFields> : null}
     <footer>Принятие общих условий и допуск оператора — отдельные шаги. Для публикации каждого предложения дополнительно проверяются товар, документы и данные партии.</footer>
   </section>;
 }

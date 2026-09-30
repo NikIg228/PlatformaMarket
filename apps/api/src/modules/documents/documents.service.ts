@@ -1,3 +1,4 @@
+import { DOCUMENT_UPLOAD_MAX_BYTES } from "@marketplace/schemas";
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import type { CompleteDocumentSignatureInput, CreateDocumentTemplateInput, CreateDocumentVersionInput, CreateGeneratedDocumentInput, CreateSignatureSessionInput, DocumentArchiveQuery, DocumentQueryInput, GenerateOrderDocumentPackRequest, UpdateDocumentAccountingStatusInput, UploadDocumentInput } from "@marketplace/schemas";
 import { DocumentAccountingStatus, DocumentCategory, DocumentKind, DocumentPartyRole, Prisma } from "@prisma/client";
@@ -55,7 +56,7 @@ type DocumentParty = { organizationId: string; role: DocumentPartyRole };
 function categoryForKind(kind: DocumentKind): DocumentCategory {
   if (["MARKETPLACE_SUPPLIER_AGREEMENT", "MARKETPLACE_BUYER_TERMS", "FRAMEWORK_SUPPLY_AGREEMENT", "CONTRACT_ADDENDUM"].includes(kind)) return DocumentCategory.CONTRACT;
   if (["ORDER_SPECIFICATION", "ORDER_CONFIRMATION"].includes(kind)) return DocumentCategory.ORDER;
-  if (["INVOICE", "PAYMENT_CONFIRMATION", "REFUND_CONFIRMATION"].includes(kind)) return DocumentCategory.PAYMENT;
+  if (["INVOICE", "PAYMENT_PROOF", "PAYMENT_CONFIRMATION", "REFUND_CONFIRMATION"].includes(kind)) return DocumentCategory.PAYMENT;
   if (["WAYBILL", "ACCOMPANYING_DOCUMENT"].includes(kind)) return DocumentCategory.SHIPMENT;
   if (["ACCEPTANCE_ACT", "TAX_CLOSING_DOCUMENT", "INSTALLATION_ACT", "TRAINING_ACT", "COMMISSIONING_ACT"].includes(kind)) return DocumentCategory.CLOSING;
   if (["WARRANTY", "REGISTRATION_CERTIFICATE", "LICENSE", "CERTIFICATE"].includes(kind)) return DocumentCategory.COMPLIANCE;
@@ -399,8 +400,19 @@ export class DocumentsService {
     });
     const participants = uniqueParties([{ organizationId: input.ownerOrganizationId, role: DocumentPartyRole.OWNER }, ...referenceParties]);
     const category = input.category ?? categoryForKind(input.kind);
-    const body = this.uploads.decodeBase64(input.contentBase64, 10_000_000);
-    const asset = await this.uploads.quarantine({ organizationId: input.ownerOrganizationId, actorId: context.actorId, purpose: "document", fileName: input.fileName, body, allowedKinds: [input.format], maxBytes: 10_000_000 });
+    const body = this.uploads.decodeBase64(input.contentBase64, DOCUMENT_UPLOAD_MAX_BYTES);
+    const { contentBase64: _content, metadata: clientMetadata, ...requestFields } = input;
+    const requestHash = createHash("sha256").update(JSON.stringify({ ...requestFields, metadata: clientMetadata, bodyHash: createHash("sha256").update(body).digest("hex") })).digest("hex");
+    const replay = async () => {
+      const existing = await this.prisma.document.findUnique({ where: { ownerOrganizationId_documentNumber_version: { ownerOrganizationId: input.ownerOrganizationId, documentNumber: input.documentNumber, version: 1 } }, include: { signatures: true } });
+      if (!existing) return null;
+      const metadata = existing.metadata as Record<string, unknown> | null;
+      if (existing.source !== "UPLOADED" || metadata?.uploadRequestHash !== requestHash) throw new ConflictException("Document number already belongs to another upload");
+      return existing;
+    };
+    const existing = await replay();
+    if (existing) return existing;
+    const asset = await this.uploads.quarantine({ organizationId: input.ownerOrganizationId, actorId: context.actorId, purpose: "document", fileName: input.fileName, body, allowedKinds: [input.format], maxBytes: DOCUMENT_UPLOAD_MAX_BYTES });
     const checksum = asset.checksumSha256;
     const key = asset.storageKey;
     const contentType = asset.detectedMime;
@@ -435,7 +447,7 @@ export class DocumentsService {
           immutableAt: new Date(),
           expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
           externalId: input.externalId,
-          metadata: input.metadata == null ? Prisma.JsonNull : input.metadata as Prisma.InputJsonValue,
+          metadata: { ...(input.metadata ?? {}), uploadRequestHash: requestHash } as Prisma.InputJsonValue,
           participants: { create: participants },
         }, include: { signatures: true } });
         await tx.auditLog.create({ data: { ...context, action: "document.uploaded", entityType: "Document", entityId: document.id, after: { documentNumber: document.documentNumber, version: document.version, kind: document.kind, checksumSha256: checksum } } });
@@ -445,6 +457,10 @@ export class DocumentsService {
       });
     } catch (error) {
       await this.uploads.release(asset.id, "Document upload transaction failed");
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        const existing = await replay();
+        if (existing) return existing;
+      }
       throw error;
     }
   }

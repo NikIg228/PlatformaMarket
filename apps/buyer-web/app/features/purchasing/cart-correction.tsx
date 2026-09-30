@@ -46,19 +46,21 @@ export function useCartCorrection({ cart, api, onChanged, onValidated }: Props) 
     setDrafts(previous => ({ ...previous, [id]: { value, version: previous[id]?.version ?? cart.version } }));
     setNotice(null);
   }
-  async function reload() {
+  async function reload(background = false) {
     if (!cart || inFlight.current) return;
-    inFlight.current = true; setPending(true); setError(null); setNotice(null); onValidated(null);
+    inFlight.current = true; setPending(true);
+    if (!background) { setError(null); setNotice(null); }
+    onValidated(null);
     try {
-      const next = (await api.listCarts(cart.buyerOrganizationId)).find(candidate => candidate.id === cart.id);
+      const next = await api.workspaceCart(cart.id);
       if (!next) throw new Error("Cart missing");
       onChanged(next);
       setDrafts(previous => Object.fromEntries(Object.entries(previous).map(([id, draft]) => [id, { ...draft, version: next.version }])));
-      setNotice(next.checkout || next.status !== "ACTIVE"
+      if (!background) setNotice(next.checkout || next.status !== "ACTIVE"
         ? "Корзина уже оформляется или оформлена. Проверьте раздел «Заказы». Несохранённый ввод не меняет заказ и остаётся только на этом экране."
         : "Корзина обновлена. Введённое количество не применено автоматически — сравните с сохранённым и подтвердите действие.");
       await validate(next);
-    } catch (cause) { setError(failure(cause)); }
+    } catch (cause) { setError(current => background && current ? current : failure(cause)); }
     finally { inFlight.current = false; setPending(false); }
   }
   async function save(id: string, remove = false) {

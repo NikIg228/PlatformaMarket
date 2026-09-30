@@ -2,6 +2,12 @@ import type { CatalogSearchResponse } from "@marketplace/api-client";
 
 export type CatalogProduct = CatalogSearchResponse["items"][number];
 
+export function catalogPriceToMinor(value: string): string | undefined {
+  if (!/^\d{1,18}([.,]\d{1,2})?$/.test(value)) return undefined;
+  const [major, fraction = ""] = value.replace(",", ".").split(".");
+  return (BigInt(major!) * BigInt(100) + BigInt(fraction.padEnd(2, "0"))).toString();
+}
+
 export function selectCatalogPriceMinor(product: CatalogProduct): string | null {
   return selectCatalogOffer(product)?.priceMinor ?? null;
 }
@@ -14,7 +20,7 @@ function compareDecimal(left: string, right: string) {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-export function selectCatalogOffer(product: CatalogProduct) {
+export function selectCatalogOffer<T extends { priceMinor: string | null; available: boolean }>(product: { offers: T[] }) {
   const priced = product.offers.filter(offer => offer.priceMinor != null && /^\d+(?:\.\d+)?$/.test(offer.priceMinor));
   const available = priced.filter(offer => offer.available);
   return [...(available.length ? available : priced)].sort((a, b) => compareDecimal(a.priceMinor!, b.priceMinor!))[0] ?? null;

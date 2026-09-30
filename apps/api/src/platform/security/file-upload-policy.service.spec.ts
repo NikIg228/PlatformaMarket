@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { FileUploadPolicyService } from "./file-upload-policy.service";
+import { DOCUMENT_UPLOAD_MAX_BYTES } from "@marketplace/schemas";
 
 function centralDirectoryEntry(name: string) {
   const fileName = Buffer.from(name);
@@ -23,6 +24,21 @@ describe("file upload magic detection", () => {
   });
   it("does not treat executable or NUL payload as text", () => {
     expect(service.detect(Buffer.from([0x4d,0x5a,0,0,1,2]))).toBeNull();
+  });
+  it("applies the shared document limit to decoded bytes at both sides of the boundary", () => {
+    for (const size of [DOCUMENT_UPLOAD_MAX_BYTES - 1, DOCUMENT_UPLOAD_MAX_BYTES]) {
+      const encoded = Buffer.alloc(size, 65).toString("base64");
+      expect(encoded.length).toBeGreaterThan(DOCUMENT_UPLOAD_MAX_BYTES);
+      expect(service.decodeBase64(encoded, DOCUMENT_UPLOAD_MAX_BYTES)).toHaveLength(size);
+    }
+    expect(() => service.decodeBase64(Buffer.alloc(DOCUMENT_UPLOAD_MAX_BYTES + 1, 65).toString("base64"), DOCUMENT_UPLOAD_MAX_BYTES)).toThrow();
+    expect(() => service.decodeBase64("", DOCUMENT_UPLOAD_MAX_BYTES)).toThrow();
+  });
+  it("rejects a PDF filename with non-PDF bytes before storage or scan", async () => {
+    const storage = { put: vi.fn() }, scanner = { scan: vi.fn() };
+    const policy = new FileUploadPolicyService({ securityEvent: { create: async () => ({}) } } as never, storage as never, scanner as never);
+    await expect(policy.quarantine({ organizationId: crypto.randomUUID(), purpose: "document", fileName: "invoice.pdf", body: Buffer.from("not a PDF"), allowedKinds: ["PDF"], maxBytes: DOCUMENT_UPLOAD_MAX_BYTES })).rejects.toThrow();
+    expect(storage.put).not.toHaveBeenCalled(); expect(scanner.scan).not.toHaveBeenCalled();
   });
 
   it("rejects a generic ZIP renamed to an Office document", async () => {

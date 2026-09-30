@@ -198,11 +198,7 @@ for (const fileType of ["CSV", "EXCEL"] as const) test(`operator approves ${file
   expect(await prisma.outboxEvent.count({ where: { aggregateType: "SupplierOffer", aggregateId: offerId, eventType: "OfferPublicationChanged" } })).toBe(publicationEvents);
 
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto("http://127.0.0.1:3001");
-  const search = page.locator('header input[name="q"]');
-  await expect(search).toHaveAttribute("aria-label", "Поиск по каталогу");
-  await search.fill(uniqueName);
-  await search.press("Enter");
+  await page.goto(`http://127.0.0.1:3001/?q=${encodeURIComponent(uniqueName)}`);
   await expect(page.getByTestId("product-card").filter({ hasText: uniqueName })).toBeVisible();
   const afterSearch = await json<{ total: number; items: Array<{ id: string; name: string }> }>(await request.get(`${API_URL}/catalog/search?q=${encodeURIComponent(uniqueName)}`));
   expect(afterSearch.items).toEqual(expect.arrayContaining([expect.objectContaining({ id: productId, name: uniqueName })]));

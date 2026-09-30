@@ -74,6 +74,7 @@ const ownerPermissions: Record<"BUYER" | "SUPPLIER", string[]> = {
     "delivery.manage",
     "shipment.manage",
     "payment.view",
+    "payment.transfer.confirm",
     "payment.merchant.manage",
     "promotion.view",
     "promotion.manage",

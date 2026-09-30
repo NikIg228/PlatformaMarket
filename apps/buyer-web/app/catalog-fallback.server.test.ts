@@ -1,10 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
   attachFallbackCatalogMedia,
+  findFallbackCatalogMedia,
   searchFallbackCatalog,
 } from "./catalog-fallback.server";
 
 describe("server-side public catalog fallback", () => {
+  it("resolves detail media by exact product identity independently of the database ID", () => {
+    const product = { name: "GC EQUIA Forte HT", brand: "GC", manufacturer: "GC" };
+    expect(findFallbackCatalogMedia(product)?.securePath).toBe(
+      "/catalog/products/7914d55cbf2a200e857f3193a1816b17.png",
+    );
+    expect(findFallbackCatalogMedia({ ...product, name: "GC EQUIA Forte" })).toBeUndefined();
+    expect(findFallbackCatalogMedia({ ...product, manufacturer: "Other" })).toBeUndefined();
+  });
   it("returns a bounded first page instead of the full snapshot", () => {
     const result = searchFallbackCatalog("", "RELEVANCE");
 

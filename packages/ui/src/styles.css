@@ -49,11 +49,13 @@ button, input, select, textarea { font: inherit; }
 .mp-brand strong, .mp-sidebar-footer strong { overflow: hidden; font-size: 14px; white-space: nowrap; text-overflow: ellipsis; }
 .mp-brand small, .mp-sidebar-footer small { color: var(--colorNeutralForeground3); font-size: 11px; }
 .mp-navigation { display: grid; gap: 4px; }
-.mp-navigation button { width: 100%; min-height: 42px; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 10px; border: 0; border-radius: 10px; background: transparent; color: var(--colorNeutralForeground2); text-align: left; cursor: pointer; transition: background-color 120ms ease, color 120ms ease; }
-.mp-navigation button:hover { background: var(--colorNeutralBackground1Hover); color: var(--colorNeutralForeground1); }
+.mp-navigation button, .mp-navigation > a { width: 100%; min-height: 42px; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 10px; border: 0; border-radius: 10px; background: transparent; color: var(--colorNeutralForeground2); text-align: left; cursor: pointer; transition: background-color 120ms ease, color 120ms ease; }
+.mp-navigation > a { text-decoration: none; font: inherit; }
+.mp-navigation > a:focus-visible { outline: 2px solid var(--dm-brand-deep); outline-offset: 2px; }
+.mp-navigation button:hover, .mp-navigation > a:hover { background: var(--colorNeutralBackground1Hover); color: var(--colorNeutralForeground1); }
 .mp-navigation button.is-active { background: var(--dm-brand-surface); color: var(--dm-brand-deep); font-weight: 650; }
-.mp-navigation button svg { width: 20px; height: 20px; }
-.mp-navigation button small { min-width: 20px; padding: 2px 6px; border-radius: 999px; background: var(--colorNeutralBackground4); color: var(--colorNeutralForeground2); font-size: 10px; text-align: center; }
+.mp-navigation button svg, .mp-navigation > a svg { width: 20px; height: 20px; }
+.mp-navigation button small, .mp-navigation > a small { min-width: 20px; padding: 2px 6px; border-radius: 999px; background: var(--colorNeutralBackground4); color: var(--colorNeutralForeground2); font-size: 10px; text-align: center; }
 .mp-sidebar-footer { margin-top: auto; display: flex; align-items: center; gap: 9px; padding: 14px 8px 2px; border-top: 1px solid var(--colorNeutralStroke2); }
 .mp-sidebar-footer > .fui-Button { margin-left: auto; flex: 0 0 auto; }
 .mp-workspace { min-width: 0; }
@@ -128,9 +130,9 @@ button, input, select, textarea { font: inherit; }
 .dm-control.fui-Input:hover,
 .dm-control.fui-Select:hover,
 .dm-control.fui-Textarea:hover { border-color: var(--dm-brand-primary); }
-.dm-control.fui-Input:focus-within,
-.dm-control.fui-Select:focus-within,
-.dm-control.fui-Textarea:focus-within { border-color: var(--dm-brand-primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--dm-brand-primary) 22%, transparent); }
+html[data-input-modality="keyboard"] .dm-control.fui-Input:focus-within,
+html[data-input-modality="keyboard"] .dm-control.fui-Select:focus-within,
+html[data-input-modality="keyboard"] .dm-control.fui-Textarea:focus-within { border-color: var(--dm-brand-primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--dm-brand-primary) 22%, transparent); }
 .dm-textarea { min-height: 112px; }
 .dm-button.fui-Button { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 15px; border: 1px solid transparent; border-radius: var(--dm-radius-button); background: var(--dm-surface); color: var(--dm-text-primary); font-weight: 650; line-height: 1.2; text-align: center; cursor: pointer; transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease; }
 .dm-button.fui-Button:active:not(:disabled) { transform: translateY(1px); }
@@ -149,7 +151,15 @@ button, input, select, textarea { font: inherit; }
 .dm-button.fui-Button:focus-visible { outline: 2px solid var(--dm-brand-primary); outline-offset: 2px; }
 .dm-checkbox.fui-Checkbox { min-height: 32px; }
 .dm-checkbox .fui-Checkbox__input { width: 18px; height: 18px; margin: 5px 8px 0 0; accent-color: var(--dm-brand-primary); cursor: pointer; }
-.dm-checkbox.fui-Checkbox:focus-within { outline: 2px solid var(--dm-brand-primary); outline-offset: 2px; border-radius: 4px; }
+html[data-input-modality="keyboard"] .dm-checkbox.fui-Checkbox:focus-within { outline: 2px solid var(--dm-brand-primary); outline-offset: 2px; border-radius: 4px; }
+
+/* Pointer focus must not borrow keyboard rings (text fields match :focus-visible
+   even on mouse click). Keep borders, validation, selection and open states. */
+html[data-input-modality="pointer"] :focus,
+html[data-input-modality="pointer"] :focus::before,
+html[data-input-modality="pointer"] :focus::after { outline: none !important; }
+html[data-input-modality="pointer"] :is(.fui-Input,.fui-Textarea):focus-within::after { transform: scaleX(0) !important; }
+html[data-input-modality="keyboard"] :is(a,button,input,select,textarea,summary,[tabindex]):focus-visible { outline: 2px solid var(--dm-brand-primary, #007f67); outline-offset: 2px; }
 
 .dm-dialog-surface {
   width: min(620px, calc(100vw - 32px));
@@ -285,4 +295,13 @@ button, input, select, textarea { font: inherit; }
   .dm-document-table tr { display: grid; padding: 12px; border-bottom: 1px solid var(--dm-border); }
   .dm-document-table td { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px; padding: 8px 4px; border: 0; }
   .dm-document-table td::before { content: attr(data-label); color: var(--dm-text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+}
+
+/* Selectors share one outline; Fluent's extra bottom underline is not used. */
+:is(.fui-Dropdown, .fui-Combobox, .fui-Select)::after {
+  display: none;
+}
+:is(.fui-Dropdown, .fui-Combobox, .fui-Select):not([aria-invalid="true"]):not(:has([aria-invalid="true"])):not(:has(:disabled)):not([aria-disabled="true"]),
+:is(.fui-Dropdown, .fui-Combobox, .fui-Select):not([aria-invalid="true"]):not(:has([aria-invalid="true"])):not(:has(:disabled)):not([aria-disabled="true"]):is(:hover, :active, :focus-within) {
+  border-color: var(--dm-border);
 }

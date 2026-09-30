@@ -33,10 +33,10 @@ test("buyer can search and compare marketplace offers", async ({ page }) => {
   await expect(page).toHaveTitle(/PlatformaMarket/);
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
-    const brand = page.getByRole("link", { name: "PlatformaMarket, магазин", exact: true });
-    await expect(brand).toBeVisible();
-    await brand.focus();
-    await expect(brand).toBeFocused();
+    const filters = page.getByRole("button", { name: "Фильтры", exact: true });
+    await expect(filters).toBeVisible();
+    await filters.focus();
+    await expect(filters).toBeFocused();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   }
   await expectHealthyPage(page, errors);
@@ -47,11 +47,17 @@ test("buyer can open a product card from the public catalog", async ({ page }) =
   await page.goto("http://127.0.0.1:3001");
   const card = page.getByTestId("product-card").first();
   await expect(card).toBeVisible();
+  const photo = card.getByRole("img");
+  await expect(photo).toBeVisible();
+  const photoSource = await photo.getAttribute("src");
   const cardLink = card.getByRole("link", { name: /Открыть карточку/ }).last();
   await expect(cardLink).toHaveAttribute("href", /\/products\//);
   await cardLink.click();
   await expect(page).toHaveURL(/\/products\//);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  const detailPhoto = page.locator("main").getByRole("img").first();
+  await expect(detailPhoto).toHaveAttribute("src", photoSource!);
+  await expect.poll(() => detailPhoto.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
   await expectHealthyPage(page, errors);
 });
 

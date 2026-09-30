@@ -9,12 +9,13 @@ export function useCartAutoRefresh(cartId: string | undefined, blocked: boolean,
     if (!cartId) return;
     return scheduleCartRefresh({
       visible: () => document.visibilityState !== "hidden",
-      blocked: () => current.current.blocked,
+      blocked: () => current.current.blocked || !navigator.onLine,
       refresh: () => current.current.refresh(),
       interval: (callback, ms) => { const timer = window.setInterval(callback, ms); return () => window.clearInterval(timer); },
       onWake: callback => {
+        window.addEventListener("online", callback);
         window.addEventListener("focus", callback); document.addEventListener("visibilitychange", callback);
-        return () => { window.removeEventListener("focus", callback); document.removeEventListener("visibilitychange", callback); };
+        return () => { window.removeEventListener("online", callback); window.removeEventListener("focus", callback); document.removeEventListener("visibilitychange", callback); };
       },
     });
   }, [cartId]);

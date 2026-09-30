@@ -322,7 +322,7 @@ async function searchAndOpenComparison(page: Page) {
     },
   );
   await page
-    .getByRole("textbox", { name: "Поиск по каталогу" })
+    .getByRole("combobox", { name: "Поиск по каталогу" })
     .fill(pilotProduct.name);
   await page.getByRole("button", { name: "Найти", exact: true }).click();
   expect((await searchResponse).ok()).toBeTruthy();

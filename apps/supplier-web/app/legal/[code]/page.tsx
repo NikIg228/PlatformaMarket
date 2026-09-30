@@ -1,4 +1,5 @@
 "use client";
+import { workspacePath } from "@marketplace/api-client";
 
 import { MarketplaceApiClient } from "@marketplace/api-client";
 import type { SupplierLegalBundle } from "@marketplace/schemas";
@@ -18,7 +19,7 @@ export default function SupplierLegalPage({ params }: { params: Promise<{ code: 
     return () => { cancelled = true; };
   }, [code, attempt]);
   const document = bundle?.documents.find((item) => item.code === code);
-  return <main className={styles.legalPage}><a href="/">← Кабинет поставщика</a>
+  return <main className={styles.legalPage}><a href={workspacePath("SUPPLIER")}>← Кабинет поставщика</a>
     {error ? <ErrorState description="Не удалось загрузить документ" action={<DmButton onClick={() => setAttempt((value) => value + 1)}>Повторить</DmButton>} /> : !bundle ? <LoadingState label="Загружаем документ" /> : !document ? <h1>Документ не найден</h1> : <>
       <h1>{document.title}</h1><p>{document.status === "DRAFT" ? "Документ готовится" : `Редакция ${document.version}`}</p>
       {document.content ? <article className={styles.text}>{document.content}</article> : <p>Текст пока не опубликован.</p>}

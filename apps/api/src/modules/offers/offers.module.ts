@@ -6,6 +6,8 @@ import { OffersService } from "./offers.service";
 import { ComplianceModule } from "../compliance/compliance.module";
 import { MarketplaceAgreementsModule } from "../agreements/marketplace-agreements.module";
 import { SearchModule } from "../search/search.module";
+import { InventoryModule } from "../inventory/inventory.module";
+import { OfferCommercialService } from "./offer-commercial.service";
 
-@Module({ imports: [AccessControlModule, SuppliersModule, ComplianceModule, MarketplaceAgreementsModule, SearchModule], controllers: [OffersController], providers: [OffersService] })
+@Module({ imports: [AccessControlModule, SuppliersModule, ComplianceModule, MarketplaceAgreementsModule, SearchModule, InventoryModule], controllers: [OffersController], providers: [OffersService, OfferCommercialService] })
 export class OffersModule {}

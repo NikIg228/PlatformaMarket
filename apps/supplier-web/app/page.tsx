@@ -1,4 +1,5 @@
 "use client";
+import { workspacePath } from "@marketplace/api-client";
 
 import { useVerifiedSession, sessionApiContext, sessionStore, logoutSession } from "./workspace-session";
 import { confirmationOutcomeMessage } from "./order-confirmation-model";
@@ -582,7 +583,7 @@ export default function SupplierWorkspace() {
               : undefined
       }
       onNavigate={(item) => {
-        if (item === "documents") router.push("/documents");
+        if (item === "documents") router.push(workspacePath("SUPPLIER", "/documents"));
         else setActive(item);
       }}
       actions={

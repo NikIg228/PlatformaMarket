@@ -508,6 +508,7 @@ enum DocumentKind {
   ORDER_CONFIRMATION
   INVOICE
   PAYMENT_CONFIRMATION
+  PAYMENT_PROOF
   REFUND_CONFIRMATION
   WAYBILL
   ACCEPTANCE_ACT
@@ -1485,6 +1486,7 @@ model CategoryAttributeRule {
 model Product {
   id                 String                  @id @default(uuid()) @db.Uuid
   canonicalName      String
+  catalogName        String?
   description        String?
   descriptionSources Json?
   slug               String                  @unique
@@ -2337,6 +2339,9 @@ model SupplierOrder {
   buyerSupplierAgreementId String?                 @db.Uuid
   transactionMode          String                  @default("ONE_TIME")
   version                  Int                     @default(1)
+  manualInvoiceDocumentId  String?                 @db.Uuid
+  transferClaims           OrderTransferClaim[]
+  workflowEvents           OrderWorkflowEvent[]
   checkout                 Checkout                @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
   supplier                 Organization            @relation("SupplierOrderSupplier", fields: [supplierOrganizationId], references: [id], onDelete: Restrict)
   buyer                    Organization            @relation("SupplierOrderBuyer", fields: [buyerOrganizationId], references: [id], onDelete: Restrict)
@@ -2354,6 +2359,39 @@ model SupplierOrder {
   @@index([supplierOrganizationId, status, createdAt])
   @@index([buyerOrganizationId, createdAt])
   @@index([buyerSupplierAgreementId, transactionMode])
+}
+
+model OrderTransferClaim {
+  id                String @id @default(uuid()) @db.Uuid
+  supplierOrderId   String @db.Uuid
+  invoiceDocumentId String @db.Uuid
+  documentId        String @db.Uuid
+  amountMinor       Decimal @db.Decimal(20, 0)
+  currency          String @db.Char(3)
+  paidAt            DateTime
+  comment           String
+  status            String @default("PENDING")
+  confirmedAt       DateTime?
+  confirmedById     String? @db.Uuid
+  createdAt         DateTime @default(now())
+  supplierOrder     SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Restrict)
+  @@index([supplierOrderId, createdAt])
+}
+
+model OrderWorkflowEvent {
+  id              String @id @default(uuid()) @db.Uuid
+  supplierOrderId String @db.Uuid
+  actorId         String @db.Uuid
+  organizationId  String @db.Uuid
+  action          String
+  idempotencyKey  String
+  requestHash     String
+  details         Json
+  result          Json
+  createdAt       DateTime @default(now())
+  supplierOrder   SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Restrict)
+  @@unique([supplierOrderId, organizationId, idempotencyKey])
+  @@index([supplierOrderId, createdAt])
 }
 
 model SupplierOrderItem {

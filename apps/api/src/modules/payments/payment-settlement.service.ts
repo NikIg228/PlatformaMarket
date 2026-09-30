@@ -8,6 +8,7 @@ import { providerCapabilities } from "./adapters/payment-adapter";
 import type { PaymentAdapterResult } from "./adapters/payment-adapter";
 import { calculateRefundAllocation } from "./payment-rules";
 import { MarketplaceAgreementsService } from "../agreements/marketplace-agreements.service";
+import { usableLotWhere } from "../inventory/lot-eligibility";
 
 @Injectable()
 export class PaymentSettlementService {
@@ -176,10 +177,12 @@ export class PaymentSettlementService {
       const consumedBalance = await tx.inventoryBalance.updateMany({ where: { id: reservation.inventoryBalanceId, quantityReserved: { gte: quantity }, quantityOnHand: { gte: quantity } }, data: { quantityReserved: { decrement: quantity }, quantityOnHand: { decrement: quantity }, version: { increment: 1 } } });
       if (consumedBalance.count !== 1) throw new ConflictException("Reserved inventory cannot be consumed safely");
       if (reservation.inventoryLotId) {
-        const consumedLot = await tx.inventoryLot.updateMany({ where: { id: reservation.inventoryLotId, quantityReserved: { gte: quantity }, quantityOnHand: { gte: quantity } }, data: { quantityReserved: { decrement: quantity }, quantityOnHand: { decrement: quantity }, version: { increment: 1 } } });
+        const consumedLot = await tx.inventoryLot.updateMany({ where: { id: reservation.inventoryLotId, ...usableLotWhere(),
+          inventoryBalanceId: reservation.inventoryBalanceId, supplierOrganizationId: allocation.supplierOrder.supplierOrganizationId,
+          quantityReserved: { gte: quantity }, quantityOnHand: { gte: quantity } }, data: { quantityReserved: { decrement: quantity }, quantityOnHand: { decrement: quantity }, version: { increment: 1 } } });
         if (consumedLot.count !== 1) throw new ConflictException("Reserved lot cannot be consumed safely");
         const lot = await tx.inventoryLot.findUniqueOrThrow({ where: { id: reservation.inventoryLotId } });
-        if (Number(lot.quantityOnHand) === 0) await tx.inventoryLot.update({ where: { id: lot.id }, data: { status: "DEPLETED", quantityAvailable: 0 } });
+        if (Number(lot.quantityOnHand) === 0) await tx.inventoryLot.updateMany({ where: { id: lot.id, status: "ACTIVE" }, data: { status: "DEPLETED", quantityAvailable: 0 } });
       }
       await tx.inventoryReservation.update({ where: { id: reservation.id }, data: { status: "CONSUMED" } });
       if (reservation.externalReservation) await tx.externalReservation.update({ where: { id: reservation.externalReservation.id }, data: { status: "CONSUMED" } });

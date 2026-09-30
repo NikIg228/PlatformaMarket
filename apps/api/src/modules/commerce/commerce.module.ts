@@ -6,6 +6,10 @@ import { ComplianceModule } from "../compliance/compliance.module";
 import { CommerceController } from "./commerce.controller";
 import { CommerceService } from "./commerce.service";
 import { MarketplaceAgreementsModule } from "../agreements/marketplace-agreements.module";
+import { OrderWorkflowController } from "./order-workflow.controller";
+import { OrderWorkflowService } from "./order-workflow.service";
+import { WorkspaceReadsController } from "./workspace-reads.controller";
+import { WorkspaceReadsService } from "./workspace-reads.service";
 
-@Module({ imports: [InventoryModule, SuppliersModule, IntegrationsModule, ComplianceModule, MarketplaceAgreementsModule], controllers: [CommerceController], providers: [CommerceService], exports: [CommerceService] })
+@Module({ imports: [InventoryModule, SuppliersModule, IntegrationsModule, ComplianceModule, MarketplaceAgreementsModule], controllers: [CommerceController, OrderWorkflowController, WorkspaceReadsController], providers: [CommerceService, OrderWorkflowService, WorkspaceReadsService], exports: [CommerceService] })
 export class CommerceModule {}

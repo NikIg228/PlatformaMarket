@@ -4,6 +4,7 @@ import { Prisma, type ShipmentStatus } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import { SupplierAccessService, type SupplierActorContext } from "../suppliers/supplier-access.service";
 import { canTransitionFulfillment, canTransitionShipment, orderStatusForShipment } from "./shipment-state";
+import { assertShipmentLotsUsable } from "../inventory/lot-eligibility";
 
 @Injectable()
 export class LogisticsService {
@@ -209,6 +210,15 @@ export class LogisticsService {
     const defaultStep = { type: input.method === "PICKUP" ? "PICKUP" as const : "DELIVERY" as const };
     const steps = input.fulfillmentSteps.length > 0 ? input.fulfillmentSteps : [defaultStep];
     return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "SupplierOrder" WHERE id = ${order.id}::uuid FOR UPDATE`;
+      const current = await tx.supplierOrder.findUniqueOrThrow({ where: { id: order.id }, include: { items: true, shipments: { include: { items: true } } } });
+      if (current.paymentStatus !== "PAID" || ["CANCELLED", "REJECTED", "DELIVERED", "RETURN_DISPUTE"].includes(current.status)) throw new ConflictException("Order can no longer be shipped");
+      await assertShipmentLotsUsable(tx, current.supplierOrganizationId, current.items.filter(item => requested.has(item.id)));
+      for (const [itemId, quantity] of requested) {
+        const item = current.items.find(item => item.id === itemId);
+        const planned = current.shipments.filter(shipment => !["CANCELLED", "RETURNED"].includes(shipment.status)).flatMap(shipment => shipment.items).filter(line => line.supplierOrderItemId === itemId).reduce((sum, line) => sum.plus(line.quantity), new Prisma.Decimal(0));
+        if (!item || planned.plus(quantity).gt(item.acceptedQuantity)) throw new ConflictException("Shipment quantity exceeds accepted quantity");
+      }
       const shipment = await tx.shipment.create({
         data: {
           supplierOrderId: order.id,
@@ -237,7 +247,7 @@ export class LogisticsService {
       await tx.auditLog.create({ data: { ...context, action: "shipment.created", entityType: "Shipment", entityId: shipment.id, after: { shipmentNumber: shipment.shipmentNumber, supplierOrderId: order.id, itemCount: shipment.items.length } } });
       await tx.outboxEvent.create({ data: { aggregateType: "Shipment", aggregateId: shipment.id, eventType: "ShipmentCreated", payload: { shipmentId: shipment.id, supplierOrderId: order.id, supplierOrganizationId: order.supplierOrganizationId, buyerOrganizationId: order.buyerOrganizationId } } });
       return shipment;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
   }
 
   async transitionShipment(shipmentId: string, input: TransitionShipmentInput, context: SupplierActorContext) {
@@ -245,6 +255,8 @@ export class LogisticsService {
     if (!shipment) throw new NotFoundException("Shipment not found");
     await this.requireOrder(shipment.supplierOrderId, context);
     if (shipment.supplierOrder.supplierOrganizationId !== context.organizationId && !(await this.isOperator(context.organizationId))) throw new ForbiddenException("Only the supplier or operator can transition a shipment");
+    if (["DELIVERED", "PARTIALLY_DELIVERED"].includes(input.status)) throw new ConflictException("Получение подтверждает клиника на странице этапов заказа");
+    if (input.deliveredItems?.length) throw new ConflictException("Количество полученного товара изменяет клиника");
     if (!canTransitionShipment(shipment.status, input.status)) throw new ConflictException(`Shipment cannot transition from ${shipment.status} to ${input.status}`);
     const deliveredById = new Map((input.deliveredItems ?? []).map((item) => [item.shipmentItemId, new Prisma.Decimal(item.deliveredQuantity)]));
     for (const [itemId, delivered] of deliveredById) {
@@ -255,6 +267,12 @@ export class LogisticsService {
     if (input.status === "PARTIALLY_DELIVERED" && deliveredById.size === 0) throw new BadRequestException("Partial delivery requires delivered item quantities");
     if (input.status === "DELIVERED" && shipment.fulfillmentSteps.some(({ status }) => !["COMPLETED", "CANCELLED"].includes(status))) throw new ConflictException("All fulfillment steps must be completed before delivery closes");
     return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "SupplierOrder" WHERE id = ${shipment.supplierOrderId}::uuid FOR UPDATE`;
+      if (["PLANNED", "PACKING", "READY", "DISPATCHED"].includes(input.status)) {
+        const items = await tx.supplierOrderItem.findMany({ where: { supplierOrderId: shipment.supplierOrderId,
+          id: { in: shipment.items.map(item => item.supplierOrderItemId) } } });
+        await assertShipmentLotsUsable(tx, shipment.supplierOrder.supplierOrganizationId, items);
+      }
       const now = new Date();
       const changed = await tx.shipment.updateMany({
         where: { id: shipmentId, version: input.version, status: shipment.status },

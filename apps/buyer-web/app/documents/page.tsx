@@ -1,4 +1,5 @@
 "use client";
+import { workspacePath } from "@marketplace/api-client";
 import { useVerifiedSession, sessionApiContext, sessionStore, logoutSession } from "../workspace-session";
 
 
@@ -134,9 +135,9 @@ export default function BuyerDocumentsPage() {
   };
 
   if (!sessionReady) return <LoadingState label="Проверяем вход" />;
-  if (!handoff) return <ErrorState title="Войдите в кабинет" description={sessionError ?? "Документы доступны после входа."} action={<><DmButton as="a" href={withWorkspaceReturn(loginUrl, "/documents")}>Войти</DmButton><DmButton onClick={() => void sessionStore.retry()}>Повторить проверку</DmButton></>} />;
+  if (!handoff) return <ErrorState title="Войдите в кабинет" description={sessionError ?? "Документы доступны после входа."} action={<><DmButton as="a" href={withWorkspaceReturn(loginUrl, workspacePath("BUYER", "/documents"))}>Войти</DmButton><DmButton onClick={() => void sessionStore.retry()}>Повторить проверку</DmButton></>} />;
 
-  return <AppShell productName="PlatformaMarket" productMark="PM" workspaceLabel="Кабинет клиники" userName={handoff?.displayName ?? "Участник организации"} userMeta={handoff?.organizationDisplayName ?? "Клиника"} navigation={navigation} activeNavigation="documents" contextLabel="Документолог" onNavigate={(id) => { if (id !== "documents") router.push("/"); }} {...logout}>
+  return <AppShell productName="PlatformaMarket" productMark="PM" workspaceLabel="Кабинет клиники" userName={handoff?.displayName ?? "Участник организации"} userMeta={handoff?.organizationDisplayName ?? "Клиника"} navigation={navigation} activeNavigation="documents" contextLabel="Документолог" onNavigate={(id) => { if (id !== "documents") router.push(workspacePath("BUYER")); }} {...logout}>
     <DocumentArchiveWorkspace
       roleLabel="клиника"
       organizationId={organizationId}

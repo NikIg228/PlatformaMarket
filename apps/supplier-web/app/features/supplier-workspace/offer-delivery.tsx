@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferDeliveryOptionResponse, SupplierWarehouseList } from "@marketplace/schemas";
-import { DmButton, DmCheckbox, DmField, DmInput, DmSelect, ErrorState, Section, errorMessage, formatStatus } from "@marketplace/ui";
+import { DmButton, DmCheckbox, DmField, DmInput, DmSelect, ErrorState, Section, errorMessage, formatStatus, PermissionFields } from "@marketplace/ui";
 import { offerPriceMinor, offerPriceText } from "./offer-editor-model";
 
 const methods = { PICKUP: "Самовывоз", SUPPLIER_CITY: "Доставка поставщиком по городу", NATIONWIDE: "По Казахстану", CARRIER: "Транспортная компания", SPECIAL: "Специальная доставка" } as const;
@@ -55,7 +55,7 @@ export function OfferDelivery({ api, supplierId, offerId, warehouses, defaultWar
     setOptions(current => [...(current ?? []).filter(item => item.id !== saved.id), saved]);
     setNotice("Условия доставки сохранены и доступны клинике при сравнении предложений.");
   });
-  return <Section title="Условия доставки предложения" description="Укажите сроки подготовки и доставки. Выбор транспортной компании здесь не создаёт отправление.">
+  return <PermissionFields required={["delivery.view", "delivery.manage"]}><Section title="Условия доставки предложения" description="Укажите сроки подготовки и доставки. Выбор транспортной компании здесь не создаёт отправление.">
     {error ? <ErrorState description={error} /> : null}
     {notice ? <p role="status">{notice}</p> : null}
     {options === null ? <DmButton disabled={busy} onClick={() => void run(async () => setOptions(await api.listOfferDeliveryOptions(supplierId, offerId)))}>Настроить доставку</DmButton> : <div className="mp-stack">
@@ -78,5 +78,5 @@ export function OfferDelivery({ api, supplierId, offerId, warehouses, defaultWar
         <DmButton type="submit" disabled={busy}>Сохранить доставку</DmButton>
       </form>
     </div>}
-  </Section>;
+  </Section></PermissionFields>;
 }

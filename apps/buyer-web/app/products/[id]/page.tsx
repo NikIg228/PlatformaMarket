@@ -5,9 +5,12 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import catalog from "../../data/public-catalog-fallback.json";
 import mediaCatalog from "../../data/public-catalog-media.json";
-import { PublicHeader } from "../../public-header";
+import { findFallbackCatalogMedia } from "../../catalog-fallback.server";
+import { MarketplaceHeader } from "../../features/marketplace-header/marketplace-header";
 import styles from "./page.module.css";
-import ProductOfferActions from "./product-offer-actions";
+import { SupplierOffers } from "../../features/catalog/supplier-offers";
+import { findResearchedDescription } from "../../features/catalog/researched-product-description";
+import ProductLoadError from "./product-load-error";
 import { formatCatalogMoney } from "../../catalog/catalog-view-model";
 import { safeCatalogReturn } from "../../catalog/marketplace-url";
 import { productLoginUrl } from "../../public-links";
@@ -35,6 +38,8 @@ type DetailProduct = {
     normalizedPriceMinor?: string | null;
     currency: string;
     packaging?: { name: string; quantityInBaseUnit?: string; unit?: string | null };
+    minimumOrderQuantity?: string;
+    orderIncrement?: string;
     available: boolean;
     deliveryMethods: string[];
     delivery?: DeliverySummary[];
@@ -109,6 +114,8 @@ function fromComparison(comparison: PublicComparison): DetailProduct {
         name: offer.supplier.name,
       },
       supplierSku: offer.supplierSku,
+      minimumOrderQuantity: offer.minimumOrderQuantity,
+      orderIncrement: offer.orderIncrement,
       priceMinor: offer.price.amountMinor,
       normalizedPriceMinor: offer.price.normalizedPriceMinor,
       currency: offer.price.currency,
@@ -124,10 +131,10 @@ function fromComparison(comparison: PublicComparison): DetailProduct {
   };
 }
 
-const getProduct = cache(async (id: string): Promise<DetailProduct | null> => {
+const getProduct = cache(async (id: string, cityId?: string): Promise<DetailProduct | null> => {
   try {
     const api = new MarketplaceApiClient(API_URL, {});
-    const live = fromComparison(await api.comparePublicOffers(id, { quantity: 1 }));
+    const live = fromComparison(await api.comparePublicOffers(id, { quantity: 1, ...(cityId ? { cityId } : {}) }));
     const reference = catalog.products.find((item) => item.id === id);
     // Static descriptions/media may enrich a live result, never prices or availability.
     return { ...live, sourceUrl: reference?.sourceUrl ?? null, description: reference?.description ?? live.description,
@@ -144,7 +151,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const product = await getProduct(decodeURIComponent(id));
+  const product = await getProduct(decodeURIComponent(id)).catch(() => null);
   return product
     ? {
         title: `${product.name} | PlatformaMarket`,
@@ -161,28 +168,42 @@ export default async function ProductPage({
   searchParams: Promise<{ returnTo?: string }>;
 }) {
   const { id } = await params;
-  const product = await getProduct(decodeURIComponent(id));
-  if (!product) notFound();
   const returnTo = safeCatalogReturn((await searchParams).returnTo);
+  const requestedCity = new URL(returnTo, "http://local.invalid").searchParams.get("deliveryCityId");
+  let cityId: string | undefined;
+  if (requestedCity) {
+    const cities = await fetch(`${API_URL}/catalog/cities`, { cache: "no-store" }).then(r => r.ok ? r.json() : []).catch(() => []);
+    if (Array.isArray(cities) && cities.some(city => city.id === requestedCity)) cityId = requestedCity;
+  }
+  let product: DetailProduct | null;
+  try {
+    product = await getProduct(decodeURIComponent(id), cityId);
+  } catch {
+    return <ProductLoadError returnTo={returnTo} />;
+  }
+  if (!product) notFound();
   const loginHref = productLoginUrl(`/products/${encodeURIComponent(product.id)}?${new URLSearchParams({ returnTo })}`);
 
-  const media = product.sourceUrl
+  const researched = findResearchedDescription(product);
+  const description = researched?.description ?? product.description;
+  const pricedOffers = product.offers.filter(offer => offer.available && offer.priceMinor != null && /^\d+$/.test(offer.priceMinor));
+  const cheapest = pricedOffers.every(offer => offer.currency === pricedOffers[0]?.currency)
+    ? pricedOffers.reduce<(typeof pricedOffers)[number] | undefined>((best, offer) => !best || BigInt(offer.priceMinor!) < BigInt(best.priceMinor!) ? offer : best, undefined)
+    : undefined;
+
+  const media = findFallbackCatalogMedia(product) ?? (product.sourceUrl
     ? mediaCatalog.entries[
         product.sourceUrl as keyof typeof mediaCatalog.entries
       ]
-    : undefined;
-  const attributes = product.attributes ?? [];
+    : undefined);
 
   return (
     <div className={styles.page}>
-      <PublicHeader active="catalog" baseHref="/catalog" loginHref={loginHref} />
+      <MarketplaceHeader />
       <main className={styles.shell}>
         <Link className={styles.back} href={returnTo}>
           ← Вернуться в каталог
         </Link>
-        <div className={styles.breadcrumbs}>
-          Каталог / {product.category || "Стоматологические товары"}
-        </div>
         <section className={styles.hero}>
           <div className={styles.visual}>
             {media?.securePath ? (
@@ -200,9 +221,6 @@ export default async function ProductPage({
             )}
           </div>
           <div className={styles.summary}>
-            <span className={styles.eyebrow}>
-              {product.category || "Стоматологические товары"}
-            </span>
             <h1>{product.name}</h1>
             {product.brand ? (
               <p className={styles.brand}>
@@ -210,108 +228,24 @@ export default async function ProductPage({
                 {product.manufacturer ? ` · ${product.manufacturer}` : ""}
               </p>
             ) : null}
-            <p className={styles.description}>
-              {product.description ||
-                "Карточка товара PlatformaMarket с описанием, характеристиками и предложениями поставщиков."}
-            </p>
-            <div className={styles.facts}>
-              <span>
-                <strong>{product.offers.length}</strong>
-                <small>предложений</small>
-              </span>
-              <span>
-                <strong>
-                  {product.isAvailable ? "В наличии" : "Под заказ"}
-                </strong>
-                <small>статус товара</small>
-              </span>
-              <span>
-                <strong>{media?.securePath ? "Фото" : "Готовится"}</strong>
-                <small>визуал</small>
-              </span>
-            </div>
+            {description ? <p className={styles.description}>{description}</p> : null}
+            {cheapest ? <p className={styles.summaryPrice}>от {formatCatalogMoney(cheapest.priceMinor, cheapest.currency)}<small>за единицу продажи · зависит от фасовки поставщика</small></p> : null}
             <div className={styles.heroActions}>
-            <ProductOfferActions offers={product.offers} loginHref={loginHref} />
-              <span className={styles.trustNote}>
-                Заказ доступен после входа в кабинет клиники
-              </span>
+              <a className={styles.chooseSupplier} href="#supplier-offers">Выбрать поставщика</a>
+              <span className={styles.trustNote}>Предложений: {product.offers.length}</span>
             </div>
           </div>
         </section>
 
-        <section className={styles.contentGrid}>
-          <div className={styles.panel}>
-            <h2>Характеристики</h2>
-            {attributes.length ? (
-              <dl className={styles.attributes}>
-                {attributes.map(([key, value]) => (
-                  <div key={`${key}-${value}`}>
-                    <dt>{key}</dt>
-                    <dd>{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            ) : (
-              <p className={styles.muted}>
-                Характеристики будут дополнены после следующей выгрузки
-                поставщика.
-              </p>
-            )}
-            {product.sourceUrl ? (
-              <a
-                className={styles.source}
-                href={product.sourceUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Открыть источник карточки ↗
-              </a>
-            ) : null}
-          </div>
+        <section id="supplier-offers" className={styles.contentGrid} aria-label="Предложения поставщиков">
           <div className={styles.panel}>
             <div className={styles.panelHeading}>
               <div>
-                <span className={styles.panelKicker}>Коммерческие условия</span>
                 <h2>Предложения поставщиков</h2>
               </div>
               <span className={styles.offerCount}>{product.offers.length}</span>
             </div>
-            <div className={styles.offers}>
-              {product.offers.length ? (
-                product.offers.map((offer) => (
-                  <article
-                    className={styles.offer}
-                    key={`${offer.supplier.name}-${offer.supplierSku ?? "offer"}`}
-                  >
-                    <div>
-                      <strong>{offer.supplier.name}</strong>
-                      <span>
-                        {offer.packaging?.name
-                          ? `Фасовка: ${offer.packaging.name}${offer.packaging.quantityInBaseUnit && offer.packaging.unit ? ` · ${offer.packaging.quantityInBaseUnit} ${offer.packaging.unit}` : ""}`
-                          : "Условия уточняются"}
-                      </span>
-                    </div>
-                    <div className={styles.offerRight}>
-                      <strong>
-                        {formatCatalogMoney(offer.priceMinor, offer.currency)} за упаковку / единицу продажи
-                      </strong>
-                      <span>{offer.normalizedPriceMinor && offer.packaging?.unit ? `${formatCatalogMoney(offer.normalizedPriceMinor, offer.currency)} за 1 ${offer.packaging.unit}` : "Цена за базовую единицу уточняется"}</span>
-                      <span
-                        className={
-                          offer.available ? styles.available : styles.onRequest
-                        }
-                      >
-                        {offer.available ? "В наличии" : "Под заказ"}
-                      </span>
-                    </div>
-                  </article>
-                ))
-              ) : (
-                <p className={styles.muted}>
-                  Поставщики ещё не добавили предложение.
-                </p>
-              )}
-            </div>
+            <SupplierOffers key={JSON.stringify(product.offers)} offers={product.offers} loginHref={loginHref} />
           </div>
         </section>
       </main>

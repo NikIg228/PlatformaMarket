@@ -5,6 +5,7 @@ import { InventoryController } from "./inventory.controller";
 import { InventoryService } from "./inventory.service";
 import { InventoryFreshnessService } from "./inventory-freshness.service";
 import { DataFreshnessService } from "./data-freshness.service";
+import { ReservationExpiryService } from "./reservation-expiry.service";
 
-@Module({ imports: [AccessControlModule, SuppliersModule], controllers: [InventoryController], providers: [InventoryService, InventoryFreshnessService, DataFreshnessService], exports: [InventoryService, DataFreshnessService] })
+@Module({ imports: [AccessControlModule, SuppliersModule], controllers: [InventoryController], providers: [InventoryService, InventoryFreshnessService, DataFreshnessService, ReservationExpiryService], exports: [InventoryService, DataFreshnessService] })
 export class InventoryModule {}

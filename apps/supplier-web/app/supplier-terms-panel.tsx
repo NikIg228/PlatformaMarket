@@ -1,9 +1,10 @@
 "use client";
+import { workspacePath } from "@marketplace/api-client";
 
 import { Checkbox } from "@fluentui/react-components";
 import { MarketplaceApiClient, type ApiContext } from "@marketplace/api-client";
 import type { SupplierTermsState } from "@marketplace/schemas";
-import { DmButton, DmField, DmInput, DmFeedback, ErrorState, LoadingState, Section, StatusTag, errorMessage, formatDate } from "@marketplace/ui";
+import { DmButton, DmField, DmInput, DmFeedback, ErrorState, LoadingState, Section, StatusTag, errorMessage, formatDate, usePermissions } from "@marketplace/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SupplierTermsReader } from "./supplier-terms-reader";
 import styles from "./supplier-terms.module.css";
@@ -61,6 +62,7 @@ export function SupplierTermsPanel({ apiContext }: { apiContext: ApiContext }) {
 }
 
 function AcceptanceForm({ state, busy, onAccept }: { state: SupplierTermsState; busy: boolean; onAccept: (viewed: Set<string>, authority: string) => Promise<void> }) {
+  const has = usePermissions();
   const [selected, setSelected] = useState(0);
   const [viewed, setViewed] = useState<Set<string>>(new Set());
   const [confirmed, setConfirmed] = useState(false);
@@ -74,13 +76,13 @@ function AcceptanceForm({ state, busy, onAccept }: { state: SupplierTermsState; 
     <p id="terms-reading-help">Просмотрите содержимое каждого документа. Документы о персональных данных имеют отдельное назначение и не заменяют договор с продавцом.</p>
     <nav className={styles.documentTabs} aria-label="Документы для ознакомления">{state.bundle.documents.map((item, index) => <DmButton key={item.code} appearance={index === selected ? "primary" : "secondary"} aria-pressed={index === selected} onClick={() => setSelected(index)}>{item.title}{viewed.has(item.hash) ? " — просмотрено" : ""}</DmButton>)}</nav>
     {document ? <article>
-      <h3>{document.title}</h3><p>{document.status === "DRAFT" ? "Черновик" : `Редакция ${document.version}`} · <a href={`/legal/${document.code}`} target="_blank" rel="noreferrer">Открыть страницу документа</a></p>
+      <h3>{document.title}</h3><p>{document.status === "DRAFT" ? "Черновик" : `Редакция ${document.version}`} · <a href={workspacePath("SUPPLIER", `/legal/${document.code}`)} target="_blank" rel="noreferrer">Открыть страницу документа</a></p>
       <SupplierTermsReader key={document.hash} document={document} onViewed={onViewed} />
     </article> : null}
     <p role="status" aria-live="polite">Просмотрено документов: {viewed.size} из {state.bundle.documents.length}</p>
     <DmField label="Основание полномочий" hint="Например, руководитель на основании устава или представитель по доверенности."><DmInput value={authority} maxLength={500} onChange={(_, data) => setAuthority(data.value)} /></DmField>
     <Checkbox checked={confirmed} onChange={(_, data) => setConfirmed(data.checked === true)} label="Принимаю договор, тарифы и правила от имени организации; подтверждаю свои полномочия и ознакомление с документами о персональных данных." />
     <p id="terms-submit-help">Кнопка станет доступна после просмотра всех документов и подтверждения полномочий. После принятия потребуется допуск оператора.</p>
-    <DmButton appearance="primary" aria-describedby="terms-submit-help" disabled={busy || !state.bundle.available || !allViewed || !confirmed || authority.trim().length < 3} onClick={() => void onAccept(viewed, authority.trim())}>{busy ? "Сохраняем…" : "Ознакомлен"}</DmButton>
+    <DmButton appearance="primary" aria-describedby="terms-submit-help" disabled={busy || !has("document.sign") || !state.bundle.available || !allViewed || !confirmed || authority.trim().length < 3} onClick={() => void onAccept(viewed, authority.trim())}>{busy ? "Сохраняем…" : "Ознакомлен"}</DmButton>
   </div>;
 }

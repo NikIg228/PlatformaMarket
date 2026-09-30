@@ -1,10 +1,42 @@
 # PlatformaMarket — матрица фактической готовности
 
+## Аудит кабинетов — локальный итог 30.09.2026
+
+A01–A18 LOCAL_PASS для единого `apps/web` и API/worker; подробные инварианты,
+команды, попытки и ограничения в [checkpoint](task-state/WORKSPACE-AUDIT-REMEDIATION-2026-09-30.md).
+Typecheck13/13, полный unit12/12, canonical build, CONTRACT/PG/RUNTIME и
+затронутые live/browser сценарии PASS. Финальная browser matrix24/25 + focused
+retry1/1 после исправления связи подписи PDF; synthetic1000 volume1/1 PASS.
+Нижние устаревшие статусы unit/приёмки сохранены как история.
+Legacy buyer standalone bundle budget FAIL остаётся ограничением; production,
+отложенные платёжные правила и внешние интеграции не приняты этим результатом.
+Локальный main646dab5 + WIP, без нового commit/push/CI по отложенной публикации.
+
+## Единый frontend — локальный переход, 28.09.2026
+
+Добавлен один Next `apps/web`: public/auth, `/clinic`, `/supplier`, `/admin`,
+same-origin API proxy; стандартный dev переключён на него, legacy команды
+сохранены. Общие typecheck13/13 и unit12/12 PASS; scoped web builds PASS;
+браузерные базовые public/workspace/mobile сценарии5/5 после исправления
+селектора теста. Дополнительно реальный login/cookie proxy и legacy return
+PASS1/1; финальные результаты в [checkpoint](task-state/UNIFIED-APPLICATION-2026-09-28.md).
+Это локальная миграция runtime, не полная продуктовая/production приёмка.
+Push/CI отложены владельцем. [Runbook](../runbooks/UNIFIED-FRONTEND.md).
+
+## Компактный каталог — локально, 28.09.2026
+
+Карточки/4 колонки/левая панель, серверные фильтры/цены/пагинация, operator
+catalogName и sticky header реализованы. Types12/12, unit11/11, scoped builds6/6,
+Prisma upgrade audit DB и core-contract PASS. Browser5/7 PASS; два сценария
+кабинета ждут подтверждения после исправления JWT test setup, лимит3 прогонов.
+Не опубликовано; текущий [checkpoint](task-state/CATALOG-LAYOUT-2026-09-28.md)
+содержит evidence и следующий шаг. Это не приёмка всего пилота.
+
 ## Текущая реализация внутреннего пилота — 28.09.2026
 
 Полная последовательность разрешена владельцем; состояние и попытки проверок —
 [INTERNAL-PILOT](task-state/INTERNAL-PILOT-2026-09-28.md).
-CORE-04.5 остаётся IN_PROGRESS: добавлены поиск варианта, ручной черновик,
+CORE-04.5 CLOSED на73ac601: добавлены поиск варианта, ручной черновик,
 цена/НДС/остаток, отдельная публикация, восстановление настройки, заявка нового
 товара, пагинация истории импортов и обновление корзины через 60с/при возврате.
 Условия доставки (склад, способ, сроки, стоимость/порог бесплатной доставки)
@@ -15,7 +47,13 @@ CORE-04.5 остаётся IN_PROGRESS: добавлены поиск вариа
 задаёт условия и отдельно публикует. Своя история заявок и причины отказов доступны
 поставщику; очередь оператора имеет пагинацию. Одновременное одобрение создаёт
 одну карточку/решение (PostgreSQL/browser). Typecheck, unit, build, core contract,
-PostgreSQL и затронутые browser scenarios PASS; публикация/CI текущего среза pending.
+PostgreSQL и затронутые browser scenarios PASS. Exact73ac601 опубликован;
+CI36355260705 и Security36355260722 SUCCESS.
+CORE-02/03 начат локально, но НЕ ПРИНЯТ: новый workflow заказа и страницы сторон,
+учёт заявленного перевода, подтверждение поставщиком, получение и отмена.
+Typecheck FAIL3/3; исправление совместимости BigInt сохранено без повторного
+запуска по лимиту Workflow. Новый код не закоммичен/не опубликован; подробности
+и оставшиеся риски — INTERNAL-PILOT checkpoint. Это не готовый платёжный сценарий.
 Остальные блоки пилота этой записью не приняты. Открытые бизнес-вопросы —
 [PILOT-OPEN-QUESTIONS](../product/PILOT-OPEN-QUESTIONS.md).
 

@@ -174,3 +174,112 @@ build/browser follow-up pending, unrelated workspace/API/PG evidence reused.
 Stock label follow-up supplier build PASS, browser PASS2/2 (manual draft and new
 candidate journeys). Only visible copy/docs/locators changed; other type/unit,
 contract/PostgreSQL/full-build inputs unchanged, PASS reused. Ready to publish.
+73ac601096b6423543eef83d94b5753e7b9a4694 copy fix pushed, remote exact.
+CI36355260705/Security36355260722 pending. a393 Security SUCCESS; CI building.
+Read-only next-cycle design findings: settlement already consumes ACTIVE inventory
+reservations at payment capture (payment-settlement.service.ts); do not consume
+again at dispatch. Manual confirmation must perform the same stock effect once,
+without PSP transaction, payout or commission. Inventory quantities are sale units.
+Existing partial confirmation locks the order; cancellation/payment/receipt must
+share that lock. Shipment creation checks planned quantity outside its transaction;
+move checks under order lock. Delivery closure currently checks shipment statuses,
+not accepted quantities; supplier-only delivery mutation also needs buyer receipt
+surface. Existing invoice generation and upload scanning can be reused; pending
+proof needs distinct document kind. No next-phase implementation has started.
+a393 CI36354950995 SUCCESS; Security SUCCESS. Full candidate implementation
+published and verified. Label73 CI36355260705 still running; Security SUCCESS.
+Prepared next-phase brief (not implementation): CORE02/03 order workspace for
+buyer/supplier/operator. Reuse order docs, scanned uploads, current reservations.
+Buyer accepts partial composition before invoice/payment. Supplier issues linked
+invoice; buyer supplies full-amount evidence; authorized supplier confirms actual
+receipt. Pending evidence stays unpaid. Claims/history/idempotency/version and
+order locks; no provider capture/payout/commission. Cancel only safely unpaid/no
+unresolved transfer; paid cancellation becomes support request until rules settled.
+Buyer receipt quantities and partial shipments determine closure; repeat creates
+new cart/current conditions with unavailable rows. Separate read-only route, live
+refresh while active, clear stale/error states. Future gates: schema/migration
+upgrade, type/unit/build/core contract/PG races+tenant, affected FlowB2/browser and
+full order journey. Only approved disposable DB, questions retained in existing file.
+
+73ac601 CI36355260705 and Security36355260722 SUCCESS, exact published SHA.
+CORE04.5 CLOSED. CORE02/03 implementation started: shared versioned/idempotent
+order workflow, invoice/proof distinction, supplier-confirmed internal payment,
+partial composition acceptance and safe unpaid cancellation. No working DB writes.
+Current schema/service changes NOT_YET_VERIFIED, no next-phase gates attempted.
+
+## CORE02/03 — BLOCKED at mandatory typecheck gate (28.09.2026)
+Same owner, canonical main73ac601. Full eight-block authorization remains; this
+is NOT completion and NOT handoff. CORE04.5 is published/CI verified above.
+
+Local uncommitted implementation, NOT accepted:
+- New order-workflow Zod contracts/API/client and Prisma claim/event models;
+  explicit partial-composition acceptance, scanned supplier invoice PDF,
+  buyer PAYMENT_PROOF (distinct from PAYMENT_CONFIRMATION), pending claims,
+  supplier-only dedicated payment.transfer.confirm permission; order row lock,
+  expectedVersion/idempotency request hash, audit/outbox to both parties.
+- Manual full-amount confirmation consumes internal reservations once, no PSP
+  allocation/fee/payout; safe buyer cancellation only with no transfer claim.
+- Buyer cumulative shipment receipt checks quantities and complete order qty;
+  supplier delivered quantity mutations now rejected. Shipment create revalidates
+  planned quantities inside order lock. PSP creation shares lock and rejects
+  manual invoice/raced order versions.
+- Buyer/supplier /orders/[id] route, list links, 5s visible-page/focus refresh,
+  invoice/proof upload, history, receipt, cancellation. Upload document number
+  retry uses server-computed payload hash and immutable existing document.
+- Exact minor-unit formatting avoids Number and retains tiyn; new unit cases.
+- Added workflow unit cases and FlowB2 internal-transfer/race/receipt/cancel case.
+  These tests are authored, NOT executed. Existing fixture cleanup extended for
+  own workflow records and consumed test stock; review before browser execution.
+
+Evidence/attempts (outputs/internal-pilot-20260928):
+- prisma generate PASS; schema build PASS; initial API scoped typecheck PASS
+  before subsequent UI/service/test changes, not sufficient current evidence.
+- prisma validate PASS. migrate diff from HEAD schema generated migration
+  20260928040000_internal_order_workflow. Existing audit DB preflight confirmed
+  dentmarket_audit_20260914@127.0.0.1:5432; migrate deploy PASS on that DB ONLY.
+  No working database migrations or reseed. Applied migration must not be edited.
+- Root typecheck1 FAIL: shared errorMessage accepts one argument; local wrapper
+  fixed signature. Root typecheck2 FAIL: session.organizationId optional; both
+  routes now guard session?.organizationId.
+- Root typecheck3 FAIL: shared money.ts BigInt literals incompatible with Next
+  ES2017 target. Changed 0n/100n to BigInt(0)/BigInt(100), same exact arithmetic.
+  This fix is NOT rerun: mandatory gate exhausted3/3, AGENTS7.1/Workflow stop.
+  Logs order-types-1/2/3.log retain actual errors. No fourth attempt, alternate
+  checker, build/unit/browser suite or publication used to bypass this limit.
+- New block commit/push NOT_RUN because required typecheck has no current PASS.
+  Last verified published version remains73ac601, branchmain, CI/Security SUCCESS.
+
+Remaining CORE02/03 work after gate can resume:
+- Run typecheck only when the exhausted-gate stop is explicitly resolved; do not
+  reset attempt count on new context. Then fix any remaining issues from evidence.
+- Review and finish fulfillment-step lock/CAS and aggregate closure; current
+  supplier transition still contains old unreachable delivery blocks and needs
+  coherent multi-shipment status recomputation. Partial shipment quantities and
+  pickup selection not yet exposed by existing supplier ShipmentPanel.
+- New order page currently has supplier shipment panel; operator workflow page,
+  order confirmation on detail, reordered cart, full document actions, support
+  entry on paid/unresolved cancellation and permission-aware actions still open.
+- Partial composition acceptance applies to new internal invoice path; legacy
+  provider/generated-doc path still permits PARTIALLY_CONFIRMED. Align with
+  product without silently breaking existing fixtures.
+- Review multiple proof claims/history semantics, bounded event history and
+  ordering, permission seed coverage, upload-retry tests/metadata conflicts,
+  order document schema/serialization, stale UI command refresh/retry behavior.
+- FlowB2 new case includes exact PG payment and shipment race expectations;
+  check actual HTTP conflict mapping, fixture cleanup and authenticated routes.
+- All required current gates pending: complete typecheck, unit, build,
+  core contract assertions for workflow, postgres risks/concurrency/rollback,
+  runtime split (new runtime API), browserFlowB2 and full relevant regressions,
+  review/scoped commit/push/exactCI. Upgrade test beyond migrate deploy pending.
+- Other authorized pilot blocks (promotions, communications, operator panel,
+  purchasing lists/analytics, general acceptance/debt) not completed by this slice.
+
+Own new WIP: commerce/order-workflow controller/service/spec, Prisma schema and
+migration/seed, onboarding permission, document upload replay, logistics locks,
+payment intent guard, OpenAPI, schemas order-workflow/core-api/index/navigation,
+api-client, shared UI workflow/money/tests/document label, two order pages/list
+links, FlowB2 test/cleanup and docsMatrix/Foundation/checkpoint. Preserve previous
+registry/handoff/checkpoints, four next-env and flow-a WIP unchanged in staging.
+No owned servers started this slice. Typecheck sessions completed; no background
+continuation/automation created. Next precise step: review BigInt constructor
+compatibility fix and resolve the exhausted typecheck gate before further code.

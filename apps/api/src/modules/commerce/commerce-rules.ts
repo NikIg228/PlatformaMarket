@@ -1,5 +1,6 @@
 import { BadRequestException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import type { CartLineSnapshotResponse } from "@marketplace/schemas";
 
 export function calculateLineTotal(
   unitPriceMinor: string | number,
@@ -77,6 +78,7 @@ export type CartLineSnapshot = {
   currency: string;
   minimumOrderQuantity: string;
   orderIncrement: string;
+  commercialTerms?: CartLineSnapshotResponse["commercialTerms"];
   availableQuantity: string | null;
   fulfillmentStatus: "AVAILABLE" | "INSUFFICIENT_STOCK" | "OUT_OF_STOCK";
 };
@@ -113,6 +115,7 @@ export function cartItemSnapshot(item: {
     currency: item.currency,
     minimumOrderQuantity: optionalString(raw.minimumOrderQuantity) ?? "1",
     orderIncrement: optionalString(raw.orderIncrement) ?? "1",
+    commercialTerms: raw.commercialTerms as CartLineSnapshotResponse["commercialTerms"],
     availableQuantity: optionalString(raw.availableQuantity),
     fulfillmentStatus:
       raw.fulfillmentStatus === "OUT_OF_STOCK" ||
@@ -142,9 +145,15 @@ export function compareCartLineSnapshots(
     changes.push("STOCK");
   if (previous.fulfillmentStatus !== current.fulfillmentStatus)
     changes.push("AVAILABILITY");
+  const terms = ["saleUnitId", "packagingId", "baseUnitsPerSaleUnit",
+    "packagingUnitId", "packagingQuantity", "includesVat", "vatRate"] as const;
   if (
     previous.minimumOrderQuantity !== current.minimumOrderQuantity ||
-    previous.orderIncrement !== current.orderIncrement
+    previous.quantity !== current.quantity ||
+    previous.orderIncrement !== current.orderIncrement ||
+    previous.source !== current.source ||
+    previous.ruleId !== current.ruleId ||
+    terms.some((key) => previous.commercialTerms?.[key] !== current.commercialTerms?.[key])
   )
     changes.push("OFFER_RULES");
   return changes;

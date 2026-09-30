@@ -50,6 +50,8 @@ export type SearchMedia = {
 export type SearchProduct = {
   id: string;
   name: string;
+  catalogName?: string | null;
+  manufacturerSku?: string | null;
   description?: string | null;
   descriptionSources?: unknown;
   brand: string | null;
@@ -68,6 +70,8 @@ export type SearchProduct = {
 };
 
 export type SearchResult = {
+  nextOffset?: number;
+  filterOptions?: import("@marketplace/api-client").CatalogSearchResponse["filterOptions"];
   total: number;
   offset?: number;
   limit?: number;

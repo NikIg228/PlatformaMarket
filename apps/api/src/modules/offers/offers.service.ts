@@ -72,21 +72,23 @@ export class OffersService {
     }
   }
 
-  private async requireOffer(supplierOrganizationId: string, offerId: string) {
-    const offer = await this.prisma.supplierOffer.findFirst({ where: { id: offerId, supplierOrganizationId }, include: { supplier: true, packaging: true, publication: true, productVariant: { include: { product: true } } } });
+  private async requireOffer(supplierOrganizationId: string, offerId: string, db: Prisma.TransactionClient = this.prisma) {
+    const offer = await db.supplierOffer.findFirst({ where: { id: offerId, supplierOrganizationId }, include: { supplier: true, packaging: true, publication: true, productVariant: { include: { product: true } } } });
     if (!offer) throw new NotFoundException("Supplier offer not found");
     return offer;
   }
 
-  async setPrice(supplierOrganizationId: string, offerId: string, input: SetOfferPriceInput, context: SupplierActorContext) {
+  async setPrice(supplierOrganizationId: string, offerId: string, input: Omit<SetOfferPriceInput, "amountMinor"> & { amountMinor: number | string }, context: SupplierActorContext, transaction?: Prisma.TransactionClient) {
     await this.access.assertCanManage(supplierOrganizationId, context);
-    const offer = await this.requireOffer(supplierOrganizationId, offerId);
+    const db = transaction ?? this.prisma;
+    const offer = await this.requireOffer(supplierOrganizationId, offerId, db);
     const now = new Date();
-    const policy = await this.prisma.freshnessPolicy.findFirst({ where: { scopeKey: { in: [supplierOrganizationId, "global"] }, source: input.source, dataType: "PRICE", status: "ACTIVE" }, orderBy: [{ priority: "asc" }, { supplierOrganizationId: { sort: "desc", nulls: "last" } }] });
+    const policy = await db.freshnessPolicy.findFirst({ where: { scopeKey: { in: [supplierOrganizationId, "global"] }, source: input.source, dataType: "PRICE", status: "ACTIVE" }, orderBy: [{ priority: "asc" }, { supplierOrganizationId: { sort: "desc", nulls: "last" } }] });
     const defaultMinutes = input.source === "API" || input.source === "ERP" ? 15 : input.source === "IMPORT" ? 24 * 60 : 48 * 60;
     const freshnessExpiresAt = new Date(now.getTime() + (policy?.staleAfterMinutes ?? defaultMinutes) * 60_000);
     try {
-      return await this.prisma.$transaction(async (tx) => {
+      const write = async (tx: Prisma.TransactionClient) => {
+      await tx.$queryRaw`SELECT id FROM "SupplierOffer" WHERE id = ${offerId}::uuid FOR UPDATE`;
       await tx.offerPrice.updateMany({ where: { offerId, status: "ACTIVE" }, data: { status: "INACTIVE", validTo: now } });
       const price = await tx.offerPrice.create({ data: { offerId, amountMinor: input.amountMinor, currency: input.currency, includesVat: input.includesVat, vatRate: input.vatRate ?? null, source: input.source, validFrom: now, lastConfirmedAt: now, freshnessExpiresAt } });
       await tx.offerPriceHistory.create({ data: { offerId, amountMinor: input.amountMinor, currency: input.currency, includesVat: input.includesVat, vatRate: input.vatRate ?? null, source: input.source, changedById: context.actorId, reason: input.reason ?? null } });
@@ -96,7 +98,8 @@ export class OffersService {
       await tx.auditLog.create({ data: { ...context, action: "offer.price.changed", entityType: "SupplierOffer", entityId: offerId, before: offer, after: { offer: updatedOffer, price } } });
       await tx.outboxEvent.create({ data: { aggregateType: "SupplierOffer", aggregateId: offerId, eventType: "OfferPriceChanged", payload: { supplierOrganizationId, offerId, amountMinor: input.amountMinor, currency: input.currency } } });
         return { offer: updatedOffer, price };
-      });
+      };
+      return transaction ? await write(transaction) : await this.prisma.$transaction(write);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new ConflictException("Offer price changed concurrently; retry with current data");
       throw error;

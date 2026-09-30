@@ -1,3 +1,4 @@
+import type { WorkspacePageQuery, WorkspaceOrderQuery, WorkspaceOrderPage, WorkspaceOffer, WorkspaceOfferPage, WorkspaceCartPage, WorkspaceSummary } from "@marketplace/schemas";
 import { deploymentFeatures, isDeploymentApiPathEnabled, type DeploymentProfile } from "@marketplace/schemas/deployment-policy";
 
 // Next replaces this literal at build time. Missing/unrecognised values stay pilot.
@@ -6,6 +7,8 @@ export const frontendDeploymentProfile: DeploymentProfile =
 export const frontendFeatures = deploymentFeatures(frontendDeploymentProfile);
 
 import type {
+  UpdateProductInput, UpdatedCatalogProduct,
+  OrderWorkflowCommand, OrderWorkflowResponse, OrderWorkflowResult,
   OrganizationProfileResponse, SaveOrganizationProfileInput, OrganizationOnboarding,
   AcceptSupplierTermsInput, ReviewSupplierAdmissionInput, SupplierLegalBundle, SupplierTermsState, SupplierTermsAcceptance, SupplierAdmissionList,
   WorkspaceContext,
@@ -38,6 +41,7 @@ import type {
   OrderDocumentPackResponse,
   PreparedOrderDocumentsResponse,
   CreateCartRequest,
+  RecoverCartRequest,
   DocumentArchiveItem,
   DocumentArchivePageResponse,
   DocumentArchiveQueryInput,
@@ -434,6 +438,41 @@ export class MarketplaceApiClient {
     return this.get<import("@marketplace/schemas").OfferOptionsResponse>(this.withQuery("/catalog/offer-options", input));
   }
 
+  workspaceOrders(role: "buyer" | "supplier", query: WorkspaceOrderQuery = {}) {
+    return this.get<WorkspaceOrderPage>(this.withQuery(`/workspaces/${role}/orders`, query));
+  }
+  workspaceOffers(query: WorkspacePageQuery = {}) {
+    return this.get<WorkspaceOfferPage>(this.withQuery("/workspaces/supplier/offers", query));
+  }
+  workspaceOffer(offerId: string) {
+    return this.get<WorkspaceOffer>(`/workspaces/supplier/offers/${offerId}`);
+  }
+  workspaceCarts(query: WorkspacePageQuery = {}) {
+    return this.get<WorkspaceCartPage>(this.withQuery("/workspaces/buyer/carts", query));
+  }
+  workspaceCart(cartId: string) {
+    return this.get<CartResponse>(`/workspaces/buyer/carts/${cartId}`);
+  }
+  workspaceSummary() {
+    return this.get<WorkspaceSummary>("/workspaces/supplier/summary");
+  }
+
+  recoverCart(cartId: string, input: RecoverCartRequest) {
+    return this.post<CartResponse>(`/carts/${cartId}/recover`, input);
+  }
+
+  updateCatalogProduct(productId: string, input: UpdateProductInput) {
+    return this.patch<UpdatedCatalogProduct>(`/catalog/products/${encodeURIComponent(productId)}`, input);
+  }
+
+  getOrderWorkflow(orderId: string) {
+    return this.get<OrderWorkflowResponse>(`/supplier-orders/${orderId}/workflow`);
+  }
+
+  executeOrderWorkflow(orderId: string, input: OrderWorkflowCommand) {
+    return this.post<OrderWorkflowResult>(`/supplier-orders/${orderId}/workflow`, input);
+  }
+
   listSupplierWarehouses(supplierId: string) {
     return this.get<import("@marketplace/schemas").SupplierWarehouseList>(`/suppliers/${supplierId}/warehouses`);
   }
@@ -444,6 +483,14 @@ export class MarketplaceApiClient {
 
   setSupplierOfferPrice(supplierId: string, offerId: string, input: import("@marketplace/schemas").SetOfferPriceInput) {
     return this.put<unknown>(`/suppliers/${supplierId}/offers/${offerId}/price`, input);
+  }
+
+  getSupplierOfferCommercial(supplierId: string, offerId: string, warehouseId: string) {
+    return this.get<import("@marketplace/schemas").OfferCommercialState>(`/suppliers/${supplierId}/offers/${offerId}/commercial/${warehouseId}`);
+  }
+
+  saveSupplierOfferCommercial(supplierId: string, offerId: string, input: import("@marketplace/schemas").SaveOfferCommercialInput) {
+    return this.put<import("@marketplace/schemas").OfferCommercialState>(`/suppliers/${supplierId}/offers/${offerId}/commercial`, input);
   }
 
   assignSupplierOfferPackaging(supplierId: string, offerId: string, input: import("@marketplace/schemas").AssignOfferPackagingInput) {
@@ -569,3 +616,4 @@ export class MarketplaceApiClient {
     );
   }
 }
+export { unifiedFrontend, workspacePath } from "./frontend-routes";

@@ -1,4 +1,5 @@
 "use client";
+import { workspacePath } from "@marketplace/api-client";
 
 import { BuildingShop24Regular } from "@fluentui/react-icons/svg/building-shop";
 import { Cart24Regular } from "@fluentui/react-icons/svg/cart";
@@ -107,7 +108,7 @@ export default function OperationsWorkspace() {
 
   useEffect(() => {
     if (readAdminSession() || isLocalAdminDevelopment()) setAuthorized(true);
-    else window.location.replace("/login");
+    else window.location.replace(workspacePath("ADMIN", "/login"));
   }, []);
 
   if (!authorized) {
@@ -186,7 +187,7 @@ export default function OperationsWorkspace() {
       navigation={navigation}
       activeNavigation={active}
       onNavigate={(id) => setActive(id as SectionId)}
-      onLogout={() => { clearAdminSession(); window.location.assign("/login"); }}
+      onLogout={() => { clearAdminSession(); window.location.assign(workspacePath("ADMIN", "/login")); }}
       actions={
         <>
           <DmSelect

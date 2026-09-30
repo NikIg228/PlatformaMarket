@@ -202,6 +202,14 @@ const fallbackMediaByIdentity = new Map(
  * The lookup is deliberately exact so a photo can never be attached to a
  * merely similar product.
  */
+export function findFallbackCatalogMedia(product: {
+  name: string;
+  brand: string | null;
+  manufacturer: string | null;
+}) {
+  return fallbackMediaByIdentity.get(normalizedCatalogIdentity(product));
+}
+
 export function attachFallbackCatalogMedia(result: SearchResult): SearchResult {
   return {
     ...result,
@@ -209,9 +217,7 @@ export function attachFallbackCatalogMedia(result: SearchResult): SearchResult {
       if (product.media?.some((media) => media.metadata?.exactProductPhoto)) {
         return product;
       }
-      const media = fallbackMediaByIdentity.get(
-        normalizedCatalogIdentity(product),
-      );
+      const media = findFallbackCatalogMedia(product);
       return media ? { ...product, media: [media] } : product;
     }),
   };

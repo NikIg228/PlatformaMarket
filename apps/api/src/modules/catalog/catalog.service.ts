@@ -389,6 +389,7 @@ export class CatalogService {
           canonicalName: input.canonicalName,
           productType: input.productType,
           regulatoryClass: input.regulatoryClass,
+          catalogName: input.catalogName,
           status: input.status,
           manufacturerSku: input.manufacturerSku,
           gtin: input.gtin,

@@ -20,6 +20,7 @@ import {
   checkoutCartSchema,
   confirmSupplierOrderSchema,
   createCartSchema,
+  recoverCartSchema,
 } from "@marketplace/schemas";
 import { ApiTags } from "@nestjs/swagger";
 import { PermissionsGuard } from "../access-control/permissions.guard";
@@ -93,6 +94,18 @@ export class CommerceController {
     );
   }
 
+  @Post("carts/:cartId/recover")
+  @ApiUuidParam("cartId", "Failed cart identifier; also the permanent recovery key")
+  @ApiCoreBody("RecoverCartRequest")
+  @ApiCoreResponse("CartResponse", 201)
+  @RequirePermissions("order.create")
+  recoverCart(@Param("cartId") cartId: string, @Body() body: unknown,
+    @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+    const parsed = recoverCartSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.commerce.recoverCart(cartId, parsed.data, this.context(actorId, organizationId));
+  }
+
   @Post("carts/:cartId/items")
   @ApiUuidParam("cartId", "Cart identifier")
   @ApiCoreBody("AddCartItemRequest")
@@ -152,7 +165,7 @@ export class CommerceController {
   ) {
     const parsed = repriceCartSchema.safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
-    return this.commerce.reprice(cartId, this.context(actorId, organizationId), parsed.data.expectedVersion);
+    return this.commerce.reprice(cartId, this.context(actorId, organizationId), parsed.data.expectedVersion, parsed.data.acceptedItems);
   }
 
   @Post("carts/:cartId/validate")

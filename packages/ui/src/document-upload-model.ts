@@ -1,3 +1,4 @@
+import { DOCUMENT_UPLOAD_MAX_BYTES } from "@marketplace/schemas";
 /** Document money uses two minor-unit digits. Never coerce user money to Number. */
 export function parseDocumentAmount(value: string): { minor?: string; error?: string } {
   const text = value.trim();
@@ -16,7 +17,7 @@ export function documentUploadFileError(file: Pick<File, "name" | "size"> | null
   if (!file) return "Выберите файл PDF или DOCX.";
   if (!/\.(pdf|docx)$/i.test(file.name)) return "Поддерживаются только PDF и DOCX.";
   if (file.size === 0) return "Файл пуст. Выберите документ с содержимым.";
-  if (file.size > 10_000_000) return "Размер файла не должен превышать 10 МБ (10 000 000 байт).";
+  if (file.size > DOCUMENT_UPLOAD_MAX_BYTES) return "Размер файла не должен превышать 10 МБ (10 000 000 байт).";
   return null;
 }
 

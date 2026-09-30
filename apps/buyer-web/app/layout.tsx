@@ -6,6 +6,7 @@ import "@marketplace/ui/styles.css";
 import "./globals.css";
 import { OrganizationGate } from "./organization-gate";
 import { SupplierCatalogSession } from "./supplier-catalog-session";
+import { DeliveryProvider } from "./features/marketplace-header/delivery-context";
 
 const manrope = Manrope({ subsets: ["cyrillic", "latin"], variable: "--font-sans" });
 
@@ -18,5 +19,5 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   // A request-scoped render is required for Next.js to attach the CSP nonce to
   // its bootstrap and hydration scripts.
   await connection();
-  return <html lang="ru"><body className={manrope.variable}><MarketplaceProvider><SupplierCatalogSession><OrganizationGate>{children}</OrganizationGate></SupplierCatalogSession></MarketplaceProvider></body></html>;
+  return <html lang="ru"><body className={manrope.variable}><MarketplaceProvider><SupplierCatalogSession><OrganizationGate><DeliveryProvider>{children}</DeliveryProvider></OrganizationGate></SupplierCatalogSession></MarketplaceProvider></body></html>;
 }

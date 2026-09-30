@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { shipmentStatusSchema } from "./core-api.js";
+export * from "./offer-commercial";
+export * from "./workspace-reads";
+export * from "./document-upload-limits";
+import { shipmentStatusSchema, cartLineSnapshotSchema } from "./core-api.js";
 
 export * from "./commercial.js";
 export * from "./trust-commerce.js";
@@ -125,6 +128,7 @@ export type UpsertCategoryAttributeRuleInput = z.infer<typeof upsertCategoryAttr
 
 export const updateProductSchema = z.object({
   version: z.number().int().min(1),
+  catalogName: z.string().trim().min(3).max(240).nullable().optional(),
   canonicalName: z.string().trim().min(3).max(240).optional(),
   productType: z.string().trim().min(2).max(80).optional(),
   regulatoryClass: z.string().trim().min(1).max(80).nullable().optional(),
@@ -659,6 +663,8 @@ export const createDataOverrideSchema = z.object({
 export const searchCatalogSchema = z.object({
   buyerOrganizationId: z.uuid(),
   q: z.string().trim().max(240).default(""),
+  brandName: z.string().trim().max(240).optional(),
+  categoryName: z.string().trim().max(240).optional(),
   categoryId: z.uuid().optional(),
   industryId: z.uuid().optional(),
   brandId: z.uuid().optional(),
@@ -672,6 +678,10 @@ export const searchCatalogSchema = z.object({
   inStock: z.enum(["true", "false"]).transform((value) => value === "true").optional(),
   minNormalizedPriceMinor: z.coerce.number().nonnegative().optional(),
   maxNormalizedPriceMinor: z.coerce.number().nonnegative().optional(),
+  priceBasis: z.enum(["NORMALIZED", "SALE_UNIT"]).optional(),
+  minSalePriceMinor: z.string().regex(/^\d{1,20}$/).optional(),
+  maxSalePriceMinor: z.string().regex(/^\d{1,20}$/).optional(),
+  includeFilterOptions: z.enum(["true", "false"]).optional(),
   attributeFilters: z.string().max(8_000).optional(),
   sort: z.enum(["RELEVANCE", "PRICE_ASC", "PRICE_DESC", "NAME_ASC", "UPDATED_DESC"]).default("RELEVANCE"),
   offset: z.coerce.number().int().nonnegative().max(10_000).default(0),
@@ -735,10 +745,22 @@ export const checkoutCartSchema = z.object({
 });
 
 export const cartVersionSchema = z.object({ expectedVersion: z.number().int().positive() }).strict();
+// Recovery is inherently idempotent per source cart, including across sessions.
+export const recoverCartSchema = cartVersionSchema;
+export type RecoverCartRequest = z.infer<typeof recoverCartSchema>;
 export const updateCartItemSchema = cartVersionSchema.extend({
   quantity: z.number().positive().max(1_000_000).multipleOf(0.000001),
 });
-export const repriceCartSchema = z.object({ expectedVersion: z.number().int().positive().optional() }).strict();
+export const repriceCartSchema = z.object({
+  expectedVersion: z.number().int().positive().optional(),
+  acceptedItems: z.array(z.object({ cartItemId: z.uuid(), snapshot: cartLineSnapshotSchema }).strict()).max(500).optional(),
+}).strict().superRefine(({ acceptedItems }, context) => {
+  const ids = new Set<string>();
+  for (const [index, item] of (acceptedItems ?? []).entries()) {
+    if (ids.has(item.cartItemId)) context.addIssue({ code: "custom", message: "Duplicate accepted cart item", path: ["acceptedItems", index, "cartItemId"] });
+    ids.add(item.cartItemId);
+  }
+});
 export type UpdateCartItemRequest = z.infer<typeof updateCartItemSchema>;
 export type CartVersionRequest = z.infer<typeof cartVersionSchema>;
 export type RepriceCartRequest = z.infer<typeof repriceCartSchema>;
@@ -986,7 +1008,7 @@ export type CreateShipmentRequest = z.input<typeof createShipmentSchema>;
 export type TransitionShipmentRequest = z.input<typeof transitionShipmentSchema>;
 export type TransitionFulfillmentStepInput = z.infer<typeof transitionFulfillmentStepSchema>;
 
-export const documentKindSchema = z.enum(["MARKETPLACE_SUPPLIER_AGREEMENT", "MARKETPLACE_BUYER_TERMS", "FRAMEWORK_SUPPLY_AGREEMENT", "CONTRACT_ADDENDUM", "ORDER_SPECIFICATION", "ORDER_CONFIRMATION", "INVOICE", "PAYMENT_CONFIRMATION", "REFUND_CONFIRMATION", "WAYBILL", "ACCEPTANCE_ACT", "ACCOMPANYING_DOCUMENT", "TAX_CLOSING_DOCUMENT", "INSTALLATION_ACT", "TRAINING_ACT", "WARRANTY", "COMMISSIONING_ACT", "REGISTRATION_CERTIFICATE", "LICENSE", "CERTIFICATE", "OTHER"]);
+export const documentKindSchema = z.enum(["MARKETPLACE_SUPPLIER_AGREEMENT", "MARKETPLACE_BUYER_TERMS", "FRAMEWORK_SUPPLY_AGREEMENT", "CONTRACT_ADDENDUM", "ORDER_SPECIFICATION", "ORDER_CONFIRMATION", "INVOICE", "PAYMENT_PROOF", "PAYMENT_CONFIRMATION", "REFUND_CONFIRMATION", "WAYBILL", "ACCEPTANCE_ACT", "ACCOMPANYING_DOCUMENT", "TAX_CLOSING_DOCUMENT", "INSTALLATION_ACT", "TRAINING_ACT", "WARRANTY", "COMMISSIONING_ACT", "REGISTRATION_CERTIFICATE", "LICENSE", "CERTIFICATE", "OTHER"]);
 export const documentFormatSchema = z.enum(["PDF", "DOCX"]);
 export const documentCategorySchema = z.enum(["CONTRACT", "ORDER", "PAYMENT", "SHIPMENT", "CLOSING", "COMPLIANCE", "OTHER"]);
 export const documentAccountingStatusSchema = z.enum(["NOT_APPLICABLE", "PENDING_REVIEW", "REVIEWED", "RECONCILED", "DISPUTED"]);
@@ -1371,3 +1393,4 @@ export * from "./supplier-terms.js";
 export * from "./product-navigation.js";
 export * from "./organization-profile.js";
 export * from "./offer-editor.js";
+export * from "./order-workflow.js";

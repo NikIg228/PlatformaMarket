@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import { SupplierAccessService, type SupplierActorContext } from "../suppliers/supplier-access.service";
 import { DataFreshnessService } from "./data-freshness.service";
+import { lockInventoryBalances, lotIsUsable, usableLotWhere } from "./lot-eligibility";
 
 function availability(quantity: number) {
   if (quantity <= 0) return "OUT_OF_STOCK" as const;
@@ -20,13 +21,15 @@ export class InventoryService {
     return this.prisma.inventoryBalance.findMany({ where: { supplierOrganizationId }, include: { warehouse: true, productVariant: { include: { product: true } }, offer: { include: { publication: true } }, lots: { orderBy: { expirationDate: { sort: "asc", nulls: "last" } } }, reservations: { where: { status: "ACTIVE" } } }, orderBy: { updatedAt: "desc" } });
   }
 
-  async setBalance(supplierOrganizationId: string, input: SetInventoryBalanceInput, context: SupplierActorContext) {
+  async setBalance(supplierOrganizationId: string, input: SetInventoryBalanceInput, context: SupplierActorContext,
+    transaction?: Prisma.TransactionClient, expectedVersion?: number | null) {
     await this.access.assertCanManage(supplierOrganizationId, context);
     await this.access.requireProfile(supplierOrganizationId);
+    const db = transaction ?? this.prisma;
     const [warehouse, variant, offer] = await Promise.all([
-      this.prisma.warehouse.findFirst({ where: { id: input.warehouseId, supplierOrganizationId } }),
-      this.prisma.productVariant.findUnique({ where: { id: input.productVariantId } }),
-      input.offerId ? this.prisma.supplierOffer.findFirst({ where: { id: input.offerId, supplierOrganizationId, productVariantId: input.productVariantId } }) : Promise.resolve(null),
+      db.warehouse.findFirst({ where: { id: input.warehouseId, supplierOrganizationId } }),
+      db.productVariant.findUnique({ where: { id: input.productVariantId } }),
+      input.offerId ? db.supplierOffer.findFirst({ where: { id: input.offerId, supplierOrganizationId, productVariantId: input.productVariantId } }) : Promise.resolve(null),
     ]);
     if (!warehouse) throw new NotFoundException("Warehouse not found");
     if (!variant) throw new NotFoundException("Product variant not found");
@@ -34,8 +37,10 @@ export class InventoryService {
     const now = new Date();
     const freshnessPolicy = await this.freshness.resolvePolicy(supplierOrganizationId, input.source, "INVENTORY");
     const freshnessExpiresAt = new Date(now.getTime() + freshnessPolicy.staleAfterMinutes * 60_000);
-    return this.prisma.$transaction(async (tx) => {
+    const write = async (tx: Prisma.TransactionClient) => {
       const before = await tx.inventoryBalance.findUnique({ where: { supplierOrganizationId_warehouseId_productVariantId: { supplierOrganizationId, warehouseId: input.warehouseId, productVariantId: input.productVariantId } } });
+      if (expectedVersion !== undefined && (before?.version ?? null) !== expectedVersion)
+        throw new ConflictException("Остаток изменился после открытия формы. Сравните текущие данные с введёнными.");
       if (input.initialForOffer && before && before.offerId !== input.offerId) throw new ConflictException("Для этого варианта на складе уже существует остаток. Проверьте его в разделе остатков; создание предложения не должно перезаписывать другой учёт.");
       const effectiveReserved = before ? Number(before.quantityReserved) : input.quantityReserved;
       const safetyStock = input.initialForOffer && before ? Number(before.safetyStock) : input.safetyStock;
@@ -52,7 +57,8 @@ export class InventoryService {
       await tx.auditLog.create({ data: { ...context, action: "inventory.balance.set", entityType: "InventoryBalance", entityId: balance.id, before: before ?? Prisma.JsonNull, after: balance } });
       await tx.outboxEvent.create({ data: { aggregateType: "InventoryBalance", aggregateId: balance.id, eventType: "InventoryBalanceChanged", payload: { supplierOrganizationId, balanceId: balance.id, quantityAvailable } } });
       return balance;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    };
+    return transaction ? write(transaction) : this.prisma.$transaction(write, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 
   async createLot(supplierOrganizationId: string, input: CreateInventoryLotInput, context: SupplierActorContext) {
@@ -127,10 +133,12 @@ export class InventoryService {
           data: { quantityAvailable: { decrement: input.quantity }, quantityReserved: { increment: input.quantity }, version: { increment: 1 } },
         });
         if (balanceUpdate.count === 0) throw new ConflictException("Insufficient available inventory");
+        if (!lot && await tx.inventoryLot.count({ where: { inventoryBalanceId: balanceId } }) > 0)
+          throw new ConflictException("У остатка есть партии, но ни одна пригодная партия не покрывает количество");
         const reservedBalance = await tx.inventoryBalance.findUniqueOrThrow({ where: { id: balanceId } });
         await tx.inventoryBalance.update({ where: { id: balanceId }, data: { availabilityStatus: availability(Number(reservedBalance.quantityAvailable)) } });
         if (lot) {
-          const lotUpdate = await tx.inventoryLot.updateMany({ where: { id: lot.id, status: "ACTIVE", quantityAvailable: { gte: input.quantity } }, data: { quantityAvailable: { decrement: input.quantity }, quantityReserved: { increment: input.quantity }, version: { increment: 1 } } });
+          const lotUpdate = await tx.inventoryLot.updateMany({ where: { id: lot.id, ...usableLotWhere(), quantityAvailable: { gte: input.quantity } }, data: { quantityAvailable: { decrement: input.quantity }, quantityReserved: { increment: input.quantity }, version: { increment: 1 } } });
           if (lotUpdate.count === 0) throw new ConflictException("Selected lot no longer has sufficient inventory");
         }
         const reservation = await tx.inventoryReservation.create({ data: {
@@ -180,9 +188,12 @@ export class InventoryService {
   async releaseReservationInTransaction(
     tx: Prisma.TransactionClient,
     reservationId: string,
-    context: SupplierActorContext,
+    context: { actorId: string | null; organizationId: string },
     quantity?: number,
   ) {
+    const identity = await tx.inventoryReservation.findUnique({ where: { id: reservationId }, select: { inventoryBalanceId: true } });
+    if (!identity) throw new NotFoundException("Inventory reservation not found");
+    await lockInventoryBalances(tx, [identity.inventoryBalanceId]);
     const current = await tx.inventoryReservation.findUnique({
       where: { id: reservationId },
       include: { inventoryLot: true },
@@ -197,7 +208,7 @@ export class InventoryService {
         "Release quantity must be positive and cannot exceed the active reservation",
       );
     const shouldRestoreAvailability =
-      !current.inventoryLot || current.inventoryLot.status === "ACTIVE";
+      !current.inventoryLot || lotIsUsable(current.inventoryLot);
     const balance = await tx.inventoryBalance.findUniqueOrThrow({
       where: { id: current.inventoryBalanceId },
     });
@@ -270,15 +281,18 @@ export class InventoryService {
 
   async recallLot(supplierOrganizationId: string, input: CreateLotRecallInput, context: SupplierActorContext) {
     await this.access.assertCanManage(supplierOrganizationId, context);
-    const lot = await this.prisma.inventoryLot.findFirst({ where: { id: input.inventoryLotId, supplierOrganizationId }, include: { inventoryBalance: true, reservations: { where: { status: "ACTIVE" } } } });
-    if (!lot) throw new NotFoundException("Inventory lot not found");
-    if (["RECALLED", "EXPIRED", "DEPLETED"].includes(lot.status)) throw new ConflictException("Inventory lot cannot be recalled from its current status");
-    const existing = await this.prisma.lotRecall.findFirst({ where: { inventoryLotId: lot.id, status: "ACTIVE" } });
-    if (existing) throw new ConflictException("Inventory lot already has an active recall");
+    const identity = await this.prisma.inventoryLot.findFirst({ where: { id: input.inventoryLotId, supplierOrganizationId }, select: { inventoryBalanceId: true } });
+    if (!identity) throw new NotFoundException("Inventory lot not found");
     try {
       return await this.prisma.$transaction(async (tx) => {
-        const remainingAvailable = Math.max(0, Number(lot.inventoryBalance.quantityAvailable) - Number(lot.quantityAvailable));
-        const balance = await tx.inventoryBalance.update({ where: { id: lot.inventoryBalanceId }, data: { quantityAvailable: remainingAvailable, availabilityStatus: availability(remainingAvailable), version: { increment: 1 } } });
+        await lockInventoryBalances(tx, [identity.inventoryBalanceId]);
+        await tx.$queryRaw`SELECT id FROM "InventoryLot" WHERE id = ${input.inventoryLotId}::uuid FOR UPDATE`;
+        const lot = await tx.inventoryLot.findFirst({ where: { id: input.inventoryLotId, supplierOrganizationId }, include: { inventoryBalance: true, reservations: { where: { status: { in: ["ACTIVE", "CONSUMED"] } } } } });
+        if (!lot) throw new NotFoundException("Inventory lot not found");
+        if (["RECALLED", "EXPIRED"].includes(lot.status)) throw new ConflictException("Inventory lot cannot be recalled from its current status");
+        if (await tx.lotRecall.findFirst({ where: { inventoryLotId: lot.id, status: "ACTIVE" } })) throw new ConflictException("Inventory lot already has an active recall");
+        const remainingAvailable = Prisma.Decimal.max(0, lot.inventoryBalance.quantityAvailable.minus(lot.quantityAvailable));
+        const balance = await tx.inventoryBalance.update({ where: { id: lot.inventoryBalanceId }, data: { quantityAvailable: remainingAvailable, availabilityStatus: availability(Number(remainingAvailable)), version: { increment: 1 } } });
         const recalledLot = await tx.inventoryLot.update({ where: { id: lot.id }, data: { status: "RECALLED", quantityAvailable: 0, version: { increment: 1 } } });
         const affectedReservationIds = lot.reservations.map(({ id }) => id);
         const recall = await tx.lotRecall.create({ data: { inventoryLotId: lot.id, supplierOrganizationId, reason: input.reason, source: input.source, severity: input.severity, comment: input.comment ?? null, affectedReservations: affectedReservationIds, createdById: context.actorId } });

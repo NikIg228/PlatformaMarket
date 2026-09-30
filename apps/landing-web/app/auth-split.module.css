@@ -1,4 +1,166 @@
+.rotatingHeading {
+  display: grid;
+}
+
+.headingPhrase {
+  grid-area: 1 / 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hiddenPhrase {
+  visibility: hidden;
+}
+
+.headingPause {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-top: 20px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.headingPause:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+.foldLine {
+  display: block;
+  perspective: 700px;
+}
+
+.foldLine > span {
+  display: inline-block;
+  transform-origin: 50% 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .foldHeading .foldLine > span {
+    animation: loginFoldReveal 800ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    animation-delay: 80ms;
+  }
+
+  .foldHeading .foldLine:nth-child(2) > span {
+    animation-delay: 180ms;
+  }
+
+  .foldHeading .foldLine:nth-child(3) > span {
+    animation-delay: 280ms;
+  }
+}
+
+@keyframes loginFoldReveal {
+  from {
+    opacity: 0;
+    transform: rotateX(-88deg);
+    filter: brightness(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: rotateX(0);
+    filter: brightness(1);
+  }
+}
+
+.loginLinks {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.loginLinks .signup {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.loginLinks .signup a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 4px;
+  border-radius: var(--dm-radius-button);
+  text-decoration: none;
+  transition: background-color 120ms ease;
+}
+
+.loginLinks .signup a:hover {
+  background-color: var(--dm-brand-surface);
+}
+
+.registerCard :global(.dm-field) :global(.fui-Label) {
+  display: inline-block;
+}
+
 @media (min-width: 901px) {
+  .loginIntro.loginIntro {
+    display: grid;
+    grid-template-rows: 124px 1fr auto;
+    padding-top: 64px;
+  }
+
+  .loginIntro > a {
+    align-self: start;
+  }
+
+  .loginIntro > div {
+    margin: 0;
+    padding-bottom: 40px;
+  }
+
+  .loginPanel.loginPanel {
+    align-items: start;
+    padding-top: calc(64px + 124px);
+  }
+
+  .registerAside.registerAside {
+    display: grid;
+    grid-template-rows: 124px 1fr auto;
+    padding-top: 64px;
+  }
+
+  .registerAside > a {
+    align-self: start;
+  }
+
+  .registerAside > .registerHeading {
+    min-width: 0;
+    margin: 0;
+    padding-bottom: 40px;
+  }
+
+  .registerHeading h1 {
+    position: sticky;
+    top: var(--registration-heading-top, 24px);
+  }
+
+  .registerCard.registerCard {
+    align-self: start;
+  }
+
+  .registerTop {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 124px;
+  }
+
+  .registerTop > a {
+    margin: 0;
+  }
+
   /* Override the shared auth layouts without changing their mobile stacking. */
   .split.split {
     grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -1,14 +1,40 @@
 # Platforma.Market — единая база контекста
 
-## CORE-04 — local PASS, 25.09.2026
+## Актуальный результат — аудит кабинетов, 30.09.2026
 
-Каталог и Excel/CSV проверены; final review завершён, commit/push/CI ожидаются.
+A01–A18 локально проверены для единого приложения; [итог и evidence](governance/task-state/WORKSPACE-AUDIT-REMEDIATION-2026-09-30.md).
+Typecheck/unit/canonical build/contract/PG/runtime и затронутые browser flows PASS.
+Отдельный legacy buyer bundle budget FAIL остаётся ограничением вне canonical
+runtime. Production/release и отложенные платёжные правила не принимаются этой записью.
+Main646dab5 + сохранённый WIP, commit/push отложены; CI NOT_RUN. Primary прежний,
+передача/архивация не начаты. Следующую задачу автоматически не запускать.
+Более ранние «текущая задача» и BLOCKED записи ниже — исторические.
+
+## Текущая задача — компактный каталог, 28.09.2026
+
+Локальная реализация готова, остаток browser acceptance BLOCKED:5/7 PASS,
+fixture JWT mismatch исправлен в scoped config, два сценария кабинета ещё не
+перепроверены по лимиту3 запусков. [Checkpoint](governance/task-state/CATALOG-LAYOUT-2026-09-28.md).
+Types/unit/build/contracts PASS; main26edf45, без commit/push, dev82593 оставлен.
+Платежи и остальные прежние WIP сохранены; продолжать только указанный scope.
+
+## CORE-04 — CLOSED, 25.09.2026
+
+Каталог и Excel/CSV проверены; main278be21 опубликован. CI36127372917 и Security36127373128 SUCCESS.
 [Подробный результат](governance/task-state/CORE-04-2026-09-25.md).
 Search48/50; synthetic matching100/0 wrong auto. Дубли demo-названий и два
 пропуска поиска записаны как ограничения, не скрыты. Оплата CORE-02 и CORE-03
 остаются отложенными. Следующую фазу автоматически не начинать.
 Primary generation3, та же canonical main; прежний WIP сохранён.
-## Текущая задача — ORGANIZATION-READY, возобновлена владельцем 24.09.2026
+## Завершённый этап — ORGANIZATION-READY, 24.09.2026
+
+**CLOSED:** exact `7f06914f87aa465a0e09f08e2bcdb7c34c0327f0` опубликован в main;
+remote SHA подтверждён. [CI36035175719](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36035175719)
+и [Security36035175682](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36035175682)
+SUCCESS на этом коммите. Разрешённый isolated retry прошёл2/2 без ослабления теста;
+полный npm test затем прошёл в CI. Подробный итог и сохранённая история попыток —
+в верхнем [checkpoint](governance/task-state/PRIMARY-SESSION.md).
+Следующий scope не начат. Ниже сохранён ход этапа, а не новая очередь.
 
 Владелец разрешил законченный этап «Организация готова к работе»: подключение
 клиники/поставщика, анкета и отдельный допуск, вход по серверным полномочиям,
@@ -34,13 +60,19 @@ listeners стенда отсутствовали; старые PID ниже н�
 ## Актуальный вход — 22.09.2026, плановая передача после CLOSED
 
 Единственный checkout: `C:\Users\user\Desktop\dentmarket-kz-main`, ветка `main`.
-Источник передачи: primary `01a0c415-1c3c-73e3-a270-5ad591fa9ca7`, generation2.
+Источник передачи: прежний primary `01a0c415-1c3c-73e3-a270-5ad591fa9ca7`, generation2.
+Передача завершена: generation3 / `idle`, единственный primary
+`01a0c957-1f23-7b70-9dc9-226afbb5c0b1` — «Platforma.Market — основной».
+Source прекратил записи и завершил turn; Оркестратор подтвердил его архив
+через set_thread_archived и list_archived_threads. Новый primary прошёл READY
+и ждёт конкретную задачу владельца; новый продуктовый scope не разрешён.
 Текущую фазу и successor проверять в `.codex/project-session.json` и верхнем
 [checkpoint](governance/task-state/PRIMARY-SESSION.md). Владелец через Оркестратор
 разрешил только governance-подготовку новой основной задачи. Продуктовый scope
 следующего этапа **не выбран**. Единственный finalizer — Оркестратор
-`01a02859-08f3-7082-920d-49400f0fbb09`; до его подтверждённой финализации новый
-исполнитель выполняет только read-only comprehension и не пишет продукт.
+`01a02859-08f3-7082-920d-49400f0fbb09` завершил тот же переход без нового поколения.
+Опубликован handoff4cd87a5 с успешным CI; финальная operational-квитанция
+и переключение реестра локальные, не закоммичены. Автоматически backlog не начинать.
 
 Продукт — B2B-закупки стоматологических товаров: клиника сравнивает предложения,
 оформляет заказ; поставщик поддерживает данные и исполняет заказы; оператор
@@ -83,6 +115,14 @@ governance-пакет ограничен этим файлом, PROJECT_HANDOFF 
 не повторять завершённые gates и не сбрасывать лимиты попыток из-за новой задачи.
 Один writer; архивацию и окончательное переключение завершает только finalizer
 по [SESSION_ROLLOVER](governance/SESSION_ROLLOVER.md) после проверенного READY.
+
+Документный preparing snapshot опубликован как
+`4cd87a554793ea1fa7daffc483f473312d95d5e1`, HEAD=origin/main;
+CI35735454544 и Security35735454536 SUCCESS на этом SHA. Финальные operational
+поля awaiting_archive и итоговый checkpoint сохранены локально, не закоммичены:
+Оркестратор явно запретил source новый commit/CI цикл и принимает этот diff
+для завершения передачи. CI опубликованного snapshot не выдаётся за проверку
+неопубликованного состояния реестра. Hooks/trust и serving stand не изменены.
 
 ## Исторический снимок 21.09.2026 — не текущая очередь
 
@@ -273,3 +313,5 @@ reference assets, воспроизводимый review-набор и связа
 Это не blanket acceptance старых макетов и не команда реализовать весь backlog.
 Следующая ограниченная реализация выбирается по Foundation/Workflow; известный
 CI-blocker, live-интеграции и рабочие данные этим docs-scope не изменяются.
+
+28.09: активный scope — [единый frontend](governance/task-state/UNIFIED-APPLICATION-2026-09-28.md), [runbook](runbooks/UNIFIED-FRONTEND.md). Прежняя отметка об отложенной миграции отменена новым поручением владельца. Проверки локальные; push отложен.

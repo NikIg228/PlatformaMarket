@@ -1,10 +1,20 @@
 # PRIMARY-SESSION — Platforma.Market
 
+## Последний результат — 30.09.2026
+
+WORKSPACE-AUDIT-REMEDIATION A01–A18 LOCAL_PASS для canonical apps/web/API/worker.
+[Подробный checkpoint](WORKSPACE-AUDIT-REMEDIATION-2026-09-30.md) содержит все попытки,
+команды и ограничения. Typecheck13/13, unit12/12, canonical build, CONTRACT/PG/
+RUNTIME, live UI и synthetic1000 volume PASS. Legacy buyer standalone bundle
+не принят. Main646dab5 + локальный WIP сохранён; новых commit/push/CI нет,
+публикация отложена владельцем. Primary01a0c957-1f23-7b70-9dc9-226afbb5c0b1,
+generation3/idle, никаких handoff/новых worktrees. Следующую фазу не начинать.
+
 Дата: 2026-09-21. Это карточка исполнения, не продуктовый backlog.
 
 ## CORE-04 — каталог и файловый импорт, 25.09.2026
 
-- READY_FOR_PUBLICATION. Владелец primary01a0c957-1f23-7b70-9dc9-226afbb5c0b1, generation3/idle.
+- CLOSED: main278be21, CI36127372917 и Security36127373128 SUCCESS. Владелец primary01a0c957-1f23-7b70-9dc9-226afbb5c0b1, generation3/idle.
   Основание: «приступаем» после описания CORE-04: manual/Excel/CSV, preview,
   matching/review/publication, повторная загрузка/rollback, качество каталога.
   Canonical main@7f06914f87aa465a0e09f08e2bcdb7c34c0327f0. Прежние dirty:
@@ -85,7 +95,110 @@
   Report catalog500/675variants/500offers,9 duplicate-name groups,0 price/unit
   errors; demo/media-rights limitations записаны. Никакой catalog cleanup.
   Следующий шаг: scoped stage/review, commit/push main, exact-SHA CI.
+- PUBLISHED25.09: main278be21cb36f913ef508756b4246ee28035aaf86,
+  normal push origin HEAD:main; ls-remote exact SHA PASS. В коммите26 own
+  paths; старые registry/handoff receipt,4 next-env,flow-a вне index.
+  CI36127372917 и Security36127373128 IN_PROGRESS. Не считать CLOSED до
+  их фактического PASS. Readback outputs/core04-20260925/ci-readback.json.
+
+## Closing receipt — 25.09.2026
+
+CLOSED: commit278be21cb36f913ef508756b4246ee28035aaf86 опубликован в main,
+remote SHA совпадает. [CI36127372917](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36127372917)
+и [Security36127373128](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36127373128)
+SUCCESS на этом exact SHA; verify35 steps и PostgreSQL12 steps PASS.
+В CI прошли npm test, typecheck, build, core-contract, runtime-split,
+Flow B3 и общий браузерный набор; отдельного CI rerun не потребовалось.
+Эта closing receipt локальная и добавлена после опубликованного коммита.
+Новые продуктовые фазы не начаты. Прежний WIP сохранён.
+
+## ORDER-PROGRESS — оценка банковского перевода и страница этапов, 24.09.2026
+
+- **DEFERRED по решению владельца24.09.2026.** Полностью отложены реализация
+  банковского перевода и связанная страница этапов; вернуться после обсуждения
+  с партнёрами и нового явного поручения. Не заменять отложенный supplier-review
+  прежним operator-review автоматически. Анализ ниже сохранён для возобновления.
+  Это локальная operational-заметка, не реализованная/опубликованная функция.
+  Предыдущий вопрос о границе страницы снят последним решением владельца.
+- Дополнение владельца24.09: CORE-02 отложен целиком. По отдельному запросу
+  обновлён существующий текстовый документ на рабочем столе
+  `Platforma.Market — темы для обсуждения на коле.txt`: цель платёжной фазы,
+  банковский перевод, варианты эквайринга, предлагаемая доставка СДЭК,
+  регистрация накладной/трек отдельно от фактической передачи перевозчику,
+  отслеживание/сбои/несколько отправлений и вопросы партнёрам. Это обсуждение,
+  не разрешение реализации CORE-02, эквайринга, СДЭК или следующего CORE.
+- История начала анализа: ACTIVE, primary01a0c957-1f23-7b70-9dc9-226afbb5c0b1; canonical main
+  @7f06914f87aa465a0e09f08e2bcdb7c34c0327f0, registry generation3/idle.
+  Основание: владелец поручил оценить существующий код оплаты переводом
+  со счёта клиники на счёт поставщика и реализовать отдельную страницу этапов.
+  Окончательные меры защиты/сроки/эскалация отложены до обсуждения с партнёрами.
+  Подтверждение поступления в обсуждаемой модели принадлежит поставщику;
+  прежнее предложение operator-review не является принятым требованием.
+- Входной dirty scope неизменён: registry, PROJECT_HANDOFF, PRIMARY-SESSION,
+  четыре next-env и flow-a.spec.ts. Все прежние изменения сохранить.
+  Новые source/runtime изменения пока отсутствуют; собственных процессов нет.
+- Статический review: CommerceService.supplierOrders/buyerOrders возвращают
+  order/payment statuses, строки, счета и отгрузки в контексте организации.
+  Подтверждение наличия/частичного количества и генерация счёта реализованы.
+  PaymentsService.createIntent требует provider и merchant accounts и создаёт
+  allocations/fee; это не самостоятельный банковский перевод. Supplier API
+  принятия заявки о переводе не найден. CheckoutCartRequest не выбирает способ
+  оплаты. PAYMENT_CONFIRMATION в DocumentsService.assertReferences требует
+  уже подтверждённого платежа; это не квитанция-заявка до подтверждения.
+  LogisticsService.createShipment запрещает отгрузку до PAID. В flow-b2 часть
+  сценариев выставляет PAID через fixture; они не доказывают ручную оплату.
+  Нельзя выдавать наличие счёта, upload или mock за поступление денег.
+- Прочитаны Workflow, UI standard, Product9.5–9.6, Foundation CORE-02/03;
+  практики Frontend Developer, UX Architect и Code Reviewer применены к анализу.
+- История до решения отложить: пользователю отправлен вопрос о границе реализации: только страница
+  существующих этапов сейчас (предложено), либо также новый рабочий цикл
+  квитанция/подтверждение поставщиком. Ответ ещё не получен. До ответа не менять
+  платёжный контракт и не изображать несуществующие шаги работающими.
+- Прежний план, приостановлен владельцем: после уточнения реализовать согласованный scope страницы,
+  записать точные gates и выполнить проверки/review/commit/push/actual CI.
+  Предварительные UI gates: typecheck, npm test, build затронутых web, verify:web,
+  desktop/mobile/keyboard и случаи отсутствия заказа/ошибки/обновления статуса.
+  Если меняются HTTP/домен, дополнить core-contract/PostgreSQL до исполнения.
+  Попыток runtime gates0; во время анализа тесты не запускались. Страница,
+  интеграции уведомлений, миграции и ручное подтверждение пока не реализованы.
+
 ## ORGANIZATION-READY — организация готова к работе, 22.09.2026
+
+- **CLOSED24.09.2026,22:53 Asia/Qyzylorda.** Оба явно разрешённых пункта выполнены:
+  isolated order-profile PASS2/2 без изменения timeout/assertions; финальный
+  review, scoped commit и обычный push выполнены. Product exact SHA
+  `7f06914f87aa465a0e09f08e2bcdb7c34c0327f0`, main=origin/main подтверждено повторно.
+  [CI36035175719](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36035175719)
+  SUCCESS (finished17:51:38UTC),
+  [Security36035175682](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36035175682)
+  SUCCESS (finished17:38:39UTC), оба на точном7f06914. В CI прошли полный npm test,
+  typecheck/build, migrations/seed/contracts/runtime, PostgreSQL/authority/restore,
+  extended API и pilot browser; Security dependencies/CodeQL PASS.
+  Receipt outputs/organization-ready-20260924/publication-result.json.
+  Предыдущий timeout остаётся в истории; actual clean CI также подтвердил unit PASS.
+  Анкета/адреса, server membership/session, отдельный допуск и переходы приняты
+  только в согласованном scope. Это не закрытие всех CORE и не production/legal
+  acceptance. Следующая продуктовая задача не начата. Архивации/передачи нет.
+  Старые3 governance receipt и4 next-env сохранены вне feature commit; этот
+  post-CI operational receipt также локальный. Runtime/source scope опубликован;
+  рабочая БД/рабочие миграции не менялись. Новая реализация больше не записывается.
+
+- Actual CI промежуточный readback24.09 на7f06914: Security dependencies и
+  CodeQL jobs SUCCESS; CI postgres-integration107753343656 SUCCESS (PostgreSQL,
+  platform authority, backup/restore). Verify107753344198 прошёл чистую установку,
+  migration/seed/prisma validate, typecheck, полный npm test, outbound/outbox;
+  выполняется npm run build. Общий CI ещё IN_PROGRESS; этап пока не CLOSED.
+
+- Публикация24.09,22:34 Asia/Qyzylorda: feature commit
+  `7f06914f87aa465a0e09f08e2bcdb7c34c0327f0` опубликован обычным push в origin/main;
+  remote SHA совпал с локальным. Staged review65files/1382added lines, secret
+  patterns0, diff-check PASS; outgoing range один разрешённый commit, fast-forward.
+  Старые governance receipt hunks/registry и4 next-env исключены из коммита.
+  Actual [CI36035175719](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36035175719)
+  и [Security36035175682](https://github.com/NikIg228/dentmarket_04.08/actions/runs/36035175682)
+  IN_PROGRESS на точном7f06914; начало17:33:49UTC, deadline18:18:49UTC (45min).
+  Это operational receipt после push, локальная запись; pending не означает PASS.
+  Не запускать следующий продуктовый scope, не архивировать задачу.
 
 - **24.09, финальный local review: READY_FOR_PUBLICATION; CI ожидается.**
   Разрешённый владельцем isolated order-profile retry PASS2/2,435ms; исходный
@@ -329,6 +442,51 @@
 
 ## HANDOFF-G3 — разрешённая governance-передача, 22.09.2026
 
+- FINALIZED / IDLE, generation3. Primary — 01a0c957-1f23-7b70-9dc9-226afbb5c0b1,
+  successorThreadId=null; source01a0c415-1c3c-73e3-a270-5ad591fa9ca7 остаётся retired.
+  Sole finalizer Оркестратор01a02859-08f3-7082-920d-49400f0fbb09 подтвердил завершение
+  source turn01a0c953-55b4-75e1-9770-1eead5210797 нативным wait_threads (idle/completed),
+  затем set_thread_archived вернул archived=true; list_archived_threads независимо
+  перечислил тот же source ID. Источник не удалён, история доступна в архиве.
+- READY преемника прочитан; CI35735454544 verify/postgres и Security35735454536
+  dependencies/codeql SUCCESS независимо проверены Оркестратором. Опубликован
+  preparing docs4cd87a5; финальная operational-квитанция в трёх governance-файлах
+  LOCAL/NOT_COMMITTED/NOT_PUSHED, CI для неё NOT_RUN; это не продуктовая правка.
+  Четыре прежних next-env hashes сохранены, код/БД/стенд/hooks не изменены.
+- Следующий шаг: новый primary подтверждает чтение финального реестра read-only
+  и ждёт конкретное поручение владельца. Не повторять закрытые gates, не создавать
+  ещё одного преемника и не начинать backlog. Ниже — история уже завершённой передачи.
+
+- AWAITING_ARCHIVE, generation3: primary/successor
+  01a0c957-1f23-7b70-9dc9-226afbb5c0b1; source
+  01a0c415-1c3c-73e3-a270-5ad591fa9ca7 внесён в retired и ПРЕКРАТИЛ ВСЕ ЗАПИСИ.
+  Ключ того же перехода: local-affe45ff7ccd29c6dcc081e3663d7082 + source + исходная
+  generation2. Единственный finalizer Оркестратор01a02859-08f3-7082-920d-49400f0fbb09.
+  Архив source НЕ подтверждён, finalization ещё не выполнена. Successor READY,
+  idle/read-only; следующий продуктовый scope не выбран. Никакой новый writer
+  не начинает продукт до отдельного решения владельца после финализации.
+- Exact delivery: HEAD=origin/main4cd87a554793ea1fa7daffc483f473312d95d5e1;
+  preparing docs snapshot опубликован. CI35735454544 verify/postgres SUCCESS,
+  Security35735454536 dependencies/codeql SUCCESS; readback SHA проверен,
+  Оркестратор подтвердил независимо. Продуктовый CLOSED exact267be7f и его CI
+ 35731694388/Security35731694259 остаются отдельным evidence.
+- Comprehension1 READY проверен по полному final message
+  msg_0148f0bd236bb314016ab285d3e55887d289e69dd3243494e1 / turn
+  01a0c957-2292-78e3-bfc0-13b19643e3c2. Исправления понимания не потребовались.
+  Source выполнит только заключительную read-only сверку и завершит turn.
+- Финальные local operational changes: PROJECT_HANDOFF, PRIMARY-SESSION и
+  .codex/project-session.json, NOT_COMMITTED/NOT_PUSHED; новый CI для них NOT_RUN.
+  Это явно согласованное Оркестратором завершение подготовки без нового commit/CI
+  цикла; finalizer принимает diff и завершает тот же переход. Не называть local
+  awaiting_archive опубликованным либо считать его доказательством архивации.
+- Перед freeze повторно подтверждены PID30968/dev31284/gateway14696 из canonical
+  root, нет активных тестовых/CI-reader процессов;4 next-env hashes совпадают.
+  Serving runtime сохранён. Иных изменяющих операций source не оставляет.
+  Следующий шаг: finalizer проверяет receipt/остановку source, нативно архивирует
+  только source и идемпотентно доводит generation3 до idle; source не возобновлять.
+
+Ход подготовки ниже — исторический, не новое разрешение записи:
+
 - PREPARING, source01a0c415-1c3c-73e3-a270-5ad591fa9ca7 / generation2,
   projectId local-affe45ff7ccd29c6dcc081e3663d7082. Владелец разрешил новую
   основную задачу при необходимости; Оркестратор после независимой сверки выбрал
@@ -380,6 +538,15 @@
   preparing snapshot; после actual docs CI перейдёт в awaiting_archive локально
   и прекратит все записи. Delivery финального operational registry будет явно
   указан finalizer отдельно от опубликованного docs SHA. Это не новый продукт.
+- Docs published4cd87a554793ea1fa7daffc483f473312d95d5e1 на origin/main;
+  fetch/fast-forward/push/remote SHA PASS. Ровно3 paths, next-env excluded.
+  CI35735454544 (verify106771412437/postgres106771412358) и Security35735454536
+  IN_PROGRESS, attempt1; это отдельная docs delivery, не product CI267be7f.
+  Product evidence сохранён отдельно в ignored
+  outputs/product-login-return-20260922/product-ci-267be7f.json; default
+  ci-readback.json теперь относится к docs HEAD. Governance source ещё primary,
+  registry preparing/gen2, successor READY/idle/read-only. Остался actual docs CI,
+  затем local awaiting_archive и финальный receipt без дальнейших source writes.
 
 ## PRODUCT-LOGIN-RETURN — продолжение по решению владельца, 22.09.2026
 
@@ -1609,3 +1776,14 @@
   а не исторический pending в CI-карточке.
 - Stop: разночтение Git/владения, ошибка handoff/comprehension или неизвестный
   результат создания задачи; не создавать дубликаты.
+
+28.09: CATALOG-LAYOUT локально реализован; types/unit/build/contracts PASS, browser5/7. Остаток blocked по лимиту3: fixture JWT config исправлен, clinic header1280/390 не перепроверен. Canonical main26edf45, dev82593, без commit/push. Продолжение: task-state/CATALOG-LAYOUT-2026-09-28.md; оплаты не возобновлять.
+28.09: CATALOG-NAVIGATION локально реализован (focus modality, компактный header,
+поиск/категории внутри каталога, sticky sidebar). Checkpoint:
+CATALOG-NAVIGATION-2026-09-28.md. Types12/12, unit11/11, builds8/8, scoped
+browser5/5 по двум запускам. Не равно полному web/pilot PASS. Нет commit/push:
+зависимость от неопубликованного прежнего catalogue/header/API WIP. Side writer
+завершил свои cosmetics7226f7a/2108028/646dab5 и освободил запись. Main646dab5.
+Dev restart32972 из canonical root, JWT/audit DB. Unified migration отложена.
+
+28.09: по новому поручению начата UNIFIED-APPLICATION; локальные проверки разрешены, push отложен. Текущий checkpoint: UNIFIED-APPLICATION-2026-09-28.md; единый writer primary, main646dab5, весь прежний WIP сохранён.

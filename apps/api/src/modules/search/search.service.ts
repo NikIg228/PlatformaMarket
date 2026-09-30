@@ -19,6 +19,7 @@ import { scopeMatches } from "../promotions/promotion-engine";
 import { environment } from "../../platform/config/environment";
 import { SupplierTermsService } from "../agreements/supplier-terms.service";
 import { visibleOfferSummary } from "./visible-offer-summary";
+import { catalogSaleJoin } from "./catalog-sale-query";
 
 type SearchRow = { productId: string; rank: number };
 type PublicSearchPromotion = {
@@ -111,6 +112,10 @@ export class SearchService {
     await this.assertBuyer(input.buyerOrganizationId, context);
     const admittedSuppliers = await this.terms.activeSupplierIds();
     const pilotProfile = environment().DEPLOYMENT_PROFILE === "pilot";
+    const saleBasis = input.priceBasis === "SALE_UNIT";
+    const saleJoin = saleBasis ? catalogSaleJoin(input, admittedSuppliers) : Prisma.empty;
+    if (input.minSalePriceMinor && input.maxSalePriceMinor && BigInt(input.minSalePriceMinor) > BigInt(input.maxSalePriceMinor))
+      throw new BadRequestException("Minimum price exceeds maximum price");
     const searchIntent = expandDentalSearchQuery(input.q);
     const q = searchIntent.normalizedQuery;
     const expandedQuery = searchIntent.expandedQuery;
@@ -139,7 +144,7 @@ export class SearchService {
       );
     if (input.categoryId)
       where.push(
-        Prisma.sql`CAST(${input.categoryId} AS uuid) = ANY(d."categoryIds")`,
+        Prisma.sql`EXISTS (WITH RECURSIVE tree AS (SELECT id FROM "Category" WHERE id = ${input.categoryId}::uuid UNION ALL SELECT c.id FROM "Category" c JOIN tree t ON c."parentId" = t.id) SELECT 1 FROM tree WHERE tree.id = ANY(d."categoryIds"))`,
       );
     if (input.industryId)
       where.push(
@@ -147,6 +152,8 @@ export class SearchService {
       );
     if (input.brandId)
       where.push(Prisma.sql`p."brandId" = CAST(${input.brandId} AS uuid)`);
+    if (input.brandName) where.push(Prisma.sql`EXISTS (SELECT 1 FROM "Brand" b WHERE b.id = p."brandId" AND b.name = ${input.brandName})`);
+    if (input.categoryName) where.push(Prisma.sql`EXISTS (SELECT 1 FROM "Category" c WHERE c.id = ANY(d."categoryIds") AND c."nameRu" = ${input.categoryName})`);
     if (input.manufacturerId)
       where.push(
         Prisma.sql`p."manufacturerId" = CAST(${input.manufacturerId} AS uuid)`,
@@ -155,7 +162,7 @@ export class SearchService {
       where.push(
         Prisma.sql`CAST(${input.supplierOrganizationId} AS uuid) = ANY(d."supplierIds")`,
       );
-    if (input.cityId)
+    if (input.cityId && !saleBasis)
       where.push(Prisma.sql`CAST(${input.cityId} AS uuid) = ANY(d."cityIds")`);
     if (input.warehouseId)
       where.push(
@@ -165,16 +172,22 @@ export class SearchService {
       where.push(
         Prisma.sql`${input.deliveryMethod} = ANY(d."deliveryMethods")`,
       );
-    if (input.unit)
+    if (input.unit && !saleBasis)
       where.push(
         Prisma.sql`d."normalizedText" ILIKE ${`%${this.normalizeFilter(input.unit)}%`}`,
       );
-    if (input.packaging)
+    if (input.packaging && !saleBasis)
       where.push(
         Prisma.sql`d."normalizedText" ILIKE ${`%${this.normalizeFilter(input.packaging)}%`}`,
       );
-    if (input.inStock !== undefined)
+    if (input.inStock !== undefined && !saleBasis)
       where.push(Prisma.sql`d."isAvailable" = ${input.inStock}`);
+    if (saleBasis) {
+      where.push(Prisma.sql`sale."offerCount" > 0`);
+      if (input.inStock !== undefined) where.push(Prisma.sql`sale.available = ${input.inStock}`);
+      if (input.minSalePriceMinor) where.push(Prisma.sql`sale.price >= ${input.minSalePriceMinor}::numeric`);
+      if (input.maxSalePriceMinor) where.push(Prisma.sql`sale.price <= ${input.maxSalePriceMinor}::numeric`);
+    }
     if (input.minNormalizedPriceMinor !== undefined)
       where.push(
         Prisma.sql`d."maxNormalizedPriceMinor" >= ${input.minNormalizedPriceMinor}`,
@@ -194,18 +207,18 @@ export class SearchService {
     const sort = (
       {
         RELEVANCE: Prisma.sql`rank DESC, d."isAvailable" DESC, d."updatedAt" DESC`,
-        PRICE_ASC: Prisma.sql`d."minNormalizedPriceMinor" ASC NULLS LAST, d."isAvailable" DESC`,
-        PRICE_DESC: Prisma.sql`d."minNormalizedPriceMinor" DESC NULLS LAST, d."isAvailable" DESC`,
+        PRICE_ASC: saleBasis ? Prisma.sql`sale.price ASC NULLS LAST` : Prisma.sql`d."minNormalizedPriceMinor" ASC NULLS LAST, d."isAvailable" DESC`,
+        PRICE_DESC: saleBasis ? Prisma.sql`sale.price DESC NULLS LAST` : Prisma.sql`d."minNormalizedPriceMinor" DESC NULLS LAST, d."isAvailable" DESC`,
         NAME_ASC: Prisma.sql`p."canonicalName" ASC`,
         UPDATED_DESC: Prisma.sql`d."updatedAt" DESC`,
       } as const
     )[input.sort];
     const [rows, countRows] = await Promise.all([
       this.prisma.$queryRaw<SearchRow[]>(
-        Prisma.sql`SELECT d."productId", ${rank} AS rank FROM "ProductSearchDocument" d JOIN "Product" p ON p.id = d."productId" WHERE ${condition} ORDER BY ${sort} LIMIT ${input.limit} OFFSET ${input.offset}`,
+        Prisma.sql`SELECT d."productId", ${rank} AS rank FROM "ProductSearchDocument" d JOIN "Product" p ON p.id = d."productId" ${saleJoin} WHERE ${condition} ORDER BY ${sort}, p.id LIMIT ${input.limit} OFFSET ${input.offset}`,
       ),
       this.prisma.$queryRaw<Array<{ count: bigint }>>(
-        Prisma.sql`SELECT COUNT(*)::bigint AS count FROM "ProductSearchDocument" d JOIN "Product" p ON p.id = d."productId" WHERE ${condition}`,
+        Prisma.sql`SELECT COUNT(*)::bigint AS count FROM "ProductSearchDocument" d JOIN "Product" p ON p.id = d."productId" ${saleJoin} WHERE ${condition}`,
       ),
     ]);
     const products = await this.loadSearchProducts(
@@ -282,6 +295,7 @@ export class SearchService {
       limit: input.limit,
       items,
       facets: this.aggregateFacets(items),
+      ...(input.includeFilterOptions === "true" ? { filterOptions: await this.filterOptions(input, admittedSuppliers, pilotProfile) } : {}),
     };
   }
 
@@ -290,6 +304,51 @@ export class SearchService {
       .toLocaleLowerCase("ru")
       .replace(/[^\p{L}\p{N}]+/gu, " ")
       .trim();
+  }
+
+  private async filterOptions(input: SearchCatalogInput, admitted: string[], pilot: boolean) {
+    // Unpaginated reference options, restricted to the caller's visible catalogue.
+    // Never derive filter choices from the currently loaded page.
+    const context = { ...input, supplierOrganizationId: undefined, packaging: undefined, unit: undefined, warehouseId: undefined, deliveryMethod: undefined };
+    const rows = await this.prisma.$queryRaw<Array<{ id: string; brandId: string | null; manufacturerId: string | null; categoryIds: string[]; facets: Prisma.JsonValue }>>(Prisma.sql`
+      SELECT p.id, p."brandId", p."manufacturerId", d."categoryIds", d.facets
+      FROM "Product" p JOIN "ProductSearchDocument" d ON d."productId" = p.id
+      ${catalogSaleJoin(context, admitted)} WHERE p.status = 'ACTIVE' AND sale."offerCount" > 0
+      ${pilot ? Prisma.sql`AND p."externalMetadata" ->> 'importedAsCanonicalDraft' = 'true'` : Prisma.empty}`);
+    const ids = rows.map(row => row.id);
+    const [categories, brands, manufacturers, offers, definitions] = await Promise.all([
+      this.prisma.category.findMany({ where: { status: "ACTIVE" }, select: { id: true, nameRu: true, parentId: true }, orderBy: { nameRu: "asc" } }),
+      this.prisma.brand.findMany({ where: { id: { in: rows.flatMap(row => row.brandId ? [row.brandId] : []) } }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+      this.prisma.manufacturer.findMany({ where: { id: { in: rows.flatMap(row => row.manufacturerId ? [row.manufacturerId] : []) } }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+      this.prisma.supplierOffer.findMany({ where: { productVariant: { productId: { in: ids }, status: "ACTIVE" }, supplierOrganizationId: { in: admitted }, status: "ACTIVE", publication: { is: { marketplaceVisible: true, status: { in: ["PUBLISHED", "RESTRICTED"] } } } }, select: { supplierOrganizationId: true, supplier: { select: { organization: { select: { displayName: true } } } }, publication: { select: { allowedBuyerIds: true, allowedCityIds: true } }, packaging: { select: { name: true } }, saleUnit: { select: { nameRu: true } } } }),
+      this.prisma.attributeDefinition.findMany({ where: { isFilterable: true }, select: { code: true, nameRu: true, options: { select: { code: true, labelRu: true } } } }),
+    ]);
+    const usedCategories = new Set(rows.flatMap(row => row.categoryIds));
+    for (const id of [...usedCategories]) {
+      let parent = categories.find(c => c.id === id)?.parentId;
+      while (parent && !usedCategories.has(parent)) { usedCategories.add(parent); parent = categories.find(c => c.id === parent)?.parentId; }
+    }
+    const selected = new Set(input.categoryId ? [input.categoryId] : []);
+    for (let size = -1; size !== selected.size;) { size = selected.size; for (const c of categories) if (c.parentId && selected.has(c.parentId)) selected.add(c.id); }
+    const attributeRows = input.categoryId ? rows.filter(row => row.categoryIds.some(id => selected.has(id))) : [];
+    const attributes = definitions.flatMap(def => {
+      const values = new Map<string, string | number | boolean>();
+      for (const row of attributeRows) {
+        const facets = row.facets as { attributes?: Record<string, unknown> } | null;
+        const value = facets?.attributes?.[def.code];
+        if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") values.set(JSON.stringify(value), value);
+      }
+      return values.size ? [{ code: def.code, name: def.nameRu, values: [...values.values()].sort((a, b) => String(a).localeCompare(String(b), "ru")) }] : [];
+    });
+    const visible = offers.filter(offer => {
+      const buyers = offer.publication?.allowedBuyerIds, cities = offer.publication?.allowedCityIds;
+      return (!Array.isArray(buyers) || !buyers.length || buyers.includes(input.buyerOrganizationId)) && (!input.cityId || !Array.isArray(cities) || !cities.length || cities.includes(input.cityId));
+    });
+    return {
+      categories: categories.filter(c => usedCategories.has(c.id)).map(c => ({ id: c.id, name: c.nameRu, parentId: c.parentId })), brands, manufacturers,
+      suppliers: [...new Map(visible.map(o => [o.supplierOrganizationId, { id: o.supplierOrganizationId, name: o.supplier.organization.displayName }])).values()].sort((a, b) => a.name.localeCompare(b.name, "ru")),
+      packaging: [...new Set(visible.map(o => o.packaging?.name ?? o.saleUnit?.nameRu).filter((v): v is string => Boolean(v)))].sort((a, b) => a.localeCompare(b, "ru")), attributes,
+    };
   }
 
   async compare(input: CompareOffersInput, context: SupplierActorContext) {
@@ -521,6 +580,8 @@ export class SearchService {
         id: true,
         slug: true,
         canonicalName: true,
+        catalogName: true,
+        manufacturerSku: true,
         description: true,
         descriptionSources: true,
         productType: true,
@@ -530,7 +591,7 @@ export class SearchService {
         categories: {
           select: {
             categoryId: true,
-            category: { select: { id: true, nameRu: true } },
+            category: { select: { id: true, nameRu: true, parent: { select: { id: true, nameRu: true } } } },
           },
         },
         media: {
@@ -793,6 +854,8 @@ export class SearchService {
             )
           )
             return false;
+          if (input.priceBasis === "SALE_UNIT" && input.packaging && (offer.packaging?.name ?? offer.saleUnit?.nameRu) !== input.packaging) return false;
+          if (input.priceBasis === "SALE_UNIT" && input.unit && (offer.packaging?.unit.symbol ?? offer.saleUnit?.symbol) !== input.unit) return false;
           return true;
         })
         .map((offer) => {
@@ -879,6 +942,8 @@ export class SearchService {
       id: product.id,
       slug: product.slug,
       name: product.canonicalName,
+      catalogName: product.catalogName,
+      manufacturerSku: product.manufacturerSku,
       description: product.description,
       descriptionSources: product.descriptionSources,
       brand: product.brand?.name ?? null,
@@ -897,10 +962,7 @@ export class SearchService {
         height: media.height,
         metadata: media.metadata,
       })),
-      categories: product.categories.map(({ category }) => ({
-        id: category.id,
-        name: category.nameRu,
-      })),
+      categories: [...new Map(product.categories.flatMap(({ category }) => [category.parent, category].filter((c): c is NonNullable<typeof c> => c !== null).map(c => [c.id, { id: c.id, name: c.nameRu }] as const))).values()],
       ...visibleOfferSummary(offers),
       reviewSummary: this.productReviewSummary(
         product.variants.map(({ id }) => id),

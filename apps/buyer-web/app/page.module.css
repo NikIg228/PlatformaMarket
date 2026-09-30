@@ -17,7 +17,7 @@
   font: inherit;
   outline: none;
 }
-.searchInput:focus {
+:global(html[data-input-modality="keyboard"]) .searchInput:focus {
   border-color: var(--colorBrandStroke1);
   box-shadow: 0 0 0 2px
     color-mix(in srgb, var(--colorBrandStroke1) 18%, transparent);
@@ -803,7 +803,10 @@
 
 .publicStore {
   min-height: 100vh;
-  background: #f4f1eb;
+  background:
+    radial-gradient(ellipse at 0% 8%, rgb(79 212 154 / 12%), transparent 36rem),
+    radial-gradient(ellipse at 100% 28%, rgb(45 190 182 / 10%), transparent 40rem),
+    #fafcfb;
   color: #17201e;
 }
 .publicHeader {
@@ -1180,57 +1183,6 @@
   border-top: 1px solid rgba(23, 32, 30, 0.13);
   color: #77817d;
   font-size: 11px;
-}
-
-.categoryRail {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(6, minmax(150px, 1fr));
-  overflow-x: auto;
-  padding: 0 clamp(18px, 4vw, 64px);
-  border-bottom: 1px solid #e1e7e3;
-  background: #fff;
-  scrollbar-width: none;
-}
-.categoryRail::-webkit-scrollbar {
-  display: none;
-}
-.categoryRail button,
-.categoryRail a {
-  min-width: 150px;
-  min-height: 60px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  padding: 0 16px;
-  border: 0;
-  border-right: 1px solid #edf0ee;
-  background: transparent;
-  color: #34413c;
-  cursor: pointer;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 650;
-  white-space: nowrap;
-  text-decoration: none;
-}
-.categoryRail button:first-child,
-.categoryRail a:first-child {
-  border-left: 1px solid #edf0ee;
-}
-.categoryRail button:hover,
-.categoryRail a:hover {
-  background: #f2f6f3;
-  color: #234d41;
-}
-.categoryRail button:active,
-.categoryRail a:active {
-  transform: translateY(1px);
-}
-.categoryRail svg {
-  width: 19px;
-  color: #527568;
 }
 
 .dealsSection {
@@ -1921,9 +1873,6 @@
 }
 
 @media (max-width: 620px) {
-  .categoryRail {
-    padding-inline: 0;
-  }
   .dealsSection {
     margin-top: 20px;
   }

@@ -3,6 +3,7 @@
 import { Cart24Regular } from "@fluentui/react-icons/svg/cart";
 import {
   MarketplaceApiClient,
+  workspacePath,
 } from "@marketplace/api-client";
 import {
   DmButton,
@@ -38,7 +39,7 @@ function deliveryLabel(methods: string[] = []) {
   return "Условия уточняются";
 }
 
-export default function ProductOfferActions({ offers, loginHref }: { offers: Offer[]; loginHref: string }) {
+export default function ProductOfferActions({ offers, loginHref, returnTo = "/catalog" }: { offers: Offer[]; loginHref: string; returnTo?: string }) {
   const { session, ready } = useVerifiedSession();
   const [compareOpen, setCompareOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -120,6 +121,9 @@ export default function ProductOfferActions({ offers, loginHref }: { offers: Off
             role={feedback.tone === "danger" ? "alert" : "status"}
           >
             {feedback.message}
+            {feedback.tone === "success" && process.env.NEXT_PUBLIC_UNIFIED_APP === "true" ? (
+              <p><a href={workspacePath("BUYER") + new URL(returnTo, "http://local.invalid").search}>Перейти в корзину</a></p>
+            ) : null}
           </div>
         ) : null}
         <div className={styles.compareList}>

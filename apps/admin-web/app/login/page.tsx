@@ -1,4 +1,5 @@
 "use client";
+import { workspacePath } from "@marketplace/api-client";
 import { authClientOptionsSchema, localOperatorSessionSchema } from "@marketplace/schemas";
 
 import { ShieldLock20Regular } from "@fluentui/react-icons/svg/shield-lock";
@@ -242,7 +243,7 @@ export default function AdminLogin() {
         "dentmarket_admin_session",
         JSON.stringify({ ...primary, ...elevated }),
       );
-      window.location.replace("/");
+      window.location.replace(workspacePath("ADMIN"));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "MFA не подтверждён");
     } finally {

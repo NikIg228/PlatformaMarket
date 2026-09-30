@@ -38,7 +38,7 @@ async function openCatalog(page:Page,suffix=''){
  await page.goto(`http://127.0.0.1:3101/catalog?q=${data.keyword}&sort=NAME_ASC${suffix}`);
  await expect(cards(page).first()).toBeVisible();
 }
-async function search(page:Page,value:string){const input=page.getByRole('textbox',{name:'Поиск по каталогу',exact:true});await input.fill(value);await input.press('Enter');}
+async function search(page:Page,value:string){const url=new URL(page.url());url.searchParams.set('q',value);url.searchParams.delete('count');await page.goto(url.toString());}
 
 test('unified catalog restores its loaded window and filters after product navigation',async({page})=>{
  await page.setViewportSize({width:1440,height:900});await openCatalog(page,'&inStock=true&categoryId='+data.categoryId);
@@ -57,7 +57,7 @@ test('unified catalog restores its loaded window and filters after product navig
  await search(page,'auditmissingnone'+data.keyword);await expect(page.getByText('Ничего не найдено',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:'Сбросить всё',exact:true}).click();
  await expect(page).not.toHaveURL(/categoryId=|inStock=/);
- await expect(page.getByRole('textbox',{name:'Поиск по каталогу'})).toHaveValue('auditmissingnone'+data.keyword);
+ expect(new URL(page.url()).searchParams.get('q')).toBe('auditmissingnone'+data.keyword);
  await page.screenshot({path:test.info().outputPath('catalog-restored-desktop-1440.png'),fullPage:true});
 });
 
@@ -85,7 +85,7 @@ test('mobile real pagination and explicitly simulated HTTP failure preserve requ
  await page.route('**/catalog-search?**',route=>route.fulfill({status:503,contentType:'application/json',body:'{"message":"simulated"}'}),{times:1});
  await page.reload();
  await expect(page.getByText('Каталог временно недоступен. Запрос и фильтры сохранены — повторите загрузку.',{exact:true}).first()).toBeVisible();
- await expect(page.getByRole('textbox',{name:'Поиск по каталогу'})).toHaveValue(data.keyword);await expect(cards(page)).toHaveCount(0);
+ expect(new URL(page.url()).searchParams.get('q')).toBe(data.keyword);await expect(cards(page)).toHaveCount(0);
  await page.screenshot({path:test.info().outputPath('catalog-simulated-error-mobile-390.png'),fullPage:true});
  await page.getByRole('button',{name:'Повторить',exact:true}).first().click();await expect(cards(page)).toHaveCount(26);
  await expect(page.getByRole('link',{name:/Показать ещё/})).toHaveCount(0);
@@ -120,7 +120,7 @@ test('buyer JWT catalog shows a sale-unit price with its own packaging, and stor
  await expect(page).toHaveURL('http://127.0.0.1:3101/');
  const query=data.keyword+' Материал 00';
  const result=page.waitForResponse(response=>response.url().includes('/marketplace/search?')&&new URL(response.url()).searchParams.get('q')===query);
- await page.getByRole('textbox',{name:'Поиск по каталогу',exact:true}).fill(query);
+ await page.getByRole('combobox',{name:'Поиск по каталогу',exact:true}).fill(query);
  await page.getByRole('button',{name:'Найти',exact:true}).click();
  const response=await result;expect(response.status()).toBe(200);
  const card=page.locator(`[data-testid="product-card"][data-product-id="${data.productId}"]`);

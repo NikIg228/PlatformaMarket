@@ -133,6 +133,8 @@ export const catalogSearchProductSchema = z.object({
   id: z.uuid(),
   slug: z.string(),
   name: z.string(),
+  catalogName: z.string().nullable().optional(),
+  manufacturerSku: z.string().nullable().optional(),
   description: z.string().nullable(),
   descriptionSources: z.unknown().nullable(),
   brand: z.string().nullable(),
@@ -156,6 +158,21 @@ const catalogFacetSchema = z.object({
   count: z.number().int().nonnegative(),
 });
 
+export const updatedCatalogProductSchema = z.object({
+  id: z.uuid(), canonicalName: z.string(), catalogName: z.string().nullable(),
+  manufacturerSku: z.string().nullable(), version: z.number().int().positive(), status: z.string(),
+}).passthrough();
+export type UpdatedCatalogProduct = z.infer<typeof updatedCatalogProductSchema>;
+
+export const catalogFilterOptionsSchema = z.object({
+  categories: z.array(z.object({ id: z.uuid(), name: z.string(), parentId: z.uuid().nullable() })),
+  brands: z.array(z.object({ id: z.uuid(), name: z.string() })),
+  manufacturers: z.array(z.object({ id: z.uuid(), name: z.string() })),
+  suppliers: z.array(z.object({ id: z.uuid(), name: z.string() })),
+  packaging: z.array(z.string()),
+  attributes: z.array(z.object({ code: z.string(), name: z.string(), values: z.array(z.union([z.string(), z.number(), z.boolean()])) })),
+});
+
 export const catalogSearchResponseSchema = z.object({
   query: z.string(),
   interpretedQuery: z.array(z.string()).optional(),
@@ -163,6 +180,7 @@ export const catalogSearchResponseSchema = z.object({
   offset: z.number().int().nonnegative(),
   limit: z.number().int().positive(),
   items: z.array(catalogSearchProductSchema),
+  filterOptions: catalogFilterOptionsSchema.optional(),
   facets: z.object({
     categories: z.array(catalogFacetSchema),
     suppliers: z.array(catalogFacetSchema),
@@ -323,13 +341,26 @@ export const cartResponseSchema = z
     version: z.number().int().positive(),
     createdById: z.uuid().nullable(),
     items: z.array(cartItemResponseSchema),
-    checkout: z.object({ id: z.uuid() }).passthrough().nullable(),
+    checkout: z.object({ id: z.uuid(), status: z.string().optional() }).passthrough().nullable(),
+    recoveredCartId: z.uuid().nullable().optional(),
     createdAt: dateTimeSchema,
     updatedAt: dateTimeSchema,
   })
   .passthrough();
 
 export const cartListResponseSchema = z.array(cartResponseSchema);
+
+export const cartCommercialTermsSchema = z.object({
+  saleUnitId: z.uuid().nullable(),
+  saleUnitName: z.string().nullable(),
+  packagingId: z.uuid().nullable(),
+  packagingName: z.string().nullable(),
+  baseUnitsPerSaleUnit: decimalStringSchema,
+  packagingUnitId: z.uuid().nullable(),
+  packagingQuantity: decimalStringSchema.nullable(),
+  includesVat: z.boolean().nullable(),
+  vatRate: decimalStringSchema.nullable(),
+});
 
 export const cartLineSnapshotSchema = z.object({
   resolvedAt: dateTimeSchema,
@@ -342,6 +373,8 @@ export const cartLineSnapshotSchema = z.object({
   currency: currencySchema,
   minimumOrderQuantity: decimalStringSchema,
   orderIncrement: decimalStringSchema,
+  // Absent on historical carts, which must accept current terms once.
+  commercialTerms: cartCommercialTermsSchema.nullable().optional(),
   availableQuantity: decimalStringSchema.nullable(),
   fulfillmentStatus: z.enum([
     "AVAILABLE",
@@ -524,6 +557,7 @@ export const documentArchiveKindSchema = z.enum([
   "ORDER_SPECIFICATION",
   "ORDER_CONFIRMATION",
   "INVOICE",
+  "PAYMENT_PROOF",
   "PAYMENT_CONFIRMATION",
   "REFUND_CONFIRMATION",
   "WAYBILL",

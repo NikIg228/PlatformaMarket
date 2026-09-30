@@ -13,7 +13,8 @@ import {
   formatDate,
   formatStatus,
 } from "@marketplace/ui";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { shipmentPlanning } from "./shipment-planning";
 import styles from "./shipment-panel.module.css";
 
 export type ShipmentRecord = {
@@ -84,11 +85,9 @@ export function ShipmentPanel({
   onChanged: () => Promise<void>;
 }) {
   const shipments = order.shipments ?? [];
-  const warehouses = useMemo(
-    () => [...new Map(order.items.map((item) => [item.warehouseId, item.warehouse])).entries()],
-    [order.items],
-  );
-  const [warehouseId, setWarehouseId] = useState(warehouses[0]?.[0] ?? "");
+  const [selectedWarehouseId, setWarehouseId] = useState("");
+  const { warehouses, warehouseId, remainingItems } = shipmentPlanning(order, selectedWarehouseId);
+  useEffect(() => { setWarehouseId(warehouseId); }, [warehouseId]);
   const [recipientName, setRecipientName] = useState(order.buyer.displayName);
   const [recipientAddress, setRecipientAddress] = useState("");
   const [carrierName, setCarrierName] = useState("");
@@ -96,19 +95,6 @@ export function ShipmentPanel({
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
-  const remainingItems = order.items
-    .filter((item) => item.warehouseId === warehouseId)
-    .map((item) => {
-      const accepted = Number(item.acceptedQuantity ?? 0);
-      const planned = shipments
-        .filter((shipment) => !["CANCELLED", "RETURNED"].includes(shipment.status))
-        .flatMap((shipment) => shipment.items)
-        .filter((shipmentItem) => shipmentItem.supplierOrderItemId === item.id)
-        .reduce((sum, shipmentItem) => sum + Number(shipmentItem.quantity), 0);
-      return { item, quantity: accepted - planned };
-    })
-    .filter(({ quantity }) => quantity > 0);
 
   const createShipment = async () => {
     if (!recipientName.trim() || !warehouseId || remainingItems.length === 0) return;
@@ -129,6 +115,7 @@ export function ShipmentPanel({
       setSuccess("Отгрузка создана. Запланируйте её и обновляйте статус по факту.");
     } catch (cause) {
       setError(errorMessage(cause));
+      await onChanged();
     } finally {
       setBusy(null);
     }
@@ -198,15 +185,15 @@ export function ShipmentPanel({
       ) : <p className={styles.empty}>Отгрузка ещё не создана.</p>}
       {order.paymentStatus !== "PAID" ? (
         <p className={styles.notice}>Создание отгрузки станет доступно после подтверждения оплаты.</p>
-      ) : remainingItems.length ? (
+      ) : warehouses.length ? (
         <div className={styles.form}>
-          <Field label="Склад"><Select value={warehouseId} onChange={(_, data) => setWarehouseId(data.value)}>{warehouses.map(([id, warehouse]) => <option value={id} key={id}>{warehouse?.name ?? `Склад ${id.slice(0, 8)}`}</option>)}</Select></Field>
+          <Field label="Склад"><Select value={warehouseId} disabled={busy !== null} onChange={(_, data) => setWarehouseId(data.value)}>{warehouses.map(([id, warehouse]) => <option value={id} key={id}>{warehouse?.name ?? `Склад ${id.slice(0, 8)}`}</option>)}</Select></Field>
           <Field label="Получатель"><Input value={recipientName} onChange={(_, data) => setRecipientName(data.value)} /></Field>
           <Field label="Адрес доставки"><Input value={recipientAddress} onChange={(_, data) => setRecipientAddress(data.value)} /></Field>
           <Field label="Перевозчик (необязательно)"><Input value={carrierName} onChange={(_, data) => setCarrierName(data.value)} /></Field>
           <Button appearance="primary" disabled={busy !== null || !recipientName.trim()} onClick={() => void createShipment()}>{busy === "create" ? <Spinner size="tiny" label="Создаём" /> : "Создать отгрузку"}</Button>
         </div>
-      ) : null}
+      ) : <p className={styles.notice}>Все подтверждённые позиции распределены по отгрузкам.</p>}
     </section>
   );
 }

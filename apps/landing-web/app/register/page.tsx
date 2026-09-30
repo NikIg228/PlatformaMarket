@@ -3,6 +3,7 @@ import { authRegistrationAcceptedSchema } from "@marketplace/schemas";
 import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
 import { useProductReturn } from "../use-product-return";
 import styles from "../auth-split.module.css";
+import { RegistrationHeading } from "./registration-heading";
 
 import {
   DmButton,
@@ -198,31 +199,21 @@ export default function RegisterPage() {
 
   return (
     <main className={`registrationPage ${styles.split}`}>
-      <aside className="registrationAside">
+      <aside className={`registrationAside ${styles.registerAside}`}>
         <AuthBrand />
-        <div>
-          <p className="eyebrow">Регистрация</p>
-          <h1>
-            {capability === "SUPPLIER"
-              ? "Начните продавать клиникам Казахстана"
-              : "Управляйте закупками клиники в одном месте"}
-          </h1>
-          <p>
-            Регистрация занимает несколько минут. Мы проверим БИН и рабочий
-            email, чтобы не создавать дубликаты.
-          </p>
-        </div>
+        <RegistrationHeading isSupplier={capability === "SUPPLIER"} />
         <ol aria-label="Этапы регистрации">
           <li data-active="true">Реквизиты организации</li>
           <li>Подтверждение email</li>
           <li>Настройка кабинета</li>
         </ol>
       </aside>
-      <section className="registrationCard" aria-labelledby="register-title">
-        <a className="backLink" href="/">
-          ← На главную
-        </a>
-        <p className="eyebrow">Шаг 1 из 2</p>
+      <section className={`registrationCard ${styles.registerCard}`} aria-labelledby="register-title">
+        <div className={styles.registerTop}>
+          <a className="backLink" href="/">
+            ← На главную
+          </a>
+        </div>
         <h2 id="register-title">Создать организацию</h2>
         <p className="formLead">
           Выберите роль и укажите сведения точно как в регистрационных
@@ -396,13 +387,6 @@ export default function RegisterPage() {
           >
             {busy ? "Создаём аккаунт…" : "Продолжить"}
           </DmButton>
-          <p className="registrationMeta wide">
-            После отправки мы попросим подтвердить рабочий email. Введённые
-            данные сохранятся, если сервер попросит исправить форму.
-          </p>
-          <a className="authBackLink wide" href="/register/resume">
-            Уже начинали регистрацию? Продолжить незавершённую заявку
-          </a>
         </form>
       </section>
     </main>

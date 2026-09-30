@@ -65,6 +65,9 @@ function assertOpenApiContract(openApi) {
   }
 
   const coreOperations = [
+    ["/api/carts/{cartId}/recover", "post", "201", "CartResponse", "RecoverCartRequest"],
+    ["/api/suppliers/{supplierOrganizationId}/offers/{offerId}/commercial/{warehouseId}", "get", "200", "OfferCommercialState"],
+    ["/api/suppliers/{supplierOrganizationId}/offers/{offerId}/commercial", "put", "200", "OfferCommercialState", "SaveOfferCommercialRequest"],
     ["/api/auth/current", "get", "200", "CurrentSessionResponse"],
     ["/api/organizations/current/profile", "get", "200", "OrganizationProfileResponse"],
     ["/api/organizations/current/profile", "post", "201", "OrganizationProfileResponse", "SaveOrganizationProfileRequest"],
@@ -667,7 +670,8 @@ try {
         "Checkout returned the wrong stale-cart error code",
       );
 
-      await post(`/carts/${cart.id}/reprice`);
+      await post(`/carts/${cart.id}/reprice`, { expectedVersion: changedValidation.cartVersion,
+        acceptedItems: changedValidation.items.filter(item => item.current).map(item => ({ cartItemId: item.cartItemId, snapshot: item.current })) });
       const acceptedValidation = await post(`/carts/${cart.id}/validate`);
       assertSchema(
         coreSchemas.cartValidationResponseSchema,
@@ -693,7 +697,9 @@ try {
         }),
       ]);
     }
-    const repricedCart = await post(`/carts/${cart.id}/reprice`);
+    const restoredValidation = await post(`/carts/${cart.id}/validate`);
+    const repricedCart = await post(`/carts/${cart.id}/reprice`, { expectedVersion: restoredValidation.cartVersion,
+      acceptedItems: restoredValidation.items.filter(item => item.current).map(item => ({ cartItemId: item.cartItemId, snapshot: item.current })) });
     assertSchema(
       coreSchemas.cartResponseSchema,
       repricedCart,

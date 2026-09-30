@@ -8,6 +8,7 @@ import {
   DmField,
   DmInput,
   DmTextarea,
+  usePermissions,
 } from "@marketplace/ui";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./order-confirmation-panel.module.css";
@@ -27,10 +28,13 @@ function quantityLabel(value: string | number) {
 export function OrderConfirmationPanel({
   order,
   onConfirm,
+  available = true,
 }: {
   order: ConfirmableOrder;
   onConfirm: (decisions: OrderConfirmationDecision[]) => Promise<string | null>;
+  available?: boolean;
 }) {
+  const has = usePermissions();
   const [open, setOpen] = useState(false);
   const triggerContainerRef = useRef<HTMLSpanElement>(null);
   const submitLock = useRef(false);
@@ -60,7 +64,7 @@ export function OrderConfirmationPanel({
   };
 
   const submit = async () => {
-    if (submitLock.current || stale) return;
+    if (submitLock.current || stale || !has("order.confirm")) return;
     const decisions: OrderConfirmationDecision[] = [];
     for (const item of draftOrder.items) {
       const acceptedQuantity = confirmationQuantity(draft[item.id]?.acceptedQuantity, item.quantity);
@@ -95,6 +99,7 @@ export function OrderConfirmationPanel({
         return;
       }
       setOpen(false);
+      returnFocus();
       // Successful decisions remove this panel; the surviving order list owns focus.
     } catch {
       setSubmitError("Не удалось сохранить решение. Черновик сохранён — проверьте соединение и повторите попытку.");
@@ -105,15 +110,16 @@ export function OrderConfirmationPanel({
 
   return (
     <>
-      <span ref={triggerContainerRef}>
+      {available ? <span ref={triggerContainerRef}>
         <DmButton
           appearance="primary"
+          disabled={!has("order.confirm")}
           icon={<CheckmarkCircle24Regular />}
           onClick={() => changeOpen(true)}
         >
           Проверить и подтвердить
         </DmButton>
-      </span>
+      </span> : null}
       <DmDialog
         open={open}
         onOpenChange={changeOpen}
@@ -124,7 +130,7 @@ export function OrderConfirmationPanel({
             <DmButton appearance="secondary" disabled={submitting} onClick={() => changeOpen(false)}>
               Вернуться к заказам
             </DmButton>
-            <DmButton appearance="primary" onClick={() => void submit()} disabled={submitting || stale || preview === null}>
+            <DmButton appearance="primary" onClick={() => void submit()} disabled={submitting || stale || preview === null || !has("order.confirm")}>
               {submitting ? "Сохраняем решение…" : "Подтвердить заказ"}
             </DmButton>
           </>

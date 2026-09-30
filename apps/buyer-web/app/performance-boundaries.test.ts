@@ -42,7 +42,7 @@ describe("Buyer performance boundaries", () => {
   });
 
   it("keeps the initial catalog page at the 24-card budget", () => {
-    const source = readFileSync(join(buyerApp, "page.tsx"), "utf8");
+    const source = readFileSync(join(buyerApp, "buyer-workspace.tsx"), "utf8");
 
     expect(source).toContain("const CATALOG_PAGE_SIZE = 24;");
     expect(source).not.toContain('limit: "60"');

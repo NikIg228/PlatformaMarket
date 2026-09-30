@@ -623,6 +623,7 @@ try {
         await request("write.cart.reprice", `/carts/${cart.id}/reprice`, {
           method: "POST",
           identity,
+          body: { expectedVersion: validation.cartVersion, acceptedItems: validation.items.filter(item => item.current).map(item => ({ cartItemId: item.cartItemId, snapshot: item.current })) },
           expected: [201],
         });
         const idempotencyKey = `b46-${runId}-${index}`;

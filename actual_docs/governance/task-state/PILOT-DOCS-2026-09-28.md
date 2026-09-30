@@ -39,6 +39,12 @@ Review собственного diff, согласованность и лока
 git diff --check PASS. Runtime tests локально NOT_RUN (docs-only).
 gh CLI отсутствует; для CI используется существующий read-only GitHub API reader
 с отдельным outputs/pilot-docs-20260928 receipt, старое evidence не перезаписывается.
-Статус: READY_FOR_PUBLICATION; commit/push/CI пока PENDING.
-Следующий шаг: публикация по Workflow §5.1 и exact-SHA readback CI.
+Статус публикации: main7f494027b0318705f2e84b5d6d65d61db6e6535d отправлен
+обычным push; remote SHA совпал. Только5 Markdown paths, прежний WIP исключён.
+Статус: CLOSED. Security36345764684 и CI36345764593 SUCCESS на точном7f49402;
+verify35 successful steps и PostgreSQL12 successful steps, browser PASS.
+Повторных запусков нет, attempt1. Receipt: outputs/pilot-docs-20260928/ci-readback.json.
+Новые якоря канонических ссылок PASS4/4; старое evidence CORE-04 сохранено.
+Этот post-push operational receipt локальный, не дополнительное изменение требований.
+Следующий шаг: сообщить ссылки на источники правды; ожидать выбора code scope.
 После доставки остановиться; следующий code scope выбрать с владельцем.

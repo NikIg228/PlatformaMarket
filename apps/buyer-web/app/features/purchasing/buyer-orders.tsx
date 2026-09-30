@@ -1,4 +1,5 @@
 "use client";
+import { workspacePath } from "@marketplace/api-client";
 
 import { Box24Regular } from "@fluentui/react-icons/svg/box";
 import { CheckmarkCircle24Regular } from "@fluentui/react-icons/svg/checkmark-circle";
@@ -132,7 +133,7 @@ export function BuyerOrders({
                     <Fragment key={order.id}>
                       <tr className={styles.orderRow}>
                         <td data-label="Заказ">
-                          <strong>{order.orderNumber}</strong>
+                          <a href={workspacePath("BUYER", `/orders/${order.id}`)}><strong>{order.orderNumber}</strong></a>
                           <small className="mp-mono">{order.id.slice(0, 8)}</small>
                         </td>
                         <td data-label="Поставщик">{order.supplier.displayName}</td>

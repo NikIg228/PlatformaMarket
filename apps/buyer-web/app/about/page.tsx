@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { PublicHeader } from "../public-header";
 import { registrationUrl, supplierAppUrl } from "../public-links";
 import styles from "./page.module.css";
 
@@ -19,7 +18,6 @@ const trustFacts = [
 export default function AboutPage() {
   return (
     <main className={styles.page}>
-      <PublicHeader active="about" />
 
       <section className={styles.hero}>
         <div className={styles.heroCopy}>

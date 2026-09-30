@@ -8,6 +8,7 @@ COPY apps/admin-web/package.json apps/admin-web/package.json
 COPY apps/buyer-web/package.json apps/buyer-web/package.json
 COPY apps/supplier-web/package.json apps/supplier-web/package.json
 COPY apps/landing-web/package.json apps/landing-web/package.json
+COPY apps/web/package.json apps/web/package.json
 COPY packages/api-client/package.json packages/api-client/package.json
 COPY packages/eds-client/package.json packages/eds-client/package.json
 COPY packages/one-c-agent/package.json packages/one-c-agent/package.json
@@ -30,24 +31,36 @@ ENV DEPLOYMENT_PROFILE=$DEPLOYMENT_PROFILE \
     NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID \
     NEXT_PUBLIC_APPLE_CLIENT_ID=$NEXT_PUBLIC_APPLE_CLIENT_ID \
     NEXT_PUBLIC_APPLE_REDIRECT_URI=$NEXT_PUBLIC_APPLE_REDIRECT_URI
-RUN npm run db:generate && npm run build
+RUN npm run db:generate
 
-FROM workspace AS api
+FROM workspace AS unified-build
+ARG INTERNAL_API_URL=http://api:4000/api
+ENV INTERNAL_API_URL=$INTERNAL_API_URL
+RUN npm run build
+
+FROM unified-build AS web
+EXPOSE 3000
+CMD ["npm", "run", "start", "--workspace=@marketplace/web"]
+
+FROM workspace AS legacy-build
+RUN npm run build:legacy
+
+FROM unified-build AS api
 EXPOSE 4000
 CMD ["npm", "run", "start", "--workspace=@marketplace/api"]
 
-FROM workspace AS admin-web
+FROM legacy-build AS admin-web
 EXPOSE 3000
 CMD ["npm", "run", "start", "--workspace=@marketplace/admin-web"]
 
-FROM workspace AS buyer-web
+FROM legacy-build AS buyer-web
 EXPOSE 3001
 CMD ["npm", "run", "start", "--workspace=@marketplace/buyer-web"]
 
-FROM workspace AS supplier-web
+FROM legacy-build AS supplier-web
 EXPOSE 3002
 CMD ["npm", "run", "start", "--workspace=@marketplace/supplier-web"]
 
-FROM workspace AS landing-web
+FROM legacy-build AS landing-web
 EXPOSE 3003
 CMD ["npm", "run", "start", "--workspace=@marketplace/landing-web"]

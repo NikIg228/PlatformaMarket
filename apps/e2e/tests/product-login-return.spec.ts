@@ -67,8 +67,11 @@ function observePurchases(page: Page, writes: string[]) {
 }
 
 async function assertReturned(page: Page, product: URL, organizationId: string) {
-  await page.waitForURL(url => url.origin === product.origin && url.pathname === product.pathname && url.hash === "");
-  expect(new URL(page.url()).search).toBe(product.search);
+  const profile = await db.organizationProfile.findUniqueOrThrow({ where: { organizationId }, include: { deliveryAddress: true } });
+  await page.waitForURL(url => url.origin === product.origin && url.pathname === product.pathname && url.hash === "" && new URL(url.searchParams.get("returnTo")!, buyerUrl).searchParams.get("deliveryCityId") === profile.deliveryAddress.cityId);
+  const returnPath = new URL(new URL(page.url()).searchParams.get("returnTo")!, buyerUrl);
+  returnPath.searchParams.delete("deliveryCityId");
+  expect([...returnPath.searchParams.entries()].sort()).toEqual([...new URL(product.searchParams.get("returnTo")!, buyerUrl).searchParams.entries()].sort());
   await page.getByRole("button", { name: "Сравнить и заказать", exact: true }).click();
   await expect(page.getByRole("dialog").getByRole("button", { name: "В корзину", exact: true }).and(page.locator("button:enabled")).first()).toBeEnabled();
   const session = await page.evaluate(() => {
@@ -77,7 +80,13 @@ async function assertReturned(page: Page, product: URL, organizationId: string) 
   });
   expect(session).toEqual({ capability: "BUYER", organizationId });
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("link", { name: "← Вернуться в каталог", exact: true })).toHaveAttribute("href", product.searchParams.get("returnTo")!);
+  const expectedReturn = new URL(new URL(page.url()).searchParams.get("returnTo")!, buyerUrl);
+  const backLink = page.getByRole("link", { name: "← Вернуться в каталог", exact: true });
+  await expect(backLink).toBeVisible();
+  const actualReturn = new URL((await backLink.getAttribute("href"))!, buyerUrl);
+  expect(actualReturn.origin).toBe(expectedReturn.origin);
+  expect(actualReturn.pathname).toBe(expectedReturn.pathname);
+  expect([...actualReturn.searchParams].sort()).toEqual([...expectedReturn.searchParams].sort());
 }
 
 for (const width of [1280, 390]) {
@@ -94,7 +103,8 @@ for (const width of [1280, 390]) {
     await page.waitForURL(url => url.pathname.startsWith("/products/"));
     await expect(page.getByRole("button", { name: "Сравнить и заказать", exact: true })).toBeVisible();
     const product = new URL(page.url());
-    await page.getByRole("link", { name: "Войти", exact: true }).click();
+    await page.getByRole("button", { name: "Сравнить и заказать", exact: true }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "В корзину", exact: true }).and(page.locator("button:enabled")).first().click();
     await page.waitForURL(url => url.origin === landingUrl && url.pathname === "/login");
     expect(new URL(page.url()).searchParams.get("returnTo")).toBe(product.pathname + product.search);
     await page.getByRole("link", { name: "Зарегистрироваться", exact: true }).click();
@@ -133,8 +143,9 @@ for (const width of [1280, 390]) {
     expect(savedProfile.legalAddress.line1).toBe(savedProfile.deliveryAddress.line1);
     expect(savedProfile.legalAddress.organizationId).toBe(registration.organizationId);
     await assertReturned(verified, product, registration.organizationId!);
+    const catalogReturn = await verified.getByRole("link", { name: "← Вернуться в каталог", exact: true }).getAttribute("href");
     await verified.getByRole("link", { name: "← Вернуться в каталог", exact: true }).click();
-    await expect(verified).toHaveURL(buyerUrl + product.searchParams.get("returnTo"));
+    await expect(verified).toHaveURL(buyerUrl + catalogReturn);
     await verified.close();
 
     const loginContext = await browser.newContext({ viewport: { width, height: 900 } });

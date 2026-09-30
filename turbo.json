@@ -1,12 +1,91 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": ["DEPLOYMENT_PROFILE", "NEXT_PUBLIC_DEPLOYMENT_PROFILE"],
+  "globalEnv": [
+    "DEPLOYMENT_PROFILE",
+    "NEXT_PUBLIC_DEPLOYMENT_PROFILE"
+  ],
   "tasks": {
-    "build": { "dependsOn": ["^build"], "outputs": ["dist/**", ".next/**", "!.next/cache/**"] },
-    "dev": { "cache": false, "persistent": true },
-    "lint": { "dependsOn": ["^lint"] },
-    "transit": { "dependsOn": ["^transit"] },
-    "test": { "dependsOn": ["^transit", "@marketplace/schemas#build"], "outputs": ["coverage/**"] },
-    "typecheck": { "dependsOn": ["^transit", "@marketplace/schemas#build"] }
+    "@marketplace/web#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "../buyer-web/app/**",
+        "../supplier-web/app/**",
+        "../admin-web/app/**",
+        "../landing-web/app/**",
+        "../buyer-web/public/**",
+        "../landing-web/public/**",
+        "../../scripts/prepare-unified-web.mjs"
+      ],
+      "env": [
+        "INTERNAL_API_URL",
+        "NEXT_PUBLIC_GOOGLE_CLIENT_ID",
+        "NEXT_PUBLIC_APPLE_CLIENT_ID",
+        "NEXT_PUBLIC_APPLE_REDIRECT_URI"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "public/**",
+        "generated/**"
+      ]
+    },
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "!.next/cache/**"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": [
+        "^lint"
+      ]
+    },
+    "transit": {
+      "dependsOn": [
+        "^transit"
+      ]
+    },
+    "test": {
+      "dependsOn": [
+        "^transit",
+        "@marketplace/schemas#build"
+      ],
+      "outputs": [
+        "coverage/**"
+      ]
+    },
+    "typecheck": {
+      "dependsOn": [
+        "^transit",
+        "@marketplace/schemas#build"
+      ]
+    },
+    "@marketplace/web#typecheck": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "../buyer-web/app/**",
+        "../supplier-web/app/**",
+        "../admin-web/app/**",
+        "../landing-web/app/**",
+        "../buyer-web/public/**",
+        "../landing-web/public/**",
+        "../../scripts/prepare-unified-web.mjs"
+      ],
+      "dependsOn": [
+        "^transit",
+        "@marketplace/schemas#build"
+      ]
+    }
   }
 }

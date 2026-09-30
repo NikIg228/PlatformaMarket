@@ -1,5 +1,6 @@
 import { currentSessionSchema, workspaceContextSchema, workspaceChoicesSchema, type WorkspaceContext } from "@marketplace/schemas";
 import { workspaceReturnPath } from "@marketplace/schemas/product-navigation";
+import { unifiedFrontend, workspacePath } from "@marketplace/api-client";
 export type AuthCapability = "BUYER" | "SUPPLIER";
 
 export type AuthSession = {
@@ -127,7 +128,18 @@ export function workspaceHandoffUrl({
     }),
   );
   const base = capability === "SUPPLIER" ? supplierAppUrl : buyerAppUrl;
+  // Public browsing stays on the buyer host; never install a supplier handoff
+  // in the buyer session store. The existing HttpOnly login cookie proves identity.
+  const publicReturn = workspaceReturnPath(returnTo, "BUYER");
+  if (capability === "SUPPLIER" && publicReturn && (/^\/products\//.test(publicReturn) || /^\/(?:catalog)?(?:\?|$)/.test(publicReturn))) {
+    const target = publicReturn === "/" ? "/catalog" : publicReturn;
+    return `${buyerAppUrl.replace(/\/$/, "")}${target}`;
+  }
   const path = workspaceReturnPath(returnTo, capability) ?? "/";
+  if (unifiedFrontend) {
+    const target = capability === "BUYER" && /^\/(?:products\/|catalog(?:\?|$))/.test(path) ? path : workspacePath(capability, path);
+    return `${target}#session=${handoff}`;
+  }
   return `${base.replace(/\/$/, "")}${path}#session=${handoff}`;
 }
 

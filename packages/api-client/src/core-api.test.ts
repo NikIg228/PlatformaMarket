@@ -4,6 +4,15 @@ import { MarketplaceApiClient } from "./index.js";
 afterEach(() => vi.restoreAllMocks());
 
 describe("core marketplace API client", () => {
+  it("preserves exact sale prices and patches only an operator-approved name with its version", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}", { status: 200 }));
+    const api = new MarketplaceApiClient("http://localhost:4012/api", {});
+    await api.searchPublicCatalog({ priceBasis: "SALE_UNIT", minSalePriceMinor: "9007199254740993", includeFilterOptions: "true" });
+    expect(String(fetchMock.mock.calls[0]![0])).toContain("minSalePriceMinor=9007199254740993");
+    fetchMock.mockResolvedValueOnce(new Response("{}", { status: 200 }));
+    await api.updateCatalogProduct("product", { version: 7, catalogName: "Brand Model A2 4g" });
+    expect(fetchMock.mock.calls[1]![1]).toEqual(expect.objectContaining({ method: "PATCH", body: JSON.stringify({ version: 7, catalogName: "Brand Model A2 4g" }) }));
+  });
   it("serializes typed public catalog search parameters", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")

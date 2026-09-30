@@ -1,4 +1,7 @@
 "use client";
+export { PermissionsProvider, PermissionFields, usePermissions } from "./permissions";
+export { documentArchiveDateRange, DOCUMENT_ARCHIVE_TIME_ZONE } from "./document-date-range";
+import { installInputModality } from "./input-modality";
 
 export * from "./document-archive";
 export * from "./document-relations";
@@ -29,6 +32,7 @@ import {
   type ButtonProps,
   type CheckboxProps,
   type FieldProps,
+  type DropdownProps,
   type InputProps,
   type SelectProps,
   type TextareaProps,
@@ -84,6 +88,18 @@ const dentMarketLightTheme = createLightTheme(dentMarketBrand);
 function joinClasses(...classes: Array<string | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
+
+/** Open selector lists below their trigger and fit the available viewport. */
+export const dmDropdownPositioning: DropdownProps["positioning"] = {
+  position: "below",
+  align: "start",
+  strategy: "fixed",
+  pinned: true,
+  fallbackPositions: [],
+  autoSize: "height",
+  matchTargetSize: "width",
+  overflowBoundaryPadding: 8,
+};
 
 /** Shared field wrapper for all role workspaces. */
 export function DmField({ className, ...props }: FieldProps) {
@@ -265,6 +281,7 @@ export function DmConflictState({
 
 export function MarketplaceProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>("light");
+  useEffect(() => installInputModality(document), []);
 
   useEffect(() => {
     const stored = window.localStorage.getItem("marketplace-theme");
@@ -303,6 +320,7 @@ export type NavigationItem = {
   label: string;
   icon: ReactNode;
   badge?: string;
+  href?: string;
 };
 
 type AppShellProps = {
@@ -393,6 +411,11 @@ export function AppShell({
 
         <nav className="mp-navigation">
           {navigation.map((item) => (
+            item.href ? <a key={item.id} href={item.href} onClick={closeMobileMenu}>
+              <span aria-hidden="true">{item.icon}</span>
+              <span>{item.label}</span>
+              {item.badge ? <small>{item.badge}</small> : null}
+            </a> :
             <button
               key={item.id}
               type="button"
@@ -639,17 +662,7 @@ export function Section({
   );
 }
 
-export function formatMoney(
-  amountMinor: string | number | bigint | null | undefined,
-  currency = "KZT",
-) {
-  if (amountMinor == null) return "По запросу";
-  return new Intl.NumberFormat("ru-KZ", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(Number(amountMinor) / 100);
-}
+export { formatMoney } from "./money";
 
 export function formatDate(
   value: string | Date | null | undefined,
@@ -738,3 +751,5 @@ export function errorMessage(error: unknown) {
   return "Произошла неизвестная ошибка";
 }
 export { useWorkspaceSession } from "./use-workspace-session";
+
+export { OrderWorkflowWorkspace } from "./order-workflow-workspace";

@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, Get, Headers, Param, Post, Put, UseGuards } from "@nestjs/common";
-import { assignOfferPackagingSchema, createSupplierOfferSchema, setOfferPriceSchema, setOfferPublicationSchema } from "@marketplace/schemas";
+import { assignOfferPackagingSchema, createSupplierOfferSchema, setOfferPriceSchema, setOfferPublicationSchema, saveOfferCommercialSchema } from "@marketplace/schemas";
+import { OfferCommercialService } from "./offer-commercial.service";
 import { ApiTags } from "@nestjs/swagger";
 import { PermissionsGuard } from "../access-control/permissions.guard";
 import { RequirePermissions } from "../access-control/require-permissions.decorator";
@@ -10,7 +11,7 @@ import { ApiCoreBody, ApiCoreErrors, ApiCoreProtected, ApiCoreResponse, ApiUuidP
 @UseGuards(PermissionsGuard)
 @Controller("suppliers/:supplierOrganizationId/offers")
 export class OffersController {
-  constructor(private readonly offers: OffersService) {}
+  constructor(private readonly offers: OffersService, private readonly commercial: OfferCommercialService) {}
   private context(actorId: string, organizationId: string) { return { actorId, organizationId }; }
 
   @Get()
@@ -33,6 +34,34 @@ export class OffersController {
     const parsed = setOfferPriceSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
     return this.offers.setPrice(supplierOrganizationId, offerId, parsed.data, this.context(actorId, organizationId));
+  }
+
+  @Get(":offerId/commercial/:warehouseId")
+  @RequirePermissions("catalog.product.view")
+  @ApiCoreProtected()
+  @ApiUuidParam("supplierOrganizationId", "Supplier organization")
+  @ApiUuidParam("offerId", "Supplier offer")
+  @ApiUuidParam("warehouseId", "Supplier warehouse")
+  @ApiCoreResponse("OfferCommercialState")
+  @ApiCoreErrors()
+  getCommercial(@Param("supplierOrganizationId") supplierId: string, @Param("offerId") offerId: string, @Param("warehouseId") warehouseId: string,
+    @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+    return this.commercial.get(supplierId, offerId, warehouseId, this.context(actorId, organizationId));
+  }
+
+  @Put(":offerId/commercial")
+  @RequirePermissions("pricing.manage", "inventory.adjust")
+  @ApiCoreProtected()
+  @ApiUuidParam("supplierOrganizationId", "Supplier organization")
+  @ApiUuidParam("offerId", "Supplier offer")
+  @ApiCoreBody("SaveOfferCommercialRequest")
+  @ApiCoreResponse("OfferCommercialState")
+  @ApiCoreErrors()
+  saveCommercial(@Param("supplierOrganizationId") supplierId: string, @Param("offerId") offerId: string, @Body() body: unknown,
+    @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+    const parsed = saveOfferCommercialSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.commercial.save(supplierId, offerId, parsed.data, this.context(actorId, organizationId));
   }
 
   @Put(":offerId/publication")
