@@ -15,7 +15,9 @@ COPY packages/eds-client/package.json packages/eds-client/package.json
 COPY packages/one-c-agent/package.json packages/one-c-agent/package.json
 COPY packages/schemas/package.json packages/schemas/package.json
 COPY packages/ui/package.json packages/ui/package.json
-RUN npm ci
+# Production images use external Redis; the in-memory Redis compiler is test-only.
+# Keep all other dependency lifecycle scripts enabled (Prisma, sharp, etc.).
+RUN REDISMS_DISABLE_POSTINSTALL=true npm ci
 
 COPY . .
 ARG DEPLOYMENT_PROFILE=pilot

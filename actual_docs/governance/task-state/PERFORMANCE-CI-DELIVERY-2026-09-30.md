@@ -1,10 +1,30 @@
 # PERFORMANCE-CI-DELIVERY — согласованный выпуск
 
-Обновлено: 01.10.2026. Состояние: ACTIVE — локальная приёмка PASS, публикация/CI ожидаются.
+Обновлено: 01.10.2026. Состояние: ACTIVE — опубликовано, hosted CI выполняется.
 Владелец: 01a0f302-2d38-75d1-b79c-141e7428b533, единственный writer.
 Основание: владелец30.09 разрешил весь перечисленный объём за один проход,
 без промежуточных подтверждений, с проверками и push после всех проверок.
 Checkout: C:\Users\user\Desktop\dentmarket-kz-main; main@2a816c337bae15f6684318cf26d21bf6f71cb3c5.
+
+Публикация01.10 01:24+05:00: commit8045225adbffa1d825366865676bce5d509abe9d
+отправлен обычным push в origin/main; remote SHA подтверждён. Staged review,
+diff check, docs414 active/481 archive links/305 archive entries PASS; E2E final
+typecheck PASS. Пять исходных dirty files остаются вне commit. Исторический
+Markdown hard break в snapshot Product записан эквивалентным backslash вместо
+двух пробелов, отражён в manifest; содержание и semantic hash сохранены.
+[CI36772413966](https://github.com/NikIg228/PlatformaMarket/actions/runs/36772413966)
+и [Security36772413883](https://github.com/NikIg228/PlatformaMarket/actions/runs/36772413883)
+IN_PROGRESS, attempt1. Не считать их PASS до результата. Ни release, ни deploy
+не запускались. Следующий шаг — дождаться jobs и разобрать фактический сбой,
+если он появится, в пределах прежних лимитов.
+
+Hosted container attempt1 FAIL обоих targets в npm ci: test-only
+redis-memory-server postinstall компилирует Redis, Alpine не содержит make.
+Исправление: только RUN npm ci получает поддерживаемый пакетом
+REDISMS_DISABLE_POSTINSTALL=true. Runtime использует внешний Redis; другие
+lifecycle scripts не отключены. TypeScript/application inputs прежние;
+следующий container build — attempt2, до3 на этот gate. Docker engine локально
+по-прежнему отсутствует; owning check выполняется hosted CI.
 
 ## Scope / DoD
 
