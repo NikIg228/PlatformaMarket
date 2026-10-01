@@ -1,6 +1,6 @@
 # CORE-02-INTERNAL — ручной перевод и проверка оплаты
 
-Обновлено:01.10.2026. LOCAL_PASS / review и публикация; CI ещё не запускался.
+Обновлено:01.10.2026. CI_PASS / DEV_RESTORE_PENDING — ожидается решение владельца.
 Владелец:primary01a0f302-2d38-75d1-b79c-141e7428b533, единственный writer.
 Основание: запрос владельца01.10 идти по внутреннему списку Foundation6.2
 без внешних интеграций и боевых данных. Предыдущий CORE01 CLOSED/CI_PASS
@@ -188,3 +188,36 @@ OrderTransferClaim total0/confirmed0. Запрошено отдельное ра
 две локальные миграции и восстановление прежнего dev; ответ ещё ожидается.
 До разрешения рабочая БД не меняется и dev не запускается с несовместимой schema.
 Далее docs/diff/staged review, обычный commit/push main и проверка CI точного SHA.
+
+## Публикация
+
+Docs/link/protected-history verification PASS (443 links,5 WIP,305 archive
+entries); staged review33paths и secret scan PASS. Evidence hash snapshot:
+`outputs/core-02-internal-20261001/verified-inputs.json`; логи скопированы туда.
+Кодовый commit f893f8fc8a889864c0671c77e6e7ff61c2b53af7 опубликован в origin/main;
+remote SHA совпадает. Outgoing range был один проверенный commit, fast-forward.
+CI36852606548 и Security36852606570 запущены на этом SHA, пока PENDING.
+CI budget45мин с11:00UTC; не запускать новый экземпляр без новой причины.
+До фактического CI PASS и решения вопроса восстановления dev CORE02 не закрыт.
+
+## Подтверждённый результат / пауза перед следующим этапом
+
+Кодовый результат опубликован в f893f8fc8a889864c0671c77e6e7ff61c2b53af7.
+[CI36852606548](https://github.com/NikIg228/PlatformaMarket/actions/runs/36852606548)
+и [Security36852606570](https://github.com/NikIg228/PlatformaMarket/actions/runs/36852606570)
+SUCCESS на точном SHA: verify, PostgreSQL/authority/backup-restore, api/web
+containers, CodeQL/dependencies. Hosted unit12/12 и build7/7 tasks, core121schemas,
+canonical browser43/43, FlowB3 7/7 PASS. CI retries не потребовались.
+История локальных неудач и исправлений выше сохраняется.
+
+Внутренний продуктовый scope CORE02 принят; весь CORE01–09 не закрыт.
+Операционное обязательство остаётся: восстановить остановленный по разрешению
+dev. Для совместимого запуска нужны две уже проверенные migration101000/105000
+на локальной рабочей marketplace/public. Отдельный вопрос владельцу задан;
+ответ пока не получен. Рабочая БД не менялась, dev остановлен, собственных
+проверочных процессов нет. Это не ошибка приложения и не исчерпание test gate.
+Следующий точный шаг — получить решение по локальным миграциям, выполнить
+разрешённый вариант восстановления, затем перейти к CORE03 по исходной очереди.
+Никакой архивации/передачи/нового писателя или внешних интеграций нет.
+Итоговый docs-only receipt переиспользует доказательства f893f8f; runtime rerun
+после изменения только статуса приёмки не требуется.

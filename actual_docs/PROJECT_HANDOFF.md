@@ -2,7 +2,7 @@
 
 Обновлено01.10.2026. Единственная рабочая папка:
 C:\Users\user\Desktop\dentmarket-kz-main. Ветка main, кодовый снимок
-df1f3993981f264af446568aee8de85351d98c9f (CI/Security PASS).
+f893f8fc8a889864c0671c77e6e7ff61c2b53af7 (CI/Security PASS).
 
 Primary:01a0f302-2d38-75d1-b79c-141e7428b533, generation4, transition=idle.
 Ручная передача завершена30.09 в20:56+05:00: source
@@ -13,7 +13,11 @@ Source больше не writer. Реестр .codex/project-session.json сох
 Актуальное поручение01.10 после371aa9d: реализация внутреннего списка Foundation6.2
 по порядку на synthetic fixtures. Завершён
 [CORE-01-INTERNAL](governance/task-state/CORE-01-INTERNAL-2026-10-01.md),
-CI36845016859 / Security36845016749 SUCCESS. Следующий пункт — CORE02;
+CI36845016859 / Security36845016749 SUCCESS. Внутренний CORE02 опубликован
+в f893f8f; CI36852606548 / Security36852606570 SUCCESS. [Checkpoint](governance/task-state/CORE-02-INTERNAL-2026-10-01.md).
+Сейчас ожидается ответ о двух локальных миграциях для восстановления dev:
+3000/4012 остановлены по разрешению, рабочая marketplace/public не менялась.
+После решения этого обязательства следующий пункт — CORE03;
 следующий этап только после обязательных gates/review/push/CI текущего.
 Внешние интеграции, боевые данные и нерешённые policy/legal вопросы вне scope.
 
