@@ -15,9 +15,9 @@ Source больше не writer. Реестр .codex/project-session.json сох
 [CORE-01-INTERNAL](governance/task-state/CORE-01-INTERNAL-2026-10-01.md),
 CI36845016859 / Security36845016749 SUCCESS. Внутренний CORE02 опубликован
 в f893f8f; CI36852606548 / Security36852606570 SUCCESS. [Checkpoint](governance/task-state/CORE-02-INTERNAL-2026-10-01.md).
-Сейчас ожидается ответ о двух локальных миграциях для восстановления dev:
-3000/4012 остановлены по разрешению, рабочая marketplace/public не менялась.
-После решения этого обязательства следующий пункт — CORE03;
+Владелец разрешил две локальные миграции: обе применены к marketplace/public,
+каталог505/510 сохранён. Dev3000/4012 восстановлен в go_live, health/page200.
+CORE02 закрыт. Следующий пункт — CORE03;
 следующий этап только после обязательных gates/review/push/CI текущего.
 Внешние интеграции, боевые данные и нерешённые policy/legal вопросы вне scope.
 
