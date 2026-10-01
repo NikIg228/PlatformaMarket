@@ -31,7 +31,8 @@ export class BuyerSupplierAgreementsService {
   async current(supplierOrganizationId: string, buyerOrganizationId: string, context: SupplierActorContext) {
     await this.assertParty(supplierOrganizationId, buyerOrganizationId, context);
     await this.processRenewals(supplierOrganizationId, buyerOrganizationId);
-    const agreement = await this.prisma.buyerSupplierAgreement.findFirst({ where: { supplierOrganizationId, buyerOrganizationId, status: { in: ["ACTIVE", "NON_RENEWING"] }, endsAt: { gt: new Date() } }, include: { document: { include: { signatures: true } } }, orderBy: { endsAt: "desc" } });
+    const now = new Date();
+    const agreement = await this.prisma.buyerSupplierAgreement.findFirst({ where: { supplierOrganizationId, buyerOrganizationId, status: { in: ["ACTIVE", "NON_RENEWING"] }, startsAt: { lte: now }, endsAt: { gt: now } }, include: { document: { include: { signatures: true } } }, orderBy: { endsAt: "desc" } });
     return agreement ? { agreement, frameworkAgreementAvailable: true, oneTimeDealAvailable: true } : { agreement: null, frameworkAgreementAvailable: false, oneTimeDealAvailable: true };
   }
   async initiate(input: { supplierOrganizationId: string; buyerOrganizationId: string; renewalMode: "AUTO_ANNUAL" | "MANUAL_ANNUAL" }, context: SupplierActorContext) {

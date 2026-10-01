@@ -11,6 +11,7 @@ import { verifyOfferCommercial } from "./lib/verify-offer-commercial.mjs";
 import { verifyCartRecovery } from "./lib/verify-cart-recovery.mjs";
 import { verifyReservationExpiry } from "./lib/verify-reservation-expiry.mjs";
 import { verifyLocalPermissions } from "./lib/verify-local-permissions.mjs";
+import { verifyContractLifecycle } from "./lib/verify-contract-lifecycle.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const apiDirectory = path.join(root, "apps", "api");
@@ -582,6 +583,7 @@ try {
 
   await verifyCheckoutSnapshot({ prisma, databaseUrl, offerId: snapshotOffer.offerId,
     createBuyer, createCartWithItem, runId, assert });
+  await verifyContractLifecycle({ prisma, createBuyer, runId });
   await verifyLotEligibility({ prisma, offers: lotOffers.slice(0, 4), supplierId: fixture.supplierId,
     createBuyer, createCartWithItem, runId, assert });
   await verifyOfferCommercial({ prisma, offer: lotOffers[4], supplierId: fixture.supplierId, fixture,

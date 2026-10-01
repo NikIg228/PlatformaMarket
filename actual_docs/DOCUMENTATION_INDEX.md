@@ -14,6 +14,9 @@
 
 ## Рабочий маршрут
 
+Текущая реализация01.10: [CORE-01-INTERNAL](governance/task-state/CORE-01-INTERNAL-2026-10-01.md),
+первый внутренний этап списка Foundation6.2 по новому разрешению владельца.
+
 [README](README.md), [Product](product/DENTMARKET_PRODUCT_V2.md),
 [Foundation](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md),
 [Matrix](governance/PROJECT_ACCEPTANCE_MATRIX.md), [архитектурный аудит](architecture/CODEBASE-AUDIT-2026-09-30.md).
