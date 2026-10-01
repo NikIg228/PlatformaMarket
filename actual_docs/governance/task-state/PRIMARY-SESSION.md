@@ -2,7 +2,7 @@
 
 Обновлено01.10.2026. Primary01a0f302-2d38-75d1-b79c-141e7428b533,
 generation4/idle. Canonical root C:\Users\user\Desktop\dentmarket-kz-main,
-Последний проверенный код: main@f893f8fc8a889864c0671c77e6e7ff61c2b53af7.
+Последний проверенный код: main@1abeb4de5c0a6a394bfbe6e0b1e063529e6d5f4c.
 
 НОВОЕ разрешение01.10 после371aa9d: выполнять внутренний список Foundation6.2
 по порядку без внешних интеграций/боевых данных. Первый этап —
@@ -12,8 +12,9 @@ generation4/idle. Canonical root C:\Users\user\Desktop\dentmarket-kz-main,
 CORE02 кодовый scope CI_PASS: f893f8f, CI36852606548 / Security36852606570 SUCCESS.
 Владелец разрешил две проверенные локальные миграции; применены к marketplace/public,
 каталог505/510 сохранён. Dev3000/4012 восстановлен в go_live, health/page200.
-Активен [CORE03](CORE-03-INTERNAL-2026-10-01.md); не повторять зелёные проверки CORE02.
-Собственный восстановленный dev временно остановлен для CORE03 generate/build;
+[CORE03](CORE-03-INTERNAL-2026-10-01.md) опубликован1abeb4d, CI36859245986 /
+Security36859246168 SUCCESS. Кодовый scope CI_PASS; DEV_PENDING_APPROVAL.
+Собственный dev остановлен; ожидается ответ на заданный вопрос о миграции120000;
 новая миграция120000 на рабочую БД не применялась. Точный checkpoint в карточке.
 Прежнее docs-only ограничение ниже относится к завершённой
 DEPENDENCY-SPLIT задаче; новый запрос разрешает реализацию внутреннего scope.

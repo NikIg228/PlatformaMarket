@@ -2,7 +2,7 @@
 
 Обновлено01.10.2026. Единственная рабочая папка:
 C:\Users\user\Desktop\dentmarket-kz-main. Ветка main, кодовый снимок
-f893f8fc8a889864c0671c77e6e7ff61c2b53af7 (CI/Security PASS).
+1abeb4de5c0a6a394bfbe6e0b1e063529e6d5f4c (CI/Security PASS).
 
 Primary:01a0f302-2d38-75d1-b79c-141e7428b533, generation4, transition=idle.
 Ручная передача завершена30.09 в20:56+05:00: source
@@ -17,7 +17,10 @@ CI36845016859 / Security36845016749 SUCCESS. Внутренний CORE02 опу�
 в f893f8f; CI36852606548 / Security36852606570 SUCCESS. [Checkpoint](governance/task-state/CORE-02-INTERNAL-2026-10-01.md).
 Владелец разрешил две локальные миграции: обе применены к marketplace/public,
 каталог505/510 сохранён. Dev3000/4012 восстановлен в go_live, health/page200.
-CORE02 закрыт. Следующий пункт — CORE03;
+CORE02 закрыт. [CORE03](governance/task-state/CORE-03-INTERNAL-2026-10-01.md)
+опубликован1abeb4d, CI36859245986 / Security36859246168 SUCCESS.
+Dev временно остановлен; новая миграция120000 рабочей БД ожидает отдельного
+разрешения владельца. До ответа не применять. Следующий пункт после восстановления — CORE04;
 следующий этап только после обязательных gates/review/push/CI текущего.
 Внешние интеграции, боевые данные и нерешённые policy/legal вопросы вне scope.
 

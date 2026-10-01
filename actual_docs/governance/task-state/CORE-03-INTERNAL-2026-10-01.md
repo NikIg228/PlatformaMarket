@@ -1,6 +1,6 @@
 # CORE-03-INTERNAL — исполнение, возврат и повторная закупка
 
-Обновлено01.10.2026. LOCAL_PASS / review и публикация; CI ещё NOT_RUN.
+Обновлено01.10.2026. CI_PASS / DEV_RESTORE_PENDING_APPROVAL.
 Владелец primary01a0f302-2d38-75d1-b79c-141e7428b533, единственный writer.
 Основание: разрешённая внутренняя очередь Foundation6.2 и «продолжаем» после
 CORE02. CORE02 CLOSED/CI_PASS, dev восстановлен; receipt60e44a5 опубликован.
@@ -111,3 +111,32 @@ config/release не запускались: инфраструктура и rele
 Локальные gates завершены. Pending: commit/push, фактический CI; отдельно
 запрошено разрешение новой рабочей миграции120000 и восстановления dev.
 До разрешения marketplace/public не менять. CORE04 ещё не начат.
+
+Опубликован1abeb4de5c0a6a394bfbe6e0b1e063529e6d5f4c вorigin/main;
+remote SHA совпал. CI36859245986 / Security36859246168 запущены, pending.
+Все32 staged paths сверены с .tmp/core03-reviewed-paths.json, source hashes
+сохранены .tmp/core03-source-hashes.json; diff/check и docs links PASS.
+Пять прежних WIP вне commit; собственных running dev/test процессов нет.
+
+## Итог опубликованного кода
+
+main@1abeb4de5c0a6a394bfbe6e0b1e063529e6d5f4c: remote SHA подтверждён.
+[CI36859245986](https://github.com/NikIg228/PlatformaMarket/actions/runs/36859245986)
+и [Security36859246168](https://github.com/NikIg228/PlatformaMarket/actions/runs/36859246168)
+SUCCESS. Оба контейнера, PostgreSQL/authority/backup-restore, полный
+typecheck/unit/build/budget, core/runtime/production/config/security,
+extended API и оба canonical browser gates PASS на этом кодовом SHA.
+Последующая запись только docs, runtime evidence переиспользуется.
+
+Кодовый CORE03 принят во внутреннем synthetic scope. Рабочая БД остаётся
+на CORE02;120000 не применена. Вопрос владельцу о новой локальной миграции
+и восстановлении dev задан, ответа пока нет. Не трактовать отсутствие ответа
+как согласие. Единственный следующий шаг: после явного разрешения применить
+только120000 к marketplace/public с before/after catalog guard, без seed,
+и восстановить dev3000/4012 go_live из canonical root. Тогда продолжить
+разрешённую очередь с CORE04 после сверки уже принятого scope; не повторять
+завершённые CORE04.1–04.5 автоматически. Внешние интеграции/боевые данные вне scope.
+
+Применены Development Toolkit execution/backend/frontend/verification/review,
+Agency Backend Architect, Frontend Developer и Code Reviewer: границы данных,
+существующий Fluent UI и self-review инвариантов. Отдельных агентов не запускали.
