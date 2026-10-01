@@ -1,6 +1,6 @@
 # CORE-03-INTERNAL — исполнение, возврат и повторная закупка
 
-Обновлено01.10.2026. CI_PASS / DEV_RESTORE_PENDING_APPROVAL.
+Обновлено01.10.2026. CLOSED / CI_PASS / DEV_RESTORED.
 Владелец primary01a0f302-2d38-75d1-b79c-141e7428b533, единственный writer.
 Основание: разрешённая внутренняя очередь Foundation6.2 и «продолжаем» после
 CORE02. CORE02 CLOSED/CI_PASS, dev восстановлен; receipt60e44a5 опубликован.
@@ -140,3 +140,15 @@ extended API и оба canonical browser gates PASS на этом кодовом
 Применены Development Toolkit execution/backend/frontend/verification/review,
 Agency Backend Architect, Frontend Developer и Code Reviewer: границы данных,
 существующий Fluent UI и self-review инвариантов. Отдельных агентов не запускали.
+
+## Восстановление по разрешению владельца
+
+01.10 владелец ответил «Окей, бро, продолжай» на точный вопрос о миграции120000
+и восстановлении dev. Применена только20261001120000_manual_order_returns к
+127.0.0.1:5432/marketplace/public после сверки identity/pending scope/claims0.
+Каталог до/после:505 products,510 offers; seed не запускался.
+Скрытый npm run dev из canonical root запущен: launcher4640, dev-local8928,
+API1468/4012, web11376/3000; go_live/JWT подтверждён логом. Health и catalog200.
+Логи .tmp/core03-dev-restored.{out,err}.log. Предыдущие code/CI gates REUSED_PASS.
+CORE03 закрыт. Разрешённая очередь продолжается с CORE04.6–04.7;
+ранее принятые CORE04.1–04.5 не выполняются повторно.
