@@ -1,6 +1,6 @@
 # SHARED-THEME — общий светлый semantic contract
 
-02.10.2026 LOCAL_PASS / CI_PENDING. Единственный writer: primary01a0f302-2d38-75d1-b79c-141e7428b533.
+02.10.2026 CLOSED / CI_PASS. Единственный writer: primary01a0f302-2d38-75d1-b79c-141e7428b533.
 Canonical root C:/Users/user/Desktop/dentmarket-kz-main, main@9cfc977.
 Основание: явное поручение владельца через координирующую задачу
 01a0f32f-7d02-7263-a53d-496c8f9787f5 от02.10.2026.
@@ -114,3 +114,25 @@ canonical apps/web собирает все затронутые imported feature
 Роли/практики: Toolkit execution/frontend/verification/review, Agency frontend/UI,
 code review и Git workflow применены для контрактов состояний, AA, scope и публикации.
 Осталось: commit/normal push main, remote SHA и фактический CI/Security; затем стоп.
+
+Публикация02.10 02:27+05:00: d06780975ae80bd3099ff82f2af870d8869da177,
+normal push origin/main, remote SHA совпадает. Только28 проверенных файлов,
+исходные5 WIP не staged и SHA256 неизменны. Own generated next-env восстановлен.
+CI36928758840 / Security36928758801 RUNNING, попытка1. До результата не CI_PASS.
+Все локальные test servers остановлены wrapper; рабочий dev не запускался.
+
+## Финальная приёмка
+
+Код d06780975ae80bd3099ff82f2af870d8869da177 опубликован и принят:
+[CI36928758840](https://github.com/NikIg228/PlatformaMarket/actions/runs/36928758840)
+и [Security36928758801](https://github.com/NikIg228/PlatformaMarket/actions/runs/36928758801)
+— completed/success, первая попытка. CI включает canonical browser, import/rollback,
+typecheck/unit/build/budget, runtime/config/observability/auth, PostgreSQL/backup,
+оба контейнера; Security — CodeQL/dependencies. Доказательство относится к точному
+опубликованному SHA, не к историческому baseline.
+
+Реализация, self-review и дополнительный аудит завершены. Эта финальная запись —
+docs-only receipt; `[skip ci]` не заменяет проверки кода, а переиспользует зелёные
+запуски d067809 при неизменных code/tests/config/lockfile. После normal push receipt
+проверить remote SHA и остановиться. Рабочая БД/dev/deploy и CORE05 не запускались;
+новой очереди или автоматической передачи нет.5 исходных WIP сохранены.

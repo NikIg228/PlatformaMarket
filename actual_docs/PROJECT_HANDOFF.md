@@ -1,8 +1,9 @@
 # PlatformaMarket — текущий контекст
 
 Поручение02.10: [SHARED-THEME](governance/task-state/SHARED-THEME-2026-10-02.md),
-светлая semantic palette/states и итоговый аудит consumers. LOCAL_PASS, публикация/CI
-проверяются отдельно. Один writer в canonical root;5 прежних WIP сохранены.
+светлая semantic palette/states и итоговый аудит consumers. CLOSED/CI_PASS,
+код d067809 опубликован; CI36928758840 / Security36928758801 SUCCESS.
+Один writer в canonical root;5 прежних WIP сохранены.
 Это поручение приостановило CORE-очередь: рабочая140000 не применялась, dev не
 восстанавливался, CORE05 не начинался. После приёмки темы — остановка.
 
