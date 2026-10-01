@@ -9,6 +9,7 @@
 | --- | --- |
 | Требования и решения владельца | [Product V2](product/DENTMARKET_PRODUCT_V2.md), в особенности §9.7 и §23.6 |
 | Незавершённые обязательства | [Foundation](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
+| Что можно без интеграций; внешний техдолг и решения | [Foundation §6](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md#6-разделение-остатка-внутренний-контур-и-техдолг-внешней-готовности) — разделение01.10, без запуска реализации |
 | Что доказано и что не принято | [Acceptance Matrix](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
 | Кто работает и что разрешено сейчас | [Primary](governance/task-state/PRIMARY-SESSION.md), [handoff](PROJECT_HANDOFF.md) |
 | Порядок работы и проверок | [Workflow](governance/DEVELOPMENT_WORKFLOW.md) и корневой AGENTS.md |

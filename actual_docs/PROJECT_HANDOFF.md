@@ -10,6 +10,12 @@ Primary:01a0f302-2d38-75d1-b79c-141e7428b533, generation4, transition=idle.
 штатным инструментом; list_archived_threads подтвердил тот же ID.
 Source больше не writer. Реестр .codex/project-session.json сохраняется.
 
+Последующее поручение01.10: docs-only разделение задач по внешним зависимостям.
+Результат и checkpoint — [Foundation §6](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md#6-разделение-остатка-внутренний-контур-и-техдолг-внешней-готовности).
+Можно готовить внутренние slices на synthetic fixtures после выбора scope;
+внешние провайдеры/боевые данные и решения владельца вынесены в отдельные группы
+техдолга. Это не начало реализации и не снятие Product§23.6 отсрочки.
+
 Завершённая задача: согласованный выпуск dependencies, canonical CI,
 каталога, bounded supplier reads и измеренных frontend/backend improvements.
 Владелец30.09 разрешил весь перечисленный scope без промежуточных подтверждений;
