@@ -15,6 +15,9 @@ function fixture(overrides: Record<string, unknown> = {}) {
     auditLog: { create: vi.fn(async () => ({})) }, outboxEvent: { create: vi.fn(async () => ({})) },
     document: { findFirst: vi.fn() }, uploadAsset: { findFirst: vi.fn() },
     orderTransferClaim: { create: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
+    supplierProfile: { findUnique: vi.fn(async () => null) },
+    notification: { upsert: vi.fn(async () => ({})) },
+    orderPaymentReduction: { updateMany: vi.fn(async () => ({ count: 0 })) },
   };
   const prisma = { ...tx, $transaction: async (action: (client: typeof tx) => Promise<unknown>) => action(tx) };
   const access = { hasAll: vi.fn(async () => true) };
@@ -57,9 +60,38 @@ describe("order workflow invariants", () => {
     await expect(f.service.execute("order", { action: "CANCEL", expectedVersion: 3, idempotencyKey: "key", reason: "Передумали", transferNotMade: true }, context)).rejects.toThrow(/поддержку/);
     expect(f.tx.supplierOrder.update).not.toHaveBeenCalled();
   });
-  it("rejects a one-tiyn difference beyond safe Number precision", async () => {
-    const f = fixture({ status: "AWAITING_PAYMENT", manualInvoiceDocumentId: "invoice" });
-    await expect(f.service.execute("order", { action: "REPORT_TRANSFER", expectedVersion: 3, idempotencyKey: "key", invoiceDocumentId: "invoice", documentId: "proof", amountMinor: "9007199254740992", paidAt: new Date().toISOString(), comment: "" }, context)).rejects.toThrow(/полной суммы/);
+  it("accepts an exact partial report without counting it as received money", async () => {
+    const f = fixture({ status: "AWAITING_PAYMENT", manualInvoiceDocumentId: "invoice", currency: "KZT" });
+    f.tx.document.findFirst.mockResolvedValue({ id: "proof", amountMinor: new Prisma.Decimal("9007199254740992"), currency: "KZT", source: "UPLOADED", storageKey: "synthetic" });
+    f.tx.uploadAsset.findFirst.mockResolvedValue({ id: "asset" });
+    f.tx.orderTransferClaim.create.mockResolvedValue({ id: "claim", reviewStartedAt: new Date() });
+    const result = await f.service.execute("order", { action: "REPORT_TRANSFER", expectedVersion: 3, idempotencyKey: "key", invoiceDocumentId: "invoice", documentId: "proof", amountMinor: "9007199254740992", paidAt: new Date().toISOString(), comment: "" }, context);
+    expect(result.paymentStatus).toBe("UNPAID");
+    expect(f.tx.orderTransferClaim.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ amountMinor: "9007199254740992" }) }));
+    expect(f.tx.notification.upsert).toHaveBeenCalledTimes(1);
+  });
+  it("rejects a one-tiyn receipt mismatch beyond Number precision", async () => {
+    const f = fixture({ status: "AWAITING_PAYMENT", manualInvoiceDocumentId: "invoice", currency: "KZT" });
+    f.tx.document.findFirst.mockResolvedValue({ id: "proof", amountMinor: new Prisma.Decimal("9007199254740993"), currency: "KZT", source: "UPLOADED", storageKey: "synthetic" });
+    f.tx.uploadAsset.findFirst.mockResolvedValue({ id: "asset" });
+    await expect(f.service.execute("order", { action: "REPORT_TRANSFER", expectedVersion: 3, idempotencyKey: "key", invoiceDocumentId: "invoice", documentId: "proof", amountMinor: "9007199254740992", paidAt: new Date().toISOString(), comment: "" }, context)).rejects.toThrow(/квитанции/);
     expect(f.tx.orderTransferClaim.create).not.toHaveBeenCalled();
+  });
+  it("keeps a one-tiyn underpayment unpaid after supplier confirmation", async () => {
+    const f = fixture({ status: "AWAITING_PAYMENT", transferClaims: [{ id: "claim", status: "PENDING", amountMinor: new Prisma.Decimal("9007199254740993") }] });
+    const result = await f.service.execute("order", { action: "CONFIRM_TRANSFER", claimId: "claim", receivedAmountMinor: "9007199254740992", expectedVersion: 3, idempotencyKey: "key" }, { ...context, organizationId: "supplier" });
+    expect(result.paymentStatus).toBe("UNPAID");
+    expect(f.tx.orderTransferClaim.update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ receivedAmountMinor: new Prisma.Decimal("9007199254740992"), status: "CONFIRMED" }) }));
+    expect(f.tx.orderPaymentReduction.updateMany).not.toHaveBeenCalled();
+  });
+  it("records a later overpayment without consuming inventory a second time", async () => {
+    const f = fixture({ status: "ASSEMBLING", paymentStatus: "PAID", items: [{ id: "already-consumed" }], transferClaims: [
+      { id: "first", status: "CONFIRMED", amountMinor: new Prisma.Decimal("9007199254740993") },
+      { id: "extra", status: "PENDING", amountMinor: new Prisma.Decimal("1") },
+    ] });
+    const result = await f.service.execute("order", { action: "CONFIRM_TRANSFER", claimId: "extra", receivedAmountMinor: "1", expectedVersion: 3, idempotencyKey: "key" }, { ...context, organizationId: "supplier" });
+    expect(result.status).toBe("ASSEMBLING");
+    expect(result.paymentStatus).toBe("PAID");
+    expect(f.tx.orderTransferClaim.update).toHaveBeenCalledTimes(1);
   });
 });

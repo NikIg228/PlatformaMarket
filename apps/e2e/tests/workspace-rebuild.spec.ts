@@ -149,6 +149,102 @@ test("A15 order PDF boundaries and retry preserve the file and workflow identity
   expect(commands).toHaveLength(2); expect(commands[1]).toEqual(commands[0]); expect(uploads).toHaveLength(4);
 });
 
+for (const width of [1440, 390]) test(`CORE02 supplier exact payment review and retry ${width}`, async ({ page }, testInfo) => {
+  await fixture(page, "SUPPLIER"); await page.setViewportSize({ width, height: 950 });
+  const id = "55555555-5555-4555-8555-555555555555", claimId = "66666666-6666-4666-8666-666666666666";
+  const order = { id, orderNumber: "CORE02-PAYMENT", version: 1, supplierOrganizationId: organizationId, buyerOrganizationId: cityId, status: "AWAITING_PAYMENT", paymentStatus: "UNPAID", currency: "KZT", subtotalAmountMinor: "9007199254740994", items: [], shipments: [] };
+  const claim = { id: claimId, amountMinor: "9007199254740994", receivedAmountMinor: null as string | null, currency: "KZT", paidAt: "2026-10-01T04:00:00Z", status: "PENDING", documentId: sessionId, comment: "Платёж клиники" };
+  const commands: Array<Record<string, unknown>> = [];
+  let saved = false;
+  await page.route(`**/api/supplier-orders/${id}/workflow`, async route => {
+    if (route.request().method() === "GET") return route.fulfill({ json: { order, version: saved ? 2 : 1, status: order.status, paymentStatus: "UNPAID", claims: [claim], events: [], invoiceDocumentId: sessionId, reductions: [], paymentReviewConfigured: true, paymentSummary: { confirmedAmountMinor: saved ? "9007199254740993" : "0", remainingAmountMinor: saved ? "1" : "9007199254740994", overpaidAmountMinor: "0", status: saved ? "PARTIALLY_RECEIVED" : "PENDING" } } });
+    commands.push(route.request().postDataJSON());
+    if (commands.length === 1) return route.fulfill({ status: 503, json: { message: "Ответ проверки потерян. Повторите действие." } });
+    saved = true; claim.status = "CONFIRMED"; claim.receivedAmountMinor = "9007199254740993";
+    return route.fulfill({ json: {} });
+  });
+  await page.goto(`/supplier/orders/${id}`);
+  const confirm = page.getByRole("button", { name: "Подтвердить фактически полученную сумму", exact: true });
+  await expect(confirm).toBeDisabled();
+  const amount = page.getByLabel("Фактически поступило по переводу 1, KZT");
+  await amount.fill("90071992547409,93");
+  const acknowledgement = page.getByRole("checkbox", { name: /Проверено по счёту поставщика/ });
+  await acknowledgement.focus(); await page.keyboard.press("Space");
+  await expect(confirm).toBeEnabled(); await confirm.click();
+  await expect(page.getByText("Ответ проверки потерян. Повторите действие.", { exact: true })).toBeVisible();
+  await expect(amount).toHaveValue("90071992547409,93");
+  await confirm.click();
+  await expect(page.getByRole("heading", { name: "Перевод 1 · Поступление подтверждено" })).toBeVisible();
+  expect(commands).toHaveLength(2); expect(commands[0]).toEqual(commands[1]);
+  expect(commands[1].receivedAmountMinor).toBe("9007199254740993");
+  await expect(page.getByText("Осталось оплатить", { exact: true }).locator("+ dd")).toHaveText("0,01 ₸");
+  await expect(confirm).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath(`core02-supplier-${width}.png`), fullPage: true });
+});
+
+for (const width of [1440, 390]) test(`CORE02 buyer partial report invalidates changed receipt amount ${width}`, async ({ page }, testInfo) => {
+  await fixture(page, "BUYER"); await page.setViewportSize({ width, height: 950 });
+  const id = "55555555-5555-4555-8555-555555555555";
+  const order = { id, orderNumber: "CORE02-REPORT", version: 1, supplierOrganizationId: cityId, buyerOrganizationId: organizationId, status: "AWAITING_PAYMENT", paymentStatus: "UNPAID", currency: "KZT", subtotalAmountMinor: "9007199254740994", items: [], shipments: [] };
+  const uploads: Array<Record<string, unknown>> = [], commands: Array<Record<string, unknown>> = [];
+  await page.route(`**/api/supplier-orders/${id}/workflow`, async route => {
+    if (route.request().method() === "GET") return route.fulfill({ json: { order, version: 1, status: order.status, paymentStatus: "UNPAID", claims: [], events: [], invoiceDocumentId: sessionId, reductions: [], paymentReviewConfigured: false, paymentSummary: { confirmedAmountMinor: "0", remainingAmountMinor: order.subtotalAmountMinor, overpaidAmountMinor: "0", status: "UNREPORTED" } } });
+    commands.push(route.request().postDataJSON());
+    return route.fulfill({ status: 400, json: { message: "Проверьте сумму квитанции. Ввод сохранён." } });
+  });
+  await page.route("**/api/documents/upload", async route => { uploads.push(route.request().postDataJSON()); return route.fulfill({ json: { id: uploads.length === 1 ? cityId : organizationId } }); });
+  await page.goto(`/clinic/orders/${id}`);
+  await expect(page.getByText("График проверки оплаты не настроен", { exact: true })).toBeVisible();
+  const amount = page.getByLabel("Сумма этого перевода, KZT");
+  await amount.fill("100,01");
+  await page.getByLabel("Дата и время перевода").fill("2026-10-01T09:00");
+  await page.getByLabel("Квитанция, PDF до 10 МБ (10 000 000 байт)").setInputFiles({ name: "partial.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.7\nfixture") });
+  const send = page.getByRole("button", { name: "Отправить квитанцию", exact: true });
+  await send.click(); await expect(page.getByText("Проверьте сумму квитанции. Ввод сохранён.", { exact: true })).toBeVisible();
+  await expect(amount).toHaveValue("100,01");
+  await amount.fill("100,02"); await send.click();
+  await expect.poll(() => commands.length).toBe(2);
+  expect(uploads.map(item => item.amountMinor)).toEqual(["10001", "10002"]);
+  expect(commands.map(item => item.amountMinor)).toEqual(["10001", "10002"]);
+  expect(commands[0].documentId).not.toBe(commands[1].documentId);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath(`core02-buyer-${width}.png`), fullPage: true });
+});
+
+test("CORE02 mobile bilateral reduction and supplier policy require explicit choices", async ({ page }) => {
+  await fixture(page, "SUPPLIER"); await page.setViewportSize({ width: 390, height: 950 });
+  await page.route("**/api/access-control/permissions", route => route.fulfill({ json: ["organization.view", "order.confirm", "payment.transfer.confirm", "supplier.profile.manage", "document.view", "document.upload"] }));
+  const id = "55555555-5555-4555-8555-555555555555", itemId = "66666666-6666-4666-8666-666666666666";
+  const order = { id, orderNumber: "CORE02-CONSENT", version: 1, supplierOrganizationId: organizationId, buyerOrganizationId: cityId, status: "AWAITING_PAYMENT", paymentStatus: "UNPAID", currency: "KZT", subtotalAmountMinor: "10000", items: [{ id: itemId, quantity: "2", acceptedQuantity: "2", unitPriceMinor: "5000", totalPriceMinor: "10000", currency: "KZT" }], shipments: [] };
+  let policyBody: Record<string, unknown> | null = null, decision: Record<string, unknown> | null = null;
+  await page.route(`**/api/supplier-orders/${id}/workflow`, async route => {
+    if (route.request().method() === "POST") { decision = route.request().postDataJSON(); return route.fulfill({ status: 409, json: { message: "Проверьте обновлённые условия уменьшения" } }); }
+    return route.fulfill({ json: { order, version: 1, status: order.status, paymentStatus: "UNPAID", claims: [], events: [], invoiceDocumentId: sessionId,
+      reductions: [{ id: sessionId, proposedByOrganizationId: cityId, status: "PENDING", reason: "Получено меньше средств", previousAmountMinor: "10000", proposedAmountMinor: "5000", items: [{ itemId, previousQuantity: "2", acceptedQuantity: "1", totalPriceMinor: "5000" }] }] } });
+  });
+  await page.route("**/api/suppliers/current/payment-review-policy", async route => {
+    if (route.request().method() === "POST") policyBody = route.request().postDataJSON();
+    return route.fulfill({ json: { organizationId, version: policyBody ? 1 : 0, policy: policyBody, eligibleMembers: [{ userId: sessionId, displayName: "Основной сотрудник" }, { userId: cityId, displayName: "Резервный сотрудник" }] } });
+  });
+  await page.goto(`/supplier/orders/${id}`);
+  const accept = page.getByRole("button", { name: "Принять уменьшение", exact: true });
+  await expect(accept).toBeDisabled();
+  const consent = page.getByRole("checkbox", { name: "Согласен с новым составом и суммой" });
+  await consent.focus(); await page.keyboard.press("Space"); await accept.click();
+  await expect(page.getByText("Проверьте обновлённые условия уменьшения", { exact: true })).toBeVisible();
+  expect(decision).toMatchObject({ action: "DECIDE_PAYMENT_REDUCTION", reductionId: sessionId, accepted: true });
+  await expect(consent).toBeChecked();
+  await page.getByRole("button", { name: "Открыть настройки проверки", exact: true }).click();
+  await page.getByLabel("Основной ответственный", { exact: true }).selectOption(sessionId);
+  await page.getByLabel("Резервный ответственный", { exact: true }).selectOption(cityId);
+  await page.getByRole("button", { name: "Добавить рабочий период", exact: true }).click();
+  await page.getByRole("button", { name: "Сохранить график и ответственных", exact: true }).click();
+  await expect(page.getByText("Настройки сохранены. Они применятся к новым заявлениям о переводе.", { exact: true })).toBeVisible();
+  expect(policyBody).toMatchObject({ primaryUserId: sessionId, backupUserId: cityId, timezone: "Asia/Almaty", workingWindows: [{ day: 1, fromMinute: 540, toMinute: 1080 }], expectedVersion: 0 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
 async function fixture(
   page: Page,
   capability: "BUYER" | "SUPPLIER",

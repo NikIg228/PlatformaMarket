@@ -16,6 +16,7 @@ DEFERRED_DECISION. Это классификация существующих о
 | Область | Статус | Доказательство / ограничение |
 | --- | --- | --- |
 | CORE-01.1–01.3 внутренний контур | CI_PASS | [CORE-01-INTERNAL](task-state/CORE-01-INTERNAL-2026-10-01.md),831f7e0/df1f399, CI36845016859 и Security36845016749 SUCCESS: effective framework dates, synthetic PostgreSQL lifecycle; юридические тексты/боевые организации/ЭЦП не приняты |
+| CORE-02.1–02.4 внутренний контур | LOCAL_PASS / CI_PENDING | [CORE-02-INTERNAL](task-state/CORE-02-INTERNAL-2026-10-01.md): exact partial/overpayment, bilateral reduction/history, review/dispute/working-hour timers. Typecheck/unit/PG upgrade+transactions/core/runtime/build/bundle, canonical browser43/43 и real API2/2 PASS; публикация/CI ещё не закрыты. Рабочая БД и внешние деньги не менялись |
 | CORE04.1–04.4 | ACCEPTED в ограниченном scope | 278be21; CI36127372917 и Security36127373128 SUCCESS |
 | CORE04.5 | ACCEPTED в ограниченном scope | 73ac601; CI36355260705 и Security36355260722 SUCCESS |
 | A01–A18, canonical web/API/worker | LOCAL_PASS | Опубликованы в2a816c3; исправления цены/партии/offer/order/UI/TTL/read models и проверки ниже |

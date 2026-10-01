@@ -11,6 +11,9 @@ import { OrderWorkflowController } from "./order-workflow.controller";
 import { OrderWorkflowService } from "./order-workflow.service";
 import { WorkspaceReadsController } from "./workspace-reads.controller";
 import { WorkspaceReadsService } from "./workspace-reads.service";
+import { SupplierPaymentPolicyController } from "./supplier-payment-policy.controller";
+import { SupplierPaymentPolicyService } from "./supplier-payment-policy.service";
+import { PaymentReviewService } from "./payment-review.service";
 
-@Module({ imports: [InventoryModule, SuppliersModule, IntegrationsModule, ComplianceModule, MarketplaceAgreementsModule], controllers: [CommerceController, OrderWorkflowController, WorkspaceReadsController], providers: [SupplierAuxiliaryReadsService, CommerceService, OrderWorkflowService, WorkspaceReadsService], exports: [CommerceService] })
+@Module({ imports: [InventoryModule, SuppliersModule, IntegrationsModule, ComplianceModule, MarketplaceAgreementsModule], controllers: [CommerceController, OrderWorkflowController, WorkspaceReadsController, SupplierPaymentPolicyController], providers: [SupplierAuxiliaryReadsService, CommerceService, OrderWorkflowService, WorkspaceReadsService, SupplierPaymentPolicyService, PaymentReviewService], exports: [CommerceService] })
 export class CommerceModule {}

@@ -97,8 +97,9 @@ for (const width of [1440, 390]) {
       await db.inventoryReservation.updateMany({ where: { inventoryBalanceId: balanceId }, data: { expiresAt: new Date(Date.now() - 1000) } });
       await page.clock.install();
       await page.goto(`/supplier/orders/${order.id}`);
-      const confirmTransfer = page.getByRole("button", { name: "Подтверждаю поступление полной суммы", exact: true });
+      const confirmTransfer = page.getByRole("button", { name: "Подтвердить фактически полученную сумму", exact: true });
       await expect(confirmTransfer).toBeVisible();
+      await page.getByRole("checkbox", { name: /Проверено по счёту поставщика/ }).check();
       await expect(page.getByRole("status").filter({ hasText: "Перевод заявлен. Автоматическая отмена и снятие резерва приостановлены" })).toBeVisible();
       await db.supplierOrder.update({ where: { id: order.id }, data: { version: { increment: 1 } } });
       const staleWrite = page.waitForResponse(response => response.request().method() === "POST" && response.url().endsWith(`/supplier-orders/${order.id}/workflow`));

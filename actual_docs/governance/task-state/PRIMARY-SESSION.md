@@ -8,7 +8,8 @@ generation4/idle. Canonical root C:\Users\user\Desktop\dentmarket-kz-main,
 по порядку без внешних интеграций/боевых данных. Первый этап —
 [CORE-01-INTERNAL](CORE-01-INTERNAL-2026-10-01.md) — CLOSED/CI_PASS:
 831f7e0/df1f399, CI36845016859 и Security36845016749 SUCCESS.
-Следующий внутренний пункт — CORE02. Прежнее docs-only ограничение ниже относится к завершённой
+Активен следующий внутренний пункт — [CORE02](CORE-02-INTERNAL-2026-10-01.md).
+Прежнее docs-only ограничение ниже относится к завершённой
 DEPENDENCY-SPLIT задаче; новый запрос разрешает реализацию внутреннего scope.
 Следующий этап только после gates/review/публикации/CI текущего. EXT/боевые данные,
 worktrees/агенты и чужой WIP по-прежнему вне scope.

@@ -1739,6 +1739,8 @@ model SupplierProfile {
   organizationId         String                  @id @db.Uuid
   status                 RecordStatus            @default(ACTIVE)
   regulatoryDetails      Json?
+  paymentReviewPolicy    Json?
+  paymentReviewVersion   Int                     @default(0)
   organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   warehouses             Warehouse[]
   dataSources            SupplierDataSource[]
@@ -2341,6 +2343,7 @@ model SupplierOrder {
   version                  Int                     @default(1)
   manualInvoiceDocumentId  String?                 @db.Uuid
   transferClaims           OrderTransferClaim[]
+  paymentReductions        OrderPaymentReduction[]
   workflowEvents           OrderWorkflowEvent[]
   checkout                 Checkout                @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
   supplier                 Organization            @relation("SupplierOrderSupplier", fields: [supplierOrganizationId], references: [id], onDelete: Restrict)
@@ -2373,9 +2376,37 @@ model OrderTransferClaim {
   status            String @default("PENDING")
   confirmedAt       DateTime?
   confirmedById     String? @db.Uuid
+  receivedAmountMinor Decimal? @db.Decimal(20, 0)
+  reportedById      String? @db.Uuid
+  checkedAt         DateTime?
+  nextCheckAt       DateTime?
+  reviewStartedAt   DateTime @default(now())
+  reviewPolicySnapshot Json?
+  remindedAt        DateTime?
+  backupNotifiedAt  DateTime?
+  supportTicketId   String? @db.Uuid
   createdAt         DateTime @default(now())
   supplierOrder     SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Restrict)
   @@index([supplierOrderId, createdAt])
+  @@index([status, reviewStartedAt])
+}
+
+model OrderPaymentReduction {
+  id                       String @id @default(uuid()) @db.Uuid
+  supplierOrderId          String @db.Uuid
+  proposedByOrganizationId String @db.Uuid
+  proposedById             String @db.Uuid
+  status                   String @default("PENDING")
+  reason                   String
+  previousAmountMinor      Decimal @db.Decimal(20, 0)
+  proposedAmountMinor      Decimal @db.Decimal(20, 0)
+  itemsSnapshot            Json
+  decidedAt                DateTime?
+  decidedById              String? @db.Uuid
+  createdAt                DateTime @default(now())
+  supplierOrder            SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Restrict)
+
+  @@index([supplierOrderId, status, createdAt])
 }
 
 model OrderWorkflowEvent {

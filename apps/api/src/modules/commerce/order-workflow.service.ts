@@ -7,9 +7,14 @@ import { AccessControlService } from "../access-control/access-control.service";
 import type { SupplierActorContext } from "../suppliers/supplier-access.service";
 import { lockInventoryBalances, lotIsUsable, usableLotWhere } from "../inventory/lot-eligibility";
 import { orderReservationState } from "../inventory/reservation-lifecycle";
+import { manualPaymentSummary, maxMinorAmount } from "./manual-payment-rules";
+import { paymentPolicy } from "./supplier-payment-policy.service";
+import { createPaymentDispute, notifyPaymentReview } from "./payment-review.service";
+import { paymentReduction } from "./order-payment-reduction";
 
 const include = { items: { include: { reservation: { include: { externalReservation: true, inventoryLot: true } } } }, transferClaims: { orderBy: { createdAt: "asc" as const } }, paymentAllocation: true };
-type Order = Prisma.SupplierOrderGetPayload<{ include: typeof include }>;
+export type Order = Prisma.SupplierOrderGetPayload<{ include: typeof include }>;
+const manualPaymentStatuses: string[] = ["AWAITING_PAYMENT", "PAID", "ASSEMBLING", "READY_TO_SHIP", "SHIPPED", "IN_TRANSIT", "PARTIALLY_FULFILLED", "DELIVERED"];
 
 @Injectable()
 export class OrderWorkflowService {
@@ -28,19 +33,29 @@ export class OrderWorkflowService {
     await this.visible(orderId, context, true);
     const order = await this.prisma.supplierOrder.findUniqueOrThrow({ where: { id: orderId }, include: { paymentAllocation: true, items: { include: { reservation: { include: { externalReservation: true } }, offer: { include: { productVariant: { include: { product: true } } } }, warehouse: true } }, buyer: true, supplier: true, shipments: { include: { items: true, fulfillmentSteps: true, warehouse: true } }, transferClaims: { orderBy: { createdAt: "asc" } }, workflowEvents: { orderBy: [{ createdAt: "asc" }, { id: "asc" }], select: { id: true, action: true, actorId: true, organizationId: true, createdAt: true, details: true } } } });
     const { transferClaims, workflowEvents, paymentAllocation, items, ...detail } = order;
-    return { orderId: order.id, order: { ...detail, items: items.map(({ reservation, ...item }) => item) }, version: order.version, status: order.status, paymentStatus: order.paymentStatus, invoiceDocumentId: order.manualInvoiceDocumentId, claims: order.transferClaims, events: order.workflowEvents, reservationState: orderReservationState(order) };
+    const [policy, reductions] = await Promise.all([paymentPolicy(this.prisma, order.supplierOrganizationId),
+      this.prisma.orderPaymentReduction.findMany({ where: { supplierOrderId: order.id }, orderBy: { createdAt: "asc" } })]);
+    return { orderId: order.id, order: { ...detail, items: items.map(({ reservation, ...item }) => item) }, version: order.version, status: order.status, paymentStatus: order.paymentStatus, invoiceDocumentId: order.manualInvoiceDocumentId,
+      claims: transferClaims.map(({ reviewPolicySnapshot, reviewStartedAt, reportedById, remindedAt, backupNotifiedAt, ...claim }) => claim),
+      events: workflowEvents, reservationState: orderReservationState(order),
+      paymentSummary: manualPaymentSummary(order.subtotalAmountMinor, transferClaims), paymentReviewConfigured: Boolean(policy.policy),
+      reductions: reductions.map(({ itemsSnapshot, ...value }) => ({ ...value, items: itemsSnapshot })) };
   }
 
   async execute(orderId: string, input: OrderWorkflowCommand, context: SupplierActorContext) {
     await this.visible(orderId, context);
-    const permission = input.action === "CONFIRM_TRANSFER" ? "payment.transfer.confirm" : ["ISSUE_INVOICE", "REQUEST_PAYMENT_DETAILS"].includes(input.action) ? "order.confirm" : "order.approve";
-    if (!await this.access.hasAll(context.actorId, context.organizationId, [permission])) throw new ForbiddenException("Недостаточно прав для действия с заказом");
+    const bilateral = ["OPEN_PAYMENT_DISPUTE", "PROPOSE_PAYMENT_REDUCTION", "DECIDE_PAYMENT_REDUCTION"].includes(input.action);
+    const permission = input.action === "CONFIRM_TRANSFER" ? "payment.transfer.confirm" : ["ISSUE_INVOICE", "REQUEST_PAYMENT_DETAILS", "RECORD_TRANSFER_CHECK"].includes(input.action) ? "order.confirm" : "order.approve";
+    if (!bilateral && !await this.access.hasAll(context.actorId, context.organizationId, [permission])) throw new ForbiddenException("Недостаточно прав для действия с заказом");
     const requestHash = createHash("sha256").update(JSON.stringify(input)).digest("hex");
     return this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "SupplierOrder" WHERE id = ${orderId}::uuid FOR UPDATE`;
       let order = await tx.supplierOrder.findUniqueOrThrow({ where: { id: orderId }, include });
-      const supplierAction = ["ISSUE_INVOICE", "REQUEST_PAYMENT_DETAILS", "CONFIRM_TRANSFER"].includes(input.action);
-      if ((supplierAction ? order.supplierOrganizationId : order.buyerOrganizationId) !== context.organizationId) throw new ForbiddenException("Действие недоступно этой стороне заказа");
+      const supplierAction = ["ISSUE_INVOICE", "REQUEST_PAYMENT_DETAILS", "CONFIRM_TRANSFER", "RECORD_TRANSFER_CHECK"].includes(input.action);
+      if (bilateral) {
+        const partyPermission = context.organizationId === order.supplierOrganizationId ? "order.confirm" : context.organizationId === order.buyerOrganizationId ? "order.approve" : null;
+        if (!partyPermission || !await this.access.hasAll(context.actorId, context.organizationId, [partyPermission])) throw new ForbiddenException("Действие недоступно этой стороне заказа");
+      } else if ((supplierAction ? order.supplierOrganizationId : order.buyerOrganizationId) !== context.organizationId) throw new ForbiddenException("Действие недоступно этой стороне заказа");
       const previous = await tx.orderWorkflowEvent.findUnique({ where: { supplierOrderId_organizationId_idempotencyKey: { supplierOrderId: orderId, organizationId: context.organizationId, idempotencyKey: input.idempotencyKey } } });
       if (previous) {
         if (previous.requestHash !== requestHash || previous.actorId !== context.actorId) throw new ConflictException("Ключ повтора уже использован для другого действия");
@@ -49,7 +64,7 @@ export class OrderWorkflowService {
       if (order.version !== input.expectedVersion) throw new ConflictException("Заказ изменился. Обновите страницу и проверьте условия");
       if (["ACCEPT_COMPOSITION", "ISSUE_INVOICE", "REPORT_TRANSFER"].includes(input.action) && orderReservationState(order).status === "DUE")
         throw new ConflictException("Срок резерва истёк до заявления оплаты. Не переводите деньги по этому счёту; обновите заказ.");
-      if (input.action === "CONFIRM_TRANSFER" || input.action === "CANCEL") {
+      if (input.action === "CONFIRM_TRANSFER" || input.action === "CANCEL" || input.action === "DECIDE_PAYMENT_REDUCTION") {
         await lockInventoryBalances(tx, order.items.flatMap(item => item.reservation ? [item.reservation.inventoryBalanceId] : []));
         order = await tx.supplierOrder.findUniqueOrThrow({ where: { id: orderId }, include });
       }
@@ -79,37 +94,75 @@ export class OrderWorkflowService {
 
   private async apply(tx: Prisma.TransactionClient, order: Order, input: OrderWorkflowCommand, context: SupplierActorContext): Promise<Prisma.SupplierOrderUpdateInput> {
     if (input.action === "RECEIVE_SHIPMENT") return this.receive(tx, order, input);
-    this.unpaid(order);
+    if (input.action === "PROPOSE_PAYMENT_REDUCTION" || input.action === "DECIDE_PAYMENT_REDUCTION") {
+      const changes = await paymentReduction(tx, order, input, context);
+      if (input.action === "DECIDE_PAYMENT_REDUCTION" && input.accepted && "subtotalAmountMinor" in changes) {
+        const refreshed = await tx.supplierOrder.findUniqueOrThrow({ where: { id: order.id }, include });
+        const summary = manualPaymentSummary(changes.subtotalAmountMinor!, refreshed.transferClaims);
+        if (summary.remainingAmountMinor === "0") {
+          await this.consume(tx, refreshed);
+          return { ...changes, status: "PAID", paymentStatus: "PAID" };
+        }
+      }
+      return changes;
+    }
+    if (input.action === "OPEN_PAYMENT_DISPUTE") {
+      const claim = order.transferClaims.find(claim => claim.id === input.claimId);
+      if (!claim || claim.status === "CONFIRMED") throw new ConflictException("Для подтверждённых денег используется отдельная процедура возврата");
+      await createPaymentDispute(tx, order, claim, context.actorId, input.reason);
+      await tx.orderTransferClaim.update({ where: { id: claim.id }, data: { status: "DISPUTED" } });
+      return {};
+    }
+    if (input.action === "CONFIRM_TRANSFER") {
+      if (order.paymentAllocation || !["UNPAID", "PAID"].includes(order.paymentStatus) || !manualPaymentStatuses.includes(order.status)) throw new ConflictException("Ручной перевод сейчас недоступен");
+      const claim = order.transferClaims.find(({ id }) => id === input.claimId);
+      if (!claim || claim.status === "CONFIRMED") throw new ConflictException("Заявка на оплату недоступна для подтверждения");
+      const received = new Prisma.Decimal(input.receivedAmountMinor ?? claim.amountMinor.toString());
+      const before = manualPaymentSummary(order.subtotalAmountMinor, order.transferClaims);
+      if (!received.gt(0) || !received.isInteger() || BigInt(before.confirmedAmountMinor) + BigInt(received.toString()) > maxMinorAmount) throw new ConflictException("Недопустимая подтверждённая сумма");
+      const paid = new Prisma.Decimal(before.confirmedAmountMinor).plus(received).gte(order.subtotalAmountMinor);
+      if (paid && order.paymentStatus === "UNPAID") await this.consume(tx, order);
+      if (paid) await tx.orderPaymentReduction.updateMany({ where: { supplierOrderId: order.id, status: "PENDING" },
+        data: { status: "SUPERSEDED", decidedAt: new Date() } });
+      await tx.orderTransferClaim.update({ where: { id: claim.id }, data: { status: "CONFIRMED", receivedAmountMinor: received, confirmedAt: new Date(), confirmedById: context.actorId, nextCheckAt: null } });
+      return paid && order.paymentStatus === "UNPAID" ? { paymentStatus: "PAID", status: "PAID" } : {};
+    }
+    if (!["REPORT_TRANSFER", "ISSUE_INVOICE", "RECORD_TRANSFER_CHECK", "REQUEST_PAYMENT_DETAILS"].includes(input.action) || order.paymentStatus !== "PAID") this.unpaid(order);
     if (input.action === "ACCEPT_COMPOSITION") {
       if (order.status !== "PARTIALLY_CONFIRMED") throw new ConflictException("Нет изменений состава для согласования");
       return { status: "CONFIRMED" };
     }
     if (input.action === "ISSUE_INVOICE") {
-      if (!["CONFIRMED", "AWAITING_PAYMENT"].includes(order.status) || order.transferClaims.length) throw new ConflictException("Сначала согласуйте состав; заявленный перевод блокирует замену счёта");
+      const replacementAfterReduction = !order.manualInvoiceDocumentId && order.transferClaims.length > 0 && order.transferClaims.every(claim => claim.status === "CONFIRMED");
+      if (!(["CONFIRMED", "AWAITING_PAYMENT"].includes(order.status) || (order.status === "PAID" && replacementAfterReduction)) || (order.transferClaims.length > 0 && !replacementAfterReduction)) throw new ConflictException("Сначала согласуйте состав; заявленный перевод блокирует замену счёта");
       const doc = await this.document(tx, order, input.documentId, order.supplierOrganizationId, "INVOICE");
       if (!doc.amountMinor?.eq(order.subtotalAmountMinor) || doc.currency !== order.currency) throw new ConflictException("Сумма и валюта счёта должны совпадать с заказом");
-      return { manualInvoiceDocumentId: doc.id, status: "AWAITING_PAYMENT" };
+      return { manualInvoiceDocumentId: doc.id, status: order.paymentStatus === "PAID" ? order.status : "AWAITING_PAYMENT" };
     }
     if (input.action === "REPORT_TRANSFER") {
-      if (order.status !== "AWAITING_PAYMENT" || order.manualInvoiceDocumentId !== input.invoiceDocumentId) throw new ConflictException("Счёт изменился или ещё не выставлен");
-      if (!order.subtotalAmountMinor.eq(input.amountMinor)) throw new ConflictException("Поддерживается подтверждение полной суммы заказа; другую сумму обсудите с поддержкой");
+      if (!manualPaymentStatuses.includes(order.status) || order.paymentAllocation || order.manualInvoiceDocumentId !== input.invoiceDocumentId) throw new ConflictException("Счёт изменился или ещё не выставлен");
       if (new Date(input.paidAt).getTime() > Date.now() + 60000) throw new ConflictException("Дата перевода не может быть в будущем");
-      await this.document(tx, order, input.documentId, order.buyerOrganizationId, "PAYMENT_PROOF");
+      const proof = await this.document(tx, order, input.documentId, order.buyerOrganizationId, "PAYMENT_PROOF");
+      if (!proof.amountMinor?.eq(input.amountMinor) || proof.currency !== order.currency) throw new ConflictException("Сумма и валюта квитанции должны совпадать с заявленным переводом");
       if (order.transferClaims.some(({ documentId }) => documentId === input.documentId)) throw new ConflictException("Эта квитанция уже приложена");
-      await tx.orderTransferClaim.create({ data: { supplierOrderId: order.id, invoiceDocumentId: input.invoiceDocumentId, documentId: input.documentId, amountMinor: input.amountMinor, currency: order.currency, paidAt: new Date(input.paidAt), comment: input.comment } });
+      const policy = await paymentPolicy(tx, order.supplierOrganizationId);
+      const claim = await tx.orderTransferClaim.create({ data: { supplierOrderId: order.id, invoiceDocumentId: input.invoiceDocumentId, documentId: input.documentId, amountMinor: input.amountMinor, currency: order.currency, paidAt: new Date(input.paidAt), comment: input.comment,
+        reportedById: context.actorId, reviewPolicySnapshot: policy.policy ? policy.policy as Prisma.InputJsonValue : Prisma.DbNull } });
+      await notifyPaymentReview(tx, order, claim, policy.policy?.primaryUserId ?? null, "REPORTED");
       return {};
     }
     if (input.action === "REQUEST_PAYMENT_DETAILS") {
-      if (!order.transferClaims.length || order.status !== "AWAITING_PAYMENT") throw new ConflictException("Нет заявленного перевода для уточнения");
+      if (!order.transferClaims.some(claim => claim.status !== "CONFIRMED") || !manualPaymentStatuses.includes(order.status)) throw new ConflictException("Нет заявленного перевода для уточнения");
       await tx.orderTransferClaim.updateMany({ where: { supplierOrderId: order.id, status: "PENDING" }, data: { status: "NEEDS_INFORMATION" } });
       return {};
     }
-    if (input.action === "CONFIRM_TRANSFER") {
+    if (input.action === "RECORD_TRANSFER_CHECK") {
       const claim = order.transferClaims.find(({ id }) => id === input.claimId);
-      if (!claim || claim.status === "CONFIRMED" || order.status !== "AWAITING_PAYMENT" || !claim.amountMinor.eq(order.subtotalAmountMinor)) throw new ConflictException("Заявка на оплату недоступна для подтверждения");
-      await this.consume(tx, order);
-      await tx.orderTransferClaim.update({ where: { id: claim.id }, data: { status: "CONFIRMED", confirmedAt: new Date(), confirmedById: context.actorId } });
-      return { paymentStatus: "PAID", status: "PAID" };
+      const next = new Date(input.nextCheckAt);
+      if (!claim || claim.status === "CONFIRMED" || next <= new Date() || next.getTime() > Date.now() + 7 * 86400_000) throw new ConflictException("Укажите следующую проверку в течение ближайших7 дней");
+      await tx.orderTransferClaim.update({ where: { id: claim.id }, data: { status: claim.status === "DISPUTED" ? "DISPUTED" : "NOT_RECEIVED", checkedAt: new Date(), nextCheckAt: next,
+        reviewStartedAt: next, remindedAt: null, backupNotifiedAt: null } });
+      return {};
     }
     if (!["AWAITING_CONFIRMATION", "CONFIRMED", "PARTIALLY_CONFIRMED", "AWAITING_PAYMENT"].includes(order.status) || order.transferClaims.length || await tx.shipment.count({ where: { supplierOrderId: order.id } })) throw new ConflictException("Автоматическая отмена недоступна. Обратитесь в поддержку");
     for (const item of order.items) {

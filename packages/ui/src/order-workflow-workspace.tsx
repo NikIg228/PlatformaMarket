@@ -1,18 +1,22 @@
 "use client";
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import type { OrderWorkflowCommand, OrderWorkflowResponse, OrderWorkflowResult, UploadDocumentInput } from "@marketplace/schemas";
 import { documentUploadFileError } from "./document-upload-model";
 import { DmButton, DmField, DmInput, DmFeedback, LoadingState, Section, formatDate, formatMoney, formatStatus, errorMessage as describeError } from "./index";
 import { usePermissions } from "./permissions";
 import { WorkflowCommandTracker, type WorkflowAction as Action } from "./order-workflow-command";
+import { moneyInputValue, parseMoneyInput } from "./money";
+import { PaymentSummaryPanel, TransferReviewPanel, PaymentReductionPanel } from "./manual-payment-panels";
+import type { PaymentPolicyApi } from "./supplier-payment-policy-panel";
+const SupplierPaymentPolicyPanel = lazy(() => import("./supplier-payment-policy-panel").then(module => ({ default: module.SupplierPaymentPolicyPanel })));
 
 const errorMessage = (cause: unknown, fallback: string) => cause instanceof Error ? describeError(cause) : fallback;
-type Api = {
+type Api = Partial<PaymentPolicyApi> & {
   getOrderWorkflow(id: string): Promise<OrderWorkflowResponse>;
   executeOrderWorkflow(id: string, input: OrderWorkflowCommand): Promise<OrderWorkflowResult>;
   uploadDocument(input: UploadDocumentInput): Promise<{ id: string }>;
 };
-const labels: Record<string, string> = { ACCEPT_COMPOSITION: "Клиника согласовала состав", ISSUE_INVOICE: "Поставщик выставил счёт", REPORT_TRANSFER: "Клиника сообщила о переводе", REQUEST_PAYMENT_DETAILS: "Поставщик запросил уточнение оплаты", CONFIRM_TRANSFER: "Поставщик подтвердил поступление", CANCEL: "Клиника отменила неоплаченный заказ" };
+const labels: Record<string, string> = { ACCEPT_COMPOSITION: "Клиника согласовала состав", ISSUE_INVOICE: "Поставщик выставил счёт", REPORT_TRANSFER: "Клиника сообщила о переводе", REQUEST_PAYMENT_DETAILS: "Поставщик запросил уточнение оплаты", CONFIRM_TRANSFER: "Поставщик подтвердил поступление", CANCEL: "Клиника отменила неоплаченный заказ", RECORD_TRANSFER_CHECK: "Поставщик проверил перевод и назначил повторную проверку", OPEN_PAYMENT_DISPUTE: "Открыт спор по переводу", PROPOSE_PAYMENT_REDUCTION: "Предложено уменьшение заказа", DECIDE_PAYMENT_REDUCTION: "Рассмотрено уменьшение заказа" };
 
 type WorkflowProps = { orderId: string; organizationId: string; api: Api; onDownload: (id: string) => Promise<void>; renderFulfillment?: (data: OrderWorkflowResponse, refresh: () => Promise<void>) => ReactNode; backHref?: string; backLabel?: string };
 export function OrderWorkflowWorkspace(props: WorkflowProps) {
@@ -22,7 +26,7 @@ export function OrderWorkflowWorkspace(props: WorkflowProps) {
 function OrderWorkflowSession({ orderId, organizationId, api, onDownload, renderFulfillment, backHref = "/", backLabel = "В кабинет" }: WorkflowProps) {
   const has = usePermissions();
   const fileInputId = useId();
-  const canAct = (action: Action["action"]) => has(action === "CONFIRM_TRANSFER" ? "payment.transfer.confirm" : ["ISSUE_INVOICE", "REQUEST_PAYMENT_DETAILS"].includes(action) ? "order.confirm" : "order.approve");
+  const canAct = (action: Action["action"]) => has(action === "CONFIRM_TRANSFER" ? "payment.transfer.confirm" : ["ISSUE_INVOICE", "REQUEST_PAYMENT_DETAILS", "RECORD_TRANSFER_CHECK"].includes(action) || (["OPEN_PAYMENT_DISPUTE", "PROPOSE_PAYMENT_REDUCTION", "DECIDE_PAYMENT_REDUCTION"].includes(action) && organizationId === data?.order.supplierOrganizationId) ? "order.confirm" : "order.approve");
   const [data, setData] = useState<OrderWorkflowResponse | null>(null);
   const [error, setError] = useState("");
   const [readError, setReadError] = useState("");
@@ -30,6 +34,7 @@ function OrderWorkflowSession({ orderId, organizationId, api, onDownload, render
   const [busy, setBusy] = useState(false);
   const [comment, setComment] = useState("");
   const [paidAt, setPaidAt] = useState("");
+  const [transferAmount, setTransferAmount] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [noTransfer, setNoTransfer] = useState(false);
   const working = useRef(false);
@@ -37,7 +42,7 @@ function OrderWorkflowSession({ orderId, organizationId, api, onDownload, render
   const readSequence = useRef(0);
   const readPending = useRef<Promise<void> | null>(null);
   const pending = useRef(new WorkflowCommandTracker());
-  const uploaded = useRef<{ file: File; id: string } | null>(null);
+  const uploaded = useRef<{ file: File; id: string; amountMinor: string; currency: string } | null>(null);
   const uploadNumber = useRef("");
   const refresh = useCallback(async () => {
     if (readPending.current) await readPending.current;
@@ -78,21 +83,24 @@ function OrderWorkflowSession({ orderId, organizationId, api, onDownload, render
   const sendFile = async () => {
     if (!data || !file || working.current) return;
     const supplier = organizationId === data.order.supplierOrganizationId;
+    const amountMinor = supplier ? data.order.subtotalAmountMinor : parseMoneyInput(transferAmount ?? moneyInputValue(data.paymentSummary?.remainingAmountMinor ?? data.order.subtotalAmountMinor));
+    if (!amountMinor) { setError("Укажите положительную сумму перевода с точностью до двух знаков."); return; }
     if (!has("document.upload") || !canAct(supplier ? "ISSUE_INVOICE" : "REPORT_TRANSFER")) { setError("Действие недоступно вашей роли. Ввод сохранён."); return; }
-    if (!supplier && (!paidAt || !data.invoiceDocumentId)) { setError("Укажите дату перевода и дождитесь счёта поставщика."); return; }
+    if (!supplier && (!paidAt || !Number.isFinite(new Date(paidAt).getTime()) || !data.invoiceDocumentId)) { setError("Укажите дату перевода и дождитесь счёта поставщика."); return; }
     const fileError = documentUploadFileError(file);
     if (fileError || !file.name.toLowerCase().endsWith(".pdf")) { setError(fileError ?? "Выберите файл PDF."); return; }
     working.current = true; setBusy(true); setError("");
     try {
-      if (uploaded.current?.file !== file) {
+      if (uploaded.current?.file !== file || uploaded.current.amountMinor !== amountMinor || uploaded.current.currency !== data.order.currency) {
+        if (uploaded.current) uploadNumber.current = "";
         if (!uploadNumber.current) uploadNumber.current = `ORDER-${crypto.randomUUID()}`;
         const contentBase64 = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(",")[1]); reader.onerror = () => reject(new Error("Не удалось прочитать файл")); reader.readAsDataURL(file); });
-        const doc = await api.uploadDocument({ ownerOrganizationId: organizationId, supplierOrderId: orderId, kind: supplier ? "INVOICE" : "PAYMENT_PROOF", format: "PDF", title: supplier ? "Счёт на оплату заказа" : "Квитанция о заявленном переводе", documentNumber: uploadNumber.current, amountMinor: data.order.subtotalAmountMinor, currency: data.order.currency, fileName: file.name, contentBase64, requiredSignatureCount: 0 });
+        const doc = await api.uploadDocument({ ownerOrganizationId: organizationId, supplierOrderId: orderId, kind: supplier ? "INVOICE" : "PAYMENT_PROOF", format: "PDF", title: supplier ? "Счёт на оплату заказа" : "Квитанция о заявленном переводе", documentNumber: uploadNumber.current, amountMinor, currency: data.order.currency, fileName: file.name, contentBase64, requiredSignatureCount: 0 });
         if (!alive.current) return;
-        uploaded.current = { file, id: doc.id };
+        uploaded.current = { file, id: doc.id, amountMinor, currency: data.order.currency };
       }
       working.current = false;
-      await perform(supplier ? { action: "ISSUE_INVOICE", documentId: uploaded.current.id } : { action: "REPORT_TRANSFER", documentId: uploaded.current.id, invoiceDocumentId: data.invoiceDocumentId!, amountMinor: data.order.subtotalAmountMinor, paidAt: new Date(paidAt).toISOString(), comment });
+      await perform(supplier ? { action: "ISSUE_INVOICE", documentId: uploaded.current.id } : { action: "REPORT_TRANSFER", documentId: uploaded.current.id, invoiceDocumentId: data.invoiceDocumentId!, amountMinor, paidAt: new Date(paidAt).toISOString(), comment });
     } catch (cause) { if (alive.current) setError(errorMessage(cause, "Файл не отправлен. Проверьте соединение и повторите.")); }
     finally { working.current = false; if (alive.current) setBusy(false); }
   };
@@ -101,22 +109,26 @@ function OrderWorkflowSession({ orderId, organizationId, api, onDownload, render
   const supplier = organizationId === data.order.supplierOrganizationId;
   const unpaid = data.paymentStatus === "UNPAID";
   const reserveOverdue = ["DUE", "EXPIRED"].includes(data.reservationState?.status ?? "");
-  const mayInvoice = supplier && unpaid && !reserveOverdue && ["CONFIRMED", "AWAITING_PAYMENT"].includes(data.status) && !data.claims.length;
-  const mayReport = buyer && unpaid && !reserveOverdue && data.status === "AWAITING_PAYMENT";
+  const replacementInvoice = !data.invoiceDocumentId && data.claims.length > 0 && data.claims.every(claim => claim.status === "CONFIRMED");
+  const mayInvoice = supplier && !reserveOverdue && (unpaid || replacementInvoice) && ["CONFIRMED", "AWAITING_PAYMENT", "PAID"].includes(data.status) && (!data.claims.length || replacementInvoice);
+  const mayReport = buyer && !reserveOverdue && Boolean(data.invoiceDocumentId) && ["AWAITING_PAYMENT", "PAID", "ASSEMBLING", "READY_TO_SHIP", "SHIPPED", "IN_TRANSIT", "PARTIALLY_FULFILLED", "DELIVERED"].includes(data.status);
   const download = async (id: string) => { try { await onDownload(id); } catch (cause) { if (alive.current) setError(errorMessage(cause, "Не удалось скачать документ")); } };
   return <div style={{ display: "grid", gap: 20 }}>
     <header><a href={backHref}>{backLabel}</a><h1>Заказ {data.order.orderNumber}</h1><p>{formatMoney(data.order.subtotalAmountMinor, data.order.currency)} · {formatStatus(data.status)}</p></header>
     {readError ? <DmFeedback tone="warning" title="Не удалось обновить заказ" description={readError} action={<DmButton disabled={busy} onClick={() => void refresh()}>Повторить загрузку</DmButton>} /> : null}
     {error ? <DmFeedback tone="danger" title="Требуется внимание" description={error} action={<DmButton disabled={busy} onClick={() => void refresh()}>Обновить условия</DmButton>} /> : null}
     {notice ? <DmFeedback tone="success" title="Готово" description={notice} /> : null}
+    <PaymentSummaryPanel data={data} />
+    {supplier && has("supplier.profile.manage") && api.getSupplierPaymentPolicy && api.saveSupplierPaymentPolicy ? <Suspense fallback={<LoadingState label="Загружаем настройки проверки оплаты" />}><SupplierPaymentPolicyPanel api={api as Api & PaymentPolicyApi} onSaved={refresh} /></Suspense> : null}
     {data.reservationState?.status === "HELD_TRANSFER" ? <DmFeedback tone="neutral" title="Резерв удерживается" description="Перевод заявлен. Автоматическая отмена и снятие резерва приостановлены, в том числе при уточнении оплаты. Если проверка затянулась, обратитесь в поддержку." /> : null}
     {data.reservationState?.status === "HELD_EXTERNAL" ? <DmFeedback tone="neutral" title="Резерв управляется платёжным или складским контуром" description="Автоматическое локальное освобождение недоступно. Изменение требует завершения соответствующей операции." /> : null}
     {reserveOverdue ? <DmFeedback tone="warning" title={data.reservationState?.status === "EXPIRED" ? "Срок резерва истёк" : "Срок резерва истёк, освобождение ожидается"} description="Оплата не была заявлена до окончания срока. Не переводите деньги по прежнему счёту. Для новой покупки заново проверьте цену и наличие в каталоге." /> : null}
     {data.reservationState?.status === "ACTIVE" && data.reservationState.expiresAt ? <p>Локальный резерв действует до {formatDate(data.reservationState.expiresAt, true)}. После заявления перевода автоматическое снятие приостанавливается.</p> : null}
     <Section title="Этапы заказа"><ol><li>Состав: {data.status === "AWAITING_CONFIRMATION" ? "ожидается ответ поставщика" : data.status === "PARTIALLY_CONFIRMED" ? "нужно согласие клиники" : "согласование завершено"}</li><li>Счёт: {data.invoiceDocumentId ? <DmButton appearance="subtle" onClick={() => void download(data.invoiceDocumentId!)}>Скачать счёт</DmButton> : "ещё не выставлен"}</li><li>Оплата: {data.paymentStatus === "PAID" ? "поступление подтверждено поставщиком" : data.claims.length ? "перевод заявлен — ожидается подтверждение поставщика (pending)" : "ожидается оплата"}</li><li>Исполнение: {formatStatus(data.status)}</li></ol><p>Статусы обновляются каждые 5 секунд, пока страница открыта. Квитанция сама по себе не подтверждает поступление денег.</p></Section>
     <Section title="Согласованный состав"><ul>{data.order.items.map(item => <li key={item.id}>{item.offer?.productVariant.product.canonicalName ?? "Товар"}: заказано {item.quantity}, подтверждено {item.acceptedQuantity ?? "0"}; {formatMoney(item.totalPriceMinor, item.currency)}{item.decisionReason ? ` — ${item.decisionReason}` : ""}</li>)}</ul>{buyer && data.status === "PARTIALLY_CONFIRMED" ? <DmButton disabled={busy || !canAct("ACCEPT_COMPOSITION")} onClick={() => void perform({ action: "ACCEPT_COMPOSITION" })}>Принять состав и сумму</DmButton> : null}</Section>
-    {(mayInvoice || mayReport) ? <Section title={mayInvoice ? "Выставить банковский счёт" : "Сообщить о переводе"}><p>{mayInvoice ? "Загрузите счёт с реквизитами и суммой заказа. После заявления перевода замена счёта недоступна." : "Переведите полную сумму по реквизитам счёта поставщика и приложите квитанцию. Уточнения сохраняются в истории."}</p><DmField label={{ htmlFor: fileInputId, children: mayInvoice ? "Счёт, PDF до 10 МБ (10 000 000 байт)" : "Квитанция, PDF до 10 МБ (10 000 000 байт)" }}><input id={fileInputId} type="file" accept="application/pdf,.pdf" disabled={busy} onChange={event => { setFile(event.target.files?.[0] ?? null); uploaded.current = null; uploadNumber.current = ""; }} /></DmField>{mayReport ? <><DmField label="Дата и время перевода"><DmInput type="datetime-local" value={paidAt} onChange={(_, d) => setPaidAt(d.value)} /></DmField><DmField label="Комментарий к переводу"><DmInput value={comment} onChange={(_, d) => setComment(d.value)} /></DmField></> : null}<DmButton disabled={busy || !file || !has("document.upload") || !canAct(mayInvoice ? "ISSUE_INVOICE" : "REPORT_TRANSFER")} onClick={() => void sendFile()}>{busy ? "Сохраняем…" : mayInvoice ? "Выставить счёт" : "Отправить квитанцию"}</DmButton></Section> : null}
-    {data.claims.length ? <Section title="Проверка перевода">{data.claims.map(claim => <article key={claim.id}><p>{formatDate(claim.paidAt, true)} · {formatMoney(claim.amountMinor, claim.currency)} · {claim.status === "CONFIRMED" ? "Подтверждено" : claim.status === "NEEDS_INFORMATION" ? "Запрошено уточнение" : "Ожидает проверки"}</p><p>{claim.comment}</p><DmButton onClick={() => void download(claim.documentId)}>Скачать квитанцию</DmButton>{supplier && unpaid ? <DmButton disabled={busy || !canAct("CONFIRM_TRANSFER")} onClick={() => void perform({ action: "CONFIRM_TRANSFER", claimId: claim.id })}>Подтверждаю поступление полной суммы</DmButton> : null}</article>)}{supplier && unpaid ? <><DmField label="Что нужно уточнить по оплате"><DmInput value={comment} onChange={(_, d) => setComment(d.value)} /></DmField><DmButton disabled={busy || !canAct("REQUEST_PAYMENT_DETAILS") || comment.trim().length < 3} onClick={() => void perform({ action: "REQUEST_PAYMENT_DETAILS", comment })}>Запросить уточнение</DmButton></> : null}</Section> : null}
+    {(mayInvoice || mayReport) ? <Section title={mayInvoice ? "Выставить банковский счёт" : "Сообщить о переводе"}><p>{mayInvoice ? "Загрузите счёт с реквизитами и суммой заказа. После заявления перевода замена счёта недоступна." : "Укажите сумму этого перевода и приложите отдельную квитанцию. Доплаты учитываются после проверки поставщиком."}</p><DmField label={{ htmlFor: fileInputId, children: mayInvoice ? "Счёт, PDF до 10 МБ (10 000 000 байт)" : "Квитанция, PDF до 10 МБ (10 000 000 байт)" }}><input id={fileInputId} type="file" accept="application/pdf,.pdf" disabled={busy} onChange={event => { setFile(event.target.files?.[0] ?? null); uploaded.current = null; uploadNumber.current = ""; }} /></DmField>{mayReport ? <><DmField label={`Сумма этого перевода, ${data.order.currency}`} validationState={transferAmount !== null && !parseMoneyInput(transferAmount) ? "error" : "none"} validationMessage={transferAmount !== null && !parseMoneyInput(transferAmount) ? "Укажите положительную сумму с точностью до двух знаков" : undefined}><DmInput inputMode="decimal" disabled={busy} value={transferAmount ?? moneyInputValue(data.paymentSummary?.remainingAmountMinor ?? data.order.subtotalAmountMinor)} onChange={(_, d) => setTransferAmount(d.value)} /></DmField><DmField label="Дата и время перевода"><DmInput type="datetime-local" value={paidAt} onChange={(_, d) => setPaidAt(d.value)} /></DmField><DmField label="Комментарий к переводу"><DmInput value={comment} onChange={(_, d) => setComment(d.value)} /></DmField></> : null}<DmButton disabled={busy || !file || !has("document.upload") || !canAct(mayInvoice ? "ISSUE_INVOICE" : "REPORT_TRANSFER")} onClick={() => void sendFile()}>{busy ? "Сохраняем…" : mayInvoice ? "Выставить счёт" : "Отправить квитанцию"}</DmButton></Section> : null}
+    <TransferReviewPanel data={data} busy={busy} supplier={supplier} party={buyer || supplier} canAct={canAct} perform={perform} download={download} />
+    {buyer || supplier ? <PaymentReductionPanel data={data} busy={busy} organizationId={organizationId} canAct={canAct} perform={perform} /> : null}
     {renderFulfillment?.(data, refresh)}
     {buyer ? <Section title="Поставки и получение">{data.order.shipments?.length ? data.order.shipments.map(shipment => <article key={shipment.id}><h3>{shipment.shipmentNumber}</h3><p>{formatStatus(shipment.status)} · {shipment.carrierName ?? "Перевозчик не указан"} · Трек: {shipment.trackingNumber ?? "ещё не присвоен"}</p>{["DISPATCHED", "IN_TRANSIT", "PARTIALLY_DELIVERED"].includes(shipment.status) ? <ReceiptForm shipment={shipment} busy={busy || !canAct("RECEIVE_SHIPMENT")} onReceive={items => perform({ action: "RECEIVE_SHIPMENT", shipmentId: shipment.id, items })} /> : null}</article>) : <p>Поставщик ещё не создал поставку.</p>}</Section> : null}
     {buyer && unpaid && !data.claims.length && ["AWAITING_CONFIRMATION", "CONFIRMED", "PARTIALLY_CONFIRMED", "AWAITING_PAYMENT"].includes(data.status) ? <Section title="Отмена до оплаты"><DmField label="Причина отмены"><DmInput value={comment} onChange={(_, d) => setComment(d.value)} /></DmField><label><input type="checkbox" checked={noTransfer} onChange={e => setNoTransfer(e.target.checked)} /> Перевод по этому заказу не выполнялся</label><DmButton disabled={busy || !canAct("CANCEL") || !noTransfer || comment.trim().length < 3} onClick={() => void perform({ action: "CANCEL", reason: comment, transferNotMade: true })}>Отменить заказ</DmButton></Section> : null}

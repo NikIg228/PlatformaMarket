@@ -9,7 +9,7 @@ export const frontendFeatures = deploymentFeatures(frontendDeploymentProfile);
 
 import type {
   UpdateProductInput, UpdatedCatalogProduct,
-  OrderWorkflowCommand, OrderWorkflowResponse, OrderWorkflowResult,
+  OrderWorkflowCommand, OrderWorkflowResponse, OrderWorkflowResult, SaveSupplierPaymentPolicy, SupplierPaymentPolicyResponse,
   OrganizationProfileResponse, SaveOrganizationProfileInput, OrganizationOnboarding,
   AcceptSupplierTermsInput, ReviewSupplierAdmissionInput, SupplierLegalBundle, SupplierTermsState, SupplierTermsAcceptance, SupplierAdmissionList,
   WorkspaceContext,
@@ -484,6 +484,14 @@ export class MarketplaceApiClient {
 
   getOrderWorkflow(orderId: string) {
     return this.get<OrderWorkflowResponse>(`/supplier-orders/${orderId}/workflow`);
+  }
+
+  getSupplierPaymentPolicy() {
+    return this.get<SupplierPaymentPolicyResponse>("/suppliers/current/payment-review-policy");
+  }
+
+  saveSupplierPaymentPolicy(input: SaveSupplierPaymentPolicy) {
+    return this.post<SupplierPaymentPolicyResponse>("/suppliers/current/payment-review-policy", input);
   }
 
   executeOrderWorkflow(orderId: string, input: OrderWorkflowCommand) {

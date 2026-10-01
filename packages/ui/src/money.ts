@@ -1,4 +1,17 @@
 /** Monetary input is an integer minor-unit value. Never round it through Number. */
+export function parseMoneyInput(value: string): string | null {
+  const normalized = value.trim().replace(",", ".");
+  if (!/^\d{1,18}(\.\d{1,2})?$/.test(normalized)) return null;
+  const [whole, fraction = ""] = normalized.split(".");
+  const minor = BigInt(whole) * BigInt(100) + BigInt(fraction.padEnd(2, "0"));
+  return minor > BigInt(0) && minor <= BigInt("99999999999999999999") ? minor.toString() : null;
+}
+
+export function moneyInputValue(minor: string): string {
+  const amount = BigInt(minor);
+  return `${amount / BigInt(100)}.${(amount % BigInt(100)).toString().padStart(2, "0")}`;
+}
+
 export function formatMoney(amountMinor: string | number | bigint | null | undefined, currency = "KZT") {
   if (amountMinor == null) return "По запросу";
   if (typeof amountMinor === "number" && !Number.isSafeInteger(amountMinor)) return "Сумма недоступна";
