@@ -1,9 +1,10 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import type { CreateDeliveryRuleInput, CreateDeliveryZoneInput, CreateOfferDeliveryOptionInput, CreateShipmentInput, DeliveryQuoteInput, TransitionFulfillmentStepInput, TransitionShipmentInput, UpdateDeliveryRuleInput } from "@marketplace/schemas";
-import { Prisma, type ShipmentStatus } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import { SupplierAccessService, type SupplierActorContext } from "../suppliers/supplier-access.service";
-import { canTransitionFulfillment, canTransitionShipment, orderStatusForShipment } from "./shipment-state";
+import { canTransitionFulfillment, canTransitionShipment } from "./shipment-state";
+import { refreshFulfillmentStatus } from "./order-fulfillment-state";
 import { assertShipmentLotsUsable } from "../inventory/lot-eligibility";
 
 @Injectable()
@@ -268,6 +269,8 @@ export class LogisticsService {
     if (input.status === "DELIVERED" && shipment.fulfillmentSteps.some(({ status }) => !["COMPLETED", "CANCELLED"].includes(status))) throw new ConflictException("All fulfillment steps must be completed before delivery closes");
     return this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "SupplierOrder" WHERE id = ${shipment.supplierOrderId}::uuid FOR UPDATE`;
+      const currentOrder = await tx.supplierOrder.findUniqueOrThrow({ where: { id: shipment.supplierOrderId } });
+      if (currentOrder.paymentStatus !== "PAID" || ["CANCELLED", "REJECTED", "DELIVERED", "RETURN_DISPUTE"].includes(currentOrder.status)) throw new ConflictException("Order can no longer be shipped");
       if (["PLANNED", "PACKING", "READY", "DISPATCHED"].includes(input.status)) {
         const items = await tx.supplierOrderItem.findMany({ where: { supplierOrderId: shipment.supplierOrderId,
           id: { in: shipment.items.map(item => item.supplierOrderItemId) } } });
@@ -293,16 +296,9 @@ export class LogisticsService {
       } else {
         for (const [id, deliveredQuantity] of deliveredById) await tx.shipmentItem.update({ where: { id }, data: { deliveredQuantity } });
       }
-      const mappedStatus = orderStatusForShipment(input.status as ShipmentStatus);
-      if (mappedStatus) {
-        let orderStatus = mappedStatus;
-        if (input.status === "DELIVERED") {
-          const allShipments = await tx.shipment.findMany({ where: { supplierOrderId: shipment.supplierOrderId, status: { notIn: ["CANCELLED", "RETURNED"] } }, include: { items: true } });
-          const allClosed = allShipments.every(({ status }) => status === "DELIVERED");
-          orderStatus = allClosed ? "DELIVERED" : "PARTIALLY_FULFILLED";
-        }
-        await tx.supplierOrder.update({ where: { id: shipment.supplierOrderId }, data: { status: orderStatus, version: { increment: 1 } } });
-      }
+      await tx.supplierOrder.update({ where: { id: shipment.supplierOrderId }, data: {
+        status: await refreshFulfillmentStatus(tx, shipment.supplierOrderId), version: { increment: 1 },
+      } });
       const updated = await tx.shipment.findUniqueOrThrow({ where: { id: shipmentId }, include: { items: { include: { supplierOrderItem: true } }, fulfillmentSteps: { orderBy: { sequence: "asc" } }, warehouse: true } });
       await tx.auditLog.create({ data: { ...context, action: "shipment.status_changed", entityType: "Shipment", entityId: shipment.id, before: { status: shipment.status, version: shipment.version }, after: { status: updated.status, version: updated.version, supplierOrderId: shipment.supplierOrderId, trackingNumber: updated.trackingNumber } } });
       await tx.outboxEvent.create({ data: { aggregateType: "Shipment", aggregateId: shipment.id, eventType: "ShipmentStatusChanged", payload: { shipmentId: shipment.id, shipmentNumber: updated.shipmentNumber, supplierOrderId: shipment.supplierOrderId, orderNumber: shipment.supplierOrder.orderNumber, supplierOrganizationId: shipment.supplierOrder.supplierOrganizationId, buyerOrganizationId: shipment.supplierOrder.buyerOrganizationId, previousStatus: shipment.status, status: updated.status, trackingNumber: updated.trackingNumber, carrierName: updated.carrierName } } });
@@ -318,6 +314,12 @@ export class LogisticsService {
     if (!canTransitionFulfillment(step.status, input.status)) throw new ConflictException(`Fulfillment step cannot transition from ${step.status} to ${input.status}`);
     if (["IN_PROGRESS", "COMPLETED"].includes(input.status) && step.shipment.fulfillmentSteps.some((candidate) => candidate.sequence < step.sequence && !["COMPLETED", "CANCELLED"].includes(candidate.status))) throw new ConflictException("Previous fulfillment steps must be completed first");
     return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "SupplierOrder" WHERE id = ${step.shipment.supplierOrderId}::uuid FOR UPDATE`;
+      const current = await tx.fulfillmentStep.findUniqueOrThrow({ where: { id: stepId }, include: { shipment: { include: { items: true, supplierOrder: true, fulfillmentSteps: true } } } });
+      if (current.status !== step.status || !canTransitionFulfillment(current.status, input.status)) throw new ConflictException("Fulfillment step changed; refresh the order");
+      if (current.shipment.supplierOrder.paymentStatus !== "PAID" || ["CANCELLED", "REJECTED", "RETURN_DISPUTE"].includes(current.shipment.supplierOrder.status) || ["CANCELLED", "RETURNED"].includes(current.shipment.status)) throw new ConflictException("Fulfillment is no longer available");
+      if (["DELIVERY", "PICKUP"].includes(current.type) && input.status === "COMPLETED") throw new ConflictException("Получение товара подтверждает клиника");
+      if (["IN_PROGRESS", "COMPLETED"].includes(input.status) && current.shipment.fulfillmentSteps.some(candidate => candidate.sequence < current.sequence && !["COMPLETED", "CANCELLED"].includes(candidate.status))) throw new ConflictException("Previous fulfillment steps must be completed first");
       const now = new Date();
       const updated = await tx.fulfillmentStep.update({
         where: { id: stepId },
@@ -332,6 +334,10 @@ export class LogisticsService {
       });
       await tx.auditLog.create({ data: { ...context, action: "fulfillment.status_changed", entityType: "FulfillmentStep", entityId: step.id, before: { status: step.status }, after: { status: updated.status } } });
       await tx.outboxEvent.create({ data: { aggregateType: "Shipment", aggregateId: step.shipmentId, eventType: "FulfillmentStepChanged", payload: { shipmentId: step.shipmentId, fulfillmentStepId: step.id, type: step.type, status: updated.status } } });
+      const pending = await tx.fulfillmentStep.count({ where: { shipmentId: step.shipmentId, status: { notIn: ["COMPLETED", "CANCELLED"] } } });
+      if (!pending && current.shipment.items.length && current.shipment.items.every(item => item.deliveredQuantity.eq(item.quantity)))
+        await tx.shipment.update({ where: { id: step.shipmentId }, data: { status: "DELIVERED", version: { increment: 1 } } });
+      await tx.supplierOrder.update({ where: { id: step.shipment.supplierOrderId }, data: { status: await refreshFulfillmentStatus(tx, step.shipment.supplierOrderId), version: { increment: 1 } } });
       return updated;
     });
   }

@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import { randomUUID } from "node:crypto";
 import { commerce } from "./verify-checkout-snapshot.mjs";
+import { verifyOrderReturns } from "./verify-order-returns.mjs";
 const require = createRequire(import.meta.url);
 const domain = (path, name) => require(`../../apps/api/dist/src/modules/${path}`)[name];
 
@@ -46,10 +47,10 @@ export async function verifyManualPayments({ prisma, offers, supplierId, createB
     const state = await prisma.supplierOrder.findUniqueOrThrow({ where: { id: value.order.id } });
     return service.execute(value.order.id, { ...action, expectedVersion: state.version, idempotencyKey: randomUUID() }, context);
   };
-  const proof = async (value, amount) => {
+  const proof = async (value, amount, ownerId = buyer.organizationId) => {
     const storageKey = `${runId}/${randomUUID()}.pdf`, checksumSha256 = "a".repeat(64);
-    await prisma.uploadAsset.create({ data: { organizationId: buyer.organizationId, purpose: "DOCUMENT", storageKey, originalName: "synthetic.pdf", safeName: "synthetic.pdf", declaredMime: "application/pdf", detectedMime: "application/pdf", sizeBytes: 1, checksumSha256, status: "CLEAN" } });
-    return prisma.document.create({ data: { ownerOrganizationId: buyer.organizationId, supplierOrderId: value.order.id, kind: "PAYMENT_PROOF", format: "PDF", source: "UPLOADED", status: "GENERATED", title: "Synthetic payment proof", documentNumber: randomUUID(), amountMinor: amount, currency: "KZT", storageKey, checksumSha256, immutableAt: new Date() } });
+    await prisma.uploadAsset.create({ data: { organizationId: ownerId, purpose: "DOCUMENT", storageKey, originalName: "synthetic.pdf", safeName: "synthetic.pdf", declaredMime: "application/pdf", detectedMime: "application/pdf", sizeBytes: 1, checksumSha256, status: "CLEAN" } });
+    return prisma.document.create({ data: { ownerOrganizationId: ownerId, supplierOrderId: value.order.id, kind: "PAYMENT_PROOF", format: "PDF", source: "UPLOADED", status: "GENERATED", title: "Synthetic payment proof", documentNumber: randomUUID(), amountMinor: amount, currency: "KZT", storageKey, checksumSha256, immutableAt: new Date() } });
   };
   const report = async (value, amount) => {
     const document = await proof(value, amount);
@@ -131,4 +132,5 @@ export async function verifyManualPayments({ prisma, offers, supplierId, createB
   const foreign = await request(`/supplier-orders/${racing.order.id}/workflow`, { identity: backup });
   assert(foreign.status === 404, "Foreign tenant read another order's ledger");
   console.log("Manual payments: policy permissions/CAS/replay, exact partial/extra amounts, bilateral reduction/history, dispute/hold, 15/30/60 dedup, rollback and concurrent confirmation PASS");
+  await verifyOrderReturns({ prisma, workflow, cases, execute, proof, buyerContext, supplierContext, reject, assert, request, buyer });
 }

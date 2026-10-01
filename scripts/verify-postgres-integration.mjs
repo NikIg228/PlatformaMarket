@@ -438,6 +438,7 @@ async function cleanupFixtures() {
     await prisma.shipment.deleteMany({ where: orderWhere });
     await prisma.orderTransferClaim.deleteMany({ where: orderWhere });
     await prisma.orderPaymentReduction.deleteMany({ where: orderWhere });
+    await prisma.orderManualReturn.deleteMany({ where: orderWhere });
     await prisma.document.deleteMany({ where: { supplierOrder: { checkoutId: { in: checkoutIds } } } });
     await prisma.orderWorkflowEvent.deleteMany({ where: orderWhere });
     await prisma.supplierOrderItem.deleteMany({

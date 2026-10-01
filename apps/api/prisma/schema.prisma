@@ -2344,6 +2344,7 @@ model SupplierOrder {
   manualInvoiceDocumentId  String?                 @db.Uuid
   transferClaims           OrderTransferClaim[]
   paymentReductions        OrderPaymentReduction[]
+  manualReturns            OrderManualReturn[]
   workflowEvents           OrderWorkflowEvent[]
   checkout                 Checkout                @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
   supplier                 Organization            @relation("SupplierOrderSupplier", fields: [supplierOrganizationId], references: [id], onDelete: Restrict)
@@ -2407,6 +2408,29 @@ model OrderPaymentReduction {
   supplierOrder            SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Restrict)
 
   @@index([supplierOrderId, status, createdAt])
+}
+
+model OrderManualReturn {
+  id                 String @id @default(uuid()) @db.Uuid
+  supplierOrderId    String @db.Uuid
+  kind               String
+  status             String @default("REQUESTED")
+  reason             String
+  decisionReason     String?
+  amountMinor        Decimal @db.Decimal(20, 0)
+  currency           String @db.Char(3)
+  itemsSnapshot      Json
+  requestedById      String @db.Uuid
+  createdAt          DateTime @default(now())
+  decidedAt          DateTime?
+  goodsSentAt        DateTime?
+  goodsReceivedAt    DateTime?
+  refundDocumentId   String? @unique @db.Uuid
+  refundSentAt       DateTime?
+  refundReceivedAt   DateTime?
+  supplierOrder      SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Restrict)
+
+  @@index([supplierOrderId, createdAt])
 }
 
 model OrderWorkflowEvent {

@@ -11,11 +11,16 @@ const statuses: Record<string, string> = { PENDING: "Ожидает провер
 export function PaymentSummaryPanel({ data }: { data: OrderWorkflowResponse }) {
   const summary = data.paymentSummary;
   if (!summary) return null;
+  const receivedRefunds = (data.returns ?? []).filter(value => value.status === "REFUND_RECEIVED");
+  const refunded = receivedRefunds.reduce((sum, value) => sum + BigInt(value.amountMinor), BigInt(0));
+  const overpaidRefunded = receivedRefunds.filter(value => value.kind === "OVERPAYMENT" || value.kind === "CANCELLATION").reduce((sum, value) => sum + BigInt(value.amountMinor), BigInt(0));
+  const outstandingOverpaid = BigInt(summary.overpaidAmountMinor) - overpaidRefunded;
   return <Section title="Расчёт оплаты"><dl>
     <dt>Согласованная сумма</dt><dd>{formatMoney(data.order.subtotalAmountMinor, data.order.currency)}</dd>
     <dt>Поставщик подтвердил получение</dt><dd>{formatMoney(summary.confirmedAmountMinor, data.order.currency)}</dd>
-    <dt>Осталось оплатить</dt><dd>{formatMoney(summary.remainingAmountMinor, data.order.currency)}</dd>
-    <dt>Переплата к возврату</dt><dd>{formatMoney(summary.overpaidAmountMinor, data.order.currency)}</dd>
+    <dt>Осталось оплатить</dt><dd>{formatMoney(data.status === "CANCELLED" ? "0" : summary.remainingAmountMinor, data.order.currency)}</dd>
+    <dt>Переплата к возврату</dt><dd>{formatMoney(outstandingOverpaid > BigInt(0) ? outstandingOverpaid.toString() : "0", data.order.currency)}</dd>
+    {refunded > BigInt(0) ? <><dt>Клиника подтвердила получение возвратов</dt><dd>{formatMoney(refunded.toString(), data.order.currency)}</dd></> : null}
   </dl><p>Квитанции не входят в полученную сумму до проверки поставщиком. Сборка доступна после полной оплаты. Переплата учитывается отдельно и не переносится на другие заказы.</p>
     {data.paymentReviewConfigured === false ? <DmFeedback tone="warning" title="График проверки оплаты не настроен" description="Уведомление о переводе поступит поставщику. Для напоминаний через 15/30/60 рабочих минут поставщику нужно назначить ответственных и рабочие часы." /> : null}
   </Section>;

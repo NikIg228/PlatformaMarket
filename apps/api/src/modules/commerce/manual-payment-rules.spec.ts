@@ -31,4 +31,12 @@ describe("payment reaction working minutes", () => {
     const dst = { ...policy, timezone: "Europe/Berlin", workingWindows: [{ day: 7, fromMinute: 120, toMinute: 240 }] };
     expect(workingMinutesElapsed(new Date("2026-03-29T00:30:00Z"), new Date("2026-03-29T01:30:00Z"), dst)).toBe(30);
   });
+  it("does not lose a threshold to fractional-minute accumulation", () => {
+    const allDay = { ...policy, workingWindows: [1, 2, 3, 4, 5, 6, 7].map(day => ({ day, fromMinute: 0, toMinute: 1440 })) };
+    for (const milliseconds of [1, 7, 123, 999, 45231, 59999]) for (const minutes of [15, 30, 60]) {
+      const start = new Date(Date.UTC(2026, 9, 1, 11, 0, 0, milliseconds));
+      expect(workingMinutesElapsed(start, new Date(+start + minutes * 60_000), allDay)).toBe(minutes);
+      expect(workingMinutesElapsed(start, new Date(+start + minutes * 60_000 - 1), allDay)).toBeLessThan(minutes);
+    }
+  });
 });

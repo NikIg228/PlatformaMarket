@@ -18,6 +18,7 @@ function fixture(overrides: Record<string, unknown> = {}) {
     supplierProfile: { findUnique: vi.fn(async () => null) },
     notification: { upsert: vi.fn(async () => ({})) },
     orderPaymentReduction: { updateMany: vi.fn(async () => ({ count: 0 })) },
+    orderManualReturn: { count: vi.fn(async () => 0) },
   };
   const prisma = { ...tx, $transaction: async (action: (client: typeof tx) => Promise<unknown>) => action(tx) };
   const access = { hasAll: vi.fn(async () => true) };

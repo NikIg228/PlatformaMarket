@@ -17,6 +17,7 @@ export default function OrderDetail() {
       <OrderWorkflowWorkspace
         backHref={`/${role}/orders`}
         backLabel="← Все заказы"
+        cartHref="/clinic/cart"
         key={`${organizationId}:${id}`}
         orderId={id}
         organizationId={organizationId}

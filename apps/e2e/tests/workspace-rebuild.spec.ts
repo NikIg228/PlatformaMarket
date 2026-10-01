@@ -245,6 +245,56 @@ test("CORE02 mobile bilateral reduction and supplier policy require explicit cho
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
+for (const width of [1440, 390]) test(`CORE03 refund receipt requires consent and preserves retry ${width}`, async ({ page }, testInfo) => {
+  await fixture(page, "BUYER"); await page.setViewportSize({ width, height: 950 });
+  const id = "55555555-5555-4555-8555-555555555555", returnId = "66666666-6666-4666-8666-666666666666";
+  const order = { id, orderNumber: "CORE03-RETURN", version: 1, supplierOrganizationId: cityId, buyerOrganizationId: organizationId, status: "CANCELLED", paymentStatus: "PAID", currency: "KZT", subtotalAmountMinor: "9007199254740993", items: [], shipments: [] };
+  const value = { id: returnId, supplierOrderId: id, kind: "CANCELLATION", status: "REFUND_SENT", reason: "Отмена до отгрузки", decisionReason: "Остановка подтверждена", amountMinor: "9007199254740993", currency: "KZT", items: [], refundDocumentId: sessionId };
+  const commands: Array<Record<string, unknown>> = [];
+  await page.route(`**/api/supplier-orders/${id}/workflow`, async route => {
+    if (route.request().method() === "GET") return route.fulfill({ json: { orderId: id, order, version: order.version, status: order.status, paymentStatus: order.paymentStatus, claims: [], events: [], invoiceDocumentId: null, returns: [value], paymentReviewConfigured: true,
+      paymentSummary: { confirmedAmountMinor: "9007199254740993", remainingAmountMinor: "0", overpaidAmountMinor: "0", status: "PAID" } } });
+    const input = route.request().postDataJSON(); commands.push(input);
+    if (commands.length === 1) return route.fulfill({ status: 503, json: { message: "Ответ потерян. Повторите подтверждение." } });
+    if (input.action === "REORDER") return route.fulfill({ json: { cartId: sessionId } });
+    value.status = "REFUND_RECEIVED"; order.paymentStatus = "REFUNDED"; order.version = 2;
+    return route.fulfill({ json: { orderId: id, version: 2 } });
+  });
+  await page.goto(`/clinic/orders/${id}`);
+  const receive = page.getByRole("button", { name: "Подтвердить получение возврата", exact: true });
+  await expect(receive).toBeDisabled();
+  const consent = page.getByRole("checkbox", { name: "Деньги в указанной сумме поступили на счёт клиники" });
+  await consent.focus(); await page.keyboard.press("Space"); await receive.click();
+  await expect(page.getByText("Ответ потерян. Повторите подтверждение.", { exact: true })).toBeVisible();
+  await expect(consent).toBeChecked(); await receive.click();
+  await expect(page.getByText("Клиника подтвердила получение денег", { exact: true })).toBeVisible();
+  expect(commands[0]).toEqual(commands[1]); expect(commands[1].action).toBe("RECEIVE_MANUAL_REFUND");
+  await page.getByRole("button", { name: "Создать корзину для повторной закупки", exact: true }).click();
+  await expect(page.getByRole("link", { name: "Перейти в корзину и проверить текущие условия" })).toHaveAttribute("href", "/clinic/cart");
+  expect(commands[2].action).toBe("REORDER");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath(`core03-refund-${width}.png`), fullPage: true });
+});
+
+test("CORE03 supplier agrees exact return conditions before money stage", async ({ page }) => {
+  await fixture(page, "SUPPLIER"); await page.setViewportSize({ width: 390, height: 950 });
+  const id = "55555555-5555-4555-8555-555555555555", returnId = "66666666-6666-4666-8666-666666666666";
+  const order = { id, orderNumber: "CORE03-GOODS", version: 1, supplierOrganizationId: organizationId, buyerOrganizationId: cityId, status: "DELIVERED", paymentStatus: "PAID", currency: "KZT", subtotalAmountMinor: "10000", items: [], shipments: [] };
+  const value = { id: returnId, supplierOrderId: id, kind: "GOODS", status: "REQUESTED", reason: "Возврат упаковки", decisionReason: null, amountMinor: "5000", currency: "KZT", items: [{ orderItemId: sessionId, quantity: "1", condition: "Упаковка не вскрыта" }], refundDocumentId: null };
+  let saved: Record<string, unknown> | undefined;
+  await page.route(`**/api/supplier-orders/${id}/workflow`, async route => {
+    if (route.request().method() === "GET") return route.fulfill({ json: { orderId: id, order, version: 1, status: order.status, paymentStatus: "PAID", claims: [], events: [], invoiceDocumentId: null, returns: [value] } });
+    saved = route.request().postDataJSON(); value.status = "AGREED"; return route.fulfill({ json: {} });
+  });
+  await page.goto(`/supplier/orders/${id}`);
+  const agree = page.getByRole("button", { name: "Согласовать указанные условия и сумму" });
+  await expect(agree).toBeDisabled(); await expect(page.getByText(/Упаковка не вскрыта/)).toBeVisible();
+  await page.getByLabel("Комментарий к решению о возврате").fill("Принимаем одну упаковку в указанном состоянии");
+  await agree.click(); await expect(page.getByText("Согласован", { exact: true })).toBeVisible();
+  expect(saved).toMatchObject({ action: "DECIDE_RETURN", returnId, accepted: true });
+  await expect(page.getByRole("button", { name: "Приложить квитанцию отправленного возврата" })).toHaveCount(0);
+});
+
 async function fixture(
   page: Page,
   capability: "BUYER" | "SUPPLIER",

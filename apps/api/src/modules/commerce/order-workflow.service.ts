@@ -11,6 +11,9 @@ import { manualPaymentSummary, maxMinorAmount } from "./manual-payment-rules";
 import { paymentPolicy } from "./supplier-payment-policy.service";
 import { createPaymentDispute, notifyPaymentReview } from "./payment-review.service";
 import { paymentReduction } from "./order-payment-reduction";
+import { refreshFulfillmentStatus } from "../logistics/order-fulfillment-state";
+import { manualReturn, manualReturnActions } from "./order-manual-return";
+import { reorder } from "./order-reorder";
 
 const include = { items: { include: { reservation: { include: { externalReservation: true, inventoryLot: true } } } }, transferClaims: { orderBy: { createdAt: "asc" as const } }, paymentAllocation: true };
 export type Order = Prisma.SupplierOrderGetPayload<{ include: typeof include }>;
@@ -33,25 +36,28 @@ export class OrderWorkflowService {
     await this.visible(orderId, context, true);
     const order = await this.prisma.supplierOrder.findUniqueOrThrow({ where: { id: orderId }, include: { paymentAllocation: true, items: { include: { reservation: { include: { externalReservation: true } }, offer: { include: { productVariant: { include: { product: true } } } }, warehouse: true } }, buyer: true, supplier: true, shipments: { include: { items: true, fulfillmentSteps: true, warehouse: true } }, transferClaims: { orderBy: { createdAt: "asc" } }, workflowEvents: { orderBy: [{ createdAt: "asc" }, { id: "asc" }], select: { id: true, action: true, actorId: true, organizationId: true, createdAt: true, details: true } } } });
     const { transferClaims, workflowEvents, paymentAllocation, items, ...detail } = order;
-    const [policy, reductions] = await Promise.all([paymentPolicy(this.prisma, order.supplierOrganizationId),
-      this.prisma.orderPaymentReduction.findMany({ where: { supplierOrderId: order.id }, orderBy: { createdAt: "asc" } })]);
+    const [policy, reductions, returns] = await Promise.all([paymentPolicy(this.prisma, order.supplierOrganizationId),
+      this.prisma.orderPaymentReduction.findMany({ where: { supplierOrderId: order.id }, orderBy: { createdAt: "asc" } }),
+      this.prisma.orderManualReturn.findMany({ where: { supplierOrderId: order.id }, orderBy: { createdAt: "asc" } })]);
     return { orderId: order.id, order: { ...detail, items: items.map(({ reservation, ...item }) => item) }, version: order.version, status: order.status, paymentStatus: order.paymentStatus, invoiceDocumentId: order.manualInvoiceDocumentId,
       claims: transferClaims.map(({ reviewPolicySnapshot, reviewStartedAt, reportedById, remindedAt, backupNotifiedAt, ...claim }) => claim),
       events: workflowEvents, reservationState: orderReservationState(order),
       paymentSummary: manualPaymentSummary(order.subtotalAmountMinor, transferClaims), paymentReviewConfigured: Boolean(policy.policy),
-      reductions: reductions.map(({ itemsSnapshot, ...value }) => ({ ...value, items: itemsSnapshot })) };
+      reductions: reductions.map(({ itemsSnapshot, ...value }) => ({ ...value, items: itemsSnapshot })),
+      returns: returns.map(({ itemsSnapshot, ...value }) => ({ ...value, items: itemsSnapshot })) };
   }
 
   async execute(orderId: string, input: OrderWorkflowCommand, context: SupplierActorContext) {
     await this.visible(orderId, context);
     const bilateral = ["OPEN_PAYMENT_DISPUTE", "PROPOSE_PAYMENT_REDUCTION", "DECIDE_PAYMENT_REDUCTION"].includes(input.action);
-    const permission = input.action === "CONFIRM_TRANSFER" ? "payment.transfer.confirm" : ["ISSUE_INVOICE", "REQUEST_PAYMENT_DETAILS", "RECORD_TRANSFER_CHECK"].includes(input.action) ? "order.confirm" : "order.approve";
+    const supplierActions = ["ISSUE_INVOICE", "REQUEST_PAYMENT_DETAILS", "CONFIRM_TRANSFER", "RECORD_TRANSFER_CHECK", "DECIDE_RETURN", "RECEIVE_RETURN_GOODS", "SEND_MANUAL_REFUND"];
+    const permission = ["CONFIRM_TRANSFER", "SEND_MANUAL_REFUND"].includes(input.action) ? "payment.transfer.confirm" : input.action === "REORDER" ? "order.create" : supplierActions.includes(input.action) ? "order.confirm" : "order.approve";
     if (!bilateral && !await this.access.hasAll(context.actorId, context.organizationId, [permission])) throw new ForbiddenException("Недостаточно прав для действия с заказом");
     const requestHash = createHash("sha256").update(JSON.stringify(input)).digest("hex");
     return this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "SupplierOrder" WHERE id = ${orderId}::uuid FOR UPDATE`;
       let order = await tx.supplierOrder.findUniqueOrThrow({ where: { id: orderId }, include });
-      const supplierAction = ["ISSUE_INVOICE", "REQUEST_PAYMENT_DETAILS", "CONFIRM_TRANSFER", "RECORD_TRANSFER_CHECK"].includes(input.action);
+      const supplierAction = supplierActions.includes(input.action);
       if (bilateral) {
         const partyPermission = context.organizationId === order.supplierOrganizationId ? "order.confirm" : context.organizationId === order.buyerOrganizationId ? "order.approve" : null;
         if (!partyPermission || !await this.access.hasAll(context.actorId, context.organizationId, [partyPermission])) throw new ForbiddenException("Действие недоступно этой стороне заказа");
@@ -68,10 +74,11 @@ export class OrderWorkflowService {
         await lockInventoryBalances(tx, order.items.flatMap(item => item.reservation ? [item.reservation.inventoryBalanceId] : []));
         order = await tx.supplierOrder.findUniqueOrThrow({ where: { id: orderId }, include });
       }
-      const changes = await this.apply(tx, order, input, context);
+      const cartId = input.action === "REORDER" ? await reorder(tx, order, context) : undefined;
+      const changes = input.action === "REORDER" ? {} : await this.apply(tx, order, input, context);
       const updated = await tx.supplierOrder.update({ where: { id: orderId }, data: { ...changes, version: { increment: 1 } } });
       const eventId = randomUUID();
-      const result = { orderId, version: updated.version, status: updated.status, paymentStatus: updated.paymentStatus, eventId };
+      const result = { orderId, version: updated.version, status: updated.status, paymentStatus: updated.paymentStatus, eventId, ...(cartId ? { cartId } : {}) };
       const { expectedVersion: _version, idempotencyKey: _key, ...details } = input;
       await tx.orderWorkflowEvent.create({ data: { id: eventId, supplierOrderId: orderId, ...context, action: input.action, idempotencyKey: input.idempotencyKey, requestHash, details, result } });
       await tx.auditLog.create({ data: { ...context, action: `order.workflow.${input.action.toLowerCase()}`, entityType: "SupplierOrder", entityId: orderId, after: { ...result, ...details } } });
@@ -93,6 +100,9 @@ export class OrderWorkflowService {
   }
 
   private async apply(tx: Prisma.TransactionClient, order: Order, input: OrderWorkflowCommand, context: SupplierActorContext): Promise<Prisma.SupplierOrderUpdateInput> {
+    if (manualReturnActions.includes(input.action)) return manualReturn(tx, order, input, context);
+    if (["CONFIRM_TRANSFER", "REPORT_TRANSFER", "PROPOSE_PAYMENT_REDUCTION", "DECIDE_PAYMENT_REDUCTION"].includes(input.action) &&
+        await tx.orderManualReturn.count({ where: { supplierOrderId: order.id, status: { notIn: ["REJECTED", "REFUND_RECEIVED"] } } })) throw new ConflictException("Сначала завершите согласованный возврат.");
     if (input.action === "RECEIVE_SHIPMENT") return this.receive(tx, order, input);
     if (input.action === "PROPOSE_PAYMENT_REDUCTION" || input.action === "DECIDE_PAYMENT_REDUCTION") {
       const changes = await paymentReduction(tx, order, input, context);
@@ -221,8 +231,6 @@ export class OrderWorkflowService {
     if (full) await tx.fulfillmentStep.updateMany({ where: { shipmentId: shipment.id, type: { in: ["DELIVERY", "PICKUP"] }, status: { not: "COMPLETED" } }, data: { status: "COMPLETED", completedAt: new Date() } });
     const pendingSteps = await tx.fulfillmentStep.count({ where: { shipmentId: shipment.id, status: { notIn: ["COMPLETED", "CANCELLED"] } } });
     await tx.shipment.update({ where: { id: shipment.id }, data: { status: full && !pendingSteps ? "DELIVERED" : "PARTIALLY_DELIVERED", deliveredAt: full ? new Date() : undefined, version: { increment: 1 } } });
-    const shipments = await tx.shipment.findMany({ where: { supplierOrderId: order.id, status: { notIn: ["CANCELLED", "RETURNED"] } }, include: { items: true, fulfillmentSteps: true } });
-    const complete = order.items.filter(item => item.acceptedQuantity.gt(0)).every(item => shipments.flatMap(shipment => shipment.items).filter(line => line.supplierOrderItemId === item.id).reduce((sum, line) => sum.plus(line.deliveredQuantity), new Prisma.Decimal(0)).eq(item.acceptedQuantity)) && shipments.every(shipment => shipment.fulfillmentSteps.every(step => ["COMPLETED", "CANCELLED"].includes(step.status)));
-    return { status: complete ? "DELIVERED" : "PARTIALLY_FULFILLED" };
+    return { status: await refreshFulfillmentStatus(tx, order.id) };
   }
 }

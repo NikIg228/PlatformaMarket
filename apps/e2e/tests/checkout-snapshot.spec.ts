@@ -4,8 +4,18 @@ import { randomUUID } from "node:crypto";
 import { workspaceFixture } from "../fixtures/workspace-session";
 import { verifyCommercialEditor } from "../fixtures/offer-commercial-editor";
 import { verifyCartRecoveryUI } from "../fixtures/cart-recovery";
+import { verifyOrderReturnUI } from "../fixtures/order-return";
 
 test.skip(process.env.CHECKOUT_SNAPSHOT_E2E !== "true", "Requires the isolated checkout snapshot configuration");
+
+// Both viewport journeys share the real auth endpoint's 20/IP/minute budget.
+// Pace journeys instead of disabling or increasing the production rate limit.
+let nextJourneyAt = 0;
+test.beforeEach(async () => {
+  const delay = nextJourneyAt - Date.now();
+  if (delay > 0) await new Promise(resolve => setTimeout(resolve, delay));
+  nextJourneyAt = Date.now() + 60_000;
+});
 
 for (const width of [1440, 390]) {
   test(`live checkout consent survives a second price change at ${width}px`, async ({ page, request }) => {
@@ -216,8 +226,11 @@ for (const width of [1440, 390]) {
       await verifyCartRecoveryUI({ db, page, request, buyerId, token: session.accessToken, offerId, key, width });
       await verifyCommercialEditor({ db, page, request, supplierId: warehouse.supplierOrganizationId, token: supplierSession.accessToken,
         offerId, variantId, unitId: unit.id, warehouseA: warehouse.id, warehouseB: secondWarehouseId, warehouseC: thirdWarehouseId, key, width });
+      await verifyOrderReturnUI({ db, page, request, orderId: order.id, buyerRoleId: role.id,
+        supplierId: warehouse.supplierOrganizationId, supplierToken: supplierSession.accessToken, key, width });
     } finally {
-      await page.goto("about:blank");
+      // Browser timeout closes the page before teardown; database cleanup must still run.
+      if (!page.isClosed()) await page.goto("about:blank").catch(() => undefined);
       const checkouts = await db.checkout.findMany({ where: { buyerOrganizationId: buyerId }, select: { id: true } });
       const reservations = await db.inventoryReservation.findMany({ where: { inventoryBalanceId: balanceId }, select: { id: true } });
       const orderIds = (await db.supplierOrder.findMany({ where: { buyerOrganizationId: buyerId }, select: { id: true } })).map(row => row.id);
@@ -232,6 +245,9 @@ for (const width of [1440, 390]) {
       await db.outboxEvent.deleteMany({ where: { aggregateId: { in: shipmentIds } } });
       await db.inventoryReservation.deleteMany({ where: { inventoryBalanceId: balanceId } });
       await db.orderTransferClaim.deleteMany({ where: { supplierOrder: { buyerOrganizationId: buyerId } } });
+      await db.orderManualReturn.deleteMany({ where: { supplierOrderId: { in: orderIds } } });
+      await db.document.deleteMany({ where: { supplierOrderId: { in: orderIds } } });
+      await db.uploadAsset.deleteMany({ where: { storageKey: { startsWith: `core03-live-${key}/` } } });
       await db.orderWorkflowEvent.deleteMany({ where: { supplierOrderId: { in: orderIds } } });
       await db.outboxEvent.deleteMany({ where: { aggregateId: { in: orderIds } } });
       await db.supplierOrderItem.deleteMany({ where: { supplierOrder: { buyerOrganizationId: buyerId } } });
