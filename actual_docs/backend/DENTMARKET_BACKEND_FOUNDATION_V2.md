@@ -38,7 +38,7 @@ stale versions и их проверки. Старые задания «испр�
 
 | ID | Существующий код / результат | Незакрытое обязательство |
 | --- | --- | --- |
-| CORE-01.1–01.3 | agreements/onboarding, ADR013: общие версии, акцепт, отдельный допуск | Свести version/actor/organization/time, повторный акцепт/истечение и negative tenant/stale cases в scoped acceptance текущего контракта. Не возвращать две ЭЦП для нового поставщика; legal approval — EXT |
+| CORE-01.1–01.3 | Внутренний scope CI_PASS01.10:831f7e0/df1f399, [evidence](../governance/task-state/CORE-01-INTERNAL-2026-10-01.md) | Legal approval/реальные организации и внешний signing остаются EXT. Внутренние version/actor/organization/time, replay/reacceptance/expiry, tenant/stale/admission и effective framework проверены; не выполнять повторно |
 | CORE-02.1–02.4 | commerce/order-workflow и schemas/order-workflow: invoice, claim, supplier confirmation; PAID не от upload | §23.6: фактическая недоплата/остаток, переплата к возврату, сроки/адресаты и спор; money/document/tenant/replay/atomicity. Текущий контракт требует полную сумму, расширенные правила не считать реализованными |
 | CORE-03.1–03.4 | logistics/inventory/order-workflow, reservation-expiry/cart-recovery: receipt, transitions/cancel/TTL/recovery | Полная multi-shipment/partial receipt матрица, отмена после оплаты/отправки, согласованный возврат; отдельная повторная закупка с текущими условиями. Recovery FAILED checkout не равно reorder завершённого заказа |
 | CORE-04.1–04.5 | Ограниченные catalog/import/manual/new-product outcomes приняты | Не повторять принятые slices; live whitelist, реальные данные и media rights не подтверждены fixture |

@@ -1,6 +1,6 @@
 # CORE-01-INTERNAL — договорные версии, акцепт и допуск
 
-Обновлено01.10.2026. Состояние: ACTIVE / scoped implementation and verification.
+Обновлено01.10.2026. Состояние: CLOSED / internal scope CI_PASS.
 Владелец: primary01a0f302-2d38-75d1-b79c-141e7428b533, единственный writer.
 Основание: новый запрос владельца после371aa9d — приступить по списку к
 внутренней реализации без внешних интеграций и боевых данных. Это разрешённая
@@ -136,3 +136,23 @@ Runtime/core/PG inputs кода/версий зависимостей прежн
 Typecheck2 PASS13/13; unit3 full npm test PASS12/12 tasks (50.2s), без timeout.
 Состав поправки проверен: только workspace edge и её lockfile запись плюс checkpoint;
 никаких изменений внешних версий, бизнес-логики или данных. Staged/diff checks PASS.
+Поправка опубликована:df1f3993981f264af446568aee8de85351d98c9f, origin/main
+SHA подтверждён. CI36845016859 / Security36845016749 RUNNING на новом SHA.
+Не запускать ещё один экземпляр checks/CI без нового основания. CI budget45мин.
+Старый CI36844329689 сохранён как FAIL(web build), новый результат пока PENDING.
+
+## Окончательный результат
+
+Внутренний CORE01 закрыт на df1f3993981f264af446568aee8de85351d98c9f
+(831f7e0 — договорный change set, df1f399 — обязательная поправка build graph).
+[CI36845016859](https://github.com/NikIg228/PlatformaMarket/actions/runs/36845016859)
+и [Security36845016749](https://github.com/NikIg228/PlatformaMarket/actions/runs/36845016749)
+SUCCESS на точном SHA. Hosted typecheck13/13, unit12/12, build7/7,
+контейнеры api/web, PostgreSQL lifecycle/authority/backup-restore, core/runtime/
+production checks, FlowB3 7/7 и canonical browser38/38 PASS. CodeQL/dependencies PASS.
+Первый hosted web build FAIL устранён; локальные попытки сохранены выше.
+Юридическое утверждение DRAFT, реальные организации, внешняя подпись/банки
+и production deploy не выполнялись и не объявляются принятыми.
+Итоговый docs-only receipt переиспользует runtime evidence df1f399 по Workflow4.2.
+Следующий разрешённый внутренний пункт — CORE02; исторические шаги inventory/
+RUNNING выше не являются текущим статусом. Новых CI retries не требуется.
