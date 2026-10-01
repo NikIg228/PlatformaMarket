@@ -112,3 +112,27 @@ Agency Backend Architect для границ, Code Reviewer для lifecycle/ten
 Git Workflow Master для точного staging/обычного push. Это self-review без агентов.
 Новых блокирующих замечаний в этом change set нет. Публикация и CI пока PENDING;
 до их результата CORE02 не начинать.
+
+Публикация:831f7e0f6289d5efdb6cfa952daa7bccdf710d6a отправлен обычным push
+в origin/main, remote SHA совпал. CI36844329689 и Security36844329678 RUNNING
+на этом SHA, hosted attempt1. Собственных тестовых процессов больше нет.
+После локальных gates обнаружены новые чужие dev listeners3000/4012
+(PID16188/8696, старт14:39+05, Next dev и API node dist); не останавливать и
+не считать их тестовой средой. Кодовые dirty paths сверх пяти исходных не появились.
+
+CI attempt1: web container job110310718695 FAIL на чистом build, TS2307
+@marketplace/schemas в packages/ui. API image build успешен по шагам.
+Причина подтверждена package.json/Turbo graph: UI использует schemas в исходниках,
+но workspace dependency отсутствовала, ^build не задавал порядок. Это блокер
+обязательного gate текущей публикации; минимальная поправка явно сообщена владельцу.
+Добавлена только существующая внутренняя dependency0.0.0 в packages/ui/package.json
+и соответствующий lockfile entry (две строки; external versions без изменений).
+Offline package-lock consistency PASS; Turbo dry-run подтверждает schemas#build
+в dependencies ui#build; scoped UI build PASS. Полный canonical Docker build
+проверяет hosted CI attempt2: локального Docker engine нет, чужой dev не трогаем.
+Typecheck2 / unit3 запущены заново из-за изменения workspace graph; не из-за docs.
+Runtime/core/PG inputs кода/версий зависимостей прежние, их evidence переиспользуется.
+Счётчик unit не сброшен: это третья попытка с новой гипотезой/изменённым graph.
+Typecheck2 PASS13/13; unit3 full npm test PASS12/12 tasks (50.2s), без timeout.
+Состав поправки проверен: только workspace edge и её lockfile запись плюс checkpoint;
+никаких изменений внешних версий, бизнес-логики или данных. Staged/diff checks PASS.
