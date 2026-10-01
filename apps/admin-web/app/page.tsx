@@ -1,4 +1,5 @@
 "use client";
+import { IdentitySettings } from "./identity-settings";
 import { workspacePath } from "@marketplace/api-client";
 
 import { BuildingShop24Regular } from "@fluentui/react-icons/svg/building-shop";
@@ -175,7 +176,7 @@ export default function OperationsWorkspace() {
     imports: <><CatalogImportReviewQueue /><SupplierOperations /><IntegrationOperations /><ConnectorReadinessRegistry /></>,
     orders: <><OperationQueue /><AgreementOperations /></>,
     security: <>{frontendFeatures.trust && <TrustOperations />}<AuditOperations /></>,
-    settings: <PlatformSettings onNavigate={setActive} />,
+    settings: <><PlatformSettings onNavigate={setActive} /><IdentitySettings /></>,
   };
 
   return (

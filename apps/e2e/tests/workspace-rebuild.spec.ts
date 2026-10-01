@@ -334,6 +334,7 @@ async function fixture(
         capabilities: [capability],
       };
     else if (path === "/access-control/permissions") body = ["catalog.product.view", "catalog.offer.edit", "catalog.offer.publish", "import.manage", "inventory.view", "inventory.adjust", "inventory.freshness.manage", "pricing.manage", "order.create", "order.approve", "order.confirm", "payment.transfer.confirm", "document.view", "document.upload", "document.sign", "document.accounting.review", "compliance.view", "compliance.credential.manage", "shipment.manage", "delivery.view", "delivery.manage", "supplier.warehouse.manage"];
+    else if (path === "/auth/sessions") body = [];
     else if (path === "/organizations/current/profile") body = profile;
     else if (path === "/organizations/current/onboarding")
       body = {

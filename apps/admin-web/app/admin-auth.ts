@@ -4,7 +4,7 @@ import { unifiedFrontend } from "@marketplace/api-client";
 const SESSION_KEY = "dentmarket_admin_session";
 const DEV_ACTOR = process.env.NEXT_PUBLIC_DEV_USER_ID ?? "00000000-0000-4000-8000-000000000002";
 const DEV_ORGANIZATION = process.env.NEXT_PUBLIC_DEV_ORGANIZATION_ID ?? "00000000-0000-4000-8000-000000000001";
-type AdminSession = { accessToken: string; activeOrganizationId?: string; organizationId?: string; user?: { displayName?: string } };
+type AdminSession = { accessToken: string; sessionId?: string; activeOrganizationId?: string; organizationId?: string; user?: { id?: string; displayName?: string } };
 
 export function readAdminSession(): AdminSession | null {
   if (typeof window === "undefined") return null;

@@ -1,4 +1,5 @@
 import { workspaceCorrectionOfferPageSchema, workspaceInventoryPageSchema, workspaceLotPageSchema, workspaceReservationPageSchema, workspaceOverridePageSchema } from "@marketplace/schemas";
+import { createInvitationSchema, acceptInvitationSchema, invitationProofSchema, invitationDetailsSchema, invitationListSchema, invitationCreatedSchema, invitationDeliveredSchema, invitationAcceptedSchema, identityCommandResultSchema, identitySessionRevokedSchema, identityRolesSchema, identityMembersSchema, identitySessionsSchema } from "@marketplace/schemas";
 import { createOfferPromotionSchema, reviseOfferPromotionSchema, offerPromotionCommandSchema, offerPromotionSchema, promotionPageSchema, publicPromotionPageSchema } from "@marketplace/schemas";
 import { orderWorkflowCommandSchema, orderWorkflowResponseSchema, orderWorkflowResultSchema } from "@marketplace/schemas";
 import { saveSupplierPaymentPolicySchema, supplierPaymentPolicyResponseSchema } from "@marketplace/schemas";
@@ -114,6 +115,19 @@ const coreZodSchemas = {
   OfferPromotion: offerPromotionSchema,
   PromotionPage: promotionPageSchema,
   PublicPromotionPage: publicPromotionPageSchema,
+  CreateInvitationRequest: createInvitationSchema,
+  AcceptInvitationRequest: acceptInvitationSchema,
+  InvitationProof: invitationProofSchema,
+  InvitationDetails: invitationDetailsSchema,
+  InvitationList: invitationListSchema,
+  InvitationCreated: invitationCreatedSchema,
+  InvitationDelivered: invitationDeliveredSchema,
+  InvitationAccepted: invitationAcceptedSchema,
+  IdentityCommandResult: identityCommandResultSchema,
+  IdentitySessionRevoked: identitySessionRevokedSchema,
+  IdentityRoles: identityRolesSchema,
+  IdentityMembers: identityMembersSchema,
+  IdentitySessions: identitySessionsSchema,
   UpdateProductRequest: updateProductSchema,
   UpdatedCatalogProduct: updatedCatalogProductSchema,
   OrderWorkflowCommand: orderWorkflowCommandSchema,

@@ -26,6 +26,7 @@ export class PlatformAuthorityPolicy {
         userId: context.actorId,
         organizationId: context.organizationId,
         status: "ACTIVE",
+        user: { status: "ACTIVE" },
         organization: { status: "ACTIVE" },
       },
       include: {
@@ -162,10 +163,14 @@ export class PlatformAuthorityPolicy {
   async assertCanAssignRoles(
     context: AuthorityActorContext,
     roleIds: string[],
+    requiredPermission?: string,
   ) {
-    if (roleIds.length === 0) return;
     const membership = await this.activeMembership(context);
     const actorPermissions = this.permissionCodes(membership);
+    if (requiredPermission && !actorPermissions.has(requiredPermission)) {
+      throw new ForbiddenException("Access management permission is no longer available");
+    }
+    if (roleIds.length === 0) return;
     const roles = await this.prisma.role.findMany({
       where: {
         id: { in: [...new Set(roleIds)] },

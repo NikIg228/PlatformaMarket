@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { withWorkspaceReturn, type AuthEmailRegistration, type SocialExchangeInput, type WorkspaceContext } from "@marketplace/schemas";
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { passwordHash, passwordMatches } from "./password-codec";
+import { redeemInvitation } from "./redeem-invitation";
 import jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
 import { environment } from "../../platform/config/environment";
@@ -142,11 +143,12 @@ export class AuthSessionsService {
 
   async verifyEmail(rawToken: string, metadata: RequestMetadata) {
     const token = await this.prisma.emailAuthToken.findUnique({ where: { tokenHash: hash(rawToken) }, include: { user: true } });
-    if (!token || token.type !== "EMAIL_VERIFICATION" || token.consumedAt || token.expiresAt <= new Date()) throw new UnauthorizedException("Ссылка подтверждения недействительна или истекла");
+    if (!token || token.user.status !== "ACTIVE" || token.type !== "EMAIL_VERIFICATION" || token.consumedAt || token.expiresAt <= new Date()) throw new UnauthorizedException("Ссылка подтверждения недействительна или истекла");
     const registrationToken = token.metadata && typeof token.metadata === "object" && !Array.isArray(token.metadata) && typeof (token.metadata as { registrationToken?: unknown }).registrationToken === "string" ? (token.metadata as { registrationToken: string }).registrationToken : undefined;
     let onboarding: { organizationId?: string; capability?: string; organizationDisplayName?: string } | null = null;
     await this.prisma.$transaction(async (tx) => {
-      await tx.emailAuthToken.update({ where: { id: token.id }, data: { consumedAt: new Date() } });
+      const claimed = await tx.emailAuthToken.updateMany({ where: { id: token.id, consumedAt: null, expiresAt: { gt: new Date() } }, data: { consumedAt: new Date() } });
+      if (claimed.count !== 1) throw new UnauthorizedException("Ссылка подтверждения уже использована или истекла");
       await tx.user.update({ where: { id: token.userId }, data: { emailVerifiedAt: new Date(), failedLoginAttempts: 0, lockedUntil: null } });
     });
     if (registrationToken) onboarding = await this.onboarding.claim(registrationToken, { id: token.user.id, email: token.user.email, displayName: token.user.displayName });
@@ -214,8 +216,15 @@ export class AuthSessionsService {
 
   async resetPassword(rawToken: string, password: string) {
     const token = await this.prisma.emailAuthToken.findUnique({ where: { tokenHash: hash(rawToken) }, include: { user: true } });
-    if (!token || token.type !== "PASSWORD_RESET" || token.consumedAt || token.expiresAt <= new Date()) throw new UnauthorizedException("Ссылка восстановления недействительна или истекла");
-    await this.prisma.$transaction([this.prisma.emailAuthToken.update({ where: { id: token.id }, data: { consumedAt: new Date() } }), this.prisma.user.update({ where: { id: token.userId }, data: { passwordHash: passwordHash(password), failedLoginAttempts: 0, lockedUntil: null } }), this.prisma.authSession.updateMany({ where: { userId: token.userId, status: "ACTIVE" }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "password_reset" } })]);
+    if (!token || token.user.status !== "ACTIVE" || token.type !== "PASSWORD_RESET" || token.consumedAt || token.expiresAt <= new Date()) throw new UnauthorizedException("Ссылка восстановления недействительна или истекла");
+    const nextHash = passwordHash(password);
+    await this.prisma.$transaction(async tx => {
+      const claimed = await tx.emailAuthToken.updateMany({ where: { id: token.id, consumedAt: null, expiresAt: { gt: new Date() } }, data: { consumedAt: new Date() } });
+      if (claimed.count !== 1) throw new UnauthorizedException("Ссылка восстановления уже использована или истекла");
+      await tx.user.update({ where: { id: token.userId }, data: { passwordHash: nextHash, failedLoginAttempts: 0, lockedUntil: null } });
+      await tx.authSession.updateMany({ where: { userId: token.userId, status: "ACTIVE" }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "password_reset" } });
+      await tx.securityEvent.create({ data: { type: "auth.password.reset", severity: "INFO", actorId: token.userId } });
+    });
     return { ok: true };
   }
 
@@ -251,15 +260,7 @@ export class AuthSessionsService {
       invitation.organizationId,
       invitation.roles.map(({ roleId }) => roleId),
     );
-    await this.prisma.$transaction(async (tx) => {
-      const membership = await tx.organizationMembership.upsert({
-        where: { userId_organizationId: { userId, organizationId: invitation.organizationId } },
-        update: { status: "ACTIVE", acceptedAt: new Date(), roles: { createMany: { data: invitation.roles.map(({ roleId }) => ({ roleId })), skipDuplicates: true } } },
-        create: { userId, organizationId: invitation.organizationId, status: "ACTIVE", acceptedAt: new Date(), roles: { create: invitation.roles.map(({ roleId }) => ({ roleId })) } },
-      });
-      await tx.membershipInvitation.update({ where: { id: invitation.id }, data: { status: "ACCEPTED", acceptedAt: new Date() } });
-      await tx.auditLog.create({ data: { actorId: userId, organizationId: invitation.organizationId, action: "membership.social.accepted", entityType: "OrganizationMembership", entityId: membership.id } });
-    });
+    await redeemInvitation(this.prisma, token, { userId, email });
   }
 
   async exchange(input: SocialExchangeInput, metadata: RequestMetadata) {
@@ -282,6 +283,7 @@ export class AuthSessionsService {
     } else if (identity?.email.toLowerCase() !== verified.email) {
       throw new UnauthorizedException("Social account email changed; relinking is required");
     }
+    if (user.status !== "ACTIVE") throw new UnauthorizedException("Доступ к аккаунту недоступен");
     if (input.invitationToken) await this.acceptInvitation(input.invitationToken, user.id, verified.email);
     const onboarding = input.registrationToken ? await this.onboarding.claim(input.registrationToken, { id: user.id, email: user.email, displayName: user.displayName }) : null;
     const memberships = await this.memberships(user.id);
@@ -384,9 +386,11 @@ export class AuthSessionsService {
   }
 
   async revoke(sessionId: string, userId: string, reason: string) {
+    if (!userId) throw new UnauthorizedException("Войдите в аккаунт");
     const session = await this.prisma.authSession.findFirst({ where: { id: sessionId, userId } });
     if (!session) throw new NotFoundException("Session not found");
-    return this.prisma.authSession.update({ where: { id: session.id }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: reason } });
+    await this.prisma.authSession.update({ where: { id: session.id }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: reason } });
+    return { id: session.id, status: "REVOKED" as const };
   }
 
   async revokeByRefreshToken(refreshToken: string, userId: string | undefined, reason: string) {

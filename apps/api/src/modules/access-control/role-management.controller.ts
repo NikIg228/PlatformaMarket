@@ -4,6 +4,7 @@ import { assignMembershipRoleSchema, createRoleSchema, updateMembershipSchema } 
 import { PermissionsGuard } from "./permissions.guard";
 import { RequirePermissions } from "./require-permissions.decorator";
 import { RoleManagementService } from "./role-management.service";
+import { ApiCoreResponse } from "../../platform/openapi/core-openapi";
 
 @ApiTags("access-control")
 @UseGuards(PermissionsGuard)
@@ -16,7 +17,8 @@ export class RoleManagementController {
   }
 
   @Get("roles")
-  @RequirePermissions("organization.roles.manage")
+  @RequirePermissions("organization.members.manage")
+  @ApiCoreResponse("IdentityRoles", 200)
   listRoles(@Param("organizationId") organizationId: string, @Headers("x-organization-id") activeOrganizationId: string) {
     this.assertActiveOrganization(organizationId, activeOrganizationId);
     return this.roles.listRoles(organizationId);
@@ -33,6 +35,7 @@ export class RoleManagementController {
 
   @Get("memberships")
   @RequirePermissions("organization.members.manage")
+  @ApiCoreResponse("IdentityMembers", 200)
   memberships(@Param("organizationId") organizationId: string, @Headers("x-organization-id") activeOrganizationId: string) {
     this.assertActiveOrganization(organizationId, activeOrganizationId);
     return this.roles.listMemberships(organizationId);

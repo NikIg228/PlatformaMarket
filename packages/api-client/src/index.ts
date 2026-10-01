@@ -1,4 +1,5 @@
 import type { WorkspaceCorrectionOfferPage, WorkspaceInventoryPage, WorkspaceLotPage, WorkspaceReservationPage, WorkspaceOverridePage } from "@marketplace/schemas";
+import type { CreateInvitationInput, AcceptInvitationInput, UpdateMembershipInput, IdentityMember, IdentityRole, IdentitySession, IdentitySessionRevoked, InvitationSummary, InvitationCreated, InvitationDelivered, InvitationAccepted, InvitationDetails } from "@marketplace/schemas";
 import type { CreateOfferPromotion, ReviseOfferPromotion, OfferPromotionCommand, OfferPromotion, PromotionPage, PublicPromotionPage, PromotionListQuery } from "@marketplace/schemas";
 import type { WorkspacePageQuery, WorkspaceOrderQuery, WorkspaceOrderPage, WorkspaceOffer, WorkspaceOfferPage, WorkspaceCartPage, WorkspaceSummary } from "@marketplace/schemas";
 import { deploymentFeatures, isDeploymentApiPathEnabled, type DeploymentProfile } from "@marketplace/schemas/deployment-policy";
@@ -258,6 +259,19 @@ export class MarketplaceApiClient {
   workspaceContext() { return this.get<WorkspaceContext>("/auth/workspace-context"); }
   registerEmail(input: AuthEmailRegistration) { return this.post<AuthRegistrationAccepted>("/auth/register", input); }
   requestPasswordReset(email: string) { return this.post<AuthForgotAccepted>("/auth/password/forgot", { email }); }
+  listMembers(organizationId: string) { return this.get<IdentityMember[]>(`/organizations/${encodeURIComponent(organizationId)}/memberships`); }
+  listRoles(organizationId: string) { return this.get<IdentityRole[]>(`/organizations/${encodeURIComponent(organizationId)}/roles`); }
+  updateMember(organizationId: string, memberId: string, input: UpdateMembershipInput) { return this.patch<IdentityMember>(`/organizations/${encodeURIComponent(organizationId)}/memberships/${encodeURIComponent(memberId)}`, input); }
+  assignMemberRole(organizationId: string, memberId: string, roleId: string) { return this.post<unknown>(`/organizations/${encodeURIComponent(organizationId)}/memberships/${encodeURIComponent(memberId)}/roles`, { roleId }); }
+  removeMemberRole(organizationId: string, memberId: string, roleId: string) { return this.request<unknown>(`/organizations/${encodeURIComponent(organizationId)}/memberships/${encodeURIComponent(memberId)}/roles/${encodeURIComponent(roleId)}`, { method: "DELETE" }); }
+  listInvitations(organizationId: string) { return this.get<InvitationSummary[]>(`/organizations/${encodeURIComponent(organizationId)}/invitations`); }
+  createInvitation(organizationId: string, input: CreateInvitationInput) { return this.post<InvitationCreated>(`/organizations/${encodeURIComponent(organizationId)}/invitations`, input); }
+  deliverInvitation(organizationId: string, invitationId: string) { return this.post<InvitationDelivered>(`/organizations/${encodeURIComponent(organizationId)}/invitations/${encodeURIComponent(invitationId)}/deliver`); }
+  revokeInvitation(organizationId: string, invitationId: string) { return this.post<{ ok: true }>(`/organizations/${encodeURIComponent(organizationId)}/invitations/${encodeURIComponent(invitationId)}/revoke`); }
+  invitationDetails(token: string) { return this.post<InvitationDetails>("/invitations/details", { token }); }
+  acceptInvitation(input: AcceptInvitationInput) { return this.post<InvitationAccepted>("/invitations/accept", input); }
+  listSessions() { return this.get<IdentitySession[]>("/auth/sessions"); }
+  revokeSession(sessionId: string) { return this.post<IdentitySessionRevoked>(`/auth/sessions/${encodeURIComponent(sessionId)}/revoke`, { reason: "user_security_settings" }); }
   loginLocalOperator(input: LocalOperatorLogin) { return this.post<LocalOperatorSession>("/auth/local-operator/login", input); }
   inspectRegistrationResume(input: RegistrationResumeProof) {
     return this.post<RegistrationResumeDetails>("/auth/registration/resume/inspect", input);

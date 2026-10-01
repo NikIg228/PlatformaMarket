@@ -99,6 +99,13 @@ button, input, select, textarea { font: inherit; }
 .mp-section > header p { margin: 3px 0 0; color: var(--colorNeutralForeground3); font-size: 11px; }
 .mp-grid-2 { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .75fr); gap: 16px; }
 .mp-stack { display: grid; gap: 16px; }
+.mp-member-management { min-width: 0; padding: 20px; border: 1px solid var(--dm-border); border-radius: 12px; background: var(--dm-surface); }
+.mp-member-management h2, .mp-member-management h3, .mp-member-management p { margin: 0; }
+.mp-member-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.mp-member-invite, .mp-member-card { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.mp-member-card { padding: 16px 0; border-top: 1px solid var(--dm-border); overflow-wrap: anywhere; }
+.mp-member-confirm { padding: 16px; border: 1px solid var(--dm-warning-border); background: var(--dm-warning-surface); border-radius: 8px; }
+@media (max-width: 640px) { .mp-member-invite, .mp-member-card { grid-template-columns: minmax(0, 1fr); } }
 
 .mp-state { min-height: 260px; display: grid; place-items: center; align-content: center; gap: 9px; padding: 34px; text-align: center; }
 .mp-state > span > svg, .mp-state > svg { width: 32px; height: 32px; color: var(--colorNeutralForeground3); }

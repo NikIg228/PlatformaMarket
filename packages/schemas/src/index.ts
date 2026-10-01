@@ -1,5 +1,6 @@
 import { z } from "zod";
 export * from "./offer-commercial";
+export * from "./identity-management";
 export * from "./workspace-reads";
 export * from "./document-upload-limits";
 import { shipmentStatusSchema, cartLineSnapshotSchema } from "./core-api.js";
@@ -36,6 +37,8 @@ export const createInvitationSchema = z.object({
 export const acceptInvitationSchema = z.object({
   token: z.string().min(32).max(256),
   displayName: z.string().trim().min(2).max(160),
+  password: z.string().min(12).max(128).optional(),
+  mfaCode: z.string().trim().min(6).max(32).optional(),
 });
 
 export const createCategorySchema = z.object({

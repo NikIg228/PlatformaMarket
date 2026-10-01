@@ -36,6 +36,11 @@ function policyFixture(
 const context = { actorId: "actor", organizationId: "organization" };
 
 describe("PlatformAuthorityPolicy", () => {
+  it("rechecks access management authority even when no roles are being granted", async () => {
+    await expect(policyFixture(null).policy.assertCanAssignRoles(context, [], "organization.members.manage")).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(policyFixture(membership(["BUYER"], ["catalog.product.view"])).policy.assertCanAssignRoles(context, [], "organization.members.manage")).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(policyFixture(membership(["BUYER"], ["organization.members.manage"])).policy.assertCanAssignRoles(context, [], "organization.members.manage")).resolves.toBeUndefined();
+  });
   it("requires active marketplace-operator membership for platform writes", async () => {
     const supplier = policyFixture(
       membership(["SUPPLIER"], ["catalog.product.create"]),

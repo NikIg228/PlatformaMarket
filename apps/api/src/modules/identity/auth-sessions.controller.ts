@@ -179,9 +179,11 @@ export class AuthSessionsController {
   }
 
   @Get("sessions")
+  @ApiCoreResponse("IdentitySessions", 200)
   list(@Headers("x-user-id") userId: string) { if (!userId) throw new UnauthorizedException(); return this.sessions.list(userId); }
 
   @Post("sessions/:sessionId/revoke")
+  @ApiCoreResponse("IdentitySessionRevoked", 201)
   revoke(@Param("sessionId") sessionId: string, @Headers("x-user-id") userId: string, @Body() body: unknown) { const parsed = revokeSessionSchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten()); return this.sessions.revoke(sessionId, userId, parsed.data.reason); }
 
   @Post("sessions/:sessionId/organization")

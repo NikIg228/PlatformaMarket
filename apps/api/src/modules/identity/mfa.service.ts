@@ -26,7 +26,12 @@ export class MfaService {
     const recoveryCodes = generateRecoveryCodes();
     const encryptedSecret = this.crypto.encrypt(secret);
     const recoveryCodeHashes = recoveryCodes.map((code) => this.recoveryHash(user.id, code));
-    const factor = await this.prisma.userMfaFactor.upsert({ where: { userId: user.id }, update: { status: "PENDING", encryptedSecret, recoveryCodeHashes, verifiedAt: null, lastUsedAt: null, failedAttempts: 0, lockedUntil: null }, create: { userId: user.id, encryptedSecret, recoveryCodeHashes } });
+    const factor = await this.prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${user.id}::uuid FOR UPDATE`;
+      const locked = await tx.userMfaFactor.findUnique({ where: { userId: user.id } });
+      if (locked?.status === "ACTIVE") throw new ConflictException("Active MFA must be disabled before re-enrollment");
+      return tx.userMfaFactor.upsert({ where: { userId: user.id }, update: { status: "PENDING", encryptedSecret, recoveryCodeHashes, verifiedAt: null, lastUsedAt: null, failedAttempts: 0, lockedUntil: null }, create: { userId: user.id, encryptedSecret, recoveryCodeHashes } });
+    });
     await this.audit(context, "identity.mfa.enrollment.started", factor.id, { status: factor.status });
     const issuer = encodeURIComponent(process.env.MFA_ISSUER ?? "DentMarket KZ");
     const label = encodeURIComponent(`${process.env.MFA_ISSUER ?? "DentMarket KZ"}:${user.email}`);
@@ -36,9 +41,14 @@ export class MfaService {
   async verifyEnrollment(input: MfaCodeInput, context: ActorContext) {
     const factor = await this.requireFactor(context.actorId, "PENDING");
     if (!verifyTotp(this.crypto.decrypt(factor.encryptedSecret), input.code)) throw new UnauthorizedException("Invalid TOTP code");
-    const updated = await this.prisma.userMfaFactor.update({ where: { id: factor.id }, data: { status: "ACTIVE", verifiedAt: new Date(), lastUsedAt: new Date(), failedAttempts: 0, lockedUntil: null } });
-    await this.audit(context, "identity.mfa.enabled", factor.id, { status: updated.status });
-    return { enabled: true, verifiedAt: updated.verifiedAt, recoveryCodesRemaining: updated.recoveryCodeHashes.length };
+    const verifiedAt = new Date();
+    await this.prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${context.actorId}::uuid FOR UPDATE`;
+      const claimed = await tx.userMfaFactor.updateMany({ where: { id: factor.id, status: "PENDING", encryptedSecret: factor.encryptedSecret }, data: { status: "ACTIVE", verifiedAt, lastUsedAt: verifiedAt, failedAttempts: 0, lockedUntil: null } });
+      if (claimed.count !== 1) throw new ConflictException("MFA enrollment has changed. Start again.");
+    });
+    await this.audit(context, "identity.mfa.enabled", factor.id, { status: "ACTIVE" });
+    return { enabled: true, verifiedAt, recoveryCodesRemaining: factor.recoveryCodeHashes.length };
   }
 
   async challenge(input: MfaCodeInput, context: ActorContext) {
@@ -65,12 +75,13 @@ export class MfaService {
     const hashes = recoveryIndex >= 0 ? factor.recoveryCodeHashes.filter((_, index) => index !== recoveryIndex) : factor.recoveryCodeHashes;
     if (recoveryIndex >= 0) {
       const consumed = await this.prisma.userMfaFactor.updateMany({
-        where: { id: factor.id, status: "ACTIVE", recoveryCodeHashes: { has: recoveryHash } },
+        where: { id: factor.id, status: "ACTIVE", recoveryCodeHashes: { equals: factor.recoveryCodeHashes } },
         data: { recoveryCodeHashes: hashes, failedAttempts: 0, lockedUntil: null, lastUsedAt: new Date() },
       });
       if (consumed.count !== 1) throw new UnauthorizedException("Recovery code has already been used");
     } else {
-      await this.prisma.userMfaFactor.update({ where: { id: factor.id }, data: { recoveryCodeHashes: hashes, failedAttempts: 0, lockedUntil: null, lastUsedAt: new Date() } });
+      const checked = await this.prisma.userMfaFactor.updateMany({ where: { id: factor.id, status: "ACTIVE", encryptedSecret: factor.encryptedSecret }, data: { failedAttempts: 0, lockedUntil: null, lastUsedAt: new Date() } });
+      if (checked.count !== 1) throw new UnauthorizedException("MFA factor is no longer active");
     }
     await this.audit(context, "identity.mfa.challenge.succeeded", factor.id, { method: recoveryIndex >= 0 ? "RECOVERY_CODE" : "TOTP" });
     return { verified: true, method: recoveryIndex >= 0 ? "RECOVERY_CODE" : "TOTP", challengeId: randomUUID(), recoveryCodesRemaining: hashes.length };
@@ -78,7 +89,11 @@ export class MfaService {
 
   async disable(input: MfaCodeInput, context: ActorContext) {
     await this.challenge(input, context);
-    const factor = await this.prisma.userMfaFactor.update({ where: { userId: context.actorId }, data: { status: "REVOKED", recoveryCodeHashes: [], lockedUntil: null } });
+    const factor = await this.prisma.$transaction(async tx => {
+      const updated = await tx.userMfaFactor.update({ where: { userId: context.actorId }, data: { status: "REVOKED", recoveryCodeHashes: [], lockedUntil: null } });
+      await tx.authSession.updateMany({ where: { userId: context.actorId, status: "ACTIVE" }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "mfa_disabled" } });
+      return updated;
+    });
     await this.audit(context, "identity.mfa.disabled", factor.id, { status: factor.status });
     return { enabled: false };
   }

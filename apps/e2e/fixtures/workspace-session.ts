@@ -10,7 +10,7 @@ function assertTestDatabase() {
   if (!process.env.CI && target.pathname !== "/dentmarket_audit_20260914") throw new Error("Workspace browser fixtures require the approved isolated DB");
   if (!["127.0.0.1", "localhost"].includes(target.hostname)) throw new Error("Browser fixtures require a local database");
 }
-export async function workspaceFixture(prisma: PrismaClient, capability: "BUYER" | "SUPPLIER", identity: { userId: string; organizationId: string; displayName: string }) {
+export async function workspaceFixture(prisma: PrismaClient, capability: "BUYER" | "SUPPLIER" | "MARKETPLACE_OPERATOR", identity: { userId: string; organizationId: string; displayName: string }) {
   assertTestDatabase();
   const membership = await prisma.organizationMembership.findFirstOrThrow({ where: { userId: identity.userId, organizationId: identity.organizationId, status: "ACTIVE", organization: { capabilities: { some: { capability } } } } });
   await completeFixtureOrganization(prisma, identity.organizationId);

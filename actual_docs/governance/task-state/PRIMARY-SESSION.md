@@ -1,5 +1,13 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+АКТИВНОЕ разрешение02.10 после4f93f10: последовательно реализовать CORE05–09
+с backend/frontend, проверками, публикацией после PASS и итоговым кратким аудитом.
+Текущий этап: [CORE05](CORE-05-INTERNAL-2026-10-02.md), один writer primary.
+Вопросы ведутся отдельным списком в карточке. Это возобновляет внутреннюю очередь
+после темы; прежние «CORE05 не начинать» ниже — история до нового разрешения.
+Рабочая миграция140000/dev restoration не разрешены этим поручением; тестовая
+disposable DB допустима. Никаких EXT/production, агентов/worktrees или чужого WIP.
+
 Обновлено02.10.2026. Primary01a0f302-2d38-75d1-b79c-141e7428b533,
 generation4/idle. Canonical root C:\Users\user\Desktop\dentmarket-kz-main,
 Последний проверенный код: main@f14cbe16162de5230c9826b2a7fe94929422f1ca.

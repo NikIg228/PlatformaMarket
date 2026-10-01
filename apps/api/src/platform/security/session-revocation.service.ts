@@ -21,7 +21,7 @@ export class SessionRevocationService {
     }
 
     const session = await this.prisma.authSession.findUnique({
-      where: { id: sessionId },
+      where: { id: sessionId, user: { status: "ACTIVE" } },
       select: { userId: true, status: true, expiresAt: true },
     });
     if (!session || session.userId !== userId || session.status !== "ACTIVE" || session.expiresAt.getTime() <= now) {

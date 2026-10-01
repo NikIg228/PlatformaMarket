@@ -1,4 +1,6 @@
 "use client";
+export { MemberManagement } from "./member-management";
+export { SessionManagement } from "./session-management";
 export { PermissionsProvider, PermissionFields, usePermissions } from "./permissions";
 export { documentArchiveDateRange, DOCUMENT_ARCHIVE_TIME_ZONE } from "./document-date-range";
 export { MarketplaceProvider } from "./provider";

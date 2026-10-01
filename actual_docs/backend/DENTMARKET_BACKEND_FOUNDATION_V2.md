@@ -6,6 +6,11 @@
 [Acceptance Matrix](../governance/PROJECT_ACCEPTANCE_MATRIX.md).
 
 Это реестр оставшихся результатов, а не разрешение выполнять весь backlog.
+Разрешение владельца 02.10 после завершения темы: последовательно CORE-05–09,
+backend/frontend, проверки, публикация после PASS и краткий итоговый аудит.
+[CORE-05](../governance/task-state/CORE-05-INTERNAL-2026-10-02.md) LOCAL_PASS,
+CI ожидается; внешняя доставка не принята. CORE-08 сохраняет production guards
+по ответу владельца Q01; реальные сервисы/production — отдельный этап.
 Последний запрос владельца01.10 после371aa9d: выполнять внутренний список6.2
 по порядку без внешних интеграций и боевых данных. Первый этап —
 [CORE-01-INTERNAL](../governance/task-state/CORE-01-INTERNAL-2026-10-01.md).

@@ -1,5 +1,13 @@
 # PlatformaMarket — текущий контекст
 
+Актуальное поручение 02.10 после темы: последовательно завершить CORE-05–09.
+[CORE-05](governance/task-state/CORE-05-INTERNAL-2026-10-02.md) — LOCAL_PASS,
+публикация/CI ожидаются. Один primary writer, прежние пять WIP сохранены.
+CORE-06 начинается только после успешного CI CORE-05. Рабочая миграция140000,
+восстановление dev, внешние интеграции и production не входят в это разрешение.
+Q01 решён: текущие production guards сохраняются; подключение сервисов отдельно.
+Сведения о приостановке CORE ниже относятся к предыдущему поручению о теме.
+
 Поручение02.10: [SHARED-THEME](governance/task-state/SHARED-THEME-2026-10-02.md),
 светлая semantic palette/states и итоговый аудит consumers. CLOSED/CI_PASS,
 код d067809 опубликован; CI36928758840 / Security36928758801 SUCCESS.

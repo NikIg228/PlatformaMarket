@@ -53,6 +53,9 @@ export class RoleManagementService {
       throw new BadRequestException("One or more permissions do not exist");
     try {
       return await this.prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "Organization" WHERE "id" = ${organizationId}::uuid FOR UPDATE`;
+        await this.authority.assertCanAssignRoles({ actorId, organizationId }, [], "organization.roles.manage");
+        await this.authority.assertCanCreateRole({ actorId, organizationId }, input.permissionCodes);
         const role = await tx.role.create({
           data: {
             organizationId,
@@ -112,13 +115,24 @@ export class RoleManagementService {
   ) {
     const current = await this.prisma.organizationMembership.findFirst({
       where: { id: membershipId, organizationId },
+      include: { roles: true },
     });
     if (!current) throw new NotFoundException("Membership not found");
+    await this.authority.assertCanAssignRoles({ actorId, organizationId }, current.roles.map(({ roleId }) => roleId));
     if (current.userId === actorId && input.status && input.status !== "ACTIVE")
       throw new BadRequestException(
         "An actor cannot block or revoke their own active membership",
       );
     return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "Organization" WHERE "id" = ${organizationId}::uuid FOR UPDATE`;
+      const locked = await tx.organizationMembership.findUniqueOrThrow({ where: { id: membershipId }, include: { roles: true } });
+      await this.authority.assertCanAssignRoles({ actorId, organizationId }, locked.roles.map(({ roleId }) => roleId), "organization.members.manage");
+      if (input.status && input.status !== "ACTIVE") {
+        await this.requireRemainingManager(tx, organizationId, membershipId);
+        await tx.authSession.updateMany({ where: { userId: current.userId, status: "ACTIVE", OR: [{ activeOrganizationId: organizationId }, { organizationIds: { has: organizationId } }] },
+          data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "membership_disabled" } });
+        await tx.membershipInvitation.updateMany({ where: { organizationId, createdById: current.userId, status: "PENDING" }, data: { status: "REVOKED", revokedAt: new Date() } });
+      }
       const membership = await tx.organizationMembership.update({
         where: { id: membershipId },
         data: {
@@ -174,6 +188,8 @@ export class RoleManagementService {
     if (!membership) throw new NotFoundException("Membership not found");
     if (!role) throw new NotFoundException("Role not found");
     return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "Organization" WHERE "id" = ${organizationId}::uuid FOR UPDATE`;
+      await this.authority.assertCanAssignRoles({ actorId, organizationId }, [roleId], "organization.roles.manage");
       const assignment = await tx.membershipRole.upsert({
         where: { membershipId_roleId: { membershipId, roleId } },
         update: {},
@@ -207,6 +223,7 @@ export class RoleManagementService {
     roleId: string,
     actorId: string,
   ) {
+    await this.authority.assertCanAssignRoles({ actorId, organizationId }, [roleId]);
     const assignment = await this.prisma.membershipRole.findUnique({
       where: { membershipId_roleId: { membershipId, roleId } },
       include: { membership: true },
@@ -219,9 +236,16 @@ export class RoleManagementService {
     if (assignment.membership.userId === actorId && roleCount === 1)
       throw new BadRequestException("An actor cannot remove their last role");
     return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "Organization" WHERE "id" = ${organizationId}::uuid FOR UPDATE`;
+      await this.authority.assertCanAssignRoles({ actorId, organizationId }, [roleId], "organization.roles.manage");
+      const count = await tx.membershipRole.count({ where: { membershipId } });
+      if (assignment.membership.userId === actorId && count <= 1) throw new BadRequestException("An actor cannot remove their last role");
       await tx.membershipRole.delete({
         where: { membershipId_roleId: { membershipId, roleId } },
       });
+      const managers = await tx.organizationMembership.count({ where: { organizationId, status: "ACTIVE", roles: { some: { role: { organizationId, permissions: { some: { permission: { code: "organization.members.manage" } } } } } } } });
+      if (managers === 0) throw new ConflictException("Нельзя удалить последнее право управления сотрудниками организации");
+      await tx.authSession.updateMany({ where: { userId: assignment.membership.userId, status: "ACTIVE", OR: [{ activeOrganizationId: organizationId }, { organizationIds: { has: organizationId } }] }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "membership_role_removed" } });
       await tx.auditLog.create({
         data: {
           actorId,
@@ -242,5 +266,12 @@ export class RoleManagementService {
       });
       return { membershipId, roleId, removed: true };
     });
+  }
+
+  private async requireRemainingManager(tx: Prisma.TransactionClient, organizationId: string, membershipId: string) {
+    const manages = await tx.organizationMembership.count({ where: { id: membershipId, status: "ACTIVE", roles: { some: { role: { organizationId, permissions: { some: { permission: { code: "organization.members.manage" } } } } } } } });
+    if (!manages) return;
+    const others = await tx.organizationMembership.count({ where: { organizationId, id: { not: membershipId }, status: "ACTIVE", user: { status: "ACTIVE" }, roles: { some: { role: { organizationId, permissions: { some: { permission: { code: "organization.members.manage" } } } } } } } });
+    if (!others) throw new ConflictException("В организации должен остаться сотрудник с правом управления доступом");
   }
 }

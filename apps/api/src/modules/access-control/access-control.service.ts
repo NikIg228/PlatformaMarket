@@ -7,7 +7,7 @@ export class AccessControlService {
 
   async permissionsFor(userId: string, organizationId: string) {
     const membership = await this.prisma.organizationMembership.findUnique({
-      where: { userId_organizationId: { userId, organizationId } },
+      where: { userId_organizationId: { userId, organizationId }, user: { status: "ACTIVE" }, organization: { status: "ACTIVE" } },
       include: {
         roles: {
           where: { role: { organizationId } },
@@ -37,6 +37,8 @@ export class AccessControlService {
         userId,
         organizationId,
         status: "ACTIVE",
+        user: { status: "ACTIVE" },
+        organization: { status: "ACTIVE" },
         AND: permissionCodes.map((code) => ({
           roles: {
             some: {

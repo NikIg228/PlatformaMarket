@@ -620,6 +620,7 @@ try {
       body: {
         token: tenantInvitation.token,
         displayName: "Tenant invitation user",
+        password: randomBytes(24).toString("base64url"),
       },
     },
     201,
