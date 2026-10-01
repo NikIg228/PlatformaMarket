@@ -4,6 +4,47 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { installPilotWorkspace } from "../fixtures/workspace-session";
 
+for (const width of [390, 1440]) test(`semantic palette and keyboard states ${width}`, async ({ page }, testInfo) => {
+  await page.setViewportSize({ width, height: 900 });
+  await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
+  await page.goto("/catalog");
+  await expect(page.getByTestId("product-card")).toHaveCount(24);
+  const login = page.locator("header").getByRole("link", { name: "Войти", exact: true });
+  await expect(login).toHaveCSS("background-color", "rgb(0, 122, 89)");
+  await login.hover();
+  await expect(login).toHaveCSS("background-color", "rgb(0, 102, 75)");
+  await page.mouse.down();
+  await expect(login).toHaveCSS("background-color", "rgb(0, 84, 62)");
+  await page.mouse.move(0, 0);
+  await page.mouse.up();
+  const filters = page.getByRole("button", { name: /^Все фильтры/ });
+  await filters.click();
+  const dialog = page.getByRole("dialog");
+  const checkbox = dialog.getByRole("checkbox", { name: "Только в наличии", exact: true });
+  await checkbox.check();
+  await page.mouse.move(0, 0);
+  await expect(checkbox.locator("..").locator(".fui-Checkbox__indicator")).toHaveCSS("background-color", "rgb(0, 122, 89)");
+  const apply = dialog.getByRole("button", { name: "Показать товары", exact: true });
+  await expect(apply).toBeEnabled();
+  await page.mouse.move(0, 0);
+  await expect(apply).toHaveCSS("background-color", "rgb(0, 122, 89)");
+  await apply.hover();
+  await expect(apply).toHaveCSS("background-color", "rgb(0, 102, 75)");
+  await page.mouse.down();
+  await expect(apply).toHaveCSS("background-color", "rgb(0, 84, 62)");
+  await page.mouse.move(0, 0);
+  await page.mouse.up();
+  await page.keyboard.press("Tab");
+  await apply.focus();
+  await expect(apply).toHaveCSS("outline-color", "rgb(0, 122, 89)");
+  await expect(apply).toHaveCSS("outline-style", "solid");
+  await page.screenshot({ path: testInfo.outputPath(`theme-focus-${width}.png`) });
+  await page.keyboard.press("Escape");
+  await expect(filters).toBeFocused();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath(`theme-catalog-${width}.png`) });
+});
+
 for (const width of [390, 1440]) test(`catalog comparison, login return and cart retry preserve selection ${width}`, async ({ page }) => {
   const fixture = await installPilotWorkspace(page, "BUYER");
   const db = new PrismaClient();
@@ -28,7 +69,13 @@ for (const width of [390, 1440]) test(`catalog comparison, login return and cart
     const dialog = browser.getByRole("dialog");
     const offer = dialog.getByRole("article", { name: "Предложение: Поставщик А", exact: true });
     await expect(dialog.getByRole("article")).toHaveCount(2);
-    await expect(dialog.getByRole("article", { name: "Предложение: Поставщик Б", exact: true }).getByRole("button", { name: "Под заказ" })).toBeDisabled();
+    await expect(offer.locator(".mp-status-success")).toHaveCSS("color", "rgb(35, 122, 74)");
+    await expect(offer.locator(".mp-status-success")).toHaveCSS("background-color", "rgb(238, 248, 242)");
+    await expect(dialog.locator(".mp-status-warning")).toHaveCSS("color", "rgb(154, 90, 19)");
+    const disabledOffer = dialog.getByRole("article", { name: "Предложение: Поставщик Б", exact: true }).getByRole("button", { name: "Под заказ" });
+    await expect(disabledOffer).toBeDisabled();
+    await expect(disabledOffer).toHaveCSS("background-color", "rgb(238, 241, 239)");
+    await expect(disabledOffer).toHaveCSS("color", "rgb(114, 128, 120)");
     await offer.getByRole("button", { name: "Войти и купить", exact: true }).click();
     await expect(browser).toHaveURL(/\/login\?returnTo=/);
     expect(new URL(browser.url()).searchParams.get("returnTo")).toBe(productHref);
@@ -41,15 +88,24 @@ for (const width of [390, 1440]) test(`catalog comparison, login return and cart
     expect(new URL(browser.url()).searchParams.get("sort")).toBe("PRICE_ASC");
 
     const writes: unknown[] = [];
+    let releaseWrite!: () => void;
+    const heldWrite = new Promise<void>(resolve => { releaseWrite = resolve; });
     await browser.route(`**/api/buyers/${fixture.organizationId}/carts`, route => route.fulfill({ json: [{ id: "cart-fixture", status: "ACTIVE", currency: "KZT" }] }));
-    await browser.route("**/api/carts/cart-fixture/items", route => {
+    await browser.route("**/api/carts/cart-fixture/items", async route => {
       expect(route.request().headers().authorization).toMatch(/^Bearer /);
       writes.push(route.request().postDataJSON());
+      if (writes.length === 1) await heldWrite;
       return route.fulfill(writes.length === 1 ? { status: 503, json: { message: "Повторите добавление товара" } } : { json: { id: "item-fixture" } });
     });
     await open.click();
     await offer.getByRole("spinbutton", { name: "Количество у Поставщик А", exact: true }).fill("6");
     await offer.getByRole("button", { name: "В корзину", exact: true }).click();
+    const pending = offer.getByRole("button", { name: "Добавляем…", exact: true });
+    await expect(pending).toBeDisabled();
+    await expect(pending).toHaveCSS("background-color", "rgb(238, 241, 239)");
+    await pending.evaluate((button: HTMLButtonElement) => button.click());
+    expect(writes).toHaveLength(1);
+    releaseWrite();
     await expect(dialog.getByRole("alert")).toHaveText("Повторите добавление товара");
     expect(writes).toEqual([{ offerId, quantity: 6 }]);
     await expect(offer.getByRole("spinbutton")).toHaveValue("6");

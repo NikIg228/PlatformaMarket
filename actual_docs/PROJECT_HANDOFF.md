@@ -1,5 +1,11 @@
 # PlatformaMarket — текущий контекст
 
+Поручение02.10: [SHARED-THEME](governance/task-state/SHARED-THEME-2026-10-02.md),
+светлая semantic palette/states и итоговый аудит consumers. LOCAL_PASS, публикация/CI
+проверяются отдельно. Один writer в canonical root;5 прежних WIP сохранены.
+Это поручение приостановило CORE-очередь: рабочая140000 не применялась, dev не
+восстанавливался, CORE05 не начинался. После приёмки темы — остановка.
+
 Обновлено01.10.2026. Единственная рабочая папка:
 C:\Users\user\Desktop\dentmarket-kz-main. Ветка main, кодовый снимок
 f14cbe16162de5230c9826b2a7fe94929422f1ca (CI/Security PASS).

@@ -1,6 +1,7 @@
 "use client";
-import { createLightTheme, FluentProvider, webDarkTheme, type BrandVariants } from "@fluentui/react-components";
+import { FluentProvider, webDarkTheme } from "@fluentui/react-components";
 import { createContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { dentMarketLightTheme } from "./light-theme";
 import { installInputModality } from "./input-modality";
 
 type ThemeMode = "light" | "dark";
@@ -15,26 +16,6 @@ export const ThemeContext = createContext<ThemeContextValue>({
   toggle: () => undefined,
 });
 
-const dentMarketBrand: BrandVariants = {
-  10: "#f3fff9",
-  20: "#ddf8eb",
-  30: "#b9efd5",
-  40: "#87e3b8",
-  50: "#4fd49a",
-  60: "#1fbe7d",
-  70: "#009f67",
-  80: "#007a59",
-  90: "#00664b",
-  100: "#00543e",
-  110: "#004530",
-  120: "#003a29",
-  130: "#002f22",
-  140: "#00261b",
-  150: "#001e15",
-  160: "#00180f",
-};
-
-const dentMarketLightTheme = createLightTheme(dentMarketBrand);
 
 export function MarketplaceProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>("light");

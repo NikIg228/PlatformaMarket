@@ -1,5 +1,12 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+02.10 SHARED-THEME — LOCAL_PASS / CI_PENDING: [checkpoint](task-state/SHARED-THEME-2026-10-02.md),
+[контракт и аудит](../ui-ux/SHARED_SEMANTIC_THEME.md). Общая светлая палитра v1,
+Fluent/CSS состояния, auth/public/workspace overrides, Tag tones и keyboard modality.
+Typecheck13/13, unit12/12, targeted UI61/61, canonical build/budget, browser51/51,
+последующая StatusTag regression2/2 PASS. Root/local gates и targeted reuse отражены
+в checkpoint. Рабочая БД, deploy, внешняя identity и full dark acceptance вне scope.
+
 Baseline30.09.2026: main@2a816c337bae15f6684318cf26d21bf6f71cb3c5.
 Обновление01.10: отдельный согласованный PERFORMANCE-CI-DELIVERY выпуск ниже.
 Исторический PASS применим только к своим входам и границе.

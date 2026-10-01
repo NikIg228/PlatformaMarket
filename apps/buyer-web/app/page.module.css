@@ -81,20 +81,20 @@
   gap: 3px;
 }
 .catalogProof strong {
-  color: #172235;
+  color: var(--dm-text-primary);
   font-size: 19px;
   letter-spacing: -0.03em;
 }
 .catalogProof small {
-  color: #7b899b;
+  color: var(--dm-text-muted);
   font-size: 11px;
 }
 .advancedFilters {
-  border-bottom: 1px solid #e8edf3;
+  border-bottom: 1px solid var(--dm-border);
 }
 .advancedFilters summary {
   padding: 13px 22px;
-  color: #1268d8;
+  color: var(--dm-brand-deep);
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
@@ -115,7 +115,7 @@
 }
 .advancedFilters summary span {
   margin-left: 8px;
-  color: #8290a2;
+  color: var(--dm-text-muted);
   font-weight: 400;
 }
 .advancedFiltersGrid {
@@ -150,17 +150,17 @@
   min-height: 42px;
   align-items: center;
   padding: 0 18px;
-  border: 1px solid #c9d8d0;
+  border: 1px solid var(--dm-border);
   border-radius: 8px;
-  background: #fff;
-  color: #26705d;
+  background: var(--dm-surface);
+  color: var(--dm-brand-deep);
   font-size: 13px;
   font-weight: 750;
   text-decoration: none;
 }
 .loadMoreLink:hover {
-  background: #f1f7f3;
-  border-color: #26705d;
+  background: var(--dm-surface-hover);
+  border-color: var(--dm-brand-deep);
 }
 .product {
   position: relative;
@@ -191,7 +191,7 @@
 .productCardSurface:focus-visible .productVisual,
 .productCardSurface:focus-visible .productIdentity,
 .productCardSurface:focus-visible .offerSummary {
-  outline: 3px solid rgb(18 104 216 / 35%);
+  outline: 3px solid var(--dm-focus-ring);
   outline-offset: -3px;
 }
 .product:last-child {
@@ -199,10 +199,10 @@
 }
 .product:hover {
   background: var(--colorNeutralBackground1Hover);
-  box-shadow: inset 3px 0 0 #1268d8;
+  box-shadow: inset 3px 0 0 var(--dm-brand-deep);
 }
 .product:focus-visible {
-  outline: 3px solid rgb(18 104 216 / 28%);
+  outline: 3px solid var(--dm-focus-ring);
   outline-offset: -3px;
 }
 .productVisual {
@@ -211,17 +211,17 @@
   place-items: center;
   width: 128px;
   height: 128px;
-  border: 1px solid #d7e4f3;
+  border: 1px solid var(--dm-border);
   border-radius: 14px;
-  background: #edf5ff;
-  color: #1268d8;
+  background: var(--dm-info-surface);
+  color: var(--dm-brand-deep);
 }
 .productVisual svg {
   width: 22px;
   height: 22px;
 }
 .photoPending {
-  color: #71807a;
+  color: var(--dm-text-muted);
   font-size: 11px;
   font-weight: 650;
   line-height: 1.25;
@@ -232,7 +232,7 @@
   height: 100%;
   object-fit: contain;
   border-radius: inherit;
-  background: #f7f8fa;
+  background: var(--dm-surface-subtle);
   padding: 5px;
 }
 .photoStatus {
@@ -240,10 +240,10 @@
   right: -6px;
   bottom: -7px;
   padding: 2px 4px;
-  border: 1px solid #d7e4f3;
+  border: 1px solid var(--dm-border);
   border-radius: 4px;
-  background: #fff;
-  color: #55708f;
+  background: var(--dm-surface);
+  color: var(--dm-text-muted);
   font-size: 7px;
   line-height: 1;
   white-space: nowrap;
@@ -289,19 +289,19 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  color: #7b899b;
+  color: var(--dm-text-muted);
   font-size: 11px;
 }
 .productSignals span:first-child {
   padding: 3px 7px;
   border-radius: 999px;
-  background: #eef8f2;
-  color: #237a4a;
+  background: var(--dm-success-surface);
+  color: var(--dm-success-text);
   font-weight: 700;
 }
 .productSignals .signalMuted {
-  background: #f5f5f6;
-  color: #7b899b;
+  background: var(--dm-surface-subtle);
+  color: var(--dm-text-muted);
 }
 .reviewSummaryMuted {
   color: var(--colorNeutralForeground3);
@@ -326,7 +326,7 @@
   font-size: 11px;
 }
 .deliveryHint {
-  color: #55708f;
+  color: var(--dm-text-muted);
   font-size: 11px;
 }
 .productActions {
@@ -360,7 +360,7 @@
   padding: 32px;
   border: 1px solid var(--colorNeutralStroke2);
   border-radius: 16px;
-  background: #f7f8fa;
+  background: var(--dm-surface-subtle);
   color: var(--colorNeutralForeground3);
   font-size: 13px;
   line-height: 1.4;
@@ -417,7 +417,7 @@
   aspect-ratio: 1;
   object-fit: contain;
   border-radius: 16px;
-  background: #f7f8fa;
+  background: var(--dm-surface-subtle);
 }
 .productModalVisual small {
   color: var(--colorNeutralForeground3);
@@ -586,8 +586,8 @@
   background: var(--colorNeutralBackground1);
 }
 .sellerRowRecommended {
-  background: #f0f7f3;
-  box-shadow: inset 3px 0 0 #237a4a;
+  background: var(--dm-success-surface);
+  box-shadow: inset 3px 0 0 var(--dm-success-text);
 }
 .sellerIdentity,
 .sellerPrice,
@@ -609,7 +609,7 @@
 .recommendedBadge {
   padding: 3px 6px;
   border-radius: 4px;
-  background: #237a4a;
+  background: var(--dm-success-text);
   color: white;
   font-size: 9px;
   font-weight: 800;
@@ -637,11 +637,11 @@
   font-size: 11px;
 }
 .availableText {
-  color: #237a4a;
+  color: var(--dm-success-text);
   font-size: 12px;
 }
 .pendingText {
-  color: #9a5a13;
+  color: var(--dm-warning-text);
   font-size: 12px;
 }
 .sellerTrust strong {
@@ -806,8 +806,8 @@
   background:
     radial-gradient(ellipse at 0% 8%, rgb(79 212 154 / 12%), transparent 36rem),
     radial-gradient(ellipse at 100% 28%, rgb(45 190 182 / 10%), transparent 40rem),
-    #fafcfb;
-  color: #17201e;
+    var(--dm-page-surface);
+  color: var(--dm-text-primary);
 }
 .publicHeader {
   position: sticky;
@@ -818,7 +818,7 @@
   gap: 34px;
   min-height: 78px;
   padding: 0 clamp(22px, 5vw, 72px);
-  border-bottom: 1px solid rgba(23, 32, 30, 0.13);
+  border-bottom: 1px solid var(--dm-border);
   background: rgba(255, 253, 249, 0.94);
   backdrop-filter: blur(18px);
 }
@@ -861,13 +861,13 @@
 }
 .publicNav a {
   padding: 8px 0;
-  color: #65706c;
+  color: var(--dm-text-muted);
   font-size: 13px;
   text-decoration: none;
 }
 .publicNav a:hover,
 .publicNav a.publicNavActive {
-  color: #234d41;
+  color: var(--dm-brand-deep);
 }
 .publicNav a.publicNavActive {
   font-weight: 700;
@@ -876,12 +876,12 @@
   min-height: 42px;
   padding-inline: 20px;
   border-radius: 5px;
-  background: #17201e;
-  color: #fff;
+  background: var(--dm-brand-primary);
+  color: var(--dm-surface);
   font-weight: 750;
 }
 .publicHeader > :global(.fui-Button:hover) {
-  background: #234d41;
+  background: var(--dm-brand-primary-hover);
 }
 .publicMain {
   width: 100%;
@@ -896,8 +896,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(440px, 0.78fr);
   min-height: 286px;
-  border-bottom: 1px solid rgba(23, 32, 30, 0.14);
-  background: #fffdf9;
+  border-bottom: 1px solid var(--dm-border);
+  background: var(--dm-surface);
 }
 .publicHeroCopy {
   display: flex;
@@ -907,7 +907,7 @@
 }
 .publicEyebrow {
   margin: 0 0 12px;
-  color: #527568;
+  color: var(--dm-brand-deep);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -923,14 +923,14 @@
 }
 .publicHero h1 em {
   display: block;
-  color: #234d41;
+  color: var(--dm-brand-deep);
   font-weight: 620;
   line-height: 1.08;
 }
 .publicLead {
   max-width: 540px;
   margin: 16px 0 0;
-  color: #5e6865;
+  color: var(--dm-text-secondary);
   font-size: 16px;
   line-height: 1.65;
 }
@@ -957,21 +957,21 @@
     background-color 160ms ease;
 }
 .heroPrimary {
-  border: 1px solid #17201e;
-  background: #17201e;
-  color: #fffdf9;
+  border: 1px solid var(--dm-brand-primary);
+  background: var(--dm-brand-primary);
+  color: var(--dm-surface);
 }
 .heroSecondary {
-  border: 1px solid rgb(23 32 30 / 28%);
+  border: 1px solid var(--dm-border);
   background: transparent;
-  color: #234d41;
+  color: var(--dm-brand-deep);
 }
 .heroPrimary:hover {
-  background: #234d41;
+  background: var(--dm-brand-primary-hover);
   transform: translateY(-1px);
 }
 .heroSecondary:hover {
-  background: #edf3ef;
+  background: var(--dm-surface-hover);
   transform: translateY(-1px);
 }
 .heroPrimary:active,
@@ -980,7 +980,7 @@
 }
 .publicHeroAside {
   padding: 18px;
-  background: #dfe9e4;
+  background: var(--dm-brand-surface);
 }
 .categoryMosaic {
   height: 100%;
@@ -996,10 +996,10 @@
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   padding: 0;
-  border: 1px solid rgb(23 32 30 / 13%);
+  border: 1px solid var(--dm-border);
   border-radius: 8px;
-  background: #fffdf9;
-  color: #17201e;
+  background: var(--dm-surface);
+  color: var(--dm-text-primary);
   text-align: left;
   cursor: pointer;
   transition:
@@ -1011,7 +1011,7 @@
 }
 .categoryFeature:hover,
 .categoryTile:hover {
-  border-color: #527568;
+  border-color: var(--dm-brand-deep);
   transform: translateY(-2px);
 }
 .categoryFeature:active,
@@ -1028,7 +1028,7 @@
 .categoryFeature span,
 .categoryTile span {
   padding: 10px 11px;
-  border-top: 1px solid rgb(23 32 30 / 10%);
+  border-top: 1px solid var(--dm-border);
   font-size: 13px;
   font-weight: 750;
 }
@@ -1037,16 +1037,16 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   margin: 0 auto;
-  border-right: 1px solid rgb(23 32 30 / 13%);
-  border-bottom: 1px solid rgb(23 32 30 / 13%);
-  border-left: 1px solid rgb(23 32 30 / 13%);
-  background: #fffdf9;
+  border-right: 1px solid var(--dm-border);
+  border-bottom: 1px solid var(--dm-border);
+  border-left: 1px solid var(--dm-border);
+  background: var(--dm-surface);
 }
 .publicProof span {
   display: grid;
   gap: 3px;
   padding: 17px 22px;
-  border-right: 1px solid rgb(23 32 30 / 10%);
+  border-right: 1px solid var(--dm-border);
 }
 .publicProof span:last-child {
   border-right: 0;
@@ -1056,16 +1056,16 @@
   letter-spacing: -0.03em;
 }
 .publicProof small {
-  color: #6d7773;
+  color: var(--dm-text-muted);
   font-size: 11px;
 }
 .publicMain :global(.mp-section) {
   width: min(1320px, calc(100% - 48px));
   margin: 16px auto 0;
   overflow: visible;
-  border: 1px solid rgba(23, 32, 30, 0.14);
+  border: 1px solid var(--dm-border);
   border-radius: 8px;
-  background: #fffdf9;
+  background: var(--dm-surface);
   box-shadow: 0 18px 54px rgba(35, 77, 65, 0.09);
   position: relative;
   z-index: 2;
@@ -1077,7 +1077,7 @@
   grid-template-columns: minmax(0, 1fr) 190px auto;
   gap: 14px;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(23, 32, 30, 0.1);
+  border-bottom: 1px solid var(--dm-border);
 }
 .publicMain .searchBar :global(.fui-Field) {
   min-width: 0;
@@ -1092,16 +1092,16 @@
 }
 .publicMain .searchBar :global(.fui-Label) {
   margin-bottom: 7px;
-  color: #4e5b57;
+  color: var(--dm-text-secondary);
   font-size: 11px;
   font-weight: 700;
 }
 .publicMain .searchInput {
   min-height: 50px;
   padding: 0 16px;
-  border: 1px solid rgba(23, 32, 30, 0.24);
+  border: 1px solid var(--dm-border);
   border-radius: 5px;
-  background: #fff;
+  background: var(--dm-surface);
   font-size: 15px;
 }
 .publicMain .searchBar > :global(.fui-Button) {
@@ -1109,38 +1109,38 @@
   min-height: 50px;
   padding-inline: 24px;
   border-radius: 5px;
-  background: #17201e;
-  color: #fff;
+  background: var(--dm-brand-primary);
+  color: var(--dm-surface);
 }
 .publicMain .searchBar > :global(.fui-Button:hover) {
-  background: #234d41;
+  background: var(--dm-brand-primary-hover);
 }
 .publicMain .searchHelp {
   padding: 15px 28px 17px;
-  border-bottom: 1px solid rgba(23, 32, 30, 0.1);
-  color: #6d7773;
+  border-bottom: 1px solid var(--dm-border);
+  color: var(--dm-text-muted);
   font-size: 12px;
 }
 .publicMain .searchHelp button {
   border-color: rgba(35, 77, 65, 0.18);
   border-radius: 4px;
-  background: #edf3ef;
-  color: #234d41;
+  background: var(--dm-surface-hover);
+  color: var(--dm-brand-deep);
 }
 .publicMain .searchHelp button:hover {
-  background: #dce9e3;
-  border-color: #527568;
+  background: var(--dm-brand-surface);
+  border-color: var(--dm-brand-deep);
 }
 .publicMain .advancedFilters {
-  border-bottom-color: rgba(23, 32, 30, 0.1);
+  border-bottom-color: var(--dm-border);
 }
 .publicMain .advancedFilters summary {
-  color: #234d41;
+  color: var(--dm-brand-deep);
 }
 .publicMain .resultsMeta {
   padding: 16px 28px;
-  border-bottom: 1px solid rgba(23, 32, 30, 0.1);
-  color: #6d7773;
+  border-bottom: 1px solid var(--dm-border);
+  color: var(--dm-text-muted);
 }
 .publicMain .product {
   grid-template-columns: 128px minmax(260px, 1.15fr) minmax(
@@ -1148,7 +1148,7 @@
       0.7fr
     ) minmax(180px, auto);
   padding: 24px 28px;
-  border-bottom-color: rgba(23, 32, 30, 0.1);
+  border-bottom-color: var(--dm-border);
 }
 .publicMain .productCardSurface {
   grid-column: 1;
@@ -1158,18 +1158,18 @@
   gap: 14px;
 }
 .publicMain .product:hover {
-  background: #f4f6f2;
+  background: var(--dm-surface-subtle);
 }
 .publicMain .productIdentity h3 {
-  color: #17201e;
+  color: var(--dm-text-primary);
   font-size: 16px;
 }
 .publicMain .productIdentity p,
 .publicMain .offerSummary span {
-  color: #6d7773;
+  color: var(--dm-text-muted);
 }
 .publicMain .category {
-  color: #527568;
+  color: var(--dm-brand-deep);
 }
 .publicMain .productActions :global(.fui-Button),
 .publicMain .comparePanel :global(.fui-Button) {
@@ -1180,8 +1180,8 @@
   justify-content: space-between;
   gap: 20px;
   padding: 22px clamp(22px, 5vw, 72px);
-  border-top: 1px solid rgba(23, 32, 30, 0.13);
-  color: #77817d;
+  border-top: 1px solid var(--dm-border);
+  color: var(--dm-text-muted);
   font-size: 11px;
 }
 
@@ -1203,14 +1203,14 @@
 }
 .dealsHeading p {
   margin: 5px 0 0;
-  color: #6d7773;
+  color: var(--dm-text-muted);
   font-size: 12px;
 }
 .dealsHeading > button {
   padding: 7px 0;
   border: 0;
   background: transparent;
-  color: #234d41;
+  color: var(--dm-brand-deep);
   cursor: pointer;
   font: inherit;
   font-size: 12px;
@@ -1227,9 +1227,9 @@
   grid-template-columns: 132px minmax(0, 1fr);
   gap: 16px;
   padding: 12px;
-  border: 1px solid #dfe6e2;
+  border: 1px solid var(--dm-border);
   border-radius: 14px;
-  background: #fff;
+  background: var(--dm-surface);
 }
 .dealCard > button {
   display: grid;
@@ -1238,7 +1238,7 @@
   padding: 6px;
   border: 0;
   border-radius: 10px;
-  background: #f5f7f5;
+  background: var(--dm-surface-subtle);
   cursor: pointer;
 }
 .dealCard img {
@@ -1266,17 +1266,17 @@
   letter-spacing: -0.02em;
 }
 .dealCard small {
-  color: #69746f;
+  color: var(--dm-text-muted);
   font-size: 11px;
 }
 .dealCard p {
   margin: 3px 0 0;
-  color: #2f6b58;
+  color: var(--dm-brand-deep);
   font-size: 11px;
   font-weight: 700;
 }
 .dealLabel {
-  color: #527568;
+  color: var(--dm-brand-deep);
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
@@ -1290,7 +1290,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 13px 20px;
-  border-bottom: 1px solid #e4e9e6;
+  border-bottom: 1px solid var(--dm-border);
 }
 .catalogToolbar h1 {
   margin: 0;
@@ -1299,7 +1299,7 @@
 }
 .catalogToolbar p {
   margin: 3px 0 0;
-  color: #6d7773;
+  color: var(--dm-text-muted);
   font-size: 11px;
 }
 .catalogToolbarActions {
@@ -1310,25 +1310,25 @@
 .catalogToolbarActions :global(.fui-Button) {
   min-height: 40px;
   padding-inline: 14px;
-  border: 1px solid #d5ded9;
+  border: 1px solid var(--dm-border);
   border-radius: 9px;
-  background: #fff;
+  background: var(--dm-surface);
   box-shadow: none;
-  color: #234d41;
+  color: var(--dm-brand-deep);
   font-size: 12px;
   font-weight: 700;
 }
 .catalogToolbarActions :global(.fui-Button:hover) {
-  border-color: #9fb3aa;
-  background: #f4f7f5;
-  color: #173d32;
+  border-color: var(--dm-border-control);
+  background: var(--dm-surface-hover);
+  color: var(--dm-brand-deep);
 }
 .catalogToolbarActions :global(.fui-Select) {
   min-width: 192px;
   min-height: 40px;
-  border: 1px solid #d5ded9;
+  border: 1px solid var(--dm-border);
   border-radius: 9px;
-  background: #fff;
+  background: var(--dm-surface);
   box-shadow: none;
 }
 .catalogToolbarActions :global(.fui-Select__select) {
@@ -1336,7 +1336,7 @@
   padding: 0 38px 0 13px;
   border: 0;
   background: transparent;
-  color: #26332f;
+  color: var(--dm-text-primary);
   font-size: 12px;
   font-weight: 650;
   appearance: none;
@@ -1347,7 +1347,7 @@
 }
 .catalogToolbarActions :global(.fui-Select__icon) {
   right: 12px;
-  color: #60706a;
+  color: var(--dm-text-muted);
 }
 
 .activeFilters {
@@ -1356,8 +1356,8 @@
   flex-wrap: wrap;
   gap: 7px;
   padding: 10px 20px;
-  border-bottom: 1px solid #e4e9e6;
-  background: #fafbfa;
+  border-bottom: 1px solid var(--dm-border);
+  background: var(--dm-surface-subtle);
 }
 .activeFilters button {
   min-height: 30px;
@@ -1365,16 +1365,16 @@
   align-items: center;
   gap: 5px;
   padding: 0 9px;
-  border: 1px solid #d8e1dc;
+  border: 1px solid var(--dm-border);
   border-radius: 999px;
-  background: #fff;
-  color: #35423d;
+  background: var(--dm-surface);
+  color: var(--dm-text-secondary);
   cursor: pointer;
   font: inherit;
   font-size: 11px;
 }
 .activeFilters button:hover {
-  border-color: #739688;
+  border-color: var(--dm-border-control);
 }
 .activeFilters svg {
   width: 14px;
@@ -1382,22 +1382,22 @@
 .activeFilters .clearFilters {
   border-color: transparent;
   background: transparent;
-  color: #66726d;
+  color: var(--dm-text-muted);
 }
 
 .publicMain :global(.mp-section) {
   width: min(1480px, calc(100% - 48px));
   margin-top: 24px;
-  border-color: #dfe6e2;
+  border-color: var(--dm-border);
   border-radius: 14px;
-  background: #fff;
+  background: var(--dm-surface);
   box-shadow: none;
 }
 .publicMain .productList {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
-  background: #e4e9e6;
+  background: var(--dm-border);
 }
 .publicMain .product {
   min-width: 0;
@@ -1408,12 +1408,12 @@
   gap: 14px;
   padding: 16px;
   border: 0;
-  background: #fff;
+  background: var(--dm-surface);
 }
 .publicMain .product:hover {
   z-index: 1;
-  background: #fbfcfb;
-  box-shadow: inset 0 0 0 1px #8ca79c;
+  background: var(--dm-surface-subtle);
+  box-shadow: inset 0 0 0 1px var(--dm-border-control);
 }
 .publicMain .productVisual {
   width: 100%;
@@ -1422,7 +1422,7 @@
   overflow: hidden;
   border: 0;
   border-radius: 10px;
-  background: #f4f6f4;
+  background: var(--dm-surface-subtle);
 }
 .publicMain .productVisual img {
   width: auto;
@@ -1444,7 +1444,7 @@
 }
 .publicMain .category {
   overflow: hidden;
-  color: #527568;
+  color: var(--dm-brand-deep);
   font-size: 9px;
   letter-spacing: 0.055em;
   text-overflow: ellipsis;
@@ -1456,12 +1456,12 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #6f7975;
+  color: var(--dm-text-muted);
   font-size: 10px;
 }
 .publicMain .reviewSummary svg {
   width: 13px;
-  color: #b57a14;
+  color: var(--dm-warning-text);
 }
 .publicMain .offerSummary {
   align-content: start;
@@ -1469,7 +1469,7 @@
   padding-top: 2px;
 }
 .publicMain .offerSummary strong {
-  color: #17201e;
+  color: var(--dm-text-primary);
   font-size: 19px;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.025em;
@@ -1478,10 +1478,10 @@
   font-size: 11px;
 }
 .publicMain .deliveryHint {
-  color: #527568;
+  color: var(--dm-brand-deep);
 }
 .publicMain .dealLine {
-  color: #2f6b58;
+  color: var(--dm-brand-deep);
   font-size: 11px;
   font-weight: 750;
 }
@@ -1491,10 +1491,10 @@
 }
 .publicMain .productActions :global(.fui-Button) {
   min-height: 40px;
-  border: 1px solid #527568;
+  border: 1px solid var(--dm-brand-deep);
   border-radius: 9px;
-  background: #fff;
-  color: #234d41;
+  background: var(--dm-surface);
+  color: var(--dm-brand-deep);
   font-size: 11px;
   transition:
     background 160ms ease,
@@ -1503,8 +1503,8 @@
     transform 160ms ease;
 }
 .publicMain .productActions :global(.fui-Button:hover) {
-  background: #e8f0ec;
-  color: #173d32;
+  background: var(--dm-surface-hover);
+  color: var(--dm-brand-deep);
 }
 .publicMain .productActions :global(.fui-Button:active) {
   transform: translateY(1px);
@@ -1525,8 +1525,8 @@
   height: 100%;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  border-right: 1px solid #dbe3df;
-  background: #fff;
+  border-right: 1px solid var(--dm-border);
+  background: var(--dm-surface);
   box-shadow: 18px 0 54px rgb(35 77 65 / 14%);
   animation: filterDrawerIn 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1536,7 +1536,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 20px;
-  border-bottom: 1px solid #e4e9e6;
+  border-bottom: 1px solid var(--dm-border);
 }
 .filterDrawer h2 {
   margin: 0;
@@ -1545,7 +1545,7 @@
 }
 .filterDrawer header p {
   margin: 5px 0 0;
-  color: #6d7773;
+  color: var(--dm-text-muted);
   font-size: 11px;
 }
 .filterDrawer header > button {
@@ -1553,10 +1553,10 @@
   height: 36px;
   display: grid;
   place-items: center;
-  border: 1px solid #d9e1dd;
+  border: 1px solid var(--dm-border);
   border-radius: 9px;
-  background: #fff;
-  color: #34413c;
+  background: var(--dm-surface);
+  color: var(--dm-text-secondary);
   cursor: pointer;
 }
 .filterDrawerBody {
@@ -1586,15 +1586,15 @@
   grid-template-columns: 1fr 1.4fr;
   gap: 10px;
   padding: 14px 20px 20px;
-  border-top: 1px solid #e4e9e6;
+  border-top: 1px solid var(--dm-border);
 }
 .filterDrawer > footer :global(.fui-Button) {
   min-height: 42px;
   border-radius: 9px;
 }
 .filterDrawer > footer :global(.fui-Button:last-child) {
-  background: #234d41;
-  color: #fff;
+  background: var(--dm-brand-deep);
+  color: var(--dm-surface);
 }
 @keyframes filterDrawerIn {
   from {

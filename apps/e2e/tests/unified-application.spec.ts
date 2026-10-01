@@ -4,6 +4,63 @@ import { PrismaClient } from "@prisma/client";
 import { createRequire } from "node:module";
 import path from "node:path";
 
+for (const width of [390, 1440]) test(`shared theme auth audit ${width}`, async ({ page }, testInfo) => {
+  await page.setViewportSize({ width, height: 900 });
+  await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
+  await page.goto("/login");
+  const email = page.locator('input[type="email"]');
+  await email.fill("theme-audit@example.test");
+  await page.locator('input[type="password"]').fill("Synthetic-password-only!");
+  await page.mouse.move(0, 0);
+  await expect(email.locator("..")).toHaveCSS("border-top-color", "rgb(131, 152, 141)");
+  await page.keyboard.press("Tab");
+  await email.focus();
+  await expect(email).toHaveCSS("outline-color", "rgb(0, 122, 89)");
+  const submit = page.getByRole("button", { name: "Войти", exact: true });
+  await expect(submit).toHaveCSS("background-color", "rgb(0, 122, 89)");
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  let writes = 0;
+  await page.route("**/api/auth/login", async route => {
+    writes++;
+    await held;
+    await route.fulfill({ status: 401, json: { message: "Тестовая ошибка входа" } });
+  });
+  await submit.click();
+  const pending = page.getByRole("button", { name: "Входим…", exact: true });
+  await expect(pending).toBeDisabled();
+  await expect(pending).toHaveCSS("background-color", "rgb(238, 241, 239)");
+  await expect(email).toBeDisabled();
+  await expect(email.locator("..")).toHaveCSS("background-color", "rgb(238, 241, 239)");
+  await expect.poll(() => writes).toBe(1);
+  await pending.evaluate((button: HTMLButtonElement) => button.click());
+  expect(writes).toBe(1);
+  release();
+  await expect(page.locator(".authNotice-error")).toBeVisible();
+  await expect(page.locator(".authNotice-error")).toHaveCSS("color", "rgb(163, 59, 53)");
+  await expect(email).toHaveValue("theme-audit@example.test");
+  await page.screenshot({ path: testInfo.outputPath(`theme-auth-error-${width}.png`), fullPage: true });
+  for (const route of ["/register", "/admin/login", "/about", "/suppliers"]) {
+    await page.goto(route);
+    await expect(page.locator("main").first()).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if (route === "/register") {
+      await expect(page.locator('.rolePicker [data-selected="true"]')).toHaveCSS("background-color", "rgb(228, 243, 237)");
+      await expect(page.locator('.registrationSubmit')).toHaveCSS("background-color", "rgb(0, 122, 89)");
+    }
+    await page.screenshot({ path: testInfo.outputPath(`theme-${route.slice(1).replaceAll("/", "-")}-${width}.png`) });
+  }
+});
+
+test("existing persisted dark mode still uses the Fluent dark theme", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("marketplace-theme", "dark"));
+  await page.goto("/catalog");
+  const { webDarkTheme } = createRequire(__filename)("@fluentui/react-components");
+  await expect.poll(() => page.locator(".mp-provider").first().evaluate(element =>
+    getComputedStyle(element).getPropertyValue("--colorNeutralBackground1").trim())).toBe(webDarkTheme.colorNeutralBackground1);
+  expect(await page.evaluate(() => localStorage.getItem("marketplace-theme"))).toBe("dark");
+});
+
 test("password login, cookie refresh and legacy return use the same-origin proxy", async ({ page }) => {
   const fixture = await installPilotWorkspace(page, "BUYER");
   const db = new PrismaClient();

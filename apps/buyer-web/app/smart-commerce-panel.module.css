@@ -1,6 +1,6 @@
 .stack { display: grid; gap: 18px; }
 .loading { min-height: 220px; display: grid; place-items: center; }
-.error { padding: 12px 14px; border: 1px solid #e6b7b2; border-radius: 12px; color: #8c2f28; background: #fff5f3; }
+.error { padding: 12px 14px; border: 1px solid var(--dm-danger-text); border-radius: 12px; color: var(--dm-danger-text); background: var(--dm-danger-surface); }
 .contextGrid { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(260px, 1.2fr) minmax(210px, .8fr); gap: 14px; align-items: end; }
 .contextGrid label { display: grid; gap: 7px; }
 .contextGrid label > span { color: var(--colorNeutralForeground2); font-size: 12px; font-weight: 650; }

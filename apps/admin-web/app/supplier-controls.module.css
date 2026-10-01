@@ -173,15 +173,19 @@
   font-size: 10px;
 }
 
-.dangerAction:global(.dm-button.fui-Button) {
+.dangerAction.dangerAction:global(.dm-button.fui-Button)[data-dm-appearance="primary"]:not(:disabled):not([aria-disabled="true"]) {
   border-color: var(--dm-danger-text);
   background: var(--dm-danger-text);
   color: var(--dm-surface);
 }
 
-.dangerAction:global(.dm-button.fui-Button):hover {
-  border-color: color-mix(in srgb, var(--dm-danger-text) 82%, var(--dm-text-primary));
-  background: color-mix(in srgb, var(--dm-danger-text) 82%, var(--dm-text-primary));
+.dangerAction.dangerAction:global(.dm-button.fui-Button)[data-dm-appearance="primary"]:hover:not(:disabled):not([aria-disabled="true"]) {
+  border-color: var(--dm-danger-hover);
+  background: var(--dm-danger-hover);
+}
+.dangerAction.dangerAction:global(.dm-button.fui-Button)[data-dm-appearance="primary"]:active:not(:disabled):not([aria-disabled="true"]) {
+  border-color: var(--dm-danger-pressed);
+  background: var(--dm-danger-pressed);
 }
 
 @media (max-width: 1050px) {

@@ -4,27 +4,40 @@
   font-synthesis: none;
   --dm-font-ui: var(--font-sans, "Segoe UI");
   --dm-font-mono: "Roboto Mono", Consolas, ui-monospace, monospace;
-  --dm-brand-primary: #007a59;
-  --dm-brand-primary-hover: #00664b;
-  --dm-brand-deep: #00543e;
-  --dm-brand-accent: #4fd49a;
-  --dm-brand-surface: #ddf8eb;
-  --dm-brand-surface-strong: #b9efd5;
-  --dm-page-surface: #f4f8f6;
-  --dm-surface: #ffffff;
-  --dm-surface-subtle: #fbfcfb;
-  --dm-border: #d7e1dc;
-  --dm-text-primary: #17201e;
-  --dm-text-secondary: #4f5e58;
-  --dm-text-muted: #71807a;
-  --dm-success-surface: #eef8f2;
-  --dm-success-text: #237a4a;
-  --dm-warning-surface: #fff5e8;
-  --dm-warning-text: #9a5a13;
-  --dm-danger-surface: #fff0ee;
-  --dm-danger-text: #a33b35;
-  --dm-info-surface: #edf5ff;
-  --dm-info-text: #245e8a;
+  --dm-brand-primary: #007A59;
+  --dm-brand-primary-hover: #00664B;
+  --dm-brand-deep: #00543E;
+  --dm-brand-accent: #4FD49A;
+  --dm-brand-surface: #E4F3ED;
+  --dm-brand-surface-strong: #B9DFCD;
+  --dm-page-surface: #F6F8F7;
+  --dm-surface: #FFFFFF;
+  --dm-surface-subtle: #F0F4F2;
+  --dm-surface-hover: #EAF0ED;
+  --dm-border: #D7E1DC;
+  --dm-border-control: #83988D;
+  --dm-text-primary: #17201E;
+  --dm-text-secondary: #4F5E58;
+  --dm-text-muted: #607169;
+  --dm-text-inverse: #FFFFFF;
+  --dm-focus-ring: #007A59;
+  --dm-focus-halo: rgba(0,122,89,0.22);
+  --dm-disabled-surface: #EEF1EF;
+  --dm-disabled-content: #728078;
+  --dm-disabled-border: #D7E1DC;
+  --dm-danger-hover: #8F302B;
+  --dm-danger-pressed: #762620;
+  --dm-ai-text: #6F4CC3;
+  --dm-ai-surface: #F4F0FF;
+  --dm-ai-hover: #5E3CAE;
+  --dm-success-text: #237A4A;
+  --dm-success-surface: #EEF8F2;
+  --dm-warning-text: #9A5A13;
+  --dm-warning-surface: #FFF5E8;
+  --dm-danger-text: #A33B35;
+  --dm-danger-surface: #FFF0EE;
+  --dm-info-text: #245E8A;
+  --dm-info-surface: #EDF5FF;
   --dm-radius-field: 6px;
   --dm-radius-button: 8px;
   --dm-radius-card: 12px;
@@ -93,6 +106,10 @@ button, input, select, textarea { font: inherit; }
 .mp-state p { max-width: 420px; margin: 0; color: var(--colorNeutralForeground3); font-size: 12px; line-height: 1.5; }
 .mp-error { color: var(--colorPaletteRedForeground1); }
 .mp-status { white-space: nowrap; }
+.mp-status.fui-Tag.mp-status-success { background: var(--dm-success-surface); color: var(--dm-success-text); }
+.mp-status.fui-Tag.mp-status-warning { background: var(--dm-warning-surface); color: var(--dm-warning-text); }
+.mp-status.fui-Tag.mp-status-danger { background: var(--dm-danger-surface); color: var(--dm-danger-text); }
+.mp-status.fui-Tag.mp-status-info { background: var(--dm-info-surface); color: var(--dm-info-text); }
 
 .mp-table-wrap { width: 100%; overflow-x: auto; }
 .mp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -121,7 +138,7 @@ button, input, select, textarea { font: inherit; }
 .dm-control .fui-Select__select { width: 100%; }
 .dm-control.fui-Input,
 .dm-control.fui-Select,
-.dm-control.fui-Textarea { border: 1px solid var(--dm-border); border-radius: var(--dm-radius-field); background: var(--dm-surface); color: var(--dm-text-primary); box-shadow: none; }
+.dm-control.fui-Textarea { border: 1px solid var(--dm-border-control); border-radius: var(--dm-radius-field); background: var(--dm-surface); color: var(--dm-text-primary); box-shadow: none; }
 .dm-control .fui-Input__input,
 .dm-control .fui-Select__select { min-height: calc(var(--dm-control-default) - 2px); padding: 0 12px; border: 0; outline: 0; background: transparent; color: inherit; }
 .dm-control .fui-Textarea__textarea { min-height: 108px; padding: 11px 12px; border: 0; outline: 0; background: transparent; color: inherit; line-height: 1.5; resize: vertical; }
@@ -132,22 +149,24 @@ button, input, select, textarea { font: inherit; }
 .dm-control.fui-Textarea:hover { border-color: var(--dm-brand-primary); }
 html[data-input-modality="keyboard"] .dm-control.fui-Input:focus-within,
 html[data-input-modality="keyboard"] .dm-control.fui-Select:focus-within,
-html[data-input-modality="keyboard"] .dm-control.fui-Textarea:focus-within { border-color: var(--dm-brand-primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--dm-brand-primary) 22%, transparent); }
+html[data-input-modality="keyboard"] .dm-control.fui-Textarea:focus-within { border-color: var(--dm-brand-primary); box-shadow: 0 0 0 2px var(--dm-focus-halo); }
+.dm-control:has(:disabled), .dm-control:has(:disabled):hover { background: var(--dm-disabled-surface); color: var(--dm-disabled-content); border-color: var(--dm-disabled-border); }
+.dm-control:has([aria-invalid="true"]):not(:has(:disabled)) { border-color: var(--dm-danger-text); }
 .dm-textarea { min-height: 112px; }
 .dm-button.fui-Button { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 15px; border: 1px solid transparent; border-radius: var(--dm-radius-button); background: var(--dm-surface); color: var(--dm-text-primary); font-weight: 650; line-height: 1.2; text-align: center; cursor: pointer; transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease; }
-.dm-button.fui-Button:active:not(:disabled) { transform: translateY(1px); }
+.dm-button.fui-Button:active:not(:disabled):not([aria-disabled="true"]) { transform: translateY(1px); }
 .dm-button.fui-Button[data-dm-appearance="primary"] { border-color: var(--dm-brand-primary); background: var(--dm-brand-primary); color: #fff; }
-.dm-button.fui-Button[data-dm-appearance="primary"]:hover:not(:disabled) { border-color: var(--dm-brand-primary-hover); background: var(--dm-brand-primary-hover); color: #fff; }
-.dm-button.fui-Button[data-dm-appearance="primary"]:active:not(:disabled) { border-color: var(--dm-brand-deep); background: var(--dm-brand-deep); color: #fff; }
+.dm-button.fui-Button[data-dm-appearance="primary"]:hover:not(:disabled):not([aria-disabled="true"]) { border-color: var(--dm-brand-primary-hover); background: var(--dm-brand-primary-hover); color: #fff; }
+.dm-button.fui-Button[data-dm-appearance="primary"]:active:not(:disabled):not([aria-disabled="true"]) { border-color: var(--dm-brand-deep); background: var(--dm-brand-deep); color: #fff; }
 .dm-button.fui-Button[data-dm-appearance="secondary"],
 .dm-button.fui-Button[data-dm-appearance="outline"] { border-color: var(--dm-border); background: var(--dm-surface); color: var(--dm-text-primary); }
-.dm-button.fui-Button[data-dm-appearance="secondary"]:hover:not(:disabled),
-.dm-button.fui-Button[data-dm-appearance="outline"]:hover:not(:disabled) { border-color: var(--dm-brand-primary); background: var(--dm-brand-surface); color: var(--dm-brand-deep); }
+.dm-button.fui-Button[data-dm-appearance="secondary"]:hover:not(:disabled):not([aria-disabled="true"]),
+.dm-button.fui-Button[data-dm-appearance="outline"]:hover:not(:disabled):not([aria-disabled="true"]) { border-color: var(--dm-brand-primary); background: var(--dm-brand-surface); color: var(--dm-brand-deep); }
 .dm-button.fui-Button[data-dm-appearance="subtle"],
 .dm-button.fui-Button[data-dm-appearance="transparent"] { border-color: transparent; background: transparent; color: var(--dm-text-secondary); }
-.dm-button.fui-Button[data-dm-appearance="subtle"]:hover:not(:disabled),
-.dm-button.fui-Button[data-dm-appearance="transparent"]:hover:not(:disabled) { background: var(--dm-brand-surface); color: var(--dm-brand-deep); }
-.dm-button.fui-Button:disabled { cursor: not-allowed; opacity: .55; transform: none; }
+.dm-button.fui-Button[data-dm-appearance="subtle"]:hover:not(:disabled):not([aria-disabled="true"]),
+.dm-button.fui-Button[data-dm-appearance="transparent"]:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--dm-brand-surface); color: var(--dm-brand-deep); }
+.dm-button.fui-Button:disabled, .dm-button.fui-Button[aria-disabled="true"] { cursor: not-allowed; opacity: 1; transform: none; border-color: var(--dm-disabled-border); background: var(--dm-disabled-surface); color: var(--dm-disabled-content); }
 .dm-button.fui-Button:focus-visible { outline: 2px solid var(--dm-brand-primary); outline-offset: 2px; }
 .dm-checkbox.fui-Checkbox { min-height: 32px; }
 .dm-checkbox .fui-Checkbox__input { width: 18px; height: 18px; margin: 5px 8px 0 0; accent-color: var(--dm-brand-primary); cursor: pointer; }
@@ -303,5 +322,5 @@ html[data-input-modality="keyboard"] :is(a,button,input,select,textarea,summary,
 }
 :is(.fui-Dropdown, .fui-Combobox, .fui-Select):not([aria-invalid="true"]):not(:has([aria-invalid="true"])):not(:has(:disabled)):not([aria-disabled="true"]),
 :is(.fui-Dropdown, .fui-Combobox, .fui-Select):not([aria-invalid="true"]):not(:has([aria-invalid="true"])):not(:has(:disabled)):not([aria-disabled="true"]):is(:hover, :active, :focus-within) {
-  border-color: var(--dm-border);
+  border-color: var(--dm-border-control);
 }

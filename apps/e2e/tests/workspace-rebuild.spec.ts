@@ -702,6 +702,8 @@ test("sidebar shows the session organization, stays left and supports keyboard d
   expect(side!.y).toBe(0);
   expect(side!.x + side!.width).toBeLessThanOrEqual(main!.x);
   await expect(sidebar.getByRole("link", { name: "Главная", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(sidebar.getByRole("link", { name: "Главная", exact: true })).toHaveCSS("background-color", "rgb(228, 243, 237)");
+  await expect(sidebar.getByRole("link", { name: "Главная", exact: true })).toHaveCSS("color", "rgb(0, 84, 62)");
   await page.screenshot({ path: "../../outputs/workspace-sidebar-desktop.png", fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: "Меню кабинета", exact: true }).click();

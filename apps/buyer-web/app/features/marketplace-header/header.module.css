@@ -1,33 +1,39 @@
-.header{background:#fff;border-bottom:1px solid #dce3e1;color:#202a29;position:sticky;top:0;z-index:20}
+.header{background:var(--dm-surface);border-bottom:1px solid var(--dm-border);color:var(--dm-text-primary);position:sticky;top:0;z-index:20}
 @supports(backdrop-filter:blur(10px)){.header{background:rgba(255,255,255,.97);backdrop-filter:blur(10px)}}
 .suggestions,.cityPanel,.accountPanel{max-height:calc(100dvh - var(--marketplace-header-height,140px) - 24px);overflow-y:auto;overscroll-behavior:contain}
 .inner{max-width:1600px;box-sizing:border-box;min-height:64px;margin:auto;padding:8px 24px;display:grid;grid-template-columns:minmax(160px,1fr) auto auto;align-items:center;gap:24px}
 .logo{display:block;line-height:0;width:144px;max-width:100%}.logo img{width:100%;height:auto;display:block}
 .search{display:flex;gap:8px;position:relative;width:100%;min-width:0;max-width:680px}.input{flex:1;min-width:0;min-height:44px!important}.input input{min-width:0;width:100%}
-.search .input{background:#fff;color:#202a29;border:1px solid #b7c9bf;border-radius:8px}.input input::placeholder{color:#607169}.search>button{background:#006f56;color:#fff;border-color:#006f56;border-radius:8px}.search>button:hover{background:#005b46}
-.header button,.header summary,.login{min-height:44px}.header :focus-visible{outline:3px solid #007f67;outline-offset:3px}
-.search .input:hover,.search .input:focus-within{background:#fff;border-color:#b7c9bf}.search .input::after{display:none}
-.suggestions{position:absolute;top:calc(100% + 8px);left:0;right:0;background:#fff;border:1px solid #dce3e1;border-radius:12px;box-shadow:0 12px 28px #20352a20;padding:8px;z-index:30}
-.suggestions ul{list-style:none;padding:0;margin:0}.suggestions li{padding:12px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;gap:4px}.suggestions li:hover,.suggestions li[aria-selected=true]{background:#eef6f3}.suggestions small{color:#566960}.suggestions p{padding:8px;margin:0}
+.search .input{background:var(--dm-surface);color:var(--dm-text-primary);border:1px solid var(--dm-border-control);border-radius:8px}.input input::placeholder{color:var(--dm-text-muted)}.search>button{background:var(--dm-brand-primary);color:var(--dm-surface);border-color:var(--dm-brand-primary);border-radius:8px}.search>button:hover{background:var(--dm-brand-primary-hover)}
+.header button,.header summary,.login{min-height:44px}.header :focus-visible{outline:3px solid var(--dm-brand-primary);outline-offset:3px}
+.search .input:hover,.search .input:focus-within{background:var(--dm-surface);border-color:var(--dm-border-control)}.search .input::after{display:none}
+.suggestions{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--dm-surface);border:1px solid var(--dm-border);border-radius:12px;box-shadow:0 12px 28px #20352a20;padding:8px;z-index:30}
+.suggestions ul{list-style:none;padding:0;margin:0}.suggestions li{padding:12px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;gap:4px}.suggestions li:hover,.suggestions li[aria-selected=true]{background:var(--dm-brand-surface)}.suggestions small{color:var(--dm-text-secondary)}.suggestions p{padding:8px;margin:0}
 .city,.account{position:relative;min-width:0}.city summary,.account summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none;font-weight:600}.city summary::-webkit-details-marker,.account summary::-webkit-details-marker{display:none}
-.cityPanel,.accountPanel{position:absolute;right:0;top:calc(100% + 12px);width:320px;max-width:calc(100vw - 32px);box-sizing:border-box;padding:20px;border:1px solid #dce3e1;border-radius:12px;box-shadow:0 12px 28px #20352a20;background:#fff;display:flex;flex-direction:column;gap:12px;z-index:35}
-.cityPanel p{font-size:13px;line-height:1.5;margin:0;color:#4c6056}.cityPanel label{display:flex;flex-direction:column;gap:6px}.cityPanel select{width:100%;min-height:44px;border:1px solid #b7c9bf;border-radius:6px;background:#fff;color:#202a29;padding:8px}.cityPanel .check{flex-direction:row;align-items:center;font-size:14px;line-height:1.4}.check input{width:18px;height:18px;flex-shrink:0}
-.organization{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}.organization small{display:block;font-size:12px;font-weight:400;color:#62726b}.accountPanel strong{overflow-wrap:anywhere}.accountPanel button{white-space:normal;text-align:left}.accountPanel a{color:#006f56;padding:10px 0}.accountPanel small{color:#62726b}
-.login{display:inline-flex;align-items:center;justify-content:center;background:#006f56;color:white;border-radius:8px;padding:0 22px;text-decoration:none;font-weight:700}.authLoading{color:#62726b;font-size:13px;min-width:100px}
-.cityNotice{display:block;font-size:11px;color:#925112;font-weight:400}
+.cityPanel,.accountPanel{position:absolute;right:0;top:calc(100% + 12px);width:320px;max-width:calc(100vw - 32px);box-sizing:border-box;padding:20px;border:1px solid var(--dm-border);border-radius:12px;box-shadow:0 12px 28px #20352a20;background:var(--dm-surface);display:flex;flex-direction:column;gap:12px;z-index:35}
+.cityPanel p{font-size:13px;line-height:1.5;margin:0;color:var(--dm-text-secondary)}.cityPanel label{display:flex;flex-direction:column;gap:6px}.cityPanel select{width:100%;min-height:44px;border:1px solid var(--dm-border-control);border-radius:6px;background:var(--dm-surface);color:var(--dm-text-primary);padding:8px}.cityPanel .check{flex-direction:row;align-items:center;font-size:14px;line-height:1.4}.check input{width:18px;height:18px;flex-shrink:0}
+.organization{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}.organization small{display:block;font-size:12px;font-weight:400;color:var(--dm-text-muted)}.accountPanel strong{overflow-wrap:anywhere}.accountPanel button{white-space:normal;text-align:left}.accountPanel a{color:var(--dm-brand-primary);padding:10px 0}.accountPanel small{color:var(--dm-text-muted)}
+.login{display:inline-flex;align-items:center;justify-content:center;background:var(--dm-brand-primary);color:var(--dm-text-inverse);border-radius:8px;padding:0 22px;text-decoration:none;font-weight:700}.authLoading{color:var(--dm-text-muted);font-size:13px;min-width:100px}
+.cityNotice{display:block;font-size:11px;color:var(--dm-warning-text);font-weight:400}
 .city .cityUnselected{box-sizing:border-box;border:1px solid var(--dm-border);border-radius:var(--dm-radius-button);padding:0 12px}
-.cityPanel .cityDropdown{min-width:0;width:100%;background:#fff;border:1px solid #b7c9bf;border-radius:8px}.cityDropdown button{color:#202a29}.cityListbox{background:#fff!important;color:#202a29!important;border:1px solid #dce3e1!important;border-radius:10px!important;padding:6px!important;box-shadow:0 12px 28px #20352a20!important}.cityListbox [role=option]{border-radius:6px;min-height:40px;color:#202a29}.cityListbox [role=option]:hover,.cityListbox [role=option][aria-selected=true],.cityListbox [role=option]:focus{background:#eef6f3;color:#006f56}
+.cityPanel .cityDropdown{min-width:0;width:100%;background:var(--dm-surface);border:1px solid var(--dm-border-control);border-radius:8px}.cityDropdown button{color:var(--dm-text-primary)}.cityListbox{background:var(--dm-surface)!important;color:var(--dm-text-primary)!important;border:1px solid var(--dm-border)!important;border-radius:10px!important;padding:6px!important;box-shadow:0 12px 28px #20352a20!important}.cityListbox [role=option]{border-radius:6px;min-height:40px;color:var(--dm-text-primary)}.cityListbox [role=option]:hover,.cityListbox [role=option][aria-selected=true],.cityListbox [role=option]:focus{background:var(--dm-brand-surface);color:var(--dm-brand-primary)}
 @media(max-width:1100px){.inner{gap:16px}.organization{min-width:0;max-width:160px}.account summary{font-size:13px}}
 @media(max-width:720px){.inner{padding:8px 16px;grid-template-columns:minmax(88px,1fr) auto auto;gap:8px 12px}.logo{width:120px}.city{font-size:13px}.account summary{max-width:85px;font-size:12px;line-height:1.35}.cityPanel{position:fixed;top:calc(var(--marketplace-header-height,64px) + 8px);right:16px}.accountPanel{position:fixed;top:calc(var(--marketplace-header-height,64px) + 8px);right:16px}.login{padding:0 12px}.authLoading{min-width:70px;max-width:85px}.input input{font-size:14px}}
 
 .inner[data-city=false]{grid-template-columns:minmax(0,1fr) auto}
-.cityToolbar summary,.cityToolbar .cityUnselected{min-height:44px;box-sizing:border-box;padding:0 12px;border:1px solid var(--dm-border,#b7c9bf);border-radius:var(--dm-radius-button,8px);background:var(--dm-surface,#fff);font-size:14px;justify-content:space-between}
+.cityToolbar summary,.cityToolbar .cityUnselected{min-height:44px;box-sizing:border-box;padding:0 12px;border:1px solid var(--dm-border,var(--dm-border-control));border-radius:var(--dm-radius-button,8px);background:var(--dm-surface);font-size:14px;justify-content:space-between}
 .cityToolbar summary>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cityChevron{flex-shrink:0;width:20px;height:20px;color:inherit}
 .cityToolbar summary{font-weight:600}
 .cityListbox{overscroll-behavior:contain;touch-action:pan-y}
-.cityToolbar summary:hover{background:#edf4f0}
+.cityToolbar summary:hover{background:var(--dm-surface-hover)}
 .cityToolbar .cityPanel{max-height:min(480px,55dvh)}
-.accountLink{display:flex;align-items:center;min-height:44px;min-width:0;color:inherit;text-decoration:none;font-weight:600;border-radius:8px;padding:0 8px}.accountLink:hover{background:#edf4f0}.accountLink .organization{min-width:0}
+.accountLink{display:flex;align-items:center;min-height:44px;min-width:0;color:inherit;text-decoration:none;font-weight:600;border-radius:8px;padding:0 8px}.accountLink:hover{background:var(--dm-surface-hover)}.accountLink .organization{min-width:0}
+.login:hover{background:var(--dm-brand-primary-hover)}
+.login:active{background:var(--dm-brand-deep)}
+.accountPanel a:hover{color:var(--dm-brand-primary-hover)}
+.accountPanel a:active{color:var(--dm-brand-deep)}
+.suggestions li:hover,.cityListbox [role=option]:hover{background:var(--dm-surface-hover)}
+.suggestions li[aria-selected=true],.cityListbox [role=option][aria-selected=true]{background:var(--dm-brand-surface);color:var(--dm-brand-deep)}
 @media(max-width:720px){.accountLink{max-width:140px;font-size:12px}}
 @media(max-width:1023px){.cityToolbar .cityPanel{position:absolute;top:calc(100% + 8px);left:0;right:auto}}
