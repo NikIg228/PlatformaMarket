@@ -1,6 +1,6 @@
 # CORE-04-INTERNAL — согласованные акции и сохранение условий заказа
 
-01.10.2026 LOCAL_PASS / публикация и CI ожидаются. Единственный writer:
+01.10.2026 CI_PASS / DEV_PENDING_APPROVAL. Единственный writer:
 primary01a0f302-2d38-75d1-b79c-141e7428b533. Canonical root, main@ab3992e.
 Основание: внутренняя очередь Foundation6.2 и «продолжай» после CORE03.
 CORE03 CLOSED/CI_PASS/DEV_RESTORED; его checks не повторять.
@@ -191,3 +191,30 @@ Final runtime manifest .tmp/core04-final-source-manifest.json SHA256
 Следующий шаг: conventional commit, обычный push origin/main после fetch/FF,
 проверить remoteSHA и фактические CI/Security. Рабочая140000 НЕ применена;
 после CI отдельное согласование миграции/восстановления dev. CORE05 не начат.
+
+Опубликовано01.10: f14cbe16162de5230c9826b2a7fe94929422f1ca в origin/main,
+remote SHA совпадает. CI36874461180 и Security36874461153 IN_PROGRESS,
+без повторных запусков. Исходные5 WIP не staged; generated web next-env имеет
+нулевой content diff после восстановления. Новая продуктовая фаза не начата.
+Read-only preflight рабочей marketplace/public: единственная pending migration
+20261001140000_offer_promotion_versions;505products/510offers/0promotions,
+нет прежних order items с null cartItem. Миграция не запускалась. Проверенная
+операция для отдельного разрешения: только140000, без seed/смены каталога,
+затем собственный canonical npm run dev (go_live/JWT) и health/catalog smoke.
+
+## Подтверждённая публикация — CI_PASS / DEV_PENDING_APPROVAL
+
+Код f14cbe16162de5230c9826b2a7fe94929422f1ca опубликован в main.
+[CI36874461180](https://github.com/NikIg228/PlatformaMarket/actions/runs/36874461180)
+и [Security36874461153](https://github.com/NikIg228/PlatformaMarket/actions/runs/36874461153)
+завершились SUCCESS с первой попытки: общий verify (typecheck/unit/build/budget,
+контракты/profiles/API/browser), PostgreSQL/authority/backup-restore,
+оба api/web container builds, dependencies/storage и CodeQL. CI unit прошёл
+без повтора локального timing failure. Запуски не перезапускались.
+Итоговая docs-only запись переиспользует этот CI неизменённых runtime inputs;
+локальные ссылки58/58 и diff-check PASS. Повторять runtime suites не нужно.
+
+Кодовый scope CORE04.6–04.7 завершён. Dev restoration отдельно ожидает
+разрешения140000 по AGENTS§8: операция/schema/target/evidence описаны выше,
+рабочая БД не изменялась. Нет своих работающих проверок/API/web, исходные5 WIP
+сохранены. CORE05/EXT/production не начинались; task rollover не выполняется.

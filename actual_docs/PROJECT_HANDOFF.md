@@ -2,7 +2,7 @@
 
 Обновлено01.10.2026. Единственная рабочая папка:
 C:\Users\user\Desktop\dentmarket-kz-main. Ветка main, кодовый снимок
-1abeb4de5c0a6a394bfbe6e0b1e063529e6d5f4c (CI/Security PASS).
+f14cbe16162de5230c9826b2a7fe94929422f1ca (CI/Security PASS).
 
 Primary:01a0f302-2d38-75d1-b79c-141e7428b533, generation4, transition=idle.
 Ручная передача завершена30.09 в20:56+05:00: source
@@ -21,8 +21,8 @@ CORE02 закрыт. [CORE03](governance/task-state/CORE-03-INTERNAL-2026-10-01.
 опубликован1abeb4d, CI36859245986 / Security36859246168 SUCCESS.
 Владелец разрешил120000: применена к marketplace/public, каталог505/510 сохранён.
 Dev go_live был восстановлен, health/catalog200. CORE03 закрыт.
-CORE04.6–04.7 реализован и LOCAL_PASS: [checkpoint](governance/task-state/CORE-04-INTERNAL-2026-10-01.md).
-Публикация/CI ещё PENDING. Собственный dev остановлен для проверок;
+CORE04.6–04.7 опубликован f14cbe1 и CI_PASS: [checkpoint](governance/task-state/CORE-04-INTERNAL-2026-10-01.md).
+CI36874461180 и Security36874461153 SUCCESS. Собственный dev остановлен для проверок;
 новая140000 применена только к disposable audit DB и требует отдельного
 разрешения для рабочей БД. Не начинать CORE05 до завершения текущего этапа;
 следующий этап только после обязательных gates/review/push/CI текущего.
