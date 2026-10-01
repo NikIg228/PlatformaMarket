@@ -1,0 +1,78 @@
+import { PrismaClient } from "@prisma/client";
+import { createHash, createHmac, randomUUID } from "node:crypto";
+import { e2eJwtSecret } from "./workspace-session";
+import { completeFixtureOrganization } from "../../../scripts/lib/organization-profile-fixture.mjs";
+
+export async function offerPromotionFixture() {
+  const target = new URL(process.env.DATABASE_URL!);
+  if (!process.env.CI && target.pathname !== "/dentmarket_audit_20260914") throw new Error("Only the isolated audit DB is allowed");
+  const db = new PrismaClient();
+  const key = randomUUID();
+  const orgIds: string[] = [], userIds: string[] = [], productIds: string[] = [];
+  const actor = async (capability: "SUPPLIER" | "BUYER" | "MARKETPLACE_OPERATOR", permissions: string[], index: number) => {
+    const org = await db.organization.create({ data: { bin: `6${Date.now().toString().slice(-9)}${index.toString().padStart(2, "0")}`, legalName: `Synthetic promotion ${key} ${index}`, displayName: `Акции тест ${index}`, capabilities: { create: { capability } }, ...(capability === "SUPPLIER" ? { supplierProfile: { create: {} } } : {}) } });
+    orgIds.push(org.id);
+    const user = await db.user.create({ data: { email: `promotion-${key}-${index}@example.invalid`, displayName: "Synthetic promotion actor", emailVerifiedAt: new Date() } }); userIds.push(user.id);
+    const role = await db.role.create({ data: { organizationId: org.id, code: `promotion-${key}-${index}`, name: "Synthetic role", permissions: { create: permissions.map(code => ({ permission: { connect: { code } } })) } } });
+    await db.organizationMembership.create({ data: { userId: user.id, organizationId: org.id, status: "ACTIVE", roles: { create: { roleId: role.id } } } });
+    await completeFixtureOrganization(db, org.id);
+    const sessionId = randomUUID(), now = Math.floor(Date.now() / 1000);
+    await db.authSession.create({ data: { id: sessionId, userId: user.id, familyId: randomUUID(), refreshTokenHash: createHash("sha256").update(randomUUID()).digest("hex"), organizationIds: [org.id], activeOrganizationId: org.id, authMethods: ["password"], expiresAt: new Date(Date.now() + 3600000) } });
+    const encode = (value: object) => Buffer.from(JSON.stringify(value)).toString("base64url");
+    const unsigned = `${encode({ alg: "HS256", typ: "JWT" })}.${encode({ sub: user.id, jti: sessionId, organization_id: org.id, organization_ids: [org.id], amr: ["password"], iss: "dentmarket-kz", aud: "dentmarket-web", iat: now, exp: now + 3600 })}`;
+    const accessToken = `${unsigned}.${createHmac("sha256", e2eJwtSecret).update(unsigned).digest("base64url")}`;
+    return { userId: user.id, organizationId: org.id, capability, organizationDisplayName: org.displayName, sessionId, accessToken, accessTokenExpiresAt: Date.now() + 3600000 };
+  };
+  const supplier = await actor("SUPPLIER", ["organization.view", "catalog.product.view", "promotion.view", "promotion.manage", "order.confirm", "inventory.view"], 1);
+  const buyer = await actor("BUYER", ["organization.view", "catalog.product.view", "order.create", "order.approve", "document.view"], 2);
+  const operator = await actor("MARKETPLACE_OPERATOR", ["organization.view", "catalog.product.view", "promotion.view", "promotion.manage", "promotion.placement.manage"], 3);
+  const template = await db.documentTemplate.findUniqueOrThrow({ where: { code_version: { code: "MARKETPLACE_SUPPLIER_AGREEMENT_RU", version: 1 } } });
+  const doc = await db.document.create({ data: { ownerOrganizationId: supplier.organizationId, templateId: template.id, kind: "MARKETPLACE_SUPPLIER_AGREEMENT", format: "PDF", source: "GENERATED", status: "SIGNED", title: "Synthetic only", documentNumber: key, immutableAt: new Date(), metadata: { notLegallyBinding: true } } });
+  await db.marketplaceAgreement.create({ data: { agreementNumber: key, supplierOrganizationId: supplier.organizationId, operatorOrganizationId: operator.organizationId, documentId: doc.id, templateId: template.id, templateVersion: 1, status: "ACTIVE", startsAt: new Date(Date.now() - 60000), endsAt: new Date(Date.now() + 86400000), autoRenew: false } });
+  const warehouse = await db.warehouse.create({ data: { supplierOrganizationId: supplier.organizationId, code: key, name: "Тестовый склад" } });
+  const unit = await db.unitOfMeasure.findUniqueOrThrow({ where: { code: "piece" } });
+  const offer = async (label: string) => {
+    const name = `${label} ${key.slice(0, 8)}`;
+    const product = await db.product.create({ data: { canonicalName: name, slug: `${label === "Покупка" ? "main" : "gift"}-${key}`, baseUnitId: unit.id, productType: "MATERIAL", status: "ACTIVE" } }); productIds.push(product.id);
+    const variant = await db.productVariant.create({ data: { productId: product.id, sku: `${label}-${key}`, status: "ACTIVE" } });
+    const value = await db.supplierOffer.create({ data: { supplierOrganizationId: supplier.organizationId, productVariantId: variant.id, supplierSku: `${label}-${key.slice(0, 8)}`, saleUnitId: unit.id, status: "ACTIVE", sourceType: "MANUAL", minimumOrderQuantity: 1, orderIncrement: 1, baseUnitsPerSaleUnit: 1, publication: { create: { status: "PUBLISHED", marketplaceVisible: true } } } });
+    await db.offerPrice.create({ data: { offerId: value.id, amountMinor: 100000, currency: "KZT", validFrom: new Date(Date.now() - 60000), freshnessExpiresAt: new Date(Date.now() + 3600000) } });
+    await db.inventoryBalance.create({ data: { supplierOrganizationId: supplier.organizationId, warehouseId: warehouse.id, productVariantId: variant.id, offerId: value.id, quantityOnHand: 100, quantityAvailable: 100, quantityReserved: 0, freshnessStatus: "FRESH", freshnessExpiresAt: new Date(Date.now() + 3600000), source: "MANUAL" } });
+    return { id: value.id, productId: product.id, name };
+  };
+  const main = await offer("Покупка"), gift = await offer("Подарок");
+  const dispose = async () => {
+    const promotions = await db.promotion.findMany({ where: { supplierOrganizationId: supplier.organizationId }, select: { id: true } });
+    const pids = promotions.map(value => value.id);
+    const orders = await db.supplierOrder.findMany({ where: { supplierOrganizationId: supplier.organizationId }, select: { id: true, checkoutId: true } });
+    const carts = await db.cart.findMany({ where: { buyerOrganizationId: buyer.organizationId }, select: { id: true } });
+    await db.promotionRedemption.deleteMany({ where: { promotionId: { in: pids } } });
+    await db.promotionRevision.deleteMany({ where: { promotionId: { in: pids } } });
+    await db.promotionDecision.deleteMany({ where: { promotionId: { in: pids } } });
+    await db.promotion.deleteMany({ where: { id: { in: pids } } });
+    await db.inventoryReservation.deleteMany({ where: { supplierOrganizationId: supplier.organizationId } });
+    await db.orderWorkflowEvent.deleteMany({ where: { supplierOrderId: { in: orders.map(value => value.id) } } });
+    await db.supplierOrderItem.deleteMany({ where: { supplierOrderId: { in: orders.map(value => value.id) } } });
+    await db.supplierOrder.deleteMany({ where: { id: { in: orders.map(value => value.id) } } });
+    await db.checkout.deleteMany({ where: { buyerOrganizationId: buyer.organizationId } });
+    await db.cart.deleteMany({ where: { buyerOrganizationId: buyer.organizationId } });
+    await db.complianceCheck.deleteMany({ where: { buyerOrganizationId: buyer.organizationId } });
+    await db.auditLog.deleteMany({ where: { actorId: { in: userIds } } });
+    await db.outboxEvent.deleteMany({ where: { aggregateId: { in: [...pids, ...orders.flatMap(value => [value.id, value.checkoutId]), ...carts.map(value => value.id)] } } });
+    await db.idempotencyRecord.deleteMany({ where: { OR: [{ scope: { startsWith: `promotion:create:${supplier.organizationId}:` } }, ...pids.map(id => ({ scope: { startsWith: `promotion:${id}:` } }))] } });
+    await db.inventoryBalance.deleteMany({ where: { supplierOrganizationId: supplier.organizationId } });
+    await db.supplierOffer.deleteMany({ where: { supplierOrganizationId: supplier.organizationId } });
+    await db.productVariant.deleteMany({ where: { productId: { in: productIds } } });
+    await db.product.deleteMany({ where: { id: { in: productIds } } });
+    await db.marketplaceAgreement.deleteMany({ where: { supplierOrganizationId: supplier.organizationId } });
+    await db.document.delete({ where: { id: doc.id } });
+    await db.warehouse.delete({ where: { id: warehouse.id } });
+    await db.authSession.deleteMany({ where: { userId: { in: userIds } } });
+    await db.organizationProfile.deleteMany({ where: { organizationId: { in: orgIds } } });
+    await db.address.deleteMany({ where: { organizationId: { in: orgIds } } });
+    await db.organization.deleteMany({ where: { id: { in: orgIds } } });
+    await db.user.deleteMany({ where: { id: { in: userIds } } });
+    await db.$disconnect();
+  };
+  return { db, key, supplier, buyer, operator, main, gift, dispose };
+}

@@ -25,6 +25,14 @@
     "./document-upload-limits": {
       "types": "./dist/document-upload-limits.d.ts",
       "default": "./dist/document-upload-limits.js"
+    },
+    "./promotions": {
+      "types": "./dist/promotions.d.ts",
+      "default": "./dist/promotions.js"
+    },
+    "./promotion-snapshot": {
+      "types": "./dist/promotion-snapshot.d.ts",
+      "default": "./dist/promotion-snapshot.js"
     }
   },
   "scripts": {

@@ -1,4 +1,5 @@
 "use client";
+import { frontendFeatures } from "@marketplace/api-client";
 import { Inventory } from "./supplier-inventory";
 import { PageNavigation, usePageNavigation } from "./page-navigation";
 
@@ -21,7 +22,7 @@ export const supplierProductLinks = [
   ["/supplier/products/corrections", "Исправления карточек"],
   ["/supplier/products/inventory", "Партии и резервы"],
 ] as const;
-export function SupplierProductLinks() { return <nav aria-label="Разделы товаров" className={styles.actions}>{supplierProductLinks.map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}</nav>; }
+export function SupplierProductLinks() { return <nav aria-label="Разделы товаров" className={styles.actions}>{supplierProductLinks.map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}{frontendFeatures.promotions ? <Link href="/supplier/products/promotions">Акции</Link> : null}</nav>; }
 function Frame({ title, children }: { title: string; children: React.ReactNode }) {
   return <div className={styles.stack}><Link href="/supplier/products">← Все товары</Link><h1>{title}</h1><SupplierProductLinks />{children}</div>;
 }

@@ -89,6 +89,9 @@ export class OffersService {
     try {
       const write = async (tx: Prisma.TransactionClient) => {
       await tx.$queryRaw`SELECT id FROM "SupplierOffer" WHERE id = ${offerId}::uuid FOR UPDATE`;
+      const activePromotion = await tx.promotion.findFirst({ where: { offerId, moderationStatus: "APPROVED", approvedRevision: { equals: tx.promotion.fields.termsRevision }, claimedQuantity: { lt: tx.promotion.fields.quantityLimit }, status: { in: ["ACTIVE", "PAUSED"] }, startsAt: { lte: now }, endsAt: { gt: now } } });
+      if (activePromotion?.baseAmountMinor && (!activePromotion.baseAmountMinor.eq(input.amountMinor) || activePromotion.currency !== input.currency))
+        throw new ConflictException("Обычная цена заблокирована до завершения акции. Измените акцию новой версией с повторной модерацией");
       await tx.offerPrice.updateMany({ where: { offerId, status: "ACTIVE" }, data: { status: "INACTIVE", validTo: now } });
       const price = await tx.offerPrice.create({ data: { offerId, amountMinor: input.amountMinor, currency: input.currency, includesVat: input.includesVat, vatRate: input.vatRate ?? null, source: input.source, validFrom: now, lastConfirmedAt: now, freshnessExpiresAt } });
       await tx.offerPriceHistory.create({ data: { offerId, amountMinor: input.amountMinor, currency: input.currency, includesVat: input.includesVat, vatRate: input.vatRate ?? null, source: input.source, changedById: context.actorId, reason: input.reason ?? null } });

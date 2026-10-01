@@ -1,4 +1,5 @@
 import { workspaceCorrectionOfferPageSchema, workspaceInventoryPageSchema, workspaceLotPageSchema, workspaceReservationPageSchema, workspaceOverridePageSchema } from "@marketplace/schemas";
+import { createOfferPromotionSchema, reviseOfferPromotionSchema, offerPromotionCommandSchema, offerPromotionSchema, promotionPageSchema, publicPromotionPageSchema } from "@marketplace/schemas";
 import { orderWorkflowCommandSchema, orderWorkflowResponseSchema, orderWorkflowResultSchema } from "@marketplace/schemas";
 import { saveSupplierPaymentPolicySchema, supplierPaymentPolicyResponseSchema } from "@marketplace/schemas";
 import { workspacePageQuerySchema, workspaceOrderQuerySchema, workspaceOrderPageSchema, workspaceOfferSchema, workspaceOfferPageSchema, workspaceCartPageSchema, workspaceSummarySchema } from "@marketplace/schemas";
@@ -107,6 +108,12 @@ const authenticatedCompareOffersQuerySchema = compareOffersSchema.omit({
 const supplierOrdersQuerySchema = z.object({ checkoutId: z.uuid().optional() });
 
 const coreZodSchemas = {
+  CreateOfferPromotion: createOfferPromotionSchema,
+  ReviseOfferPromotion: reviseOfferPromotionSchema,
+  OfferPromotionCommand: offerPromotionCommandSchema,
+  OfferPromotion: offerPromotionSchema,
+  PromotionPage: promotionPageSchema,
+  PublicPromotionPage: publicPromotionPageSchema,
   UpdateProductRequest: updateProductSchema,
   UpdatedCatalogProduct: updatedCatalogProductSchema,
   OrderWorkflowCommand: orderWorkflowCommandSchema,

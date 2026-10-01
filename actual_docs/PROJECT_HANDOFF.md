@@ -20,7 +20,11 @@ CI36845016859 / Security36845016749 SUCCESS. Внутренний CORE02 опу�
 CORE02 закрыт. [CORE03](governance/task-state/CORE-03-INTERNAL-2026-10-01.md)
 опубликован1abeb4d, CI36859245986 / Security36859246168 SUCCESS.
 Владелец разрешил120000: применена к marketplace/public, каталог505/510 сохранён.
-Dev go_live восстановлен, health/catalog200. CORE03 закрыт. Следующий пункт — CORE04.6–04.7;
+Dev go_live был восстановлен, health/catalog200. CORE03 закрыт.
+CORE04.6–04.7 реализован и LOCAL_PASS: [checkpoint](governance/task-state/CORE-04-INTERNAL-2026-10-01.md).
+Публикация/CI ещё PENDING. Собственный dev остановлен для проверок;
+новая140000 применена только к disposable audit DB и требует отдельного
+разрешения для рабочей БД. Не начинать CORE05 до завершения текущего этапа;
 следующий этап только после обязательных gates/review/push/CI текущего.
 Внешние интеграции, боевые данные и нерешённые policy/legal вопросы вне scope.
 

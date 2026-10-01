@@ -14,6 +14,8 @@ import { verifyLocalPermissions } from "./lib/verify-local-permissions.mjs";
 import { verifyContractLifecycle } from "./lib/verify-contract-lifecycle.mjs";
 import { verifyManualPayments } from "./lib/verify-manual-payments.mjs";
 import { verifyManualPaymentUpgrade } from "./lib/verify-manual-payment-upgrade.mjs";
+import { verifyOfferPromotions } from "./lib/verify-offer-promotions.mjs";
+import { verifyPromotionUpgrade } from "./lib/verify-promotion-upgrade.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const apiDirectory = path.join(root, "apps", "api");
@@ -248,7 +250,7 @@ async function createFixtureCatalog() {
     },
   });
   fixture.productId = product.id;
-  const quantities = [10, 10, 5, 20, 10, 1, 1, 1, 1, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
+  const quantities = [10, 10, 5, 20, 10, 1, 1, 1, 1, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 100, 10, 100, 2, 100, 10];
   const created = [];
   for (let index = 0; index < quantities.length; index += 1) {
     const quantity = quantities[index];
@@ -577,6 +579,7 @@ try {
   runNpm(["run", "db:seed:test"], testEnvironment);
   await prisma.$connect();
   await verifyManualPaymentUpgrade(prisma, assert);
+  await verifyPromotionUpgrade(prisma, assert);
   const [rollbackOffer, idempotencyOffer, concurrencyOffer, correctionOffer, snapshotOffer, ...lotOffers] =
     await createFixtureCatalog();
   const [
@@ -606,7 +609,8 @@ try {
     createBuyer, request, runId, assert });
   await verifyCartRecovery({ prisma, offers: lotOffers.slice(5, 7), createBuyer, createCartWithItem, request, runId, assert });
   await verifyReservationExpiry({ prisma, offers: lotOffers.slice(7, 14), supplierId: fixture.supplierId, createBuyer, createCartWithItem, runId, assert });
-  await verifyManualPayments({ prisma, offers: lotOffers.slice(14), supplierId: fixture.supplierId, createBuyer, createCartWithItem, runId, assert, request });
+  await verifyManualPayments({ prisma, offers: lotOffers.slice(14, 20), supplierId: fixture.supplierId, createBuyer, createCartWithItem, runId, assert, request });
+  await verifyOfferPromotions({ prisma, offers: lotOffers.slice(20), supplierId: fixture.supplierId, createBuyer, runId, assert, request });
   await verifyLocalPermissions({ prisma, supplierId: fixture.supplierId, offerId: lotOffers[4].offerId, createBuyer, request, runId, assert });
 
   const onboardingBuyer = await createBuyer(90, false);

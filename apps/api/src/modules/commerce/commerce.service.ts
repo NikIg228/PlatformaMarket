@@ -39,6 +39,7 @@ import { MarketplaceAgreementsService } from "../agreements/marketplace-agreemen
 import { documentReferenceInclude, hasConsistentDocumentReferences, withoutReferenceRelations } from "../documents/document-reference-graph";
 import { assertOrganizationProfileComplete } from "../organizations/organization-profile.service";
 import { recoveredCartId, recoverFailedCart } from "./cart-recovery";
+import { quoteOfferPromotion, claimCheckoutPromotion, releaseCheckoutPromotions } from "../promotions/checkout-promotions";
 
 @Injectable()
 export class CommerceService {
@@ -256,6 +257,9 @@ export class CommerceService {
       : balance
         ? ("AVAILABLE" as const)
         : ("INSUFFICIENT_STOCK" as const);
+    const promotion = await quoteOfferPromotion(db, { offerId, supplierOrganizationId: offer.supplierOrganizationId, buyerOrganizationId,
+      source: decision.source, unitPriceMinor: decision.amountMinor, currency: decision.currency, quantity, balanceId: balance?.id ?? null, lotId: lot?.id ?? null });
+    if (promotion) decision.amountMinor = promotion.snapshot.unitPriceMinor;
     const total = calculateLineTotal(decision.amountMinor, quantity);
     const pricingSnapshot: CartLineSnapshot = {
       resolvedAt: at.toISOString(),
@@ -279,10 +283,11 @@ export class CommerceService {
         includesVat: offer.prices[0]?.includesVat ?? null,
         vatRate: offer.prices[0]?.vatRate?.toString() ?? null,
       },
+      ...(promotion ? { promotion: promotion.snapshot } : {}),
       availableQuantity: availableQuantity.toString(),
       fulfillmentStatus,
     };
-    return { offer, decision, balance, lot, total, pricingSnapshot };
+    return { offer, decision, balance, lot, total, pricingSnapshot, promotion };
   }
 
   private async resolveOffer(
@@ -682,6 +687,7 @@ export class CommerceService {
     let created: {
       checkoutId: string;
       supplierCount: number;
+      hasPromotions: boolean;
       reservations: Array<{
         supplierOrganizationId: string;
         balanceId: string;
@@ -717,6 +723,8 @@ export class CommerceService {
             if (!result.balance) throw new ConflictException("No fresh warehouse balance can fulfill this quantity");
             await this.compliance.assertOfferAllowed(cart.buyerOrganizationId,
               result.offer.id, result.balance.warehouseId, result.lot?.id ?? null, context);
+            if (result.promotion?.gift) await this.compliance.assertOfferAllowed(cart.buyerOrganizationId,
+              result.promotion.gift.offer.id, result.promotion.gift.balance.warehouseId, result.promotion.gift.lot?.id ?? null, context);
           }
           const total = lines.reduce((sum, line) => sum.plus(line.result.total), new Prisma.Decimal(0));
           const groups = new Map<string, typeof lines>();
@@ -811,6 +819,19 @@ export class CommerceService {
                 quantity: Number(item.quantity),
                 itemId: orderItem.id,
               });
+              if (result.promotion) {
+                await claimCheckoutPromotion(tx, result.promotion.snapshot, { quantity: item.quantity.toString(), buyerId: cart.buyerOrganizationId,
+                  checkoutId: checkout.id, orderId: order.id, itemId: orderItem.id, currency: cart.currency });
+                const gift = result.promotion.gift;
+                if (gift) {
+                  const giftItem = await tx.supplierOrderItem.create({ data: { supplierOrderId: order.id, giftForItemId: orderItem.id,
+                    offerId: gift.offer.id, productVariantId: gift.offer.productVariantId, warehouseId: gift.balance.warehouseId,
+                    inventoryLotId: gift.lot?.id ?? null, quantity: gift.quantity, unitPriceMinor: 0, totalPriceMinor: 0, currency: cart.currency,
+                    offerSnapshot: { giftForItemId: orderItem.id, promotion: result.promotion.snapshot },
+                    inventorySnapshot: { balanceId: gift.balance.id, warehouseId: gift.balance.warehouseId, lotId: gift.lot?.id ?? null } } });
+                  reservations.push({ supplierOrganizationId, balanceId: gift.balance.id, lotId: gift.lot?.id ?? null, quantity: Number(gift.quantity), itemId: giftItem.id });
+                }
+              }
             }
           }
           await tx.auditLog.create({
@@ -825,7 +846,7 @@ export class CommerceService {
               },
             },
           });
-          return { checkoutId: checkout.id, supplierCount: groups.size, reservations };
+          return { checkoutId: checkout.id, supplierCount: groups.size, reservations, hasPromotions: lines.some(line => Boolean(line.result.promotion)) };
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
@@ -888,24 +909,25 @@ export class CommerceService {
       );
       const reason =
         error instanceof Error ? error.message : "Inventory reservation failed";
-      await this.prisma.$transaction([
-        this.prisma.supplierOrderItem.updateMany({
+      await this.prisma.$transaction(async tx => {
+        await tx.supplierOrderItem.updateMany({
           where: { supplierOrder: { checkoutId: created.checkoutId } },
           data: { status: "CANCELLED" },
-        }),
-        this.prisma.supplierOrder.updateMany({
+        });
+        await tx.supplierOrder.updateMany({
           where: { checkoutId: created.checkoutId },
           data: { status: "CANCELLED" },
-        }),
-        this.prisma.checkout.update({
+        });
+        await tx.checkout.update({
           where: { id: created.checkoutId },
           data: { status: "FAILED", failureReason: reason },
-        }),
-        this.prisma.cart.update({
+        });
+        await tx.cart.update({
           where: { id: cartId },
           data: { status: "ABANDONED", version: { increment: 1 } },
-        }),
-      ]);
+        });
+        if (created.hasPromotions) await releaseCheckoutPromotions(tx, created.checkoutId);
+      });
       this.logger.warn(`Checkout reservation failed: ${reason}`);
       throw new ConflictException("Checkout failed because inventory could not be reserved");
     }

@@ -79,6 +79,7 @@ export type CartLineSnapshot = {
   minimumOrderQuantity: string;
   orderIncrement: string;
   commercialTerms?: CartLineSnapshotResponse["commercialTerms"];
+  promotion?: CartLineSnapshotResponse["promotion"];
   availableQuantity: string | null;
   fulfillmentStatus: "AVAILABLE" | "INSUFFICIENT_STOCK" | "OUT_OF_STOCK";
 };
@@ -116,6 +117,7 @@ export function cartItemSnapshot(item: {
     minimumOrderQuantity: optionalString(raw.minimumOrderQuantity) ?? "1",
     orderIncrement: optionalString(raw.orderIncrement) ?? "1",
     commercialTerms: raw.commercialTerms as CartLineSnapshotResponse["commercialTerms"],
+    promotion: raw.promotion as CartLineSnapshotResponse["promotion"],
     availableQuantity: optionalString(raw.availableQuantity),
     fulfillmentStatus:
       raw.fulfillmentStatus === "OUT_OF_STOCK" ||
@@ -153,8 +155,10 @@ export function compareCartLineSnapshots(
     previous.orderIncrement !== current.orderIncrement ||
     previous.source !== current.source ||
     previous.ruleId !== current.ruleId ||
+    !sameAcceptedPromotion(previous.promotion, current.promotion) ||
     terms.some((key) => previous.commercialTerms?.[key] !== current.commercialTerms?.[key])
   )
     changes.push("OFFER_RULES");
   return changes;
 }
+import { sameAcceptedPromotion } from "@marketplace/schemas";

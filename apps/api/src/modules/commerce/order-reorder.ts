@@ -8,7 +8,7 @@ export async function reorder(tx: Prisma.TransactionClient, order: Order, contex
   await tx.$queryRaw`SELECT id FROM "Organization" WHERE id = ${context.organizationId}::uuid FOR UPDATE`;
   const active = await tx.cart.findFirst({ where: { buyerOrganizationId: context.organizationId, status: "ACTIVE" }, include: { items: true, checkout: true } });
   if (active?.items.length || active?.checkout) throw new ConflictException("Сначала завершите работу с текущей корзиной. Её состав сохранён.");
-  const items = order.items.filter(item => item.acceptedQuantity.gt(0));
+  const items = order.items.filter((item): item is typeof item & { cartItemId: string } => Boolean(item.cartItemId) && !item.giftForItemId && item.acceptedQuantity.gt(0));
   if (!items.length) throw new ConflictException("В заказе нет согласованных товаров для повторной закупки.");
   if (active) await tx.cart.update({ where: { id: active.id }, data: { status: "ABANDONED", version: { increment: 1 } } });
   const source = await tx.cartItem.findMany({ where: { id: { in: items.map(item => item.cartItemId) } } });

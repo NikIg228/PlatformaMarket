@@ -1,6 +1,7 @@
 "use client";
 import { useId, useState } from "react";
 import type { OrderWorkflowResponse } from "@marketplace/schemas";
+import { orderItemPromotion, giftForPromotionQuantity } from "@marketplace/schemas/promotion-snapshot";
 import { DmButton, DmField, DmInput, DmFeedback, Section, formatDate, formatMoney } from "./index";
 import { parseMoneyInput, moneyInputValue } from "./money";
 import type { WorkflowAction } from "./order-workflow-command";
@@ -74,11 +75,23 @@ export function PaymentReductionPanel({ data, busy, organizationId, canAct, perf
   const [reason, setReason] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
   const pending = data.reductions?.find(reduction => reduction.status === "PENDING");
-  const mayPropose = data.paymentStatus === "UNPAID" && data.status === "AWAITING_PAYMENT" && data.claims.length > 0 && data.claims.every(claim => claim.status === "CONFIRMED") && !pending;
+  const promotionOrder = data.order.items.some(item => orderItemPromotion(item.offerSnapshot));
+  const mayPropose = data.paymentStatus === "UNPAID" && (promotionOrder ? ["CONFIRMED", "AWAITING_PAYMENT"].includes(data.status) : data.status === "AWAITING_PAYMENT" && data.claims.length > 0) && data.claims.every(claim => claim.status === "CONFIRMED") && !pending;
+  const proposedQuantity = (item: OrderWorkflowResponse["order"]["items"][number]) => {
+    if (organizationId === data.order.buyerOrganizationId && item.giftForItemId) {
+      const parent = data.order.items.find(parent => parent.id === item.giftForItemId);
+      const promotion = orderItemPromotion(parent?.offerSnapshot);
+      if (parent && promotion?.buyQuantity && promotion.giftPerGroup) {
+        try { return giftForPromotionQuantity(quantities[parent.id] ?? parent.acceptedQuantity ?? "0", promotion.buyQuantity, promotion.giftPerGroup, item.acceptedQuantity ?? "0"); }
+        catch { return item.acceptedQuantity ?? "0"; }
+      }
+    }
+    return quantities[item.id] ?? item.acceptedQuantity ?? "0";
+  };
   const names: Record<string, string> = { PENDING: "Ожидает согласия другой стороны", ACCEPTED: "Согласовано", REJECTED: "Отклонено", SUPERSEDED: "Закрыто после полной оплаты" };
   if (!mayPropose && !data.reductions?.length) return null;
   return <Section title="Согласование уменьшения заказа">
-    <p>После подтверждённой недоплаты можно уменьшить количества. Изменение вступит в силу только после согласия второй стороны. Прежний счёт останется в истории, поставщик выставит новый.</p>
+    <p>{promotionOrder ? "До полной оплаты можно согласовать уменьшение покупки. При изменении клиникой количества подарок пересчитывается по правилу N+M." : "После подтверждённой недоплаты можно уменьшить количества."} Изменение вступит в силу только после согласия второй стороны. Прежний счёт останется в истории, поставщик выставит новый.</p>
     {data.reductions?.map(reduction => <article key={reduction.id}>
       <h3>{names[reduction.status]}</h3><p>{formatMoney(reduction.previousAmountMinor, data.order.currency)} → {formatMoney(reduction.proposedAmountMinor, data.order.currency)} · {reduction.reason}</p>
       <ul>{reduction.items.map(line => <li key={line.itemId}>{data.order.items.find(item => item.id === line.itemId)?.offer?.productVariant.product.canonicalName ?? "Товар"}: {line.previousQuantity} → {line.acceptedQuantity}; {formatMoney(line.totalPriceMinor, data.order.currency)}</li>)}</ul>
@@ -89,9 +102,9 @@ export function PaymentReductionPanel({ data, busy, organizationId, canAct, perf
       </> : null}
     </article>)}
     {mayPropose ? <>
-      {data.order.items.map((item, index) => <DmField key={item.id} label={`${item.offer?.productVariant.product.canonicalName ?? `Позиция ${index + 1}`}: новое количество (сейчас ${item.acceptedQuantity})`}><DmInput inputMode="decimal" disabled={busy} value={quantities[item.id] ?? item.acceptedQuantity ?? "0"} onChange={(_, d) => setQuantities(current => ({ ...current, [item.id]: d.value.replace(",", ".") }))} /></DmField>)}
+      {data.order.items.map((item, index) => <DmField key={item.id} label={`${item.offer?.productVariant.product.canonicalName ?? `Позиция ${index + 1}`}: новое количество (сейчас ${item.acceptedQuantity})`}><DmInput inputMode="decimal" disabled={busy || Boolean(item.giftForItemId && organizationId === data.order.buyerOrganizationId)} value={proposedQuantity(item)} onChange={(_, d) => setQuantities(current => ({ ...current, [item.id]: d.value.replace(",", ".") }))} /></DmField>)}
       <DmField label="Причина уменьшения заказа"><DmInput disabled={busy} value={reason} onChange={(_, d) => setReason(d.value)} /></DmField>
-      <DmButton disabled={busy || !canAct("PROPOSE_PAYMENT_REDUCTION") || reason.trim().length < 3} onClick={() => void perform({ action: "PROPOSE_PAYMENT_REDUCTION", reason, items: data.order.items.map(item => ({ itemId: item.id, acceptedQuantity: quantities[item.id] ?? item.acceptedQuantity ?? "0" })) })}>Предложить уменьшение</DmButton>
+      <DmButton disabled={busy || !canAct("PROPOSE_PAYMENT_REDUCTION") || reason.trim().length < 3} onClick={() => void perform({ action: "PROPOSE_PAYMENT_REDUCTION", reason, items: data.order.items.map(item => ({ itemId: item.id, acceptedQuantity: proposedQuantity(item) })) })}>Предложить уменьшение</DmButton>
     </> : null}
   </Section>;
 }

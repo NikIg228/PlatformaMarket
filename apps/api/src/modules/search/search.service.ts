@@ -30,6 +30,9 @@ type PublicSearchPromotion = {
   scope: Prisma.JsonValue;
   endsAt: Date;
   sponsorshipLabel: string | null;
+  offerId: string | null;
+  baseAmountMinor: Prisma.Decimal | null;
+  currency: string | null;
 };
 const publicVariant = (variant: {
   id: string;
@@ -239,6 +242,9 @@ export class SearchService {
             where: {
               supplierOrganizationId: { in: supplierIds },
               status: "ACTIVE",
+              moderationStatus: "APPROVED",
+              approvedRevision: { equals: this.prisma.promotion.fields.termsRevision },
+              claimedQuantity: { lt: this.prisma.promotion.fields.quantityLimit },
               kind: "PERCENTAGE",
               isPrivate: false,
               couponCodeHash: null,
@@ -253,6 +259,9 @@ export class SearchService {
               scope: true,
               endsAt: true,
               sponsorshipLabel: true,
+              offerId: true,
+              baseAmountMinor: true,
+              currency: true,
             },
             orderBy: [{ percentageBasisPoints: "desc" }, { endsAt: "asc" }],
           })
@@ -862,6 +871,9 @@ export class SearchService {
           const promotion = promotions.find((item) => {
             if (
               item.supplierOrganizationId !== offer.supplierOrganizationId ||
+              item.offerId !== offer.id ||
+              item.baseAmountMinor?.toString() !== offer.prices[0]?.amountMinor.toString() ||
+              item.currency !== offer.prices[0]?.currency ||
               !item.percentageBasisPoints
             )
               return false;

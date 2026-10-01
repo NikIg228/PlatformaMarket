@@ -186,6 +186,10 @@ export function BuyerCart({
                           ? cartCommercialChanges(itemValidation.previous, itemValidation.current).map((change) => (
                             <small key={change} className={styles.changeMessage}>{change}</small>
                           )) : null}
+                        {itemValidation?.current?.promotion ? <small>
+                          Акция: {itemValidation.current.promotion.name} · цена {formatMoney(itemValidation.current.promotion.unitPriceMinor, item.currency)}
+                          {itemValidation.current.promotion.gift ? ` · Подарок: ${itemValidation.current.promotion.gift.name} × ${itemValidation.current.promotion.gift.quantity}` : ""}
+                        </small> : null}
                       </td>
                       <td data-label="Поставщик">
                         {item.offer?.supplier?.organization?.displayName ??

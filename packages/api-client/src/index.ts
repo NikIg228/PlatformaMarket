@@ -1,4 +1,5 @@
 import type { WorkspaceCorrectionOfferPage, WorkspaceInventoryPage, WorkspaceLotPage, WorkspaceReservationPage, WorkspaceOverridePage } from "@marketplace/schemas";
+import type { CreateOfferPromotion, ReviseOfferPromotion, OfferPromotionCommand, OfferPromotion, PromotionPage, PublicPromotionPage, PromotionListQuery } from "@marketplace/schemas";
 import type { WorkspacePageQuery, WorkspaceOrderQuery, WorkspaceOrderPage, WorkspaceOffer, WorkspaceOfferPage, WorkspaceCartPage, WorkspaceSummary } from "@marketplace/schemas";
 import { deploymentFeatures, isDeploymentApiPathEnabled, type DeploymentProfile } from "@marketplace/schemas/deployment-policy";
 
@@ -140,6 +141,11 @@ export class MarketplaceApiError extends Error {
 }
 
 export class MarketplaceApiClient {
+  listPromotions(query: Partial<PromotionListQuery> = {}) { return this.get<PromotionPage>(`/promotions?${new URLSearchParams(Object.entries(query).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)]))}`); }
+  listPublicPromotions(query: Partial<PromotionListQuery> = {}) { return this.get<PublicPromotionPage>(`/promotions/storefront?${new URLSearchParams(Object.entries(query).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)]))}`); }
+  createOfferPromotion(input: CreateOfferPromotion) { return this.post<OfferPromotion>("/promotions", input); }
+  reviseOfferPromotion(id: string, input: ReviseOfferPromotion) { return this.patch<OfferPromotion>(`/promotions/${encodeURIComponent(id)}/terms`, input); }
+  commandOfferPromotion(id: string, input: OfferPromotionCommand) { return this.post<OfferPromotion>(`/promotions/${encodeURIComponent(id)}/commands`, input); }
   getSupplierLegalDocuments() { return this.get<SupplierLegalBundle>("/supplier-terms/documents"); }
   getSupplierTerms() { return this.get<SupplierTermsState>("/supplier-terms/current"); }
   getOrganizationProfile() { return this.get<OrganizationProfileResponse>("/organizations/current/profile"); }

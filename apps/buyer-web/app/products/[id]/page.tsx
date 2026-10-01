@@ -1,4 +1,4 @@
-import { MarketplaceApiClient, MarketplaceApiError } from "@marketplace/api-client";
+import { MarketplaceApiClient, MarketplaceApiError, frontendFeatures } from "@marketplace/api-client";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,6 +8,7 @@ import mediaCatalog from "../../data/public-catalog-media.json";
 import { findFallbackCatalogMedia } from "../../catalog-fallback.server";
 import { MarketplaceHeader } from "../../features/marketplace-header/marketplace-header";
 import styles from "./page.module.css";
+import { PromotionsStorefront } from "../../features/catalog/promotions-storefront";
 import { SupplierOffers } from "../../features/catalog/supplier-offers";
 import { findResearchedDescription } from "../../features/catalog/researched-product-description";
 import ProductLoadError from "./product-load-error";
@@ -245,6 +246,7 @@ export default async function ProductPage({
               </div>
               <span className={styles.offerCount}>{product.offers.length}</span>
             </div>
+            {frontendFeatures.promotions ? <PromotionsStorefront productId={product.id} /> : null}
             <SupplierOffers key={JSON.stringify(product.offers)} offers={product.offers} loginHref={loginHref} />
           </div>
         </section>

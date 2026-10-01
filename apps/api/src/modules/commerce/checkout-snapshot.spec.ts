@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 import { CommerceService } from "./commerce.service";
+vi.mock("../../platform/config/environment", () => ({ environment: () => ({ DEPLOYMENT_PROFILE: "pilot" }) }));
 
 const decimal = (value: string) => new Prisma.Decimal(value);
 const context = { actorId: "actor", organizationId: "buyer" };

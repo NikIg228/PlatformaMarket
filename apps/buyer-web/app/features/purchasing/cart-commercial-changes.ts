@@ -1,4 +1,5 @@
 import type { CartLineSnapshotResponse } from "@marketplace/schemas";
+import { sameAcceptedPromotion } from "@marketplace/schemas/promotion-snapshot";
 
 const amount = (value: string | null | undefined) => value?.replace(".", ",") ?? "не указано";
 const sourceName = (source: string) => ({ BASE: "обычная цена", TIER: "цена за объём", CONTRACT: "договорная цена" })[source] ?? "не указан";
@@ -7,6 +8,9 @@ export function cartCommercialChanges(previous: CartLineSnapshotResponse, curren
   const before = previous.commercialTerms;
   const after = current.commercialTerms;
   const changes: string[] = [];
+  const promotionLabel = (value: CartLineSnapshotResponse["promotion"]) => value ? `${value.name}, версия ${value.revision}${value.gift ? `; подарок: ${value.gift.name} × ${value.gift.quantity}` : "; без подарка"}` : "без акции";
+  if (!sameAcceptedPromotion(previous.promotion, current.promotion))
+    changes.push(`Акция: ${promotionLabel(previous.promotion)} → ${promotionLabel(current.promotion)}`);
   const compare = (label: string, oldValue: string, newValue: string, changed = oldValue !== newValue) => {
     if (changed) changes.push(`${label}: ${oldValue} → ${newValue}`);
   };

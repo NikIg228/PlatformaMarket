@@ -6,14 +6,17 @@ import type { SupplierActorContext } from "../suppliers/supplier-access.service"
 import { calculateLineTotal } from "./commerce-rules";
 import { lotIsUsable } from "../inventory/lot-eligibility";
 import { manualPaymentSummary } from "./manual-payment-rules";
+import { promotionGiftQuantity } from "../promotions/offer-promotion-rules";
+import { acceptedPromotionSchema } from "@marketplace/schemas";
 
 type Line = { itemId: string; acceptedQuantity: string; previousQuantity: string; unitPriceMinor: string; totalPriceMinor: string };
 type ReductionCommand = Extract<OrderWorkflowCommand, { action: "PROPOSE_PAYMENT_REDUCTION" | "DECIDE_PAYMENT_REDUCTION" }>;
 
 export async function paymentReduction(tx: Prisma.TransactionClient, order: Order, input: ReductionCommand, context: SupplierActorContext) {
-  if (order.paymentStatus !== "UNPAID" || order.status !== "AWAITING_PAYMENT" || order.paymentAllocation || order.transferClaims.some(claim => claim.status !== "CONFIRMED"))
+  const promotionOrder = order.items.some(item => item.giftForItemId || (item.offerSnapshot as { pricing?: { promotion?: unknown } })?.pricing?.promotion);
+  if (order.paymentStatus !== "UNPAID" || !(promotionOrder ? ["CONFIRMED", "AWAITING_PAYMENT"].includes(order.status) : order.status === "AWAITING_PAYMENT") || order.paymentAllocation || order.transferClaims.some(claim => claim.status !== "CONFIRMED"))
     throw new ConflictException("Сначала завершите проверку всех переводов. Изменение доступно только до полной оплаты");
-  if (BigInt(manualPaymentSummary(order.subtotalAmountMinor, order.transferClaims).confirmedAmountMinor) <= 0)
+  if (!promotionOrder && BigInt(manualPaymentSummary(order.subtotalAmountMinor, order.transferClaims).confirmedAmountMinor) <= 0)
     throw new ConflictException("До заявления и подтверждения недоплаты используется обычное согласование состава");
   if (await tx.shipment.count({ where: { supplierOrderId: order.id } })) throw new ConflictException("У заказа уже есть поставка");
 
@@ -29,6 +32,15 @@ export async function paymentReduction(tx: Prisma.TransactionClient, order: Orde
         totalPriceMinor: calculateLineTotal(item.unitPriceMinor.toString(), line.acceptedQuantity).toString() };
     });
     const amount = lines.reduce((sum, line) => sum.plus(line.totalPriceMinor), new Prisma.Decimal(0));
+    if (promotionOrder && context.organizationId === order.buyerOrganizationId) {
+      for (const item of order.items.filter(item => item.giftForItemId)) {
+        const parent = order.items.find(parent => parent.id === item.giftForItemId)!;
+        const snapshot = acceptedPromotionSchema.parse((parent.offerSnapshot as { pricing: { promotion: unknown } }).pricing.promotion);
+        const parentQuantity = lines.find(line => line.itemId === parent.id)!.acceptedQuantity;
+        const expected = Prisma.Decimal.min(item.acceptedQuantity, promotionGiftQuantity(parentQuantity, snapshot.buyQuantity!, snapshot.giftPerGroup!));
+        if (!expected.eq(lines.find(line => line.itemId === item.id)!.acceptedQuantity)) throw new ConflictException("При уменьшении покупки пересчитайте подарок по согласованному правилу N+M");
+      }
+    }
     if (!amount.gt(0) || !amount.lt(order.subtotalAmountMinor)) throw new ConflictException("Новая сумма должна быть положительной и меньше прежней");
     await tx.orderPaymentReduction.create({ data: { supplierOrderId: order.id, proposedById: context.actorId,
       proposedByOrganizationId: context.organizationId, previousAmountMinor: order.subtotalAmountMinor,

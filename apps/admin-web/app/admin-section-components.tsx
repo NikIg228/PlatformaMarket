@@ -96,3 +96,4 @@ export const TrustOperations = dynamic(
   () => import("./trust-operations").then((module) => module.TrustOperations),
   { loading },
 );
+export const PromotionModeration = dynamic(() => import("./promotion-moderation").then(module => module.PromotionModeration), { loading });

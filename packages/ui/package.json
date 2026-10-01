@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.tsx",
+    "./promotions": "./src/promotion-workspace.tsx",
     "./styles.css": "./src/styles.css",
     "./provider": "./src/provider.tsx"
   },

@@ -48,6 +48,7 @@ describe("Admin performance boundaries", () => {
     expect(source).toContain('import("./catalog-import-review")');
     expect(source).toContain('import("./platform-settings")');
     expect(source).toContain('import("./manual-product-review")');
-    expect(dynamicImports).toHaveLength(17);
+    expect(source).toContain('import("./promotion-moderation")');
+    expect(dynamicImports).toHaveLength(18);
   });
 });

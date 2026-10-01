@@ -836,6 +836,7 @@ enum PromotionKind {
   PERCENTAGE
   FIXED_AMOUNT
   FREE_SHIPPING
+  BUY_X_GET_Y
 }
 
 enum PromotionStatus {
@@ -1964,6 +1965,8 @@ model SupplierOffer {
   publication            OfferPublication?
   prices                 OfferPrice[]
   priceHistory           OfferPriceHistory[]
+  promotions             Promotion[] @relation("PromotionOffer")
+  giftPromotions         Promotion[] @relation("PromotionGift")
   priceTiers             OfferPriceTier[]
   contractPrices         ContractPrice[]
   inventoryBalances      InventoryBalance[]
@@ -2452,7 +2455,8 @@ model OrderWorkflowEvent {
 model SupplierOrderItem {
   id                String                  @id @default(uuid()) @db.Uuid
   supplierOrderId   String                  @db.Uuid
-  cartItemId        String                  @unique @db.Uuid
+  cartItemId        String?                 @unique @db.Uuid
+  giftForItemId     String?                 @db.Uuid
   offerId           String                  @db.Uuid
   productVariantId  String                  @db.Uuid
   warehouseId       String                  @db.Uuid
@@ -2467,7 +2471,7 @@ model SupplierOrderItem {
   inventorySnapshot Json
   status            SupplierOrderItemStatus @default(RESERVED)
   supplierOrder     SupplierOrder           @relation(fields: [supplierOrderId], references: [id], onDelete: Cascade)
-  cartItem          CartItem                @relation(fields: [cartItemId], references: [id], onDelete: Restrict)
+  cartItem          CartItem?               @relation(fields: [cartItemId], references: [id], onDelete: Restrict)
   offer             SupplierOffer           @relation(fields: [offerId], references: [id], onDelete: Restrict)
   productVariant    ProductVariant          @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
   warehouse         Warehouse               @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
@@ -3635,6 +3639,21 @@ model Promotion {
   startsAt                DateTime
   endsAt                  DateTime
   oldPriceEvidence        Json?
+  offerId                 String?         @db.Uuid
+  offer                   SupplierOffer?  @relation("PromotionOffer", fields: [offerId], references: [id], onDelete: Restrict)
+  baseAmountMinor         Decimal?        @db.Decimal(20, 0)
+  buyQuantity             Decimal?        @db.Decimal(18, 6)
+  giftOfferId             String?         @db.Uuid
+  giftOffer               SupplierOffer?  @relation("PromotionGift", fields: [giftOfferId], references: [id], onDelete: Restrict)
+  giftQuantity            Decimal?        @db.Decimal(18, 6)
+  quantityLimit           Decimal?        @db.Decimal(18, 6)
+  claimedQuantity         Decimal         @default(0) @db.Decimal(18, 6)
+  moderationStatus        String          @default("LEGACY_UNREVIEWED")
+  termsRevision           Int             @default(1)
+  approvedRevision        Int?
+  isTemplate              Boolean         @default(false)
+  placementStartsAt       DateTime?
+  placementEndsAt         DateTime?
   approvedById            String?         @db.Uuid
   approvedAt              DateTime?
   createdById             String?         @db.Uuid
@@ -3644,6 +3663,30 @@ model Promotion {
 
   @@index([supplierOrganizationId, status, startsAt, endsAt])
   @@index([couponCodeHash, status])
+  @@index([offerId, moderationStatus, startsAt, endsAt])
+}
+
+model PromotionRevision {
+  id          String @id @default(uuid()) @db.Uuid
+  promotionId String @db.Uuid
+  revision    Int
+  terms       Json
+  evidence    Json
+  createdAt   DateTime @default(now())
+
+  @@unique([promotionId, revision])
+}
+
+model PromotionDecision {
+  id          String @id @default(uuid()) @db.Uuid
+  promotionId String @db.Uuid
+  revision    Int
+  actorId     String @db.Uuid
+  action      String
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  @@index([promotionId, createdAt])
 }
 
 model PromotionRedemption {

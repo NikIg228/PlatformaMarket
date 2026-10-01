@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { acceptedPromotionSchema } from "./promotions.js";
 
 const decimalStringSchema = z.string().regex(/^-?\d+(?:\.\d+)?$/);
 const dateTimeSchema = z.iso.datetime();
@@ -375,6 +376,7 @@ export const cartLineSnapshotSchema = z.object({
   orderIncrement: decimalStringSchema,
   // Absent on historical carts, which must accept current terms once.
   commercialTerms: cartCommercialTermsSchema.nullable().optional(),
+  promotion: acceptedPromotionSchema.nullable().optional(),
   availableQuantity: decimalStringSchema.nullable(),
   fulfillmentStatus: z.enum([
     "AVAILABLE",
@@ -412,6 +414,7 @@ const checkoutCartSnapshotResponseSchema = cartResponseSchema.omit({
 export const supplierOrderItemResponseSchema = z
   .object({
     id: z.uuid(),
+    giftForItemId: z.uuid().nullable().optional(),
     supplierOrderId: z.uuid(),
     offerId: z.uuid(),
     productVariantId: z.uuid(),
