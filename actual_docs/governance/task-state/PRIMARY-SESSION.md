@@ -1,5 +1,15 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+02.10 MESSAGES-SPACING LOCAL_PASS main@99e6357, primary unchanged, foreign7 preserved.
+Scope clinic/supplier only: remove refresh toolbar, edge gaps12px, equal-height
+list/detail with aligned top/bottom; preserve polling/error retry/legacy consumers.
+Checks: lint1 PASS; local both roles1440/390 PASS (2: mobile gap5px corrected).
+Panels equal819px at1440x900; edges12px; mobile edges12px/no overflow.
+Screenshots inspected; auto refresh/retry unchanged; admin defaults preserved.
+Web build1 PASS, included TypeScript PASS. Dev restoring launcher9696. Practices: development-toolkit,
+Agency Frontend Developer/Fluent UI and Playwright scoped visual review.
+No full suites/DB writes/CI waiting per owner. Max3 attempts, build20m/smoke2m.
+
 02.10 COMPACT-HEADER — LOCAL_PASS, main@9d4ea6a; primary/foreign7 неизменны.
 Последний запрос: header56px, приветствие только главные, названия страниц
 в header без вводных подзаголовков; Сообщения между Документы/Настройки sidebar.

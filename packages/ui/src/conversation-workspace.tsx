@@ -45,7 +45,7 @@ export function ConversationCounter({ api, href, icon, showLabel = false, onClic
   </DmButton>;
 }
 
-export function ConversationWorkspace({ api, organizationId, initialId, context, canWrite = true, operator = false, contextHref, hideHeading = false }: { api: ConversationApi; organizationId: string; initialId?: string; context?: Context; canWrite?: boolean; operator?: boolean; contextHref?: (type: "OFFER" | "ORDER", id: string) => string | undefined; hideHeading?: boolean }) {
+export function ConversationWorkspace({ api, organizationId, initialId, context, canWrite = true, operator = false, contextHref, hideHeading = false, hideRefresh = false }: { api: ConversationApi; organizationId: string; initialId?: string; context?: Context; canWrite?: boolean; operator?: boolean; contextHref?: (type: "OFFER" | "ORDER", id: string) => string | undefined; hideHeading?: boolean; hideRefresh?: boolean }) {
   const [selected, setSelected] = useState(initialId);
   const [filter, setFilter] = useState<ConversationQuery["filter"]>("ALL");
   const [offset, setOffset] = useState(0);
@@ -125,7 +125,7 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
   const current = detail?.conversation;
   const href = current?.productId ? `/products/${current.productId}` : current ? contextHref?.(current.contextType, current.contextId) : undefined;
   return <section className="dm-conversations" aria-label="Сообщения">
-    <div className="dm-conversations-toolbar">{!hideHeading ? <h1>Сообщения</h1> : null}<DmButton disabled={loading || busy} onClick={() => void refresh()}>Обновить</DmButton></div>
+    {!hideHeading || !hideRefresh ? <div className="dm-conversations-toolbar">{!hideHeading ? <h1>Сообщения</h1> : null}{!hideRefresh ? <DmButton disabled={loading || busy} onClick={() => void refresh()}>Обновить</DmButton> : null}</div> : null}
     {error ? <div role="alert"><p>{error} Введённый текст сохранён. Повторите действие после проверки соединения.</p><DmButton disabled={busy} onClick={() => { if (!lookupReady && context) setLookupAttempt(value => value + 1); else void refresh(); }}>Повторить загрузку</DmButton></div> : null}
     {feedback ? <p role="status">{feedback}</p> : null}
     <div className="dm-conversations-layout" data-selected={Boolean(selected || context)}>
