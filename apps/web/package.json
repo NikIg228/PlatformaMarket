@@ -8,6 +8,7 @@
     "build": "npm run prepare:web && next build --webpack",
     "start": "next start --port 3000",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

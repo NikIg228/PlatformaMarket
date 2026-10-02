@@ -1,6 +1,6 @@
 "use client";
 import { workspacePath } from "@marketplace/api-client";
-import { authClientOptionsSchema, localOperatorSessionSchema } from "@marketplace/schemas";
+import { authClientOptionsSchema, localOperatorSessionSchema, type MfaEnrollment, type MfaElevatedSession, type MfaStatus } from "@marketplace/schemas";
 
 import { ShieldLock20Regular } from "@fluentui/react-icons/svg/shield-lock";
 import {
@@ -26,16 +26,6 @@ type PrimarySession = {
   activeOrganizationId: string;
   user: { id: string; displayName: string; email: string };
   csrfToken?: string;
-};
-type MfaEnrollment = {
-  secret: string;
-  otpauthUri: string;
-  recoveryCodes: string[];
-};
-type Elevated = {
-  accessToken: string;
-  activeOrganizationId: string;
-  authenticationMethods: string[];
 };
 
 declare global {
@@ -127,10 +117,7 @@ export default function AdminLogin() {
         headers: { authorization: `Bearer ${session.accessToken}` },
         cache: "no-store",
       });
-      const status = (await response.json()) as {
-        enabled?: boolean;
-        message?: string;
-      };
+      const status = (await response.json()) as MfaStatus & { message?: string };
       if (!response.ok) {
         throw new Error(status.message ?? "Не удалось проверить MFA");
       }
@@ -218,7 +205,7 @@ export default function AdminLogin() {
       const code = String(
         new FormData(event.currentTarget).get("code") ?? "",
       ).trim();
-      const elevated = await request<Elevated>(
+      const elevated = await request<MfaElevatedSession>(
         mode === "enroll"
           ? "/identity/mfa/totp/verify"
           : "/identity/mfa/challenge",

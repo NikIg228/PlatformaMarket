@@ -92,6 +92,12 @@ const run = (env) =>
 const accepted = run(valid);
 if (accepted.status !== 0)
   throw new Error(`Valid production contract rejected: ${accepted.stderr}`);
+for (const profile of ["pilot", ""]) {
+  const rejected = run({ ...valid, DEPLOYMENT_PROFILE: profile });
+  if (rejected.status === 0 || !String(rejected.stderr).includes("Production requires explicit DEPLOYMENT_PROFILE=go_live")) {
+    throw new Error("Production accepted pilot or an implicit deployment profile");
+  }
+}
 for (const flag of ["AUTH_LOCAL_MAIL_ENABLED", "LOCAL_OPERATOR_PASSWORD_LOGIN_ENABLED"]) {
   const localAuth = run({ ...valid, API_HOST: "127.0.0.1", [flag]: "true" });
   if (localAuth.status === 0 || !String(localAuth.stderr).includes("non-production loopback")) throw new Error(`Production must reject ${flag}, even on loopback`);

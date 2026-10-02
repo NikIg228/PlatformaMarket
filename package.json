@@ -25,7 +25,7 @@
     "dev:landing": "node scripts/dev-local.mjs landing",
     "dev:all": "node scripts/dev-local.mjs all",
     "dev:gateway": "node scripts/dev-gateway.mjs",
-    "lint": "turbo lint",
+    "lint": "eslint apps packages scripts eslint.config.mjs --max-warnings=0",
     "test": "turbo test --concurrency=2",
     "test:all": "npm test && npm run e2e --workspace=@marketplace/e2e",
     "typecheck": "turbo typecheck",
@@ -82,7 +82,7 @@
     "load-test:handoff": "node scripts/load-test-handoff.mjs",
     "verify:load-profile": "npm run build --workspace=@marketplace/schemas && npm run build --workspace=@marketplace/api && node scripts/verify-load-profile.mjs",
     "verify:load-multi-instance": "npm run build --workspace=@marketplace/api && node scripts/verify-load-multi-instance.mjs",
-    "verify:release": "npm run typecheck && npm test && npm run build && npm run verify:production-config && npm run verify:production-readiness-contract && npm run verify:rate-limit-auth",
+    "verify:release": "npm run lint && node --test scripts/lint-policy.test.mjs && npm run typecheck && npm test && npm run build && npm run verify:production-config && npm run verify:production-readiness-contract && npm run verify:rate-limit-auth",
     "verify:flow-a": "npm run build --workspace=@marketplace/schemas && npm run build --workspace=@marketplace/api && npm run build --workspace=@marketplace/buyer-web && npm run e2e:flow-a --workspace=@marketplace/e2e",
     "verify:flow-b2": "npm run build --workspace=@marketplace/schemas && npm run build --workspace=@marketplace/api && npm run build --workspace=@marketplace/buyer-web && npm run build --workspace=@marketplace/supplier-web && npm run e2e:flow-b2 --workspace=@marketplace/e2e",
     "verify:flow-b3": "npm run build && node scripts/with-test-database.mjs run e2e:flow-b3 --workspace=@marketplace/e2e",
@@ -98,12 +98,14 @@
     "@playwright/test": "^1.61.1",
     "@prisma/client": "^6.19.0",
     "@types/node": "^24.0.0",
+    "eslint": "10.11.0",
     "next": "16.3.8",
     "prettier": "^3.6.2",
     "redis-memory-server": "0.17.1",
     "sharp": "0.35.4",
     "turbo": "^2.5.8",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "8.71.0"
   },
   "dependencies": {
     "@nestjs/core": "^11.1.28",

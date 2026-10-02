@@ -181,6 +181,10 @@ const environmentSchema = z
     if (value.LOCAL_OPERATOR_PASSWORD_LOGIN_ENABLED && (value.AUTH_MODE !== "jwt" || !value.JWT_REQUIRE_MFA))
       context.addIssue({ code: "custom", path: ["LOCAL_OPERATOR_PASSWORD_LOGIN_ENABLED"], message: "Local operator login requires JWT and mandatory MFA" });
     if (value.NODE_ENV === "production") {
+      if (value.DEPLOYMENT_PROFILE !== "go_live") context.addIssue({
+        code: "custom", path: ["DEPLOYMENT_PROFILE"],
+        message: "Production requires explicit DEPLOYMENT_PROFILE=go_live",
+      });
       for (const key of PRODUCTION_HTTPS_URL_KEYS) {
         const configuredUrl = value[key];
         if (configuredUrl && new URL(configuredUrl).protocol !== "https:")

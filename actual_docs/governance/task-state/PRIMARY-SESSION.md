@@ -1,5 +1,19 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+CORE08 LOCAL_PASS02.10 15:40+05: bounds/contracts/lint/npm-only/config реализованы;
+types/affected suites/core/runtime/config/webbuild/browser PASS. Scoped publication
+и actual CI впереди, затем CORE09+аудит. Один writer, foreign7 WIP отдельно.
+Dev остановлен; working150000 не применялась. Полный журнал в CORE08.
+
+CORE07 CLOSED02.10:7cec2fa, CI36990679071/Security36990679215 SUCCESS.
+Текущий этап CORE08 IN_PROGRESS, карточка CORE-08-INTERNAL-2026-10-02.md.
+Один writer; CORE08–09+аудит разрешены. Без внешних сервисов/working migrations.
+Policy WIP AGENTS/Workflow и5 прежних WIP сохранить отдельно.
+
+CORE07 corrective7cec2fa опубликован/remote verified. CI2=36990679071,
+Security2=36990679215 IN_PROGRESS; в CI2 types/unit/PG/контейнеры уже PASS,
+verify build/остальные checks ещё идут. Никакого CORE08 product WIP.
+
 CORE07 CI1 FAIL только admin dynamic-panel inventory20→21. Исправлен тест,
 добавлено lazy/eager analytics assertion; admin23 PASS. Backend499/остальные
 unit suites, PG, контейнеры и Security CI PASS. Готовится test-only corrective

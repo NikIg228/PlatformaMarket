@@ -7,6 +7,7 @@ import {
 } from "@nestjs/common";
 import {
   supplierColumnMappingSchema,
+  IMPORT_UPLOAD_MAX_BYTES,
   supplierImportRollbackResponseSchema,
   type ConfirmSupplierItemMatchInput,
   type CreateImportBatchInput,
@@ -454,7 +455,7 @@ export class ImportsService implements OnModuleInit {
     let uploadAssetId: string | null = null;
     let sourceChecksum: string | null = null;
     if (input.contentBase64) {
-      const body = this.uploads.decodeBase64(input.contentBase64, 20_000_000);
+      const body = this.uploads.decodeBase64(input.contentBase64, IMPORT_UPLOAD_MAX_BYTES);
       sourceChecksum = createHash("sha256").update(body).digest("hex");
       const allowedKind =
         input.fileType === "EXCEL"
@@ -469,7 +470,7 @@ export class ImportsService implements OnModuleInit {
         fileName: input.fileName,
         body,
         allowedKinds: [allowedKind],
-        maxBytes: 20_000_000,
+        maxBytes: IMPORT_UPLOAD_MAX_BYTES,
       });
       uploadAssetId = asset.id;
     }

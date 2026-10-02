@@ -1,6 +1,6 @@
 # CORE-07 — внутренние метрики и расчёт комиссии
 
-Статус: CI_FIX_LOCAL_PASS02.10, публикация исправления впереди. Возобновлено владельцем («продолжай») после
+Статус: CLOSED / CI_PASS02.10 на исправлении7cec2fa. Возобновлено владельцем («продолжай») после
 обновления правил соразмерной проверки. Primary01a0f302-2d38-75d1-b79c-141e7428b533, один writer.
 
 Новый план проверки: сначала pure date test (попытка4 после явного возобновления),
@@ -112,6 +112,17 @@ tenant/dataset/operator/window; browser добавлен для3 ролей1440/
 оставшиеся gates CORE07. CORE08–09 не начинать до полного PASS07.
 
 ## Свежий evidence02.10, 14:15+05
+
+Финал14:50+05: CI36990679071 и Security36990679215 completed/SUCCESS на
+exact7cec2fa42a1339dda9da868c13c417bce0ebaeb9. Verify, PostgreSQL, оба контейнера,
+CodeQL и dependencies SUCCESS; полный browser/оставшиеся gates выполнены в CI.
+CORE07 закрыт в согласованном внутреннем scope, без working migration/live claims.
+Следующий разрешённый этап — CORE08, затем CORE09 и итоговый аудит.
+
+Исправление test-only опубликовано7cec2fa42a1339dda9da868c13c417bce0ebaeb9,
+remote SHA проверен. CI2=36990679071, Security2=36990679215. На14:43+05
+CI2 typecheck/npm test уже PASS, PostgreSQL job и оба контейнера SUCCESS;
+verify продолжает build/оставшиеся проверки. CORE08 не начат до полного green.
 
 CI1(36989630820) FAIL в npm test: admin performance-boundaries ожидал20
 dynamic panels, фактически21 с новой commerce analytics. Остальные unit suites

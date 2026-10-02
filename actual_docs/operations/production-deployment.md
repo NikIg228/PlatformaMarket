@@ -20,6 +20,18 @@ CI builds both `api` and `web` Docker targets without publishing images and vali
 
 The API refuses to start when production would use development auth, localhost CORS, mock payments, local object storage, optional antivirus, unencrypted storage, missing EDS/payment/email/SMS endpoints, missing signed PSP webhooks, missing MFA, PostgreSQL/Redis without required TLS, missing observability exporters, or cleartext HTTP for a secret-bearing provider endpoint. Development and test environments may continue to use explicit localhost HTTP endpoints.
 
+Production also rejects `pilot` or an omitted deployment profile. Runtime Swagger
+UI/JSON/YAML routes are not registered in production; inspect the generated
+contract in an isolated development/test environment. Ordinary JSON requests are
+limited to 1 MiB. Document/credential upload POST routes allow a 10,000,000-byte
+file encoded as base64 plus 128 KiB of JSON metadata; supplier import POST routes
+allow 20,000,000 file bytes plus the same metadata allowance. Signed webhook and
+URL-encoded bodies retain a 1 MiB limit. Oversized HTTP bodies return the standard
+413 error envelope; decoded upload bounds remain independently enforced.
+The Next.js rewrite buffer is bounded by the maximum import JSON size plus 1 MiB
+of stream-chunk headroom, so a legitimate base64 file is not truncated and oversized chunked payloads
+can reach the API's 413 boundary. Route-specific lower limits remain in the API.
+
 `compose.production.yaml` starts two processes from the same API image: `PROCESS_ROLE=api` serves HTTP and produces queue jobs without cron/consumers; `PROCESS_ROLE=worker` runs cron and BullMQ consumers without an HTTP listener. `PROCESS_ROLE=all` is rejected in production. The worker performs role-aware dependency readiness before announcing startup and exits when its required database, storage, or queue dependency is unavailable.
 
 ## First deployment

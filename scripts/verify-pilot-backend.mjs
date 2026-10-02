@@ -35,6 +35,8 @@ function assertSchema(schema, value, label) {
 
 function assertOpenApiContract(openApi) {
   const requiredComponents = [
+    "AuthEmailLoginRequest", "AuthEmailVerifyRequest", "AuthPasswordResetRequest", "AuthEmailSessionResponse", "AuthEmailVerifiedResponse", "AuthPasswordResetResult",
+    "MfaCode", "MfaStatus", "MfaEnrollment", "MfaVerificationResult", "MfaChallengeResult", "MfaDisabled", "UploadDocumentRequest", "UploadedDocument", "OperationWorkQueueQuery",
     "CommerceAnalyticsQuery", "CommerceAnalyticsResponse",
     "SupplierPaymentPolicyResponse", "SaveSupplierPaymentPolicy", "OrderWorkflowResponse", "OrderWorkflowCommand",
     "WorkspaceCorrectionOfferPage", "WorkspaceInventoryPage", "WorkspaceLotPage", "WorkspaceReservationPage", "WorkspaceOverridePage",
@@ -68,6 +70,19 @@ function assertOpenApiContract(openApi) {
   }
 
   const coreOperations = [
+    ["/api/auth/login", "post", "201", "AuthEmailSessionResponse", "AuthEmailLoginRequest"],
+    ["/api/auth/email/verify", "post", "201", "AuthEmailVerifiedResponse", "AuthEmailVerifyRequest"],
+    ["/api/auth/password/reset", "post", "201", "AuthPasswordResetResult", "AuthPasswordResetRequest"],
+    ["/api/identity/mfa", "get", "200", "MfaStatus"],
+    ["/api/identity/mfa/totp/enroll", "post", "201", "MfaEnrollment"],
+    ["/api/identity/mfa/totp/verify", "post", "201", "MfaVerificationResult", "MfaCode"],
+    ["/api/identity/mfa/challenge", "post", "201", "MfaChallengeResult", "MfaCode"],
+    ["/api/identity/mfa/disable", "post", "201", "MfaDisabled", "MfaCode"],
+    ["/api/documents/upload", "post", "201", "UploadedDocument", "UploadDocumentRequest"],
+    ["/api/operations/work-queue", "get", "200", "OperationWorkQueue"],
+    ["/api/operations/work-queue/{type}/{id}", "get", "200", "OperationObject"],
+    ["/api/operations/work-queue/{type}/{id}/history", "get", "200", "OperationHistory"],
+    ["/api/operations/work-queue/{type}/{id}/assignment", "post", "201", "OperationAssignmentResult", "OperationAssignment"],
     ["/api/commerce-analytics", "get", "200", "CommerceAnalyticsResponse"],
     ["/api/suppliers/current/payment-review-policy", "get", "200", "SupplierPaymentPolicyResponse"],
     ["/api/suppliers/current/payment-review-policy", "post", "201", "SupplierPaymentPolicyResponse", "SaveSupplierPaymentPolicy"],
@@ -199,6 +214,7 @@ function assertOpenApiContract(openApi) {
   }
   for (const pathName of [
     "/api/commerce-analytics",
+    "/api/operations/work-queue",
     "/api/catalog/search",
     "/api/catalog/products/{productId}/compare",
   ]) {
@@ -210,6 +226,9 @@ function assertOpenApiContract(openApi) {
   }
   for (const pathName of [
     "/api/commerce-analytics",
+    "/api/identity/mfa",
+    "/api/documents/upload",
+    "/api/operations/work-queue",
     "/api/marketplace/search",
     "/api/buyers/{buyerOrganizationId}/carts",
     "/api/carts/{cartId}/checkout",

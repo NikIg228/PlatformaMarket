@@ -7,7 +7,7 @@
     "dev": "next dev --port 3003 --hostname 127.0.0.1",
     "start": "next start --port 3003",
     "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiParam, ApiTags } from "@nestjs/swagger";
 import {
   outboxDeadLetterQuerySchema,
   outboxEventIdSchema,
@@ -27,7 +27,7 @@ import {
 } from "../../platform/openapi/core-openapi";
 import { OperationsService } from "./operations.service";
 import { OperationWorkflowService } from "./operation-workflow.service";
-import { operationAssignmentSchema, operationQueueTypeSchema } from "@marketplace/schemas";
+import { operationAssignmentSchema, operationQueueTypeSchema, operationWorkQueueQuerySchema } from "@marketplace/schemas";
 import { z } from "zod";
 
 @ApiTags("marketplace-operations")
@@ -43,6 +43,7 @@ export class OperationsController {
   assignees(@Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { return this.workflow.assignees({ actorId, organizationId }); }
 
   @Get("work-queue/:type/:id") @RequirePermissions("organization.view")
+  @ApiParam({ name: "type", enum: operationQueueTypeSchema.options })
   @ApiUuidParam("id", "Queue object") @ApiCoreResponse("OperationObject")
   object(@Param("type") type: string, @Param("id") id: string, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     const kind = operationQueueTypeSchema.safeParse(type);
@@ -51,6 +52,7 @@ export class OperationsController {
   }
 
   @Post("work-queue/:type/:id/assignment") @RequirePermissions("support.ticket.manage")
+  @ApiParam({ name: "type", enum: operationQueueTypeSchema.options })
   @ApiUuidParam("id", "Queue object") @ApiCoreBody("OperationAssignment") @ApiCoreResponse("OperationAssignmentResult", 201)
   assign(@Param("type") type: string, @Param("id") id: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     const parsed = operationAssignmentSchema.safeParse(body); const kind = operationQueueTypeSchema.safeParse(type);
@@ -59,6 +61,7 @@ export class OperationsController {
   }
 
   @Get("work-queue/:type/:id/history") @RequirePermissions("organization.view")
+  @ApiParam({ name: "type", enum: operationQueueTypeSchema.options })
   @ApiUuidParam("id", "Queue object") @ApiCoreResponse("OperationHistory")
   history(@Param("type") type: string, @Param("id") id: string, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     const kind = operationQueueTypeSchema.safeParse(type);
@@ -67,6 +70,7 @@ export class OperationsController {
   }
 
   @Get("work-queue")
+  @ApiCoreQuery("OperationWorkQueueQuery")
   @ApiCoreResponse("OperationWorkQueue")
   @RequirePermissions("organization.view")
   workQueue(
@@ -74,9 +78,9 @@ export class OperationsController {
     @Headers("x-user-id") actorId: string,
     @Headers("x-organization-id") organizationId: string,
   ) {
-    const parsed = z.coerce.number().int().min(0).max(100_000).safeParse(offset ?? 0);
+    const parsed = operationWorkQueueQuerySchema.safeParse({ offset });
     if (!parsed.success) throw new BadRequestException("Invalid queue offset");
-    return this.operations.workQueue({ actorId, organizationId }, parsed.data);
+    return this.operations.workQueue({ actorId, organizationId }, parsed.data.offset);
   }
 
   @Get("outbox/dead-letter")

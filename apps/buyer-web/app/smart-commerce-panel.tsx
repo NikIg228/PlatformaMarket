@@ -61,7 +61,7 @@ export function SmartCommercePanel({ buyerId = BUYER_ID, apiContext }: { buyerId
     } catch (cause) { setError(errorMessage(cause)); }
     finally { setBusy(false); }
   }, [addressId, api, mode, productId]);
-  useEffect(() => { if (addressId && productId) void recommend(mode); }, [addressId, productId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (addressId && productId) void recommend(mode); }, [addressId, productId]);
 
   if (loading) return <div className={styles.loading}><Spinner label="Собираем локальные варианты поставки" /></div>;
   if (error && !addresses.length) return <ErrorState description={error} action={<Button onClick={() => void load()}>Повторить</Button>} />;

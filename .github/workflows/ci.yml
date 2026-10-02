@@ -69,6 +69,8 @@ jobs:
           npm run verify:seed-profiles
       - run: npm exec --workspace=@marketplace/api -- prisma validate
       - run: npm run typecheck
+      - run: npm run lint
+      - run: node --test scripts/lint-policy.test.mjs
       - run: npm test
       - run: npm run verify:outbound-security
       - run: npm run verify:outbox

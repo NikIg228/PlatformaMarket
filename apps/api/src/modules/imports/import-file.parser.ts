@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import type { CreateImportBatchInput } from "@marketplace/schemas";
+import { IMPORT_UPLOAD_MAX_BYTES, type CreateImportBatchInput } from "@marketplace/schemas";
 import { parse } from "csv-parse/sync";
 import ExcelJS from "exceljs";
 import { assertSafeZipPackage } from "../../platform/security/zip-resource-policy";
+import { decodeBoundedBase64 } from "../../platform/security/bounded-base64";
 
 type RawRow = Record<string, string | number | boolean | null>;
 export type ImportParseResult = { rows: RawRow[]; rowNumbers?: number[]; metadata: Record<string, unknown>; requiresReview: boolean };
@@ -52,13 +53,7 @@ export class ImportFileParser {
   async parseWithDiagnostics(input: CreateImportBatchInput): Promise<ImportParseResult> {
     if (input.rows) return { rows: input.rows, metadata: { method: "explicit_rows" }, requiresReview: false };
     if (!input.contentBase64) throw new BadRequestException("Import file content is missing");
-    let buffer: Buffer;
-    try {
-      buffer = Buffer.from(input.contentBase64, "base64");
-    } catch {
-      throw new BadRequestException("Import file is not valid base64");
-    }
-    if (buffer.length === 0 || buffer.length > 20 * 1024 * 1024) throw new BadRequestException("Import file must be between 1 byte and 20 MB");
+    const buffer = decodeBoundedBase64(input.contentBase64, IMPORT_UPLOAD_MAX_BYTES);
 
     if (input.fileType === "CSV") {
       try {

@@ -1,17 +1,11 @@
-import { currentSessionSchema, workspaceContextSchema, workspaceChoicesSchema, type WorkspaceContext } from "@marketplace/schemas";
+import { currentSessionSchema, workspaceContextSchema, workspaceChoicesSchema, type WorkspaceContext, type AuthEmailSession, type AuthEmailVerified } from "@marketplace/schemas";
 import { workspaceReturnPath } from "@marketplace/schemas/product-navigation";
 import { unifiedFrontend, workspacePath } from "@marketplace/api-client";
 export type AuthCapability = "BUYER" | "SUPPLIER";
 
-export type AuthSession = {
-  accessToken: string;
-  sessionId?: string;
-  activeOrganizationId?: string | null;
-  organizationId?: string;
-  organizationDisplayName?: string;
-  capability?: AuthCapability;
-  user: { id: string; displayName: string; email: string };
-};
+export type AuthSession = Pick<AuthEmailSession, "accessToken" | "user"> &
+  Partial<Pick<AuthEmailSession, "sessionId" | "activeOrganizationId">> &
+  Pick<AuthEmailVerified, "organizationId" | "organizationDisplayName" | "capability">;
 
 type ApiErrorPayload = {
   message?: string | string[];

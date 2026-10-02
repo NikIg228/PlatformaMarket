@@ -9,7 +9,7 @@
     "e2e:flow-b3": "node ../../scripts/run-canonical-browser.mjs --config playwright.flow-b3-unified.config.ts",
     "e2e:flow-b3:legacy": "playwright test --config playwright.flow-b3.config.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0",
     "e2e:legacy": "playwright test",
     "e2e:performance": "node ../../scripts/run-canonical-browser.mjs --config playwright.catalog-performance.config.ts"
   },

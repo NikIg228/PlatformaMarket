@@ -1,5 +1,19 @@
 # PlatformaMarket — текущий контекст
 
+CORE08 LOCAL_PASS02.10 15:40+05: контракты/реальный lint/upload bounds/config
+реализованы и проверены, включая максимальный PDF через Next proxy и безопасный413.
+Publication/CI впереди; после green08 — CORE09+итоговый аудит. Foreign7 WIP сохранены,
+рабочая150000 не применена, dev остановлен. Checkpoint CORE08 содержит attempts.
+
+CORE07 CLOSED02.10:7cec2fa, оба CI/Security SUCCESS. Текущий CORE08:
+contracts/lint/npm-only/bounds/production+Swagger, checkpoint
+governance/task-state/CORE-08-INTERNAL-2026-10-02.md. Далее CORE09+аудит.
+Один writer, dev остановлен, working150000 не применена.
+
+CORE07 corrective7cec2fa опубликован, remote verified. CI2=36990679071,
+Security2=36990679215 ещё идут; types/unit/PG/контейнеры CI2 уже PASS.
+CORE08 пока только read-only подготовка, рабочая150000 не применена.
+
 CORE07 CI1 FAIL admin dynamic-panel test20→21; тест исправлен, admin23 PASS.
 CI PG/containers/Security PASS, остальные unit suites PASS. Corrective test-only
 publication/CI впереди; CORE08 пока не начат. Подробнее checkpoint CORE07.

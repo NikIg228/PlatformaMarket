@@ -145,7 +145,7 @@ export class MarketplaceApiClient {
   createSupportTicket(input: import("@marketplace/schemas").CreateSupportTicketInput) { return this.post<import("@marketplace/schemas").SupportTicketSummary>("/support/tickets", input); }
   internalNotifications(organizationId: string, offset = 0) { return this.get<import("@marketplace/schemas").InternalNotification[]>(`/notifications/organizations/${encodeURIComponent(organizationId)}?channel=IN_APP&limit=50&offset=${offset}`); }
   readNotification(id: string) { return this.post<import("@marketplace/schemas").InternalNotification>(`/notifications/${encodeURIComponent(id)}/read`, {}); }
-  operationObject(type: import("@marketplace/schemas").OperationQueueType, id: string) { return this.get<{ id: string; queueType: import("@marketplace/schemas").OperationQueueType; title: string; fields: { label: string; value: string }[] }>(`/operations/work-queue/${type}/${encodeURIComponent(id)}`); }
+  operationObject(type: import("@marketplace/schemas").OperationQueueType, id: string) { return this.get<import("@marketplace/schemas").OperationObject>(`/operations/work-queue/${type}/${encodeURIComponent(id)}`); }
   supportTickets(status?: string, offset = 0) { return this.get<import("@marketplace/schemas").SupportTicketSummary[]>(`/support/tickets?offset=${offset}${status ? `&status=${encodeURIComponent(status)}` : ""}`); }
   supportTicket(id: string, beforeMessageId?: string) { return this.get<import("@marketplace/schemas").SupportTicketDetail>(`/support/tickets/${encodeURIComponent(id)}${beforeMessageId ? `?beforeMessageId=${encodeURIComponent(beforeMessageId)}` : ""}`); }
   updateSupportTicket(id: string, input: import("@marketplace/schemas").UpdateSupportTicketInput) { return this.patch<import("@marketplace/schemas").SupportTicketSummary>(`/support/tickets/${encodeURIComponent(id)}`, input); }
@@ -280,6 +280,14 @@ export class MarketplaceApiClient {
     return this.post<RegistrationResumeRequested>("/auth/registration/resume/request", input);
   }
   authClientOptions() { return this.get<AuthClientOptions>("/auth/client-options"); }
+  loginEmail(input: import("@marketplace/schemas").AuthEmailLogin) { return this.request<import("@marketplace/schemas").AuthEmailSession>("/auth/login", { method: "POST", credentials: "include", body: JSON.stringify(input) }); }
+  verifyEmail(input: import("@marketplace/schemas").AuthEmailToken) { return this.request<import("@marketplace/schemas").AuthEmailVerified>("/auth/email/verify", { method: "POST", credentials: "include", body: JSON.stringify(input) }); }
+  resetPassword(input: import("@marketplace/schemas").AuthPasswordReset) { return this.post<import("@marketplace/schemas").AuthPasswordResetResult>("/auth/password/reset", input); }
+  mfaStatus() { return this.get<import("@marketplace/schemas").MfaStatus>("/identity/mfa"); }
+  enrollMfa() { return this.post<import("@marketplace/schemas").MfaEnrollment>("/identity/mfa/totp/enroll", {}); }
+  verifyMfaEnrollment(input: import("@marketplace/schemas").MfaCodeInput) { return this.post<import("@marketplace/schemas").MfaVerificationResult>("/identity/mfa/totp/verify", input); }
+  challengeMfa(input: import("@marketplace/schemas").MfaCodeInput) { return this.post<import("@marketplace/schemas").MfaChallengeResult>("/identity/mfa/challenge", input); }
+  disableMfa(input: import("@marketplace/schemas").MfaCodeInput) { return this.post<import("@marketplace/schemas").MfaDisabled>("/identity/mfa/disable", input); }
   workspaceContext() { return this.get<WorkspaceContext>("/auth/workspace-context"); }
   registerEmail(input: AuthEmailRegistration) { return this.post<AuthRegistrationAccepted>("/auth/register", input); }
   requestPasswordReset(email: string) { return this.post<AuthForgotAccepted>("/auth/password/forgot", { email }); }
@@ -473,7 +481,7 @@ export class MarketplaceApiClient {
   }
 
   uploadDocument(input: UploadDocumentInput) {
-    return this.post<DocumentArchiveItem>("/documents/upload", input);
+    return this.post<import("@marketplace/schemas").UploadedDocument>("/documents/upload", input);
   }
 
   downloadDocument(documentId: string) {

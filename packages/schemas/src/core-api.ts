@@ -673,6 +673,20 @@ export const documentArchivePageResponseSchema = z.object({
   nextCursor: z.uuid().nullable(),
 });
 
+// Upload returns the stored document, not the archive's expanded relations.
+export const uploadedDocumentSchema = documentArchiveItemSchema.omit({
+  supplierOrder: true, paymentIntent: true, paymentTransaction: true, refund: true,
+  participants: true, versions: true,
+}).extend({
+  templateId: z.uuid().nullable(), checkoutId: z.uuid().nullable(), supplierOrderId: z.uuid().nullable(),
+  shipmentId: z.uuid().nullable(), paymentIntentId: z.uuid().nullable(), paymentTransactionId: z.uuid().nullable(),
+  refundId: z.uuid().nullable(), previousVersionId: z.uuid().nullable(),
+  storageKey: z.string().nullable(), contentType: z.string().nullable(), byteSize: z.number().int().nullable(),
+  requiredSignatureCount: z.number().int().nonnegative(), externalId: z.string().nullable(), failureReason: z.string().nullable(),
+  templateSnapshot: z.unknown(), dataSnapshot: z.unknown(), metadata: z.unknown(),
+});
+export type UploadedDocument = z.infer<typeof uploadedDocumentSchema>;
+
 export const documentArchiveSummaryResponseSchema = z.object({
   total: z.number().int().nonnegative(),
   awaitingSignature: z.number().int().nonnegative(),

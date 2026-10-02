@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { DOCUMENT_UPLOAD_MAX_BASE64_CHARACTERS, IMPORT_UPLOAD_MAX_BASE64_CHARACTERS } from "./document-upload-limits";
 export * from "./offer-commercial";
 export * from "./identity-management";
+export * from "./auth-api";
 export * from "./workspace-reads";
 export * from "./document-upload-limits";
 import { shipmentStatusSchema, cartLineSnapshotSchema } from "./core-api.js";
@@ -255,7 +257,7 @@ export const createImportBatchSchema = z.object({
   fileType: z.enum(["MANUAL", "CSV", "EXCEL", "PDF"]),
   columnMapping: supplierColumnMappingSchema,
   rows: z.array(rawImportRowSchema).min(1).max(5_000).optional(),
-  contentBase64: z.string().min(4).max(28_000_000).optional(),
+  contentBase64: z.string().min(4).max(IMPORT_UPLOAD_MAX_BASE64_CHARACTERS).optional(),
 }).refine((value) => value.rows !== undefined || value.contentBase64 !== undefined, {
   message: "Rows or file content must be provided",
 });
@@ -1079,7 +1081,7 @@ export const uploadDocumentSchema = z.object({
   documentDate: z.iso.datetime().optional(),
   ...documentMoneyFields,
   fileName: z.string().trim().min(1).max(255),
-  contentBase64: z.string().min(1).max(16_000_000),
+  contentBase64: z.string().min(4).max(DOCUMENT_UPLOAD_MAX_BASE64_CHARACTERS),
   requiredSignatureCount: z.number().int().nonnegative().max(20).default(0),
   expiresAt: z.iso.datetime().nullable().optional(),
   externalId: z.string().trim().max(240).nullable().optional(),
@@ -1133,7 +1135,7 @@ export const createOrganizationCredentialSchema = z.object({
   validFrom: z.iso.datetime().nullable().optional(),
   validTo: z.iso.datetime().nullable().optional(),
   fileName: z.string().trim().max(255).nullable().optional(),
-  contentBase64: z.string().min(1).max(16_000_000).nullable().optional(),
+  contentBase64: z.string().min(4).max(DOCUMENT_UPLOAD_MAX_BASE64_CHARACTERS).nullable().optional(),
   metadata: z.record(z.string(), z.unknown()).nullable().optional(),
 }).refine((value) => Boolean(value.fileName) === Boolean(value.contentBase64), "fileName and contentBase64 must be provided together").refine((value) => !value.validFrom || !value.validTo || value.validTo >= value.validFrom, "Credential validity window is invalid");
 

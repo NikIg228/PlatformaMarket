@@ -1,8 +1,6 @@
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import helmet from "helmet";
-import express from "express";
 import { AppModule } from "./app.module";
 import { environment } from "./platform/config/environment";
 import { jsonSafeReplacer } from "./platform/http/json-safe-replacer";
@@ -11,14 +9,13 @@ import {
   NestStructuredLogger,
 } from "./platform/observability/structured-logger";
 import { identityContextMiddleware } from "./platform/security/identity-context.middleware";
-import { registerCoreOpenApiSchemas } from "./platform/openapi/core-openapi";
+import { configureRuntimeSwagger } from "./platform/openapi/runtime-swagger";
 import { ApiExceptionFilter } from "./platform/http/api-exception.filter";
 import { runtimeCapabilities } from "./platform/runtime/process-role";
 import { MetricsService } from "./platform/observability/metrics.service";
 import { httpMetricsMiddleware } from "./platform/observability/metrics.middleware";
 import { SessionRevocationService } from "./platform/security/session-revocation.service";
-import { WEBHOOK_MAX_BODY_BYTES } from "./modules/integrations/integration-webhooks.constants";
-import type { NextFunction, Request, Response } from "express";
+import { marketplaceBodyParser } from "./platform/http/request-body-policy";
 
 export async function createMarketplaceApp(
   options: { serverless?: boolean } = {},
@@ -65,26 +62,6 @@ export async function createMarketplaceApp(
   app.use(httpLoggerMiddleware());
   app.use(httpMetricsMiddleware(app.get(MetricsService)));
   app.useGlobalFilters(new ApiExceptionFilter());
-  const rawWebhookJsonParser = express.json({
-    limit: `${WEBHOOK_MAX_BODY_BYTES}b`,
-    verify: (request, _response, buffer) => {
-      (request as Request & { rawBody?: Buffer }).rawBody = Buffer.from(buffer);
-    },
-  });
-  app.use("/api/integrations/webhooks", rawWebhookJsonParser);
-  app.use("/api/payments/webhooks", rawWebhookJsonParser);
-  app.use("/api/documents/signatures/callback", rawWebhookJsonParser);
-  app.use("/api/integrations/webhooks", (request: Request, response: Response, next: NextFunction) => {
-    const contentLengthHeader = request.headers["content-length"];
-    const contentLength = typeof contentLengthHeader === "string" ? Number(contentLengthHeader) : undefined;
-    if (contentLength !== undefined && (!Number.isFinite(contentLength) || contentLength > WEBHOOK_MAX_BODY_BYTES)) {
-      response.status(413).json({ code: "PAYLOAD_TOO_LARGE", message: "Integration webhook payload exceeds 1 MB" });
-      return;
-    }
-    next();
-  });
-  app.useBodyParser("json", { limit: "32mb" });
-  app.useBodyParser("urlencoded", { limit: "1mb", extended: true });
   app.setGlobalPrefix("api");
   const allowedOrigins = new Set(
     config.CORS_ORIGINS.split(",")
@@ -97,18 +74,7 @@ export async function createMarketplaceApp(
     credentials: true,
     exposedHeaders: ["x-request-id"],
   });
-  const openApi = new DocumentBuilder()
-    .setTitle("B2B Procurement Platform API")
-    .setDescription("Industry-independent procurement core")
-    .setVersion("0.1.0")
-    .addBearerAuth(
-      { type: "http", scheme: "bearer", bearerFormat: "JWT" },
-      "access-token",
-    )
-    .build();
-  const document = registerCoreOpenApiSchemas(
-    SwaggerModule.createDocument(app, openApi),
-  );
-  SwaggerModule.setup("docs", app, document);
+  app.use(marketplaceBodyParser());
+  configureRuntimeSwagger(app, config.NODE_ENV);
   return app;
 }

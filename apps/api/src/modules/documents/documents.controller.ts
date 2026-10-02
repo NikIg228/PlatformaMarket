@@ -86,6 +86,7 @@ export class DocumentsController {
   }
 
   @Post("upload")
+  @ApiCoreBody("UploadDocumentRequest") @ApiCoreResponse("UploadedDocument", 201) @ApiCoreResponse("ErrorResponse", 413)
   @RequirePermissions("document.upload")
   upload(@Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     const parsed = uploadDocumentSchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten());

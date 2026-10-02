@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { ObjectStorageService } from "../storage/object-storage.service";
 import { FileScannerService } from "./file-scanner.service";
+import { decodeBoundedBase64 } from "./bounded-base64";
 
 export type UploadKind = "CSV" | "XLSX" | "PDF" | "DOCX" | "PNG" | "JPEG";
 const mimeByKind: Record<UploadKind, string> = { CSV: "text/csv", XLSX: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", PDF: "application/pdf", DOCX: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", PNG: "image/png", JPEG: "image/jpeg" };
@@ -42,10 +43,7 @@ export class FileUploadPolicyService {
   constructor(private readonly prisma: PrismaService, private readonly storage: ObjectStorageService, private readonly scanner: FileScannerService) {}
 
   decodeBase64(value: string, maxBytes: number) {
-    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(value) || value.length % 4 !== 0) throw new BadRequestException("Invalid base64 file content");
-    const body = Buffer.from(value, "base64");
-    if (body.byteLength === 0 || body.byteLength > maxBytes) throw new BadRequestException(`File must be between 1 byte and ${Math.floor(maxBytes / 1_000_000)} MB`);
-    return body;
+    return decodeBoundedBase64(value, maxBytes);
   }
 
   detect(body: Buffer): UploadKind | null {

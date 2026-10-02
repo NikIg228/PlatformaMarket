@@ -565,7 +565,6 @@ export default function BuyerWorkspace({
     if (handoffChecked && catalogUrlReady && deliveryContext.ready) void refresh();
     // Refresh is the initial page bootstrap. Search and filter changes use
     // loadSearch directly and must not re-run the bootstrap with stale state.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handoffChecked, catalogUrlReady, catalogHistoryRevision, handoff?.sessionId, deliveryContext.ready, cityFilter]);
   useEffect(() => {
     if (!toast) return;

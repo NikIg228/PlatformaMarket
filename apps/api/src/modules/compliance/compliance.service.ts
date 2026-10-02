@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
+import { DOCUMENT_UPLOAD_MAX_BYTES } from "@marketplace/schemas";
 import type { ComplianceEvaluationInput, CreateComplianceRuleInput, CreateOrganizationCredentialInput, ReviewComplianceCheckInput, ReviewOrganizationCredentialInput } from "@marketplace/schemas";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
@@ -31,8 +32,8 @@ export class ComplianceService {
     let storageKey: string | null = null;
     let checksumSha256: string | null = null;
     if (input.contentBase64 && input.fileName) {
-      const body = this.uploads.decodeBase64(input.contentBase64, 10_000_000);
-      const asset = await this.uploads.quarantine({ organizationId, actorId: context.actorId, purpose: "compliance-credential", fileName: input.fileName, body, allowedKinds: ["PDF", "PNG", "JPEG"], maxBytes: 10_000_000 });
+      const body = this.uploads.decodeBase64(input.contentBase64, DOCUMENT_UPLOAD_MAX_BYTES);
+      const asset = await this.uploads.quarantine({ organizationId, actorId: context.actorId, purpose: "compliance-credential", fileName: input.fileName, body, allowedKinds: ["PDF", "PNG", "JPEG"], maxBytes: DOCUMENT_UPLOAD_MAX_BYTES });
       uploadAssetId = asset.id;
       checksumSha256 = asset.checksumSha256;
       storageKey = asset.storageKey;

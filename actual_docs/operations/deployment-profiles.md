@@ -45,9 +45,11 @@ targets и compose.production.legacy.yaml с Caddyfile.legacy сохранены
 Конфигурация выпуска не означает production rollout: домен, provider callbacks,
 операторский origin и live rollout/rollback требуют отдельной приёмки.
 
-Production требует явный профиль и отдельные api/worker roles. Известное
-расхождение production+pilot policy/ADR009 остаётся CORE08.5; документация
-не разрешает ослаблять environment guards.
+Production требует явный `DEPLOYMENT_PROFILE=go_live` и отдельные api/worker
+roles. `pilot` и отсутствие профиля отклоняются по ADR009; обязательные guards
+провайдеров, MFA, TLS и shared rate limiting сохраняются. Локальные pilot/go_live
+по-прежнему допустимы. Swagger UI/JSON/YAML доступны только вне production;
+production bootstrap не регистрирует `/docs`, `/docs-json` и `/docs-yaml`.
 
 ## Проверки
 

@@ -1,6 +1,8 @@
 import { commerceAnalyticsQuerySchema, commerceAnalyticsResponseSchema } from "@marketplace/schemas";
 import { internalNotificationSchema, internalNotificationListSchema, notificationQuerySchema } from "@marketplace/schemas";
-import { operationObjectSchema } from "@marketplace/schemas";
+import { operationObjectSchema, operationWorkQueueQuerySchema } from "@marketplace/schemas";
+import { uploadedDocumentSchema } from "@marketplace/schemas";
+import { emailLoginSchema, emailTokenSchema, emailResetPasswordSchema, authEmailSessionSchema, authEmailVerifiedSchema, authPasswordResetResultSchema, mfaCodeSchema, mfaStatusSchema, mfaEnrollmentSchema, mfaVerificationResultSchema, mfaChallengeResultSchema, mfaDisabledSchema, uploadDocumentSchema } from "@marketplace/schemas";
 import { createSupportTicketSchema, addSupportMessageSchema, updateSupportTicketSchema, supportTicketSummarySchema, supportTicketListSchema, supportTicketQuerySchema, supportTicketDetailSchema, supportMessageQuerySchema, supportMessageResponseSchema } from "@marketplace/schemas";
 import { conversationContextSchema, conversationLookupSchema } from "@marketplace/schemas";
 import { operationAssignmentSchema, operationAssignmentResultSchema, operationHistorySchema, operationAssigneesSchema, operationWorkQueueSchema } from "@marketplace/schemas";
@@ -136,6 +138,21 @@ const coreZodSchemas = {
   OperationAssignees: operationAssigneesSchema,
   OperationWorkQueue: operationWorkQueueSchema,
   OperationObject: operationObjectSchema,
+  OperationWorkQueueQuery: operationWorkQueueQuerySchema,
+  AuthEmailLoginRequest: emailLoginSchema,
+  AuthEmailVerifyRequest: emailTokenSchema,
+  AuthPasswordResetRequest: emailResetPasswordSchema,
+  AuthEmailSessionResponse: authEmailSessionSchema,
+  AuthEmailVerifiedResponse: authEmailVerifiedSchema,
+  AuthPasswordResetResult: authPasswordResetResultSchema,
+  MfaCode: mfaCodeSchema,
+  MfaStatus: mfaStatusSchema,
+  MfaEnrollment: mfaEnrollmentSchema,
+  MfaVerificationResult: mfaVerificationResultSchema,
+  MfaChallengeResult: mfaChallengeResultSchema,
+  MfaDisabled: mfaDisabledSchema,
+  UploadDocumentRequest: uploadDocumentSchema,
+  UploadedDocument: uploadedDocumentSchema,
   StartConversation: startConversationSchema,
   ConversationMessageInput: conversationMessageInputSchema,
   ConversationQuery: conversationQuerySchema,

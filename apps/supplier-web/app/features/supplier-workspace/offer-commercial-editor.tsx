@@ -61,7 +61,6 @@ export function OfferCommercialEditor({ api, supplierId, offerId, warehouses, in
     if (initialWarehouseId && activeWarehouses.some(warehouse => warehouse.id === initialWarehouseId)) void selectWarehouse(initialWarehouseId);
     return () => { alive.current = false; };
     // The parent keys this editor by offer ID. Later reads never reset its drafts.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const refreshWarehouses = async () => {

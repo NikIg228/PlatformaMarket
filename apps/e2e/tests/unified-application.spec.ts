@@ -3,6 +3,46 @@ import { installPilotWorkspace } from "../fixtures/workspace-session";
 import { PrismaClient } from "@prisma/client";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { randomUUID } from "node:crypto";
+import { DOCUMENT_UPLOAD_MAX_BYTES, IMPORT_UPLOAD_MAX_JSON_BYTES, uploadedDocumentSchema } from "@marketplace/schemas";
+import { request as httpRequest } from "node:http";
+
+test("CORE08 maximum document upload and safe body rejection cross the real same-origin proxy", async ({ page }) => {
+  const fixture = await installPilotWorkspace(page, "BUYER", ["document.upload"]);
+  try {
+    await page.goto("/clinic/documents");
+    const oversized = await page.request.post("/api/auth/login", { data: { password: "A".repeat(1_048_576) } });
+    expect(oversized.status()).toBe(413);
+    expect(await oversized.json()).toMatchObject({ code: "PAYLOAD_TOO_LARGE", path: "/api/auth/login", requestId: expect.any(String) });
+    const chunkedStatus = await new Promise<number>((resolve, reject) => {
+      const request = httpRequest(`http://127.0.0.1:3000/api/suppliers/${fixture.organizationId}/import-batches`, {
+        method: "POST", headers: { "content-type": "application/json" }, signal: AbortSignal.timeout(20_000),
+      }, response => { response.resume(); response.on("end", () => resolve(response.statusCode!)); });
+      request.on("error", reject);
+      request.write('{"contentBase64":"'); request.write("A".repeat(IMPORT_UPLOAD_MAX_JSON_BYTES)); request.end('"}');
+    });
+    expect(chunkedStatus).toBe(413);
+    const { PDFDocument } = createRequire(__filename)("pdf-lib");
+    const pdf = await PDFDocument.create(); pdf.addPage();
+    const buffer = Buffer.alloc(DOCUMENT_UPLOAD_MAX_BYTES, 32);
+    Buffer.from(await pdf.save()).copy(buffer);
+    const number = `CORE08-${randomUUID()}`;
+    await page.getByRole("button", { name: "Загрузить документ", exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel(/^Тип документа\s*\*?$/).selectOption("OTHER");
+    await dialog.getByRole("textbox", { name: "Название", exact: true }).fill("CORE08 максимальный PDF");
+    await dialog.getByRole("textbox", { name: "Номер", exact: true }).fill(number);
+    await dialog.getByLabel("Файл PDF или DOCX", { exact: true }).setInputFiles({ name: "maximum.pdf", mimeType: "application/pdf", buffer });
+    const response = page.waitForResponse(value => value.url().endsWith("/api/documents/upload") && value.request().method() === "POST");
+    await dialog.getByRole("button", { name: "Загрузить", exact: true }).click();
+    const uploaded = await response;
+    expect(uploaded.status()).toBe(201);
+    const result = uploadedDocumentSchema.parse(await uploaded.json());
+    expect(result).toMatchObject({ ownerOrganizationId: fixture.organizationId, documentNumber: number, byteSize: DOCUMENT_UPLOAD_MAX_BYTES });
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole("row").filter({ hasText: number })).toBeVisible();
+  } finally { await fixture.dispose(); }
+});
 
 for (const width of [390, 1440]) test(`shared theme auth audit ${width}`, async ({ page }, testInfo) => {
   await page.setViewportSize({ width, height: 900 });

@@ -14,8 +14,8 @@
 
 ## Рабочий маршрут
 
-Текущий этап 02.10: [CORE-07-INTERNAL](governance/task-state/CORE-07-INTERNAL-2026-10-02.md)
-в разрешённой последовательности CORE-05–09; CORE05/06 закрыты с CI_PASS.
+Текущий этап 02.10: [CORE-08-INTERNAL](governance/task-state/CORE-08-INTERNAL-2026-10-02.md)
+в разрешённой последовательности CORE-05–09; CORE05/06/07 закрыты с CI_PASS.
 Решение по метрикам и комиссии: [ADR016](architecture/adr/016-commerce-metric-facts.md).
 Карточка содержит отдельный список
 вопросов и реестр проверок; прошлые записи ниже сохраняют свои даты.

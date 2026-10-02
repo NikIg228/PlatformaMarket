@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, Get, Header, Headers, Param, Post, Query, Req, Res, UnauthorizedException } from "@nestjs/common";
 import { currentSessionQuerySchema, localOperatorLoginSchema, workspaceHandoffRequestSchema, workspaceExchangeRequestSchema } from "@marketplace/schemas";
-import { ApiCoreBody, ApiCoreProtected, ApiCoreResponse } from "../../platform/openapi/core-openapi";
+import { ApiCoreBody, ApiCoreErrors, ApiCoreProtected, ApiCoreResponse } from "../../platform/openapi/core-openapi";
 import { demoSessionSchema, emailForgotPasswordSchema, emailLoginSchema, emailRegisterSchema, emailResetPasswordSchema, emailTokenSchema, refreshSessionSchema, revokeSessionSchema, socialExchangeSchema, switchSessionOrganizationSchema, unlinkExternalIdentitySchema } from "@marketplace/schemas";
 import { ApiQuery, ApiTags } from "@nestjs/swagger";
 import type { Request, Response } from "express";
@@ -43,6 +43,7 @@ export class AuthSessionsController {
   }
 
   @Post("login")
+  @ApiCoreBody("AuthEmailLoginRequest") @ApiCoreResponse("AuthEmailSessionResponse", 201) @ApiCoreErrors()
   async login(@Body() body: unknown, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
     const parsed = emailLoginSchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
     const result = await this.sessions.loginEmail(parsed.data, this.metadata(request));
@@ -51,6 +52,7 @@ export class AuthSessionsController {
   }
 
   @Post("email/verify")
+  @ApiCoreBody("AuthEmailVerifyRequest") @ApiCoreResponse("AuthEmailVerifiedResponse", 201) @ApiCoreErrors()
   async verifyEmail(@Body() body: unknown, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
     const parsed = emailTokenSchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
     const result = await this.sessions.verifyEmail(parsed.data.token, this.metadata(request));
@@ -108,6 +110,7 @@ export class AuthSessionsController {
   }
 
   @Post("password/reset")
+  @ApiCoreBody("AuthPasswordResetRequest") @ApiCoreResponse("AuthPasswordResetResult", 201) @ApiCoreErrors()
   resetPassword(@Body() body: unknown) { const parsed = emailResetPasswordSchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten()); return this.sessions.resetPassword(parsed.data.token, parsed.data.password); }
 
   @Post("demo")
