@@ -1,4 +1,4 @@
-export type OrderConfirmationDecision = { itemId: string; acceptedQuantity: number; reason?: string };
+export type OrderConfirmationDecision = { itemId: string; acceptedQuantity: number; reason?: string; reasonCode?: "PRICE" | "STOCK" | "OTHER" };
 export type ConfirmableOrder = {
   id: string;
   orderNumber: string;
@@ -11,7 +11,7 @@ export type ConfirmableOrder = {
     offer: { productVariant: { product: { canonicalName: string } } };
   }>;
 };
-export type ConfirmationDraft = Record<string, { acceptedQuantity: string; reason: string }>;
+export type ConfirmationDraft = Record<string, { acceptedQuantity: string; reason: string; reasonCode?: "PRICE" | "STOCK" | "OTHER" }>;
 
 export function initialConfirmationDraft(order: ConfirmableOrder): ConfirmationDraft {
   return Object.fromEntries(order.items.map(item => [item.id, { acceptedQuantity: item.quantity, reason: "" }]));

@@ -16,6 +16,7 @@ import { verifyManualPayments } from "./lib/verify-manual-payments.mjs";
 import { verifyManualPaymentUpgrade } from "./lib/verify-manual-payment-upgrade.mjs";
 import { verifyOfferPromotions } from "./lib/verify-offer-promotions.mjs";
 import { verifyPromotionUpgrade } from "./lib/verify-promotion-upgrade.mjs";
+import { verifyCommerceMetricUpgrade } from "./lib/verify-commerce-metric-upgrade.mjs";
 import { verifyConversations } from "./lib/verify-conversations.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
@@ -153,6 +154,7 @@ async function createBuyer(index, complete = true) {
   const organization = await prisma.organization.create({
     data: {
       legalName: `B0.4 Clinic ${runId} ${index}`,
+      commerceDataset: "TEST",
       displayName: `B0.4 Clinic ${index}`,
       bin,
       capabilities: { create: { capability: "BUYER" } },
@@ -205,6 +207,7 @@ async function createFixtureCatalog() {
     const supplier = await tx.organization.create({
       data: {
         legalName: `B0.4 Test Supplier ${runId}`,
+        commerceDataset: "TEST",
         displayName: `B0.4 Test Supplier ${runId}`,
         bin: `8${String(Date.now()).slice(-6)}${String(process.pid % 1000).padStart(3, "0")}99`,
         capabilities: { create: { capability: "SUPPLIER" } },
@@ -452,6 +455,7 @@ async function cleanupFixtures() {
     await prisma.orderManualReturn.deleteMany({ where: orderWhere });
     await prisma.document.deleteMany({ where: { supplierOrder: { checkoutId: { in: checkoutIds } } } });
     await prisma.orderWorkflowEvent.deleteMany({ where: orderWhere });
+    await prisma.commerceMetricEvent.deleteMany({ where: orderWhere });
     await prisma.supplierOrderItem.deleteMany({
       where: { supplierOrder: { checkoutId: { in: checkoutIds } } },
     });
@@ -589,6 +593,7 @@ try {
   await prisma.$connect();
   await verifyManualPaymentUpgrade(prisma, assert);
   await verifyPromotionUpgrade(prisma, assert);
+  await verifyCommerceMetricUpgrade(prisma, assert);
   const [rollbackOffer, idempotencyOffer, concurrencyOffer, correctionOffer, snapshotOffer, ...lotOffers] =
     await createFixtureCatalog();
   const [

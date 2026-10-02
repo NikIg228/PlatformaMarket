@@ -78,11 +78,13 @@ try {
       where: { bin: `9700000000${number}` },
       update: {
         legalName: `ТОО Демо-клиника ${number}`,
+        commerceDataset: "DEMO",
         displayName: `Демо-клиника ${number}`,
         status: "ACTIVE",
       },
       create: {
         id: uuid(`pilot-buyer-${number}`),
+        commerceDataset: "DEMO",
         bin: `9700000000${number}`,
         legalName: `ТОО Демо-клиника ${number}`,
         displayName: `Демо-клиника ${number}`,
@@ -108,11 +110,13 @@ try {
       where: { bin: `9800000000${number}` },
       update: {
         legalName: `ТОО Демо-поставщик ${number}`,
+        commerceDataset: "DEMO",
         displayName: `Демо-поставщик ${number}`,
         status: "ACTIVE",
       },
       create: {
         id: uuid(`pilot-supplier-${number}`),
+        commerceDataset: "DEMO",
         bin: `9800000000${number}`,
         legalName: `ТОО Демо-поставщик ${number}`,
         displayName: `Демо-поставщик ${number}`,

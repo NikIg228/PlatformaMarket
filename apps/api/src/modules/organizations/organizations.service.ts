@@ -28,6 +28,7 @@ export class OrganizationsService {
       const organization = await tx.organization.create({
         data: {
           legalName: input.legalName,
+          commerceDataset: "BUSINESS",
           displayName: input.displayName,
           bin: input.bin,
           capabilities: {

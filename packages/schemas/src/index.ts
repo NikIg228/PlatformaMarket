@@ -772,6 +772,7 @@ export const confirmSupplierOrderSchema = z.object({
   decisions: z.array(z.object({
     itemId: z.uuid(),
     acceptedQuantity: z.number().nonnegative().max(1_000_000),
+    reasonCode: z.enum(["PRICE", "STOCK", "OTHER"]).optional(),
     reason: z.string().trim().min(3).max(500).optional(),
   })).min(1).max(500),
 }).superRefine(({ decisions }, context) => {
@@ -1405,3 +1406,4 @@ export * from "./promotions.js";
 export * from "./conversations.js";
 export * from "./operations-workflow.js";
 export * from "./support-workflow.js";
+export * from "./commerce-analytics.js";

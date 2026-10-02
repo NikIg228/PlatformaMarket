@@ -1052,6 +1052,7 @@ model Organization {
   supplierConversations BusinessConversation[] @relation("ConversationSupplier")
   id                                String                    @id @default(uuid()) @db.Uuid
   legalName                         String
+  commerceDataset                   String                    @default("UNCLASSIFIED")
   displayName                       String
   bin                               String                    @unique @db.VarChar(12)
   status                            RecordStatus              @default(ACTIVE)
@@ -2341,6 +2342,8 @@ model Checkout {
 }
 
 model SupplierOrder {
+  commerceDataset          String                  @default("UNCLASSIFIED")
+  metricEvents             CommerceMetricEvent[]
   conversation BusinessConversation?
   id                       String                  @id @default(uuid()) @db.Uuid
   checkoutId               String                  @db.Uuid
@@ -2463,6 +2466,7 @@ model OrderWorkflowEvent {
 }
 
 model SupplierOrderItem {
+  decisionReasonCode String?
   id                String                  @id @default(uuid()) @db.Uuid
   supplierOrderId   String                  @db.Uuid
   cartItemId        String?                 @unique @db.Uuid
@@ -2494,6 +2498,21 @@ model SupplierOrderItem {
 
   @@index([supplierOrderId, status])
   @@index([offerId])
+}
+
+model CommerceMetricEvent {
+  id                    String        @id @default(uuid()) @db.Uuid
+  sourceKey             String        @unique
+  supplierOrderId       String        @db.Uuid
+  kind                  String
+  occurredAt            DateTime      @default(now())
+  goodsAmountMinor      Decimal       @db.Decimal(20, 0)
+  commissionAmountMinor Decimal       @db.Decimal(20, 0)
+  commissionRuleVersion String        @default("GOODS_RECEIPT_V1")
+  supplierOrder         SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Restrict, map: "CommerceMetricEvent_order_fkey")
+
+  @@index([supplierOrderId, occurredAt])
+  @@index([kind, occurredAt])
 }
 
 model PaymentProvider {

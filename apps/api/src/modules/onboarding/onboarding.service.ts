@@ -266,6 +266,7 @@ export class OnboardingService {
         const organization = await tx.organization.create({
           data: {
             legalName: registration.legalName,
+            commerceDataset: "BUSINESS",
             displayName: registration.organizationDisplayName,
             bin: registration.bin,
             capabilities: {

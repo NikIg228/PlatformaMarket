@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import { randomUUID } from "node:crypto";
 import { commerce } from "./verify-checkout-snapshot.mjs";
+import { verifyCommerceAnalytics } from "./verify-commerce-analytics.mjs";
 const require = createRequire(import.meta.url);
 
 export async function verifyOrderReturns({ prisma, workflow, cases, execute, proof, buyerContext, supplierContext, reject, assert, request, buyer }) {
@@ -54,7 +55,25 @@ export async function verifyOrderReturns({ prisma, workflow, cases, execute, pro
   const first = await create(paid, 1), second = await create(paid, 1, true);
   await reject(() => create(paid, 1), 409, "Overship accepted quantity");
   await send(first);
-  await execute(paid, { action: "RECEIVE_SHIPMENT", shipmentId: first.id, items: [{ shipmentItemId: first.items[0].id, deliveredQuantity: "0.5" }] }, buyerContext);
+  const failing = new Proxy(prisma, { get(target, key) {
+    if (key !== "$transaction") return Reflect.get(target, key);
+    return (callback, options) => target.$transaction(tx => callback(new Proxy(tx, { get(client, property) {
+      if (property !== "outboxEvent") return Reflect.get(client, property);
+      return new Proxy(client.outboxEvent, { get(model, operation) { if (operation !== "create") return Reflect.get(model, operation); return () => { throw new Error("Synthetic receipt failure after accrual"); }; } });
+    } })), options);
+  } });
+  const Workflow = require("../../apps/api/dist/src/modules/commerce/order-workflow.service.js").OrderWorkflowService;
+  const Access = require("../../apps/api/dist/src/modules/access-control/access-control.service.js").AccessControlService;
+  const receiptBefore = await command(paid, { action: "RECEIVE_SHIPMENT", shipmentId: first.id, items: [{ shipmentItemId: first.items[0].id, deliveredQuantity: "0.5" }] });
+  let failure;
+  try { await new Workflow(failing, new Access(prisma)).execute(paid.order.id, receiptBefore, buyerContext); } catch (error) { failure = error; }
+  assert(failure?.message === "Synthetic receipt failure after accrual", "Receipt rollback barrier not reached");
+  assert((await prisma.shipmentItem.findUniqueOrThrow({ where: { id: first.items[0].id } })).deliveredQuantity.eq(0), "Failed receipt persisted goods");
+  assert(await prisma.commerceMetricEvent.count({ where: { supplierOrderId: paid.order.id, kind: "RECEIVED" } }) === 0, "Failed receipt persisted commission");
+  const partialReceipt = await command(paid, { action: "RECEIVE_SHIPMENT", shipmentId: first.id, items: [{ shipmentItemId: first.items[0].id, deliveredQuantity: "0.5" }] });
+  const receipts = await Promise.all([workflow.execute(paid.order.id, partialReceipt, buyerContext), workflow.execute(paid.order.id, partialReceipt, buyerContext)]);
+  assert(receipts[0].eventId === receipts[1].eventId, "Concurrent goods receipt did not replay");
+  assert(await prisma.commerceMetricEvent.count({ where: { sourceKey: `workflow:${receipts[0].eventId}` } }) === 1, "Concurrent goods receipt duplicated accrual");
   await reject(() => execute(paid, { action: "RECEIVE_SHIPMENT", shipmentId: first.id, items: [{ shipmentItemId: first.items[0].id, deliveredQuantity: "0.4" }] }, buyerContext), 409, "Receipt decreased");
   await execute(paid, { action: "RECEIVE_SHIPMENT", shipmentId: first.id, items: [{ shipmentItemId: first.items[0].id, deliveredQuantity: "1" }] }, buyerContext);
   await send(second);
@@ -75,7 +94,9 @@ export async function verifyOrderReturns({ prisma, workflow, cases, execute, pro
   const earlyDoc = await proof(paid, goods.amountMinor.toString(), supplierContext.organizationId);
   await reject(() => execute(paid, { action: "SEND_MANUAL_REFUND", returnId: goods.id, documentId: earlyDoc.id }), 409, "Money returned before agreed goods received");
   await execute(paid, { action: "SEND_RETURN_GOODS", returnId: goods.id }, buyerContext);
-  await execute(paid, { action: "RECEIVE_RETURN_GOODS", returnId: goods.id });
+  const returnReceipt = await command(paid, { action: "RECEIVE_RETURN_GOODS", returnId: goods.id });
+  const returns = await Promise.all([workflow.execute(paid.order.id, returnReceipt, supplierContext), workflow.execute(paid.order.id, returnReceipt, supplierContext)]);
+  assert(returns[0].eventId === returns[1].eventId, "Return receipt replay changed event");
   assert((await prisma.inventoryBalance.findUniqueOrThrow({ where: { id: paid.balanceId } })).quantityAvailable.eq(8), "Returned goods silently restocked");
   await refund(paid, goods);
   await reject(() => execute(paid, { action: "REQUEST_RETURN", kind: "GOODS", reason: "Too much returned", items: [{ orderItemId: paid.item.id, quantity: "2", condition: "Unopened packaging" }] }, buyerContext), 409, "Return exceeds remaining quantity");
@@ -100,4 +121,5 @@ export async function verifyOrderReturns({ prisma, workflow, cases, execute, pro
   await reject(() => execute(race, { action: "DECIDE_RETURN", returnId: pending.id, accepted: true, reason: "Stale stopping decision" }), 409, "Dispatch/cancellation race");
   assert((await latestReturn(race)).status === "REQUESTED" && (await read(race)).status === "SHIPPED", "Failed cancellation partially committed");
   console.log("CORE03: split/partial receipt, installation closure, refund stages/authority/exact amounts/replay, cancellation stock/race, revalidated reorder PASS");
+  await verifyCommerceAnalytics({ prisma, paid, cases, buyer, supplierContext, request, assert });
 }

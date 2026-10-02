@@ -14,6 +14,7 @@ import { paymentReduction } from "./order-payment-reduction";
 import { refreshFulfillmentStatus } from "../logistics/order-fulfillment-state";
 import { manualReturn, manualReturnActions } from "./order-manual-return";
 import { reorder } from "./order-reorder";
+import { metricFact, receivedGoodsSnapshot, recordReceiptMetrics } from "./commerce-metric-facts";
 
 const include = { items: { include: { reservation: { include: { externalReservation: true, inventoryLot: true } } } }, transferClaims: { orderBy: { createdAt: "asc" as const } }, paymentAllocation: true };
 export type Order = Prisma.SupplierOrderGetPayload<{ include: typeof include }>;
@@ -75,9 +76,12 @@ export class OrderWorkflowService {
         order = await tx.supplierOrder.findUniqueOrThrow({ where: { id: orderId }, include });
       }
       const cartId = input.action === "REORDER" ? await reorder(tx, order, context) : undefined;
+      const receiptBefore = ["RECEIVE_SHIPMENT", "RECEIVE_RETURN_GOODS"].includes(input.action) ? await receivedGoodsSnapshot(tx, orderId) : null;
       const changes = input.action === "REORDER" ? {} : await this.apply(tx, order, input, context);
       const updated = await tx.supplierOrder.update({ where: { id: orderId }, data: { ...changes, version: { increment: 1 } } });
       const eventId = randomUUID();
+      if (receiptBefore) await recordReceiptMetrics(tx, orderId, eventId, receiptBefore, input.action === "RECEIVE_SHIPMENT" ? "RECEIVED" : "RETURNED");
+      if (updated.status === "CANCELLED" && order.status !== "CANCELLED") await metricFact(tx, orderId, `cancelled:${orderId}`, "CANCELLED");
       const result = { orderId, version: updated.version, status: updated.status, paymentStatus: updated.paymentStatus, eventId, ...(cartId ? { cartId } : {}) };
       const { expectedVersion: _version, idempotencyKey: _key, ...details } = input;
       await tx.orderWorkflowEvent.create({ data: { id: eventId, supplierOrderId: orderId, ...context, action: input.action, idempotencyKey: input.idempotencyKey, requestHash, details, result } });

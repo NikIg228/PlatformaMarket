@@ -1,0 +1,56 @@
+export async function verifyCommerceAnalytics({ prisma, paid, cases, buyer, supplierContext, request, assert }) {
+  const facts = await prisma.commerceMetricEvent.findMany({ where: { supplierOrderId: paid.order.id }, orderBy: { occurredAt: "asc" } });
+  const sum = (kind, field) => facts.filter(row => row.kind === kind).reduce((value, row) => value + BigInt(row[field].toFixed(0)), 0n);
+  assert(sum("CREATED", "goodsAmountMinor") === 9007199254740994n, "Created turnover lost original exact amount");
+  assert(sum("RECEIVED", "goodsAmountMinor") === 9007199254740994n, "Split receipt lost exact goods amount");
+  assert(sum("RECEIVED", "commissionAmountMinor") === 900719925474099n, "Split receipt rounded commission more than once");
+  assert(sum("RETURNED", "goodsAmountMinor") === 4503599627370497n && sum("RETURNED", "commissionAmountMinor") === -450359962737049n, "Return commission correction incorrect");
+  assert(facts.filter(row => row.kind === "RETURNED").length === 1, "Overpayment or replay created a goods-return accrual");
+  assert(facts.filter(row => row.kind === "FULFILLED").length === 1, "Installation completion missing or duplicated");
+  const now = Date.now();
+  const base = { from: new Date(now - 86400000).toISOString(), to: new Date(now + 86400000).toISOString(), dataset: "TEST", timezone: "Asia/Qyzylorda" };
+  const fetchReport = (changes = {}, identity = buyer) => request(`/commerce-analytics?${new URLSearchParams({ ...base, ...changes })}`, { identity });
+  const response = await fetchReport();
+  assert(response.status === 200, `Analytics HTTP failed: ${response.status} ${JSON.stringify(response.body)}`);
+  const result = response.body;
+  assert(result.totals.createdOrders === cases.length, "Order turnover duplicated across two parties");
+  assert(result.totals.receivedGoodsMinor === "9007199254740994" && result.totals.accruedCommissionMinor === "450359962737050", "HTTP monetary serialization lost precision");
+  assert(result.totals.collectedCommissionMinor === null && result.totals.commissionDebtMinor === null, "Report invented collected commission");
+  assert(result.organizations.length === 2 && result.organizations.every(row => row.totals.createdOrders === cases.length), "Buyer/supplier breakdown inconsistent");
+  assert(result.events.every(row => row.buyerOrganizationId === buyer.organizationId), "Report exposed another tenant's events");
+  const supplierIdentity = { userId: supplierContext.actorId, organizationId: supplierContext.organizationId };
+  const ownSales = await fetchReport({}, supplierIdentity);
+  assert(ownSales.status === 200 && ownSales.body.events.every(row => row.supplierOrganizationId === supplierIdentity.organizationId), "Supplier report scope is invalid");
+  const foreignMembership = await prisma.organizationMembership.findFirstOrThrow({ where: { userId: supplierContext.actorId, organizationId: { not: supplierContext.organizationId }, status: "ACTIVE" } });
+  assert((await fetchReport({}, { userId: supplierContext.actorId, organizationId: foreignMembership.organizationId })).body.totalEvents === 0, "Empty tenant read other organizations' analytics");
+  const operatorMembership = await prisma.organizationMembership.findFirstOrThrow({ where: { status: "ACTIVE", organization: { capabilities: { some: { capability: "MARKETPLACE_OPERATOR" } } }, roles: { some: { role: { permissions: { some: { permission: { code: "organization.view" } } } } } } } });
+  const operatorReport = await fetchReport({ organizationId: buyer.organizationId }, { userId: operatorMembership.userId, organizationId: operatorMembership.organizationId });
+  assert(operatorReport.status === 200 && operatorReport.body.totals.createdOrders === cases.length, "Operator organization breakdown is not scoped or double counts");
+  assert((await fetchReport({ dataset: "BUSINESS" })).body.totalEvents === 0, "TEST orders leaked into BUSINESS report");
+  assert((await fetchReport({ organizationId: supplierContext.organizationId })).status === 403, "Buyer selected another organization's analytics");
+  assert((await request(`/commerce-analytics?${new URLSearchParams(base)}`)).status === 401, "Anonymous analytics was accepted");
+  assert((await fetchReport({ to: base.from })).status === 400, "Empty time interval was accepted");
+  const first = await fetchReport({ pageSize: "1" }), second = await fetchReport({ pageSize: "1", page: "2" });
+  assert(first.body.totalEvents === second.body.totalEvents && first.body.events[0].id !== second.body.events[0].id, "Event pagination duplicated or skipped page");
+  const created = facts.find(row => row.kind === "CREATED");
+  const excluded = await fetchReport({ from: new Date(created.occurredAt.getTime() - 1).toISOString(), to: created.occurredAt.toISOString() });
+  assert(!excluded.body.events.some(row => row.id === created.id), "Half-open interval included end boundary");
+  const included = await fetchReport({ from: created.occurredAt.toISOString(), to: new Date(created.occurredAt.getTime() + 1).toISOString() });
+  assert(included.status === 200 && included.body.events.some(row => row.id === created.id), `Half-open interval excluded start boundary: ${included.status}, ${JSON.stringify(included.body)}`);
+  // Historical event dates are synthetic fixtures, not a production backfill.
+  const fulfilled = facts.find(row => row.kind === "FULFILLED");
+  const anchor = new Date(now - 32 * 86400000);
+  await prisma.commerceMetricEvent.update({ where: { id: created.id }, data: { occurredAt: anchor } });
+  await prisma.commerceMetricEvent.update({ where: { id: fulfilled.id }, data: { occurredAt: new Date(now - 31 * 86400000) } });
+  const repeated = await fetchReport();
+  assert(repeated.body.repeatBuyers30Days === 0 && repeated.body.repeatBuyers60Days === 1, "30/60-day repeat buyers boundary is incorrect");
+  await prisma.commerceMetricEvent.update({ where: { id: fulfilled.id }, data: { occurredAt: new Date(now - 29 * 86400000) } });
+  assert((await fetchReport()).body.repeatBuyers30Days === 1, "30-day repeat buyer not recognized");
+  await prisma.commerceMetricEvent.update({ where: { id: created.id }, data: { occurredAt: created.occurredAt } });
+  await prisma.commerceMetricEvent.update({ where: { id: fulfilled.id }, data: { occurredAt: fulfilled.occurredAt } });
+  // Snapshot and query scope remain isolated even when organization labels later change.
+  await prisma.organization.update({ where: { id: buyer.organizationId }, data: { commerceDataset: "DEMO" } });
+  assert((await fetchReport()).body.totals.createdOrders === cases.length, "Changing organization label rewrote historical order provenance");
+  await prisma.organization.update({ where: { id: buyer.organizationId }, data: { commerceDataset: "TEST" } });
+  console.log("CORE07: exact >2^53 money, split receipts/returns, concurrent dedup, completed installation, tenant/dataset scope, 30/60-day windows, event pagination and HTTP contract PASS");
+}

@@ -203,6 +203,7 @@ test("A12 production list measurement with 1000 owned records", async ({ page, r
     await writeFile(path.resolve("../../outputs/workspace-audit-a12-after.json"), JSON.stringify(report, null, 2));
     await page.goto("about:blank").catch(() => {});
     await db.supplierOrderItem.deleteMany({ where: { supplierOrder: { buyerOrganizationId: buyerId } } });
+    await db.commerceMetricEvent.deleteMany({ where: { supplierOrder: { buyerOrganizationId: buyerId } } });
     await db.supplierOrder.deleteMany({ where: { buyerOrganizationId: buyerId } });
     await db.checkout.deleteMany({ where: { buyerOrganizationId: buyerId } });
     await db.cart.deleteMany({ where: { buyerOrganizationId: buyerId } });

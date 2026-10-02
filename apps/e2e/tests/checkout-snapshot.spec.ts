@@ -251,6 +251,7 @@ for (const width of [1440, 390]) {
       await db.orderWorkflowEvent.deleteMany({ where: { supplierOrderId: { in: orderIds } } });
       await db.outboxEvent.deleteMany({ where: { aggregateId: { in: orderIds } } });
       await db.supplierOrderItem.deleteMany({ where: { supplierOrder: { buyerOrganizationId: buyerId } } });
+      await db.commerceMetricEvent.deleteMany({ where: { supplierOrder: { buyerOrganizationId: buyerId } } });
       await db.supplierOrder.deleteMany({ where: { buyerOrganizationId: buyerId } });
       await db.checkout.deleteMany({ where: { buyerOrganizationId: buyerId } });
       await db.cart.deleteMany({ where: { buyerOrganizationId: buyerId } });

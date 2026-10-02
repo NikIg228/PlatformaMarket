@@ -6,6 +6,7 @@ import { BackgroundQueueService } from "../../platform/jobs/background-queue.ser
 import { InventoryService } from "./inventory.service";
 import { lockInventoryBalances } from "./lot-eligibility";
 import { expirableOrderStatuses, orderCanExpire } from "./reservation-lifecycle";
+import { metricFact } from "../commerce/commerce-metric-facts";
 
 const include = { items: { include: { reservation: { include: { externalReservation: true } } } }, transferClaims: true, paymentAllocation: true, shipments: true };
 
@@ -60,6 +61,8 @@ export class ReservationExpiryService implements OnModuleInit {
       for (const item of order.items) if (item.reservation?.status === "ACTIVE") await this.release(tx, item.reservation.id, order.supplierOrganizationId);
       await tx.supplierOrderItem.updateMany({ where: { supplierOrderId: order.id }, data: { status: "CANCELLED", decisionReason: "Срок локального резерва истёк до заявления оплаты" } });
       await tx.supplierOrder.update({ where: { id: order.id }, data: { status: order.status === "REJECTED" ? "REJECTED" : "CANCELLED", version: { increment: 1 } } });
+      if (order.checkout.status === "COMPLETED" && order.status !== "CANCELLED" && order.status !== "REJECTED")
+        await metricFact(tx, order.id, `cancelled:${order.id}`, "CANCELLED");
       await tx.auditLog.create({ data: { actorId: null, organizationId: order.supplierOrganizationId, action: "order.reservation.expired", entityType: "SupplierOrder", entityId: order.id, after: { reason: "RESERVATION_EXPIRED", evaluatedAt: now.toISOString() } } });
       await tx.outboxEvent.create({ data: { aggregateType: "SupplierOrder", aggregateId: order.id, eventType: "OrderReservationExpired", payload: { supplierOrganizationId: order.supplierOrganizationId, buyerOrganizationId: order.buyerOrganizationId, orderId: order.id, reason: "RESERVATION_EXPIRED" } } });
       return true;

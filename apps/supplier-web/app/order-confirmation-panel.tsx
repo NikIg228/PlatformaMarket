@@ -7,6 +7,7 @@ import {
   DmFeedback,
   DmField,
   DmInput,
+  DmSelect,
   DmTextarea,
   usePermissions,
 } from "@marketplace/ui";
@@ -88,6 +89,7 @@ export function OrderConfirmationPanel({
         itemId: item.id,
         acceptedQuantity,
         ...(reason ? { reason } : {}),
+        ...(acceptedQuantity < requestedQuantity ? { reasonCode: draft[item.id]?.reasonCode ?? "OTHER" } : {}),
       });
     }
     submitLock.current = true; setSubmitting(true);
@@ -180,6 +182,11 @@ export function OrderConfirmationPanel({
                       }
                     />
                   </DmField>
+                  {reduced ? (
+                    <DmField label="Категория причины"><DmSelect aria-label={`Категория причины: ${productName}`} disabled={submitting || stale} value={draft[item.id]?.reasonCode ?? "OTHER"} onChange={event => setDraft(current => ({ ...current, [item.id]: { ...current[item.id], reasonCode: event.target.value as "PRICE" | "STOCK" | "OTHER" } }))}>
+                      <option value="OTHER">Другая причина</option><option value="STOCK">Недостаточно остатка</option><option value="PRICE">Изменилась цена</option>
+                    </DmSelect></DmField>
+                  ) : null}
                   {reduced ? (
                     <DmField
                       label="Причина изменения для клиники"

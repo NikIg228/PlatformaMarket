@@ -1,4 +1,5 @@
 import { createActiveCart } from "./create-active-cart";
+import { metricFact, recordCheckoutMetrics } from "./commerce-metric-facts";
 import {
   BadRequestException,
   ConflictException,
@@ -937,6 +938,7 @@ export class CommerceService {
         where: { id: created.checkoutId },
         data: { status: "COMPLETED" },
       });
+      await recordCheckoutMetrics(tx, created.checkoutId);
       await tx.cart.update({
         where: { id: cartId },
         data: { status: "CHECKED_OUT", version: { increment: 1 } },
@@ -1119,6 +1121,7 @@ export class CommerceService {
       return {
         item,
         acceptedQuantity: decision.acceptedQuantity,
+        reasonCode: new Prisma.Decimal(decision.acceptedQuantity).lessThan(item.quantity) ? (decision.reasonCode ?? "OTHER") : null,
         reason: new Prisma.Decimal(decision.acceptedQuantity).lessThan(
           item.quantity,
         )
@@ -1137,10 +1140,10 @@ export class CommerceService {
       if (
         order.status === status &&
         normalized.every(
-          ({ item, acceptedQuantity, reason }) =>
+          ({ item, acceptedQuantity, reason, reasonCode }) =>
             new Prisma.Decimal(item.acceptedQuantity).equals(
               acceptedQuantity,
-            ) && item.decisionReason === reason,
+            ) && item.decisionReason === reason && (item.decisionReasonCode ?? (reason ? "OTHER" : null)) === reasonCode,
         )
       )
         return order;
@@ -1206,6 +1209,7 @@ export class CommerceService {
           return {
             item,
             acceptedQuantity: decision.acceptedQuantity,
+            reasonCode: new Prisma.Decimal(decision.acceptedQuantity).lessThan(item.quantity) ? (decision.reasonCode ?? "OTHER") : null,
             reason: new Prisma.Decimal(decision.acceptedQuantity).lessThan(
               item.quantity,
             )
@@ -1217,10 +1221,10 @@ export class CommerceService {
           if (
             current.status === status &&
             currentNormalized.every(
-              ({ item, acceptedQuantity, reason }) =>
+              ({ item, acceptedQuantity, reason, reasonCode }) =>
                 new Prisma.Decimal(item.acceptedQuantity).equals(
                   acceptedQuantity,
-                ) && item.decisionReason === reason,
+                ) && item.decisionReason === reason && (item.decisionReasonCode ?? (reason ? "OTHER" : null)) === reasonCode,
             )
           )
             return current;
@@ -1265,12 +1269,13 @@ export class CommerceService {
               releaseQuantity.toNumber(),
             );
         }
-        for (const { item, acceptedQuantity, reason } of currentNormalized)
+        for (const { item, acceptedQuantity, reason, reasonCode } of currentNormalized)
           await tx.supplierOrderItem.update({
             where: { id: item.id },
             data: {
               acceptedQuantity,
               decisionReason: reason,
+              decisionReasonCode: reasonCode,
               totalPriceMinor: calculateLineTotal(
                 item.unitPriceMinor.toString(),
                 acceptedQuantity,
@@ -1292,6 +1297,9 @@ export class CommerceService {
           where: { checkoutId: current.checkoutId, id: { not: current.id } },
           _sum: { subtotalAmountMinor: true },
         });
+        if (status !== "REJECTED") await metricFact(tx, order.id, `confirmed:${order.id}`, "CONFIRMED", BigInt(subtotal.toFixed(0)));
+        for (const code of new Set(currentNormalized.map(value => value.reasonCode).filter((value): value is "PRICE" | "STOCK" | "OTHER" => value !== null)))
+          await metricFact(tx, order.id, `refused:${order.id}:${code}`, `REFUSED_${code}`);
         const checkoutTotal = subtotal.plus(
           otherOrders._sum.subtotalAmountMinor ?? 0,
         );

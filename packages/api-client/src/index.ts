@@ -1,4 +1,4 @@
-import type { WorkspaceCorrectionOfferPage, WorkspaceInventoryPage, WorkspaceLotPage, WorkspaceReservationPage, WorkspaceOverridePage } from "@marketplace/schemas";
+import type { CommerceAnalyticsQuery, CommerceAnalyticsResponse, WorkspaceCorrectionOfferPage, WorkspaceInventoryPage, WorkspaceLotPage, WorkspaceReservationPage, WorkspaceOverridePage } from "@marketplace/schemas";
 import type { CreateInvitationInput, AcceptInvitationInput, UpdateMembershipInput, IdentityMember, IdentityRole, IdentitySession, IdentitySessionRevoked, InvitationSummary, InvitationCreated, InvitationDelivered, InvitationAccepted, InvitationDetails } from "@marketplace/schemas";
 import type { CreateOfferPromotion, ReviseOfferPromotion, OfferPromotionCommand, OfferPromotion, PromotionPage, PublicPromotionPage, PromotionListQuery } from "@marketplace/schemas";
 import type { WorkspacePageQuery, WorkspaceOrderQuery, WorkspaceOrderPage, WorkspaceOffer, WorkspaceOfferPage, WorkspaceCartPage, WorkspaceSummary } from "@marketplace/schemas";
@@ -516,6 +516,11 @@ export class MarketplaceApiClient {
   }
   workspaceSummary(options?: Pick<RequestInit, "signal">) {
     return this.get<WorkspaceSummary>("/workspaces/supplier/summary", options);
+  }
+  commerceAnalytics(query: CommerceAnalyticsQuery, options?: Pick<RequestInit, "signal">) {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) if (value !== undefined) params.set(key, String(value));
+    return this.get<CommerceAnalyticsResponse>(`/commerce-analytics?${params}`, options);
   }
 
   recoverCart(cartId: string, input: RecoverCartRequest) {

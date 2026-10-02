@@ -23,6 +23,7 @@ export default function Dashboard() {
         <h2>Заказы</h2>
         {resource.data ? <p className={styles.metric}>{resource.data.orders}</p> : null}
         <Link href="/supplier/orders">Открыть заказы →</Link>
+        <p><Link href="/supplier/analytics">Аналитика продаж и комиссии →</Link></p>
       </section>
       <section className={styles.panel}>
         <h2>Товары</h2>

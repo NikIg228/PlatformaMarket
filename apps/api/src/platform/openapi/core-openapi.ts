@@ -1,3 +1,4 @@
+import { commerceAnalyticsQuerySchema, commerceAnalyticsResponseSchema } from "@marketplace/schemas";
 import { internalNotificationSchema, internalNotificationListSchema, notificationQuerySchema } from "@marketplace/schemas";
 import { operationObjectSchema } from "@marketplace/schemas";
 import { createSupportTicketSchema, addSupportMessageSchema, updateSupportTicketSchema, supportTicketSummarySchema, supportTicketListSchema, supportTicketQuerySchema, supportTicketDetailSchema, supportMessageQuerySchema, supportMessageResponseSchema } from "@marketplace/schemas";
@@ -248,6 +249,8 @@ const coreZodSchemas = {
   WorkspaceOverridePage: workspaceOverridePageSchema,
   WorkspaceCartPage: workspaceCartPageSchema,
   WorkspaceSummary: workspaceSummarySchema,
+  CommerceAnalyticsQuery: commerceAnalyticsQuerySchema,
+  CommerceAnalyticsResponse: commerceAnalyticsResponseSchema,
   CartValidationResponse: cartValidationResponseSchema,
   CartItemResponse: cartItemResponseSchema,
   CheckoutResponse: checkoutResponseSchema,

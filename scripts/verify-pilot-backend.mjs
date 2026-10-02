@@ -35,6 +35,7 @@ function assertSchema(schema, value, label) {
 
 function assertOpenApiContract(openApi) {
   const requiredComponents = [
+    "CommerceAnalyticsQuery", "CommerceAnalyticsResponse",
     "SupplierPaymentPolicyResponse", "SaveSupplierPaymentPolicy", "OrderWorkflowResponse", "OrderWorkflowCommand",
     "WorkspaceCorrectionOfferPage", "WorkspaceInventoryPage", "WorkspaceLotPage", "WorkspaceReservationPage", "WorkspaceOverridePage",
     "SaveOrganizationProfileRequest", "OrganizationProfileResponse", "OrganizationOnboardingResponse", "CurrentSessionResponse",
@@ -67,6 +68,7 @@ function assertOpenApiContract(openApi) {
   }
 
   const coreOperations = [
+    ["/api/commerce-analytics", "get", "200", "CommerceAnalyticsResponse"],
     ["/api/suppliers/current/payment-review-policy", "get", "200", "SupplierPaymentPolicyResponse"],
     ["/api/suppliers/current/payment-review-policy", "post", "201", "SupplierPaymentPolicyResponse", "SaveSupplierPaymentPolicy"],
     ["/api/workspaces/supplier/correction-offers", "get", "200", "WorkspaceCorrectionOfferPage"],
@@ -196,6 +198,7 @@ function assertOpenApiContract(openApi) {
     }
   }
   for (const pathName of [
+    "/api/commerce-analytics",
     "/api/catalog/search",
     "/api/catalog/products/{productId}/compare",
   ]) {
@@ -206,6 +209,7 @@ function assertOpenApiContract(openApi) {
     );
   }
   for (const pathName of [
+    "/api/commerce-analytics",
     "/api/marketplace/search",
     "/api/buyers/{buyerOrganizationId}/carts",
     "/api/carts/{cartId}/checkout",

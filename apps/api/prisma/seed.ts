@@ -376,8 +376,9 @@ async function seed() {
 
   const demoSupplier = await prisma.organization.upsert({
     where: { bin: "000000000010" },
-    update: {},
+    update: { commerceDataset: "DEMO" },
     create: {
+      commerceDataset: "DEMO",
       id: "00000000-0000-4000-8000-000000000020",
       legalName: "ТОО Demo Dental Supply",
       displayName: "Demo Dental Supply",
@@ -431,8 +432,9 @@ async function seed() {
 
   const demoBuyer = await prisma.organization.upsert({
     where: { bin: "000000000030" },
-    update: {},
+    update: { commerceDataset: "DEMO" },
     create: {
+      commerceDataset: "DEMO",
       id: "00000000-0000-4000-8000-000000000030",
       legalName: "ТОО Demo Dental Clinic",
       displayName: "Demo Dental Clinic",
@@ -485,8 +487,8 @@ async function seed() {
 
   const secondSupplier = await prisma.organization.upsert({
     where: { bin: "000000000025" },
-    update: {},
-    create: { id: "00000000-0000-4000-8000-000000000025", legalName: "ТОО Ortho Trade Kazakhstan", displayName: "Ortho Trade KZ", bin: "000000000025", capabilities: { create: { capability: "SUPPLIER" } } },
+    update: { commerceDataset: "DEMO" },
+    create: { commerceDataset: "DEMO", id: "00000000-0000-4000-8000-000000000025", legalName: "ТОО Ortho Trade Kazakhstan", displayName: "Ortho Trade KZ", bin: "000000000025", capabilities: { create: { capability: "SUPPLIER" } } },
   });
   await prisma.supplierProfile.upsert({ where: { organizationId: secondSupplier.id }, update: { regulatoryDetails: { officialDistributor: false, supplierWarranty: true } }, create: { organizationId: secondSupplier.id, regulatoryDetails: { officialDistributor: false, supplierWarranty: true } } });
   const secondWarehouse = await prisma.warehouse.upsert({ where: { supplierOrganizationId_code: { supplierOrganizationId: secondSupplier.id, code: "AST-01" } }, update: { cityId: cities.get("ASTANA")!.id, addressLine: "Астана, пр. Кабанбай батыра, 21" }, create: { id: "00000000-0000-4000-8000-000000000026", supplierOrganizationId: secondSupplier.id, code: "AST-01", name: "Склад Астана", cityId: cities.get("ASTANA")!.id, addressLine: "Астана, пр. Кабанбай батыра, 21" } });
@@ -505,7 +507,7 @@ async function seed() {
   ];
   const additionalSuppliers: Array<{ organization: typeof demoSupplier; warehouse: typeof demoWarehouse; sourceType: "MANUAL" | "IMPORT" | "API" | "ERP" }> = [];
   for (const spec of additionalSupplierSpecs) {
-    const organization = await prisma.organization.upsert({ where: { bin: spec.bin }, update: { legalName: spec.legalName, displayName: spec.displayName }, create: { id: fixedId(spec.sequence), legalName: spec.legalName, displayName: spec.displayName, bin: spec.bin, capabilities: { create: { capability: "SUPPLIER" } } } });
+    const organization = await prisma.organization.upsert({ where: { bin: spec.bin }, update: { commerceDataset: "DEMO", legalName: spec.legalName, displayName: spec.displayName }, create: { commerceDataset: "DEMO", id: fixedId(spec.sequence), legalName: spec.legalName, displayName: spec.displayName, bin: spec.bin, capabilities: { create: { capability: "SUPPLIER" } } } });
     await prisma.organizationCapability.upsert({ where: { organizationId_capability: { organizationId: organization.id, capability: "SUPPLIER" } }, update: {}, create: { organizationId: organization.id, capability: "SUPPLIER" } });
     await prisma.supplierProfile.upsert({ where: { organizationId: organization.id }, update: { regulatoryDetails: { officialDistributor: spec.officialDistributor, supplierWarranty: true } }, create: { organizationId: organization.id, regulatoryDetails: { officialDistributor: spec.officialDistributor, supplierWarranty: true } } });
     const warehouse = await prisma.warehouse.upsert({ where: { supplierOrganizationId_code: { supplierOrganizationId: organization.id, code: spec.warehouseCode } }, update: { name: spec.warehouseName, cityId: cities.get(spec.cityCode)!.id, addressLine: spec.address }, create: { id: fixedId(spec.sequence + 1), supplierOrganizationId: organization.id, code: spec.warehouseCode, name: spec.warehouseName, cityId: cities.get(spec.cityCode)!.id, addressLine: spec.address } });

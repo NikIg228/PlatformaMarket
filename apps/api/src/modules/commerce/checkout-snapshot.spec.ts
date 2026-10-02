@@ -39,7 +39,8 @@ function fixture() {
     cartItem: { update: vi.fn() },
     checkout: { create: vi.fn(async (_input: { data: { totalAmountMinor: Prisma.Decimal } }) => ({ id: "checkout" })), update: vi.fn() },
     buyerSupplierAgreement: { findFirst: vi.fn().mockResolvedValue(null) },
-    supplierOrder: { create: vi.fn().mockResolvedValue({ id: "order" }) },
+    supplierOrder: { create: vi.fn().mockResolvedValue({ id: "order" }), update: vi.fn(), findMany: vi.fn().mockResolvedValue([{ id: "order", subtotalAmountMinor: decimal("9007199254740993"), buyer: { commerceDataset: "TEST" }, supplier: { commerceDataset: "TEST" } }]) },
+    commerceMetricEvent: { create: vi.fn() },
     supplierOrderItem: { create: vi.fn(async (_input: { data: { unitPriceMinor: string } }) => ({ id: "order-item" })), },
     auditLog: { create: vi.fn() }, outboxEvent: { create: vi.fn() },
   };
@@ -67,6 +68,7 @@ describe("checkout accepted commercial snapshot", () => {
     expect(prisma.$transaction.mock.calls[0]?.[1]).toEqual({ isolationLevel: "Serializable" });
     expect(tx.supplierOrderItem.create.mock.calls[0]?.[0].data.unitPriceMinor).toBe("9007199254740993");
     expect(tx.checkout.create.mock.calls[0]?.[0].data.totalAmountMinor.toString()).toBe("9007199254740993");
+    expect(tx.commerceMetricEvent.create).toHaveBeenCalledWith({ data: { supplierOrderId: "order", sourceKey: "created:order", kind: "CREATED", goodsAmountMinor: "9007199254740993", commissionAmountMinor: "900719925474099" } });
   });
 
   it.each(["price", "vat", "packaging", "legacy"])("requires consent for changed %s before creating orders or reserves", async (change) => {
@@ -96,6 +98,7 @@ describe("checkout accepted commercial snapshot", () => {
     await run();
     expect(inventory.reserveForOrder).toHaveBeenCalledTimes(1);
     expect(tx.supplierOffer.findFirst).toHaveBeenCalledTimes(1);
+    expect(tx.commerceMetricEvent.create).toHaveBeenCalledTimes(1);
   });
 
   it("does not accept a price newer than the displayed snapshot", async () => {

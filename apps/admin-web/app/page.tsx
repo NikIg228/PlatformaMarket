@@ -34,6 +34,7 @@ import {
   SupplierControls,
   SupplierOperations,
   SupportOperations,
+  OperatorCommerceAnalytics,
   OperationObjectFocus,
   TrustOperations,
 } from "./admin-section-components";
@@ -42,6 +43,7 @@ import { OperationQueue } from "./operation-queue";
 import { clearAdminSession, isLocalAdminDevelopment, readAdminSession } from "./admin-auth";
 
 type SectionId =
+  | "analytics"
   | "overview"
   | "organizations"
   | "access"
@@ -53,6 +55,7 @@ type SectionId =
   | "settings";
 
 const navigation: Array<{ id: SectionId; label: string; icon: ReactNode }> = [
+  { id: "analytics", label: "Аналитика", icon: <DocumentTable24Regular /> },
   { id: "overview", label: "Обзор", icon: <DocumentTable24Regular /> },
   { id: "organizations", label: "Организации", icon: <BuildingShop24Regular /> },
   { id: "access", label: "Пользователи и права", icon: <PeopleTeam24Regular /> },
@@ -65,6 +68,7 @@ const navigation: Array<{ id: SectionId; label: string; icon: ReactNode }> = [
 ];
 
 const sectionMeta: Record<SectionId, { title: string; description: string }> = {
+  analytics: { title: "Аналитика заказов и комиссии", description: "Оборот, исполнение и расчёт комиссии по организациям." },
   support: { title: "Обращения и споры", description: "Ответы участникам, сроки и история операторских решений." },
   overview: {
     title: "Обзор",
@@ -176,6 +180,7 @@ export default function OperationsWorkspace() {
   );
 
   const content: Record<SectionId, ReactNode> = {
+    analytics: <OperatorCommerceAnalytics />,
     support: <SupportOperations />,
     overview,
     organizations: <><ResourceLists /><FoundationManagement /></>,

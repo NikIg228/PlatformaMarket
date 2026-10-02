@@ -24,5 +24,10 @@ export async function refreshFulfillmentStatus(tx: Prisma.TransactionClient, ord
   const order = await tx.supplierOrder.findUniqueOrThrow({ where: { id: orderId }, include: {
     items: true, shipments: { include: { items: true, fulfillmentSteps: true } },
   } });
-  return fulfillmentOrderStatus(order.items, order.shipments);
+  const status = fulfillmentOrderStatus(order.items, order.shipments);
+  // All callers hold the order lock. Completion can occur when a final
+  // fulfillment step follows buyer receipt; record that path as well.
+  if (status === "DELIVERED") await tx.commerceMetricEvent.upsert({ where: { sourceKey: `fulfilled:${orderId}` }, update: {},
+    create: { sourceKey: `fulfilled:${orderId}`, supplierOrderId: orderId, kind: "FULFILLED", goodsAmountMinor: "0", commissionAmountMinor: "0" } });
+  return status;
 }

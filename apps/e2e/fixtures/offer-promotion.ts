@@ -53,6 +53,7 @@ export async function offerPromotionFixture() {
     await db.inventoryReservation.deleteMany({ where: { supplierOrganizationId: supplier.organizationId } });
     await db.orderWorkflowEvent.deleteMany({ where: { supplierOrderId: { in: orders.map(value => value.id) } } });
     await db.supplierOrderItem.deleteMany({ where: { supplierOrderId: { in: orders.map(value => value.id) } } });
+    await db.commerceMetricEvent.deleteMany({ where: { supplierOrderId: { in: orders.map(value => value.id) } } });
     await db.supplierOrder.deleteMany({ where: { id: { in: orders.map(value => value.id) } } });
     await db.checkout.deleteMany({ where: { buyerOrganizationId: buyer.organizationId } });
     await db.cart.deleteMany({ where: { buyerOrganizationId: buyer.organizationId } });

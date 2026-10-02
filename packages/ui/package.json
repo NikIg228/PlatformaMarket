@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.tsx",
     "./promotions": "./src/promotion-workspace.tsx",
+    "./commerce-analytics": "./src/commerce-analytics.tsx",
     "./styles.css": "./src/styles.css",
     "./provider": "./src/provider.tsx"
   },

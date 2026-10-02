@@ -1,5 +1,35 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+CORE07 LOCAL_PASS02.10 14:20+05: PostgreSQL3, core2, runtime/prisma, types2,
+webbuild1/bundle1/browser2 PASS. Self-review завершён; scoped commit/push main
+и CI — следующий шаг. CORE08–09 разрешены после green07. Worker expiry metrics
+и UTC period исправлены; полная история в CORE07. Working migration не применена.
+
+CORE07 IN_PROGRESS02.10 14:15+05: PostgreSQL3 PASS (timezone boundary fixed),
+Prisma validate/runtime PASS, core-contract1 PASS; добавлены обязательные OpenAPI
+analytics assertions, core2 и web build1 идут. Далее types/bundle/targeted browser,
+review и publication/CI. Checkpoint CORE07 содержит все attempts. Рабочая150000
+не применена, dev остановлен, AGENTS/Workflow policy WIP отдельно сохранить.
+
+Возобновлено02.10 по «продолжай»: CORE07 IN_PROGRESS. Pure date blocker
+исправлен/PASS1; targeted schema44/client7/confirmation19 PASS. PostgreSQL1
+идёт на изолированной DB; дальнейшие проверки по обновлённым policy02.10.
+AGENTS/Workflow — известные разрешённые policy WIP другого обсуждения,
+сохранить вне продуктового commit. Один writer, без агентов/worktrees.
+История прежнего BLOCKED и attempts ниже сохраняется.
+
+CORE07 BLOCKED02.10 по лимиту unit gate3 (одна CLI_ERROR без suite).
+Checkout mock исправлен; API494 PASS. UI date-test collection упал на Fluent/
+Tabster; pure helper уже выделен, повтор пока NOT_RUN. Все остальные07 gates
+предстоят; продуктовый WIP07 не опубликован. Полный checkpoint/attempts:
+CORE-07-INTERNAL-2026-10-02.md. CORE08–09 не начаты. Dev остановлен,
+рабочая150000 не применялась. Один writer, исходные5 WIP сохранены.
+
+CORE06 CLOSED/CI_PASS02.10:4023881, CI36976595298 и Security36976595308 SUCCESS.
+Этап после06: CORE07, карточка CORE-07-INTERNAL-2026-10-02.md. Один primary writer,
+CORE07–09+итоговый аудит разрешены; без внешних сервисов/рабочих migrations.
+Dev остановлен на период checks. Прежние5 WIP сохранены. Ниже — история.
+
 Актуально02.10: CORE06 LOCAL_PASS/CI_PENDING. Browser blocker исправлен:
 controlled modal close и возврат focus; canonical55/55 + targeted keyboard PASS.
 Typecheck8/unit7/build5/bundle3 PASS; PG/core/runtime/prisma evidence reuse.

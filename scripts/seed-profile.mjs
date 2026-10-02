@@ -385,11 +385,13 @@ async function ensureTestFixture() {
     where: { bin: "999999999901" },
     update: {
       legalName: "Test Seed Clinic",
+      commerceDataset: "TEST",
       displayName: "Test Seed Clinic",
       status: "ACTIVE",
     },
     create: {
       id: "00000000-0000-4000-8000-000000000901",
+      commerceDataset: "TEST",
       bin: "999999999901",
       legalName: "Test Seed Clinic",
       displayName: "Test Seed Clinic",

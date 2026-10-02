@@ -1,6 +1,6 @@
 # CORE-06 — операторские процессы и внутренние диалоги
 
-## Итог локальной приёмки02.10 — LOCAL_PASS / CI_PENDING
+## Итог приёмки02.10 — CLOSED / CI_PASS
 
 main@0021438 + scoped CORE06 diff, один primary writer. Все обязательные local gates
 PASS. Последние попытки: typecheck8 13/13 (30.721s), unit7 12/12 (2.793s,11 cache;
@@ -50,7 +50,7 @@ Typecheck5 FAIL(React useRef требует initial), исправлено; type
 Build3/4 PASS; новые shared/UI правки требуют финальных root unit/typecheck/bundle.
 Dev6116 и его дочерние процессы остановлены перед build; сейчас только тестовые
 серверы принадлежат Playwright. Dev восстановить после всех проверок.
-Статус: LOCAL_PASS / CI_PENDING. Primary01a0f302-2d38-75d1-b79c-141e7428b533, один writer.
+Статус: CLOSED / CI_PASS. Primary01a0f302-2d38-75d1-b79c-141e7428b533, один writer.
 
 Последнее решение владельца02.10: самостоятельно исправлять возникающие блокеры,
 ошибки/конфликты и довести CORE06–09+аудит. Для этой последовательности прежний
@@ -229,3 +229,17 @@ relation; повтор ещё не запускался. .tmp/core06/typecheck-1
 таблицы/FK/checks, nullable Notification.requestHash и SupportTicket.version1.
 Новые unit/schema regressions подготовлены; unit gate0. Далее migration upgrade
 на approved audit DB, realHTTP/PG tenant/replay/read/escalation/races и UI gates.
+
+### Публикация02.10
+
+40238812d4b7b0014ec23cd50a11825cfe0b0099 опубликован обычным push origin/main;
+remote SHA совпал. Outgoing range был ровно1 commit, fetch показал0/1,
+staged diffcheck PASS,66 проверенных файлов,5 прежних WIP исключены.
+CI36976595298 и Security36976595308 IN_PROGRESS; это ещё не CI_PASS.
+GitHub CLI отсутствует, статусы прочитаны штатным GitHub connector по точному SHA.
+Рабочий web next-env имеет только нормализацию окончаний строк, product diff пуст;
+его не включали в commit. CORE07 пока только read-only сверка требований.
+
+CI receipt02.10: CI36976595298 и Security36976595308 completed/success на
+40238812d4b7b0014ec23cd50a11825cfe0b0099. Все4 CI jobs и оба Security jobs зелёные.
+CORE06 CLOSED/CI_PASS; далее CORE07 в прежнем согласованном scope.

@@ -263,6 +263,7 @@ async function restoreInventoryAndDeleteFixture() {
     await tx.complianceCheck.deleteMany({
       where: { id: { in: complianceCheckIds } },
     });
+    await tx.commerceMetricEvent.deleteMany({ where: { supplierOrder: { buyerOrganizationId: buyer.organizationId } } });
     await tx.supplierOrder.deleteMany({
       where: { buyerOrganizationId: buyer.organizationId },
     });

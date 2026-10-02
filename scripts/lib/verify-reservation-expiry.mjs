@@ -46,6 +46,8 @@ export async function verifyReservationExpiry({ prisma, offers, supplierId, crea
   const releasedBalance = await prisma.inventoryBalance.findUniqueOrThrow({ where: { id: boundary.balanceId } });
   assert(releasedBalance.quantityAvailable.eq(10) && releasedBalance.quantityReserved.eq(0), "Concurrent expiry returned stock twice");
   assert(await prisma.auditLog.count({ where: { action: "order.reservation.expired", entityId: boundary.order.id } }) === 1, "Expiry audit duplicated");
+  const cancellations = id => prisma.commerceMetricEvent.count({ where: { supplierOrderId: id, kind: "CANCELLED" } });
+  assert(await cancellations(boundary.order.id) === 1, "Concurrent expiry/replay lost or duplicated cancellation metric");
   for (const [value, status] of [[pending, "PENDING"], [information, "NEEDS_INFORMATION"]]) {
     await prisma.supplierOrder.update({ where: { id: value.order.id }, data: { status: "AWAITING_PAYMENT" } });
     await prisma.supplierOrderItem.update({ where: { id: value.item.id }, data: { acceptedQuantity: 1 } });
@@ -65,6 +67,7 @@ export async function verifyReservationExpiry({ prisma, offers, supplierId, crea
   for (const result of cancelRace) if (result.status === "rejected") assert(result.reason?.getStatus?.() === 409, "Unexpected cancel/expiry failure");
   const cancelledBalance = await prisma.inventoryBalance.findUniqueOrThrow({ where: { id: cancelled.balanceId } });
   assert(cancelledBalance.quantityAvailable.eq(10) && cancelledBalance.quantityReserved.eq(0), "Cancel/expiry returned inventory twice");
+  assert(await cancellations(cancelled.order.id) === 1, "Cancel/expiry race lost or duplicated cancellation metric");
   await inventory.recallLot(supplierId, { inventoryLotId: recalled.lotId, reason: "Synthetic expiry recall", source: "SUPPLIER", severity: "HIGH" }, supplierContext);
   assert(await expiry.expireOrder(recalled.order.id, deadline), "Recalled reserve was not released");
   const recalledBalance = await prisma.inventoryBalance.findUniqueOrThrow({ where: { id: recalled.balanceId } });
@@ -86,7 +89,9 @@ export async function verifyReservationExpiry({ prisma, offers, supplierId, crea
   assert(crashError?.message === "Synthetic worker crash before commit", "Crash barrier not reached");
   assert((await prisma.inventoryReservation.findUniqueOrThrow({ where: { id: crash.reservation.id } })).status === "ACTIVE", "Crash committed partial release");
   assert((await prisma.inventoryBalance.findUniqueOrThrow({ where: { id: crash.balanceId } })).quantityReserved.eq(1), "Crash lost held stock");
+  assert(await cancellations(crash.order.id) === 0, "Crash committed cancellation metric outside transaction");
   assert(await expiry.expireOrder(crash.order.id, deadline), "Worker could not recover after crash");
+  assert(await cancellations(crash.order.id) === 1, "Worker recovery did not record cancellation metric once");
   const source = await prisma.supplierDataSource.create({ data: { supplierOrganizationId: supplierId, name: `${runId}-expiry-external`, type: "API" } });
   const connection = await prisma.integrationConnection.create({ data: { supplierOrganizationId: supplierId, sourceId: source.id, provider: "MOCK", mode: "API", status: "PAUSED", displayName: "Synthetic external hold" } });
   try {

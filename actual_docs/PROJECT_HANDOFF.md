@@ -1,5 +1,30 @@
 # PlatformaMarket — текущий контекст
 
+CORE07 LOCAL_PASS02.10 14:20+05: обязательные local gates и self-review PASS,
+scoped publication main/CI впереди; затем CORE08–09. Checkpoint CORE07 содержит
+точные команды, attempts и evidence. Рабочая150000 не применялась.
+
+CORE07 IN_PROGRESS02.10 14:15+05: PostgreSQL3 PASS, Prisma/runtime PASS,
+core-contract1 PASS (core2 с новыми analytics assertions идёт), web build1 идёт.
+Все attempts/оставшиеся проверки в CORE07. Далее targeted browser, review,
+publication/CI; CORE08–09 только после07. Рабочая150000 не применена.
+
+Возобновлено02.10: CORE07 IN_PROGRESS по явному «продолжай». Pure date
+blocker PASS; targeted schema44/client7/confirmation19 PASS, PostgreSQL1 идёт.
+Новый plan/evidence в CORE07. Policy AGENTS/Workflow WIP сохранить отдельно.
+Один writer, рабочая БД не меняется, CORE08–09 после зелёного07.
+
+CORE07 BLOCKED02.10: unit gate3 (включая одну CLI_ERROR). API494 PASS;
+новый UI date test упал на загрузке Fluent/Tabster, pure helper уже выделен,
+повтор NOT_RUN по AGENTS7.1. Остальные07 gates впереди, публикации07 нет.
+Checkpoint: governance/task-state/CORE-07-INTERNAL-2026-10-02.md.
+CORE08–09 не начаты. Dev остановлен; рабочая150000 не применена,5 WIP сохранены.
+
+CORE06 CLOSED/CI_PASS02.10:4023881, CI36976595298 и Security36976595308 SUCCESS.
+Текущий этап: CORE07, карточка CORE-07-INTERNAL-2026-10-02.md. Один primary writer,
+CORE07–09+итоговый аудит разрешены; без внешних сервисов/рабочих migrations.
+Dev остановлен на период checks. Прежние5 WIP сохранены. Ниже — история.
+
 Актуально02.10: CORE06 LOCAL_PASS/CI_PENDING. Browser blocker исправлен:
 controlled modal close и возврат focus; canonical55/55 + targeted keyboard PASS.
 Typecheck8/unit7/build5/bundle3 PASS; PG/core/runtime/prisma evidence reuse.
