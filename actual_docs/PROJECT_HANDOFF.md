@@ -1,5 +1,11 @@
 # PlatformaMarket — текущий контекст
 
+Итог02.10 15:57+05: CORE05–09 LOCAL_CORE_PASS, общий код64591bc; CI36996467232 /
+Security36996467259 SUCCESS. CORE09 содержит карту доказательств и итоговый аудит:
+57 canonical+7 FlowB3+2 go_live browser, PG/API/unit/build/config PASS.
+Публикуется docs receipt; после actual CI остановиться, без автоматического POST/EXT.
+Foreign7 WIP сохранить, dev остановлен, working150000 не применена.
+
 CORE08 LOCAL_PASS02.10 15:40+05: контракты/реальный lint/upload bounds/config
 реализованы и проверены, включая максимальный PDF через Next proxy и безопасный413.
 Publication/CI впереди; после green08 — CORE09+итоговый аудит. Foreign7 WIP сохранены,

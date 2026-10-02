@@ -14,8 +14,10 @@
 
 ## Рабочий маршрут
 
-Текущий этап 02.10: [CORE-08-INTERNAL](governance/task-state/CORE-08-INTERNAL-2026-10-02.md)
-в разрешённой последовательности CORE-05–09; CORE05/06/07 закрыты с CI_PASS.
+Итог02.10: [CORE-09-INTERNAL](governance/task-state/CORE-09-INTERNAL-2026-10-02.md)
+LOCAL_CORE_PASS на64591bc: CORE01–08 сведены к одной ревизии с CI/Security PASS,
+backend/API/canonical frontend проверками. CORE05–09 завершены во внутреннем scope;
+POST-BE/POST-FULL/EXT не становятся новой разрешённой очередью.
 Решение по метрикам и комиссии: [ADR016](architecture/adr/016-commerce-metric-facts.md).
 Карточка содержит отдельный список
 вопросов и реестр проверок; прошлые записи ниже сохраняют свои даты.

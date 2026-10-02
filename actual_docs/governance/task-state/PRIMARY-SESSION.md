@@ -1,5 +1,11 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+Итог02.10 15:57+05: CORE05–09 LOCAL_CORE_PASS. Код64591bc, CI36996467232 и
+Security36996467259 SUCCESS;57 canonical+7 FlowB3+2 go_live browser PASS.
+Итоговый аудит/coverage — CORE-09-INTERNAL-2026-10-02.md. Публикуется docs receipt,
+после его CI — остановка согласованной последовательности. POST-BE/FULL/EXT не начинать.
+Один writer, foreign7 WIP сохранить. Dev остановлен, working150000 не применена.
+
 CORE08 LOCAL_PASS02.10 15:40+05: bounds/contracts/lint/npm-only/config реализованы;
 types/affected suites/core/runtime/config/webbuild/browser PASS. Scoped publication
 и actual CI впереди, затем CORE09+аудит. Один writer, foreign7 WIP отдельно.

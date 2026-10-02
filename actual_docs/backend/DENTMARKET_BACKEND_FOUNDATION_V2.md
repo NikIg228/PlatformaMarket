@@ -11,7 +11,12 @@ backend/frontend, проверки, публикация после PASS и кр
 [CORE-05](../governance/task-state/CORE-05-INTERNAL-2026-10-02.md) CLOSED/CI_PASS,
 0021438, CI36936601972 / Security36936601908 SUCCESS; внешняя доставка не принята.
 [CORE-06](../governance/task-state/CORE-06-INTERNAL-2026-10-02.md) CLOSED/CI_PASS,4023881; CI36976595298 / Security36976595308 SUCCESS.
-[CORE-07](../governance/task-state/CORE-07-INTERNAL-2026-10-02.md) CLOSED/CI_PASS02.10:7cec2fa; рабочая миграция не применена. Текущий [CORE-08](../governance/task-state/CORE-08-INTERNAL-2026-10-02.md) IN_PROGRESS.
+[CORE-07](../governance/task-state/CORE-07-INTERNAL-2026-10-02.md) CLOSED/CI_PASS02.10:7cec2fa; рабочая миграция не применена.
+[CORE-08](../governance/task-state/CORE-08-INTERNAL-2026-10-02.md) CLOSED/CI_PASS64591bc.
+[CORE-09](../governance/task-state/CORE-09-INTERNAL-2026-10-02.md) LOCAL_CORE_PASS:
+общая приёмка64591bc, CI36996467232/Security36996467259 SUCCESS,
+canonical browser57 + FlowB3 7 + local go_live2 PASS. Публикуется итоговый docs receipt.
+CORE01–09 внутреннего scope завершены; POST-BE/POST-FULL/EXT не запускать автоматически.
 CORE-08 сохраняет production guards
 по ответу владельца Q01; реальные сервисы/production — отдельный этап.
 Последний запрос владельца01.10 после371aa9d: выполнять внутренний список6.2
@@ -51,15 +56,15 @@ stale versions и их проверки. Старые задания «испр�
 | CORE-03.1–03.4 | [CI_PASS](../governance/task-state/CORE-03-INTERNAL-2026-10-01.md): aggregate multi-shipment/partial receipt, bilateral cancellation/manual returns, reorder с текущими условиями | Exact money/quantity, tenant/race/replay/upgrade и browser PASS. 1abeb4d опубликован, CI/Security SUCCESS; внешняя доставка и банковский возврат не приняты |
 | CORE-04.1–04.5 | Ограниченные catalog/import/manual/new-product outcomes приняты | Не повторять принятые slices; live whitelist, реальные данные и media rights не подтверждены fixture |
 | CORE-04.6–04.7 | [CI_PASS01.10](../governance/task-state/CORE-04-INTERNAL-2026-10-01.md) на f14cbe1: discount/N+M, immutable versions/price evidence, operator moderation, gift reservation/consent, storefront/history/templates и условия заказа | PG upgrade/tenant/race/replay, pilot46/46 и go_live2/2 desktop/390 PASS. CI36874461180 и Security36874461153 SUCCESS. Рабочая миграция140000 требует отдельного разрешения; dev остановлен. Реальные акции и legal launch не приняты; optional promotions остаются только go_live |
-| CORE-05.1–05.3 | identity/access-control/organizations; registration/resume/workspace/logout/MFA slices | Общая матрица verification/reset, invites/role/disable, revoke/multi-tab и всех ролей CORE; локальный transport не внешняя доставка |
+| CORE-05.1–05.3 | [CLOSED/CI_PASS](../governance/task-state/CORE-05-INTERNAL-2026-10-02.md): email proof CAS, invitation/roles/disable/revoke/MFA, UI трёх ролей | В CORE09 повторно проверено на64591bc; локальный transport не внешняя доставка |
 | CORE-06.1–06.6 | Реализованы contracts/API/UI очереди9 доменов, assignment/CAS/history, support и внутренние диалоги трёх ролей; [evidence](../governance/task-state/CORE-06-INTERNAL-2026-10-02.md) | CI_PASS4023881, CI36976595298 / Security36976595308 SUCCESS. PG/core/runtime/browser55 и targeted keyboard PASS; Внешние каналы/реальные дежурные не приняты; пропавший адаптер не означает доставку |
 | CORE-07.1–07.3 | Contracts/API/UI/metric ledger: created/confirmed/received/repeat, structured refusals, delays, dataset/timezone, комиссия10% и корректировки; [checkpoint](../governance/task-state/CORE-07-INTERNAL-2026-10-02.md) | CLOSED/CI_PASS на7cec2fa: local PostgreSQL3, Prisma/runtime/core-contract2, typecheck2, web build/bundle/browser2 PASS; CI36990679071 и Security36990679215 SUCCESS. Учёт полученной комиссии/долга и working migration не выполнялись |
-| CORE-08.1–08.5 | Schemas/client/OpenAPI, upload bounds, security/config guards; [checkpoint](../governance/task-state/CORE-08-INTERNAL-2026-10-02.md) IN_PROGRESS | Полнота CORE contracts; настоящий lint вместо tsc; npm-only lockfile housekeeping; body/upload/memory bounds по реальному пути; согласовать ADR009/production+pilot и Swagger policy. Не менять guards ради docs |
-| CORE-09 | Единой итоговой приёмки нет | Scoped CORE01–08 outcomes, обязательные gates одной revision, отсутствие незакрытого критического риска, актуальная Matrix. Публикация и отдельные LOCAL_PASS не равны backend completion |
+| CORE-08.1–08.5 | [CLOSED/CI_PASS](../governance/task-state/CORE-08-INTERNAL-2026-10-02.md)64591bc: shared contracts, реальный lint/CI/npm-only, preallocation/HTTP/proxy limits, production go_live/Swagger policy | CI36996467232 и Security36996467259 SUCCESS;5 существующих dev-only dependency advisories остаются отдельным остатком, runtime audit0 |
+| CORE-09 | [LOCAL_CORE_PASS](../governance/task-state/CORE-09-INTERNAL-2026-10-02.md) на одной кодовой revision64591bc: полный CI/PG/API/browser57/FlowB3 7 плюс go_live2 | Критических незакрытых рисков в проверенном внутреннем scope не выявлено. Это составная synthetic приёмка; POST-BE/POST-FULL/реальный пилот не приняты. Working migration150000/dev отдельно |
 
-Правила оплаты, возвратов, акций, комиссии и внешних уведомлений согласованы
-в Product §23.6, их реализация отложена владельцем. Не задавать эти вопросы
-заново и не возобновлять старое разрешение28.09 вопреки последнему scope.
+Правила оплаты, возвратов, акций и начисленной комиссии из Product §23.6
+реализованы и проверены во внутреннем scope по поручению02.10. Внешние
+уведомления и фактические денежные переводы остаются отдельным этапом.
 Открыты НДС комиссии/договорный график, ответственные/часы, поставщики каналов
 и юридические тексты.
 

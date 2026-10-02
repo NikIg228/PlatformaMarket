@@ -1,6 +1,6 @@
 # CORE-08 — контракты, ограничения ресурсов и качество кода
 
-Статус LOCAL_PASS / PUBLICATION_PENDING02.10.2026,15:40+05. Один primary writer:
+Статус CLOSED / CI_PASS02.10.2026,15:53+05. Один primary writer:
 01a0f302-2d38-75d1-b79c-141e7428b533. Основание — поручение владельца02.10
 последовательно завершить CORE05–09 с проверками, publication/CI и итоговым аудитом.
 CORE07 CLOSED:3f2002b + corrective7cec2fa; CI36990679071/Security36990679215 SUCCESS.
@@ -170,3 +170,12 @@ Working domain/Prisma transitions не менялись; PG07 REUSED_PASS, CI п
 Generated apps/web/next-env восстановлен. Foreign7 WIP исключены из staging.
 `git diff --check` PASS; fetch origin/main совпал с HEAD7cec2fa, outgoing0.
 Далее scoped commit/push и actual CI; локальный PASS не закрывает CORE08.
+
+Публикация02.10:64591bcebb765378b7383df6243571925bb22498 в origin/main,
+remote SHA проверен и совпадает. CI36996467232 и Security36996467259 IN_PROGRESS.
+CORE09 пока только read-only сверка существующих проверок; записи реализации нет.
+
+15:53+05: оба runs completed SUCCESS на64591bc. CI verify/PG/оба контейнера,
+Security dependencies/CodeQL PASS. Полные unit/types/lint/build, contracts/config,
+extended API и canonical FlowB3/browser прошли на той же ревизии. CORE08 CLOSED.
+Разрешённый CORE09 начат отдельной карточкой; рабочая БД не изменялась.
