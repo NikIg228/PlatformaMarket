@@ -1,5 +1,20 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+02.10 MESSAGES-CONTROLS LOCAL_PASS main@bca9c17, same primary/foreign7.
+Remove previous/next and visible filter label; Fluent dropdown, center detail empty.
+Clinic/supplier compactList only; preserve default operator controls. Infinite
+scroll preserves access beyond30 and refreshes loaded window (deduplicated).
+Gates: pagination unit + lint, browser bothroles/keyboard/filter/scroll fixture,
+web build/types once; no full suites/DB changes/CI waiting. Max3/build20m.
+Dropdown scope: current messages; future edited cabinet selectors use themed Fluent.
+Tests conversation-pages3 PASS; targeted lint1 PASS; bothroles1440/390 real empty
+filter/keyboard/Escape/equal-height/center/no native select/no paging controls PASS.
+Synthetic35 dialogs: supplier1 PASS; clinic1 transient error not observed, stable
+503 until retry clinic2 PASS. Prior30 preserved on error, retry35, selection/filter
+reset PASS; routes mocked incl read receipt, no DB writes. Screenshots inspected.
+Practices: development-toolkit, Agency Frontend Developer, Fluent UI, Playwright.
+Web build1 + TypeScript PASS. Dev restoring launcher10492. Logs .tmp/messages-controls-*.log. Scoped self-review PASS.
+
 02.10 MESSAGES-SPACING LOCAL_PASS main@99e6357, primary unchanged, foreign7 preserved.
 Scope clinic/supplier only: remove refresh toolbar, edge gaps12px, equal-height
 list/detail with aligned top/bottom; preserve polling/error retry/legacy consumers.

@@ -1,7 +1,9 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type ReactElement } from "react";
+import { Dropdown, Option } from "@fluentui/react-components";
+import { conversationPages, conversationPageSize } from "./conversation-pages";
 import type { ConversationDetail, ConversationEscalation, ConversationMessageInput, ConversationPage, ConversationQuery, StartConversation } from "@marketplace/schemas";
-import { DmButton, DmField, DmSelect, DmTextarea, EmptyState, LoadingState, errorMessage } from "./index";
+import { DmButton, DmField, DmSelect, DmTextarea, EmptyState, LoadingState, errorMessage, dmDropdownPositioning } from "./index";
 
 export type ConversationApi = {
   conversations(query?: Partial<ConversationQuery>): Promise<ConversationPage>;
@@ -45,10 +47,11 @@ export function ConversationCounter({ api, href, icon, showLabel = false, onClic
   </DmButton>;
 }
 
-export function ConversationWorkspace({ api, organizationId, initialId, context, canWrite = true, operator = false, contextHref, hideHeading = false, hideRefresh = false }: { api: ConversationApi; organizationId: string; initialId?: string; context?: Context; canWrite?: boolean; operator?: boolean; contextHref?: (type: "OFFER" | "ORDER", id: string) => string | undefined; hideHeading?: boolean; hideRefresh?: boolean }) {
+export function ConversationWorkspace({ api, organizationId, initialId, context, canWrite = true, operator = false, contextHref, hideHeading = false, hideRefresh = false, compactList = false }: { api: ConversationApi; organizationId: string; initialId?: string; context?: Context; canWrite?: boolean; operator?: boolean; contextHref?: (type: "OFFER" | "ORDER", id: string) => string | undefined; hideHeading?: boolean; hideRefresh?: boolean; compactList?: boolean }) {
   const [selected, setSelected] = useState(initialId);
   const [filter, setFilter] = useState<ConversationQuery["filter"]>("ALL");
   const [offset, setOffset] = useState(0);
+  const listEnd = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState<ConversationPage | null>(null);
   const [detail, setDetail] = useState<ConversationDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +82,7 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
     const current = ++request.current;
     setLoading(true);
     try {
-      const [nextPage, nextDetail] = await Promise.all([api.conversations({ filter, offset }), selected ? api.conversation(selected) : Promise.resolve(null)]);
+      const [nextPage, nextDetail] = await Promise.all([compactList ? conversationPages(query => api.conversations(query), filter, offset) : api.conversations({ filter, offset }), selected ? api.conversation(selected) : Promise.resolve(null)]);
       if (current !== request.current) return;
       setPage(nextPage); setDetail(previous => {
         if (!previous || !nextDetail || previous.conversation.id !== nextDetail.conversation.id) return nextDetail;
@@ -93,7 +96,7 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
       }
     } catch (cause) { if (current === request.current) setError(errorMessage(cause)); }
     finally { if (current === request.current) setLoading(false); }
-  }, [api, selected, filter, offset, lookupReady]);
+  }, [api, selected, filter, offset, lookupReady, compactList]);
   useEffect(() => { setDetail(null); void refresh(); return () => { request.current++; }; }, [refresh]);
   useEffect(() => {
     const reload = () => { if (!lock.current && document.visibilityState === "visible") void refresh(); };
@@ -101,6 +104,19 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
     document.addEventListener("visibilitychange", reload);
     return () => { clearInterval(interval); document.removeEventListener("visibilitychange", reload); };
   }, [refresh]);
+
+  useEffect(() => {
+    const sentinel = listEnd.current;
+    if (!compactList || !sentinel || !page?.hasMore || loading || busy || error || offset >= 99_990) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        observer.disconnect();
+        setOffset(value => value + conversationPageSize);
+      }
+    }, { root: sentinel.parentElement, rootMargin: "80px" });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [compactList, page?.hasMore, loading, busy, error, offset]);
 
   const run = async (action: () => Promise<void>) => {
     if (lock.current) return;
@@ -130,10 +146,14 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
     {feedback ? <p role="status">{feedback}</p> : null}
     <div className="dm-conversations-layout" data-selected={Boolean(selected || context)}>
       <aside className="dm-conversations-list" aria-label="Список диалогов">
-        <DmField label="Показать"><DmSelect value={filter} disabled={busy} onChange={event => { setFilter(event.target.value as ConversationQuery["filter"]); setOffset(0); }}><option value="ALL">Все</option><option value="UNREAD">Непрочитанные</option><option value="ORDERS">По заказам</option></DmSelect></DmField>
+        {compactList ? <Dropdown className="dm-conversations-filter" aria-label="Фильтр диалогов" disabled={busy}
+          positioning={dmDropdownPositioning} selectedOptions={[filter]} value={{ ALL: "Все", UNREAD: "Непрочитанные", ORDERS: "По заказам" }[filter]}
+          onOptionSelect={(_, data) => { if (data.optionValue && data.optionValue !== filter) { setPage(null); setFilter(data.optionValue as ConversationQuery["filter"]); setOffset(0); } }}>
+          <Option value="ALL">Все</Option><Option value="UNREAD">Непрочитанные</Option><Option value="ORDERS">По заказам</Option>
+        </Dropdown> : <DmField label="Показать"><DmSelect value={filter} disabled={busy} onChange={event => { setFilter(event.target.value as ConversationQuery["filter"]); setOffset(0); }}><option value="ALL">Все</option><option value="UNREAD">Непрочитанные</option><option value="ORDERS">По заказам</option></DmSelect></DmField>}
         {loading && !page ? <LoadingState label="Загружаем диалоги" /> : page?.items.length === 0 ? <EmptyState title="Диалогов пока нет" description="Начните переписку из предложения поставщика или заказа." /> : null}
         {page?.items.map(item => <DmButton className="dm-conversations-item" key={item.id} disabled={busy} aria-pressed={selected === item.id} onClick={() => choose(item.id)}><span><strong>{item.counterpartyName}{item.unread ? " · Новое" : ""}</strong><span>{item.title}{item.resolved ? " · Решён" : ""}</span><span className="dm-conversations-preview">{item.lastMessage}</span><small>{time(item.updatedAt)}</small></span></DmButton>)}
-        <div className="dm-conversations-toolbar"><DmButton disabled={!offset || busy} onClick={() => setOffset(value => Math.max(0, value - 30))}>Назад</DmButton><DmButton disabled={!page?.hasMore || busy} onClick={() => setOffset(value => value + 30)}>Далее</DmButton></div>
+        {compactList ? <div ref={listEnd} className="dm-conversations-list-end">{loading && page ? <LoadingState label="Загружаем диалоги" /> : null}</div> : <div className="dm-conversations-toolbar"><DmButton disabled={!offset || busy} onClick={() => setOffset(value => Math.max(0, value - 30))}>Назад</DmButton><DmButton disabled={!page?.hasMore || busy} onClick={() => setOffset(value => value + 30)}>Далее</DmButton></div>}
       </aside>
       <div className="dm-conversations-detail">
         {selected || context ? <>
