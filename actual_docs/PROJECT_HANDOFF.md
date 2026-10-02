@@ -1,6 +1,12 @@
 # PlatformaMarket — текущий контекст
 
-02.10 SIDEBAR-COMPACT LOCAL_PASS / CI_PENDING: clinic/supplier sidebar200px,
+SIDEBAR receipt02.10: код57d75f569593f31aaa610cd344399c9dcf786d89 в origin/main,
+remote SHA совпал; CI37021253380 / Security37021253329 completed/success attempt1.
+Финальная запись только docs [skip ci], runtime evidence REUSED_PASS, новый CI NOT_RUN.
+Dev14852/API16432/web15436 оставлен работающим. Foreign7 WIP сохранены.
+Хедер рекомендован, но не реализован в этой задаче; следующую фазу не начинать.
+
+02.10 SIDEBAR-COMPACT CLOSED / CI_PASS: clinic/supplier sidebar200px,
 logo144px, карточка компании удалена. Хедер — только предложение владельцу.
 Types/unit/build/lint PASS, canonical browser56 + targeted retry2 PASS,
 local1440/1024/390 обе роли PASS. Checkpoint PRIMARY; dev восстановлен.

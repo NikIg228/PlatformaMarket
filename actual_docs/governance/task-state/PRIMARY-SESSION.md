@@ -1,6 +1,12 @@
 # PRIMARY-SESSION — PlatformaMarket
 
-02.10 SIDEBAR-COMPACT — LOCAL_PASS / CI_PENDING по новому запросу владельца: убрать карточку
+SIDEBAR receipt02.10: код57d75f569593f31aaa610cd344399c9dcf786d89 в origin/main,
+remote SHA совпал; CI37021253380 / Security37021253329 completed/success attempt1.
+Финальная запись только docs [skip ci], runtime evidence REUSED_PASS, новый CI NOT_RUN.
+Dev14852/API16432/web15436 оставлен работающим. Foreign7 WIP сохранены.
+Хедер рекомендован, но не реализован в этой задаче; следующую фазу не начинать.
+
+02.10 SIDEBAR-COMPACT — CLOSED / CI_PASS по новому запросу владельца: убрать карточку
 компании из clinic/supplier sidebar, ширина256→200px, logo176→144px.
 Хедер пока только предложение, реализация/перенос logout не входят в этот шаг.
 Primary writer тот же; main@21b7e3f, foreign7 WIP сохранены.
