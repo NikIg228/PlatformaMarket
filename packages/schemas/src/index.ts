@@ -1,4 +1,5 @@
 import { z } from "zod";
+export * from "./access-policy";
 import { DOCUMENT_UPLOAD_MAX_BASE64_CHARACTERS, IMPORT_UPLOAD_MAX_BASE64_CHARACTERS } from "./document-upload-limits";
 export * from "./offer-commercial";
 export * from "./identity-management";

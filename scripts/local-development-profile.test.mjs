@@ -12,6 +12,7 @@ test("local launch enables the same five feature groups for API and web", () => 
   const profile = localDevelopmentProfile({});
   assert.deepEqual(profile, {
     DEPLOYMENT_PROFILE: "go_live",
+    ACCESS_CONTROL_MODE: "FULL_ACCESS",
     NEXT_PUBLIC_DEPLOYMENT_PROFILE: "go_live",
   });
   assert.deepEqual(deploymentFeatures(profile.DEPLOYMENT_PROFILE), {
@@ -34,6 +35,7 @@ test("explicit pilot remains available without changing the shared default", () 
   const profile = localDevelopmentProfile({ DEPLOYMENT_PROFILE: "pilot" });
   assert.deepEqual(profile, {
     DEPLOYMENT_PROFILE: "pilot",
+    ACCESS_CONTROL_MODE: "FULL_ACCESS",
     NEXT_PUBLIC_DEPLOYMENT_PROFILE: "pilot",
   });
   for (const enabled of Object.values(
@@ -71,6 +73,7 @@ test("profile projection never exposes server secrets or mutates caller env", ()
     OPENAI_API_KEY: "test-secret",
   });
   assert.deepEqual(Object.keys(localDevelopmentProfile(env)).sort(), [
+    "ACCESS_CONTROL_MODE",
     "DEPLOYMENT_PROFILE",
     "NEXT_PUBLIC_DEPLOYMENT_PROFILE",
   ]);
@@ -78,4 +81,9 @@ test("profile projection never exposes server secrets or mutates caller env", ()
     DATABASE_URL: "test-secret",
     OPENAI_API_KEY: "test-secret",
   });
+});
+
+test("roles can be restored explicitly and invalid access modes fail closed", () => {
+  assert.equal(localDevelopmentProfile({ ACCESS_CONTROL_MODE: "ROLE_BASED" }).ACCESS_CONTROL_MODE, "ROLE_BASED");
+  assert.throws(() => localDevelopmentProfile({ ACCESS_CONTROL_MODE: "typo" }));
 });

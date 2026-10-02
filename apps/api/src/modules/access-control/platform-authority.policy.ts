@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from "@nestjs/common";
 import type { OrganizationCapabilityType } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
+import { hasFullAccess } from "./access-mode";
 
 export type AuthorityActorContext = {
   actorId: string;
@@ -137,7 +138,7 @@ export class PlatformAuthorityPolicy {
       );
     }
     const actorPermissions = this.permissionCodes(membership);
-    const missing = requiredPermissionCodes.filter(
+    const missing = hasFullAccess() ? [] : requiredPermissionCodes.filter(
       (code) => !actorPermissions.has(code),
     );
     if (missing.length > 0) {
@@ -153,7 +154,7 @@ export class PlatformAuthorityPolicy {
   ) {
     const membership = await this.activeMembership(context);
     const actorPermissions = this.permissionCodes(membership);
-    if (requestedPermissionCodes.some((code) => !actorPermissions.has(code))) {
+    if (!hasFullAccess() && requestedPermissionCodes.some((code) => !actorPermissions.has(code))) {
       throw new ForbiddenException(
         "A role cannot grant permissions the actor does not hold",
       );
@@ -167,7 +168,7 @@ export class PlatformAuthorityPolicy {
   ) {
     const membership = await this.activeMembership(context);
     const actorPermissions = this.permissionCodes(membership);
-    if (requiredPermission && !actorPermissions.has(requiredPermission)) {
+    if (!hasFullAccess() && requiredPermission && !actorPermissions.has(requiredPermission)) {
       throw new ForbiddenException("Access management permission is no longer available");
     }
     if (roleIds.length === 0) return;
@@ -188,7 +189,7 @@ export class PlatformAuthorityPolicy {
         ({ permission }) => !actorPermissions.has(permission.code),
       ),
     );
-    if (escalates) {
+    if (!hasFullAccess() && escalates) {
       throw new ForbiddenException(
         "A role cannot grant permissions the actor does not hold",
       );

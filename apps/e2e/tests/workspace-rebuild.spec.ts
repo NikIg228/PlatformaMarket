@@ -214,7 +214,7 @@ for (const width of [1440, 390]) test(`CORE02 buyer partial report invalidates c
 
 test("CORE02 mobile bilateral reduction and supplier policy require explicit choices", async ({ page }) => {
   await fixture(page, "SUPPLIER"); await page.setViewportSize({ width: 390, height: 950 });
-  await page.route("**/api/access-control/permissions", route => route.fulfill({ json: ["organization.view", "order.confirm", "payment.transfer.confirm", "supplier.profile.manage", "document.view", "document.upload"] }));
+  await page.route("**/api/access-control/policy", route => route.fulfill({ json: { mode: "ROLE_BASED", permissions: ["organization.view", "order.confirm", "payment.transfer.confirm", "supplier.profile.manage", "document.view", "document.upload"] } }));
   const id = "55555555-5555-4555-8555-555555555555", itemId = "66666666-6666-4666-8666-666666666666";
   const order = { id, orderNumber: "CORE02-CONSENT", version: 1, supplierOrganizationId: organizationId, buyerOrganizationId: cityId, status: "AWAITING_PAYMENT", paymentStatus: "UNPAID", currency: "KZT", subtotalAmountMinor: "10000", items: [{ id: itemId, quantity: "2", acceptedQuantity: "2", unitPriceMinor: "5000", totalPriceMinor: "10000", currency: "KZT" }], shipments: [] };
   let policyBody: Record<string, unknown> | null = null, decision: Record<string, unknown> | null = null;
@@ -334,6 +334,7 @@ async function fixture(
         capabilities: [capability],
       };
     else if (path === "/access-control/permissions") body = ["catalog.product.view", "catalog.offer.edit", "catalog.offer.publish", "import.manage", "inventory.view", "inventory.adjust", "inventory.freshness.manage", "pricing.manage", "order.create", "order.approve", "order.confirm", "payment.transfer.confirm", "document.view", "document.upload", "document.sign", "document.accounting.review", "compliance.view", "compliance.credential.manage", "shipment.manage", "delivery.view", "delivery.manage", "supplier.warehouse.manage"];
+    else if (path === "/access-control/policy") body = { mode: "ROLE_BASED", permissions: ["catalog.product.view", "catalog.offer.edit", "catalog.offer.publish", "import.manage", "inventory.view", "inventory.adjust", "inventory.freshness.manage", "pricing.manage", "order.create", "order.approve", "order.confirm", "payment.transfer.confirm", "document.view", "document.upload", "document.sign", "document.accounting.review", "compliance.view", "compliance.credential.manage", "shipment.manage", "delivery.view", "delivery.manage", "supplier.warehouse.manage"] };
     else if (path === "/auth/sessions") body = [];
     else if (path === "/organizations/current/profile") body = profile;
     else if (path === "/organizations/current/onboarding")
@@ -596,7 +597,7 @@ test("supplier routes load independently, product creation has one entry action"
 test("A09 an open upload dialog keeps its draft when upload permission is revoked", async ({ page }) => {
   await fixture(page, "BUYER");
   let permissions = ["document.view", "document.upload"];
-  await page.route("**/api/access-control/permissions", route => route.fulfill({ json: permissions }));
+  await page.route("**/api/access-control/policy", route => route.fulfill({ json: { mode: "ROLE_BASED", permissions: permissions } }));
   await page.goto("/clinic/documents");
   await page.getByRole("button", { name: "Загрузить документ", exact: true }).click();
   const dialog = page.getByRole("dialog");

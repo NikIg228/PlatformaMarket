@@ -2,7 +2,7 @@
 export { ConversationWorkspace, ConversationCounter } from "./conversation-workspace";
 export { MemberManagement } from "./member-management";
 export { SessionManagement } from "./session-management";
-export { PermissionsProvider, PermissionFields, usePermissions } from "./permissions";
+export { PermissionsProvider, PermissionFields, usePermissions, useAccessMode } from "./permissions";
 export { documentArchiveDateRange, DOCUMENT_ARCHIVE_TIME_ZONE } from "./document-date-range";
 export { MarketplaceProvider } from "./provider";
 import { ThemeContext } from "./provider";

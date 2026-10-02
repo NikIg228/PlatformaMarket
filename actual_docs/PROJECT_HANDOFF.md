@@ -1,5 +1,18 @@
 # PlatformaMarket — текущий контекст
 
+02.10 ROLES — LOCAL_PASS: временный FULL_ACCESS действует во всех трёх кабинетах.
+Сохранены роли/назначения, JWT, активная membership, tenant/capability boundaries;
+production требует ROLE_BASED. Redesign/референсы отложены решением владельца.
+Root types13/unit12/build7/lint PASS; PG/core-contract322/runtime/config/bundle PASS;
+canonical RBAC browser57/57 и full-access real JWT3/3 PASS. Локальный smoke:
+clinic8 + supplier13 страниц, policy200/FULL_ACCESS/91 permissions, без role-denied.
+Supplier smoke1: ошибочный h1-only waiter на h2 странице; после исправления
+инструмента smoke2 PASS, продукт не менялся. Dev go_live/JWT оставлен работающим
+из canonical root (launcher9468, API17428:4012/web16912:3000). Working reseed нет.
+Review: Frontend Developer, Code Reviewer, Git Workflow Master;
+контракты, границы доступа, обратимость и scoped publication проверены.
+Публикация и actual CI ещё PENDING; полный журнал в CABINET-UX-2026-10-02.md.
+
 02.10 по запросу владельца применена working migration150000 и восстановлен dev.
 Каталог/заказы505/510/508/32 сохранены, без seed. go_live/JWT, API4012/web3000,
 health/root/catalog200; процессы оставлены работающими. CORE09 CLOSED/CI_PASS:

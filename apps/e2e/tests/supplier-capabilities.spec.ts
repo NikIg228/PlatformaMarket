@@ -12,6 +12,7 @@ async function fixture(page: Page, permissions = ["catalog.offer.edit", "catalog
     if (path === "/auth/workspace-context") body = { organizationId, organizationDisplayName: "Тестовый поставщик", capabilities: ["SUPPLIER"] };
     else if (path === "/auth/current") body = null;
     else if (path === "/access-control/permissions") body = permissions;
+    else if (path === "/access-control/policy") body = { mode: "ROLE_BASED", permissions: permissions };
     else if (path === "/moderation/product-candidates/submissions") {
       if (state.fail) return route.fulfill({ status: 503, json: { code: "UNAVAILABLE", message: "Сервис недоступен" } });
       if (request.method() === "POST") { state.writes.push(request.postDataJSON()); state.submitted = true; body = { candidate: { ...candidate, id: "44444444-4444-4444-8444-444444444444", status: "PENDING" }, duplicateSuggestions: [] }; }
@@ -95,16 +96,16 @@ test("A09 revocation and server 403 preserve the proposal draft", async ({ page 
   await page.getByRole("button", { name: "Отправить заявку", exact: true }).click();
   await expect(page.getByText("Нет права отправить заявку", { exact: true })).toBeVisible();
   let unavailable = true;
-  await page.route("**/api/access-control/permissions", route => unavailable
+  await page.route("**/api/access-control/policy", route => unavailable
     ? route.fulfill({ status: 503, json: { message: "Проверка прав недоступна" } })
-    : route.fulfill({ json: ["catalog.product.view", "catalog.offer.edit"] }));
+    : route.fulfill({ json: { mode: "ROLE_BASED", permissions: ["catalog.product.view", "catalog.offer.edit"] } }));
   await page.evaluate(() => window.dispatchEvent(new Event("focus")));
   await expect(page.getByRole("button", { name: "Повторить проверку прав", exact: true })).toBeVisible();
   await expect(description).toHaveValue("Данные сотрудника остаются в форме");
   unavailable = false;
   await page.getByRole("button", { name: "Повторить проверку прав", exact: true }).click();
   await expect(page.getByRole("button", { name: "Отправить заявку", exact: true })).toBeEnabled();
-  await page.unroute("**/api/access-control/permissions");
+  await page.unroute("**/api/access-control/policy");
   await expect(description).toHaveValue("Данные сотрудника остаются в форме");
   permissions.splice(permissions.indexOf("catalog.offer.edit"), 1);
   await page.evaluate(() => window.dispatchEvent(new Event("focus")));

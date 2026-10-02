@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { DmButton, DmCheckbox, DmField, DmInput, DmSelect } from "@marketplace/ui";
 import styles from "./foundation-management.module.css";
 import { adminAuthHeaders } from "./admin-auth";
+import type { AccessPolicy } from "@marketplace/schemas";
 
 type Role = {
   id: string;
@@ -33,6 +34,7 @@ const organizationId =
 
 export function FoundationManagement() {
   const [roles, setRoles] = useState<Role[]>([]);
+  const [accessMode, setAccessMode] = useState<AccessPolicy["mode"]>("ROLE_BASED");
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [attributes, setAttributes] = useState<Attribute[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -54,14 +56,16 @@ export function FoundationManagement() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [roleData, membershipData, attributeData, categoryData] =
+      const [roleData, membershipData, attributeData, categoryData, policy] =
         await Promise.all([
           request<Role[]>(`/organizations/${organizationId}/roles`),
           request<Membership[]>(`/organizations/${organizationId}/memberships`),
           request<Attribute[]>("/catalog/attributes"),
           request<Category[]>("/catalog/categories"),
+          request<AccessPolicy>("/access-control/policy"),
         ]);
       setRoles(roleData);
+      setAccessMode(policy.mode);
       setMemberships(membershipData);
       setAttributes(attributeData);
       setCategories(categoryData);
@@ -196,6 +200,7 @@ export function FoundationManagement() {
         <div className={styles.grid}>
           <div className={styles.panel}>
             <h3>Роли и участники</h3>
+            {accessMode === "FULL_ACCESS" ? <p>Роли временно отключены. Активным сотрудникам доступны все функции своей организации.</p> : <>
             <form className={styles.form} onSubmit={submitRole}>
               <DmField label="Код роли" required>
                 <DmInput name="code" required placeholder="procurement_manager" />
@@ -235,6 +240,7 @@ export function FoundationManagement() {
               </DmField>
               <DmButton type="submit" appearance="secondary" className={styles.secondary}>Назначить</DmButton>
             </form>
+            </>}
             <div className={styles.records}>
               {memberships.length === 0 ? (
                 <p>Активных memberships нет.</p>
@@ -246,7 +252,7 @@ export function FoundationManagement() {
                       <span>{membership.user.email}</span>
                     </div>
                     <div>
-                      {membership.roles
+                      {accessMode === "FULL_ACCESS" ? "Полный доступ" : membership.roles
                         .map(({ role }) => role.name)
                         .join(", ") || "Без роли"}
                     </div>

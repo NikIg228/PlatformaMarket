@@ -1,11 +1,14 @@
 "use client";
 import { createContext, useContext, type ReactNode } from "react";
+import type { AccessPolicy } from "@marketplace/schemas";
 
 // Legacy surfaces retain their existing guards. Unified workspaces always provide
 // the current server permission set; an empty set grants no actions.
 const Permissions = createContext<readonly string[] | null>(null);
-export function PermissionsProvider({ permissions, children }: { permissions: readonly string[]; children: ReactNode }) {
-  return <Permissions.Provider value={permissions}>{children}</Permissions.Provider>;
+const AccessMode = createContext<AccessPolicy["mode"]>("ROLE_BASED");
+export function useAccessMode() { return useContext(AccessMode); }
+export function PermissionsProvider({ permissions, mode = "ROLE_BASED", children }: { permissions: readonly string[]; mode?: AccessPolicy["mode"]; children: ReactNode }) {
+  return <AccessMode.Provider value={mode}><Permissions.Provider value={permissions}>{children}</Permissions.Provider></AccessMode.Provider>;
 }
 export function usePermissions() {
   const permissions = useContext(Permissions);

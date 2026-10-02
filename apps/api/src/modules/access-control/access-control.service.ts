@@ -1,9 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../platform/prisma/prisma.service";
+import { accessControlMode, hasFullAccess, membershipPermission } from "./access-mode";
 
 @Injectable()
 export class AccessControlService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async policyFor(userId: string, organizationId: string) {
+    return { mode: accessControlMode(), permissions: await this.permissionsFor(userId, organizationId) };
+  }
 
   async permissionsFor(userId: string, organizationId: string) {
     const membership = await this.prisma.organizationMembership.findUnique({
@@ -20,6 +25,10 @@ export class AccessControlService {
       },
     });
     if (!membership || membership.status !== "ACTIVE") return [];
+    if (hasFullAccess()) {
+      const permissions = await this.prisma.permission.findMany({ select: { code: true }, orderBy: { code: "asc" } });
+      return permissions.map(({ code }) => code);
+    }
     return [
       ...new Set(
         membership.roles.flatMap(({ role }) =>
@@ -39,16 +48,7 @@ export class AccessControlService {
         status: "ACTIVE",
         user: { status: "ACTIVE" },
         organization: { status: "ACTIVE" },
-        AND: permissionCodes.map((code) => ({
-          roles: {
-            some: {
-              role: {
-                organizationId,
-                permissions: { some: { permission: { code } } },
-              },
-            },
-          },
-        })),
+        AND: permissionCodes.map((code) => membershipPermission(organizationId, code)),
       },
       select: { id: true },
     });

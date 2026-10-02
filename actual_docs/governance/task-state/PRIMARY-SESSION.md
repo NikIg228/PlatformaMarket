@@ -1,5 +1,30 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+02.10 ROLES — LOCAL_PASS: временный FULL_ACCESS действует во всех трёх кабинетах.
+Сохранены роли/назначения, JWT, активная membership, tenant/capability boundaries;
+production требует ROLE_BASED. Redesign/референсы отложены решением владельца.
+Root types13/unit12/build7/lint PASS; PG/core-contract322/runtime/config/bundle PASS;
+canonical RBAC browser57/57 и full-access real JWT3/3 PASS. Локальный smoke:
+clinic8 + supplier13 страниц, policy200/FULL_ACCESS/91 permissions, без role-denied.
+Supplier smoke1: ошибочный h1-only waiter на h2 странице; после исправления
+инструмента smoke2 PASS, продукт не менялся. Dev go_live/JWT оставлен работающим
+из canonical root (launcher9468, API17428:4012/web16912:3000). Working reseed нет.
+Review: Frontend Developer, Code Reviewer, Git Workflow Master;
+контракты, границы доступа, обратимость и scoped publication проверены.
+Публикация и actual CI ещё PENDING; полный журнал в CABINET-UX-2026-10-02.md.
+
+02.10 17:48 scope уточнён владельцем: сейчас ТОЛЬКО деактивация ролей во всех
+трёх кабинетах. Редизайн/референсы отложены; собственные visual WIP удалены.
+Карточка CABINET-UX-2026-10-02.md содержит новый DoD и attempts. Code IN_PROGRESS;
+types1 PASS, focused18/local-profile6 PASS, units1 timeout under concurrent load,
+serial units2 идёт. Own dev stopped; working DB без изменений. Один writer.
+
+Текущая задача02.10: CABINET-UX-2026-10-02.md IN_PROGRESS по новому запросу
+владельца: docs reconciliation, redesign содержимого clinic/supplier и новых
+CORE компонентов, screenshot audit; дополнительно единая full-access роль.
+Один primary writer, foreign7 WIP отдельно. Dev go_live работает, рабочие данные
+не reseed. После полного DoD — checks/review/push/CI/dev restore, без POST/EXT.
+
 02.10 DEV_RESTORED по явному разрешению владельца: working150000 применена,
 counts505/510/508/32 сохранены, seed не запускался. Dev go_live/JWT из canonical
 root: launcher4476, API13224:4012, web1228:3000; health/root/catalog200.

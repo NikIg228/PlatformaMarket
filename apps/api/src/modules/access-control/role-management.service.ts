@@ -1,3 +1,4 @@
+import { hasFullAccess, membershipPermission } from "./access-mode";
 import {
   BadRequestException,
   ConflictException,
@@ -41,6 +42,7 @@ export class RoleManagementService {
     actorId: string,
     input: CreateRoleInput,
   ) {
+    this.requireRoleManagementEnabled();
     await this.authority.assertCanCreateRole(
       { actorId, organizationId },
       input.permissionCodes,
@@ -176,6 +178,7 @@ export class RoleManagementService {
     roleId: string,
     actorId: string,
   ) {
+    this.requireRoleManagementEnabled();
     await this.authority.assertCanAssignRoles({ actorId, organizationId }, [
       roleId,
     ]);
@@ -223,6 +226,7 @@ export class RoleManagementService {
     roleId: string,
     actorId: string,
   ) {
+    this.requireRoleManagementEnabled();
     await this.authority.assertCanAssignRoles({ actorId, organizationId }, [roleId]);
     const assignment = await this.prisma.membershipRole.findUnique({
       where: { membershipId_roleId: { membershipId, roleId } },
@@ -243,7 +247,7 @@ export class RoleManagementService {
       await tx.membershipRole.delete({
         where: { membershipId_roleId: { membershipId, roleId } },
       });
-      const managers = await tx.organizationMembership.count({ where: { organizationId, status: "ACTIVE", roles: { some: { role: { organizationId, permissions: { some: { permission: { code: "organization.members.manage" } } } } } } } });
+      const managers = await tx.organizationMembership.count({ where: { organizationId, status: "ACTIVE", ...membershipPermission(organizationId, "organization.members.manage") } });
       if (managers === 0) throw new ConflictException("Нельзя удалить последнее право управления сотрудниками организации");
       await tx.authSession.updateMany({ where: { userId: assignment.membership.userId, status: "ACTIVE", OR: [{ activeOrganizationId: organizationId }, { organizationIds: { has: organizationId } }] }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "membership_role_removed" } });
       await tx.auditLog.create({
@@ -269,9 +273,13 @@ export class RoleManagementService {
   }
 
   private async requireRemainingManager(tx: Prisma.TransactionClient, organizationId: string, membershipId: string) {
-    const manages = await tx.organizationMembership.count({ where: { id: membershipId, status: "ACTIVE", roles: { some: { role: { organizationId, permissions: { some: { permission: { code: "organization.members.manage" } } } } } } } });
+    const manages = await tx.organizationMembership.count({ where: { id: membershipId, status: "ACTIVE", ...membershipPermission(organizationId, "organization.members.manage") } });
     if (!manages) return;
-    const others = await tx.organizationMembership.count({ where: { organizationId, id: { not: membershipId }, status: "ACTIVE", user: { status: "ACTIVE" }, roles: { some: { role: { organizationId, permissions: { some: { permission: { code: "organization.members.manage" } } } } } } } });
+    const others = await tx.organizationMembership.count({ where: { organizationId, id: { not: membershipId }, status: "ACTIVE", user: { status: "ACTIVE" }, ...membershipPermission(organizationId, "organization.members.manage") } });
     if (!others) throw new ConflictException("В организации должен остаться сотрудник с правом управления доступом");
+  }
+
+  private requireRoleManagementEnabled() {
+    if (hasFullAccess()) throw new ConflictException("Роли временно отключены. У активных сотрудников полный доступ в пределах организации.");
   }
 }

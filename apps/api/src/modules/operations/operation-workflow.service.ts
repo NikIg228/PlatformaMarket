@@ -1,3 +1,4 @@
+import { membershipPermission } from "../access-control/access-mode";
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import type { OperationAssignment, OperationAssignmentResult, OperationQueueType } from "@marketplace/schemas";
 import { PrismaService } from "../../platform/prisma/prisma.service";
@@ -20,7 +21,7 @@ export class OperationWorkflowService {
 
   async assignees(context: SupplierActorContext) {
     await this.authorize(context);
-    const members = await this.prisma.organizationMembership.findMany({ where: { organizationId: context.organizationId, status: "ACTIVE", user: { status: "ACTIVE" }, roles: { some: { role: { organizationId: context.organizationId, permissions: { some: { permission: { code: "support.ticket.manage" } } } } } } }, select: { user: { select: { id: true, displayName: true } } }, orderBy: { user: { displayName: "asc" } }, take: 100 });
+    const members = await this.prisma.organizationMembership.findMany({ where: { organizationId: context.organizationId, status: "ACTIVE", user: { status: "ACTIVE" }, ...membershipPermission(context.organizationId, "support.ticket.manage") }, select: { user: { select: { id: true, displayName: true } } }, orderBy: { user: { displayName: "asc" } }, take: 100 });
     return members.map(item => item.user);
   }
 

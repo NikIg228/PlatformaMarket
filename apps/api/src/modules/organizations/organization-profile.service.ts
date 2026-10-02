@@ -1,3 +1,4 @@
+import { membershipPermission } from "../access-control/access-mode";
 import { BadRequestException, ConflictException, ForbiddenException, Injectable } from "@nestjs/common";
 import { organizationProfileFieldsSchema, type OrganizationProfileResponse, type SaveOrganizationProfileInput } from "@marketplace/schemas";
 import { Prisma } from "@prisma/client";
@@ -40,7 +41,7 @@ export class OrganizationProfileService {
     const member = await db.organizationMembership.findFirst({
       where: { userId: context.actorId, organizationId: context.organizationId, status: "ACTIVE", user: { status: "ACTIVE" },
         organization: { status: "ACTIVE", capabilities: { some: { capability: { in: ["BUYER", "SUPPLIER"] } } } },
-        roles: { some: { role: { organizationId: context.organizationId, permissions: { some: { permission: { code: write ? "organization.members.manage" : "organization.view" } } } } } },
+        ...membershipPermission(context.organizationId, write ? "organization.members.manage" : "organization.view"),
       }, include: { organization: true },
     });
     if (!member) throw new ForbiddenException(write ? "Заполнить анкету может владелец или сотрудник с правом управления организацией" : "Нет доступа к организации");

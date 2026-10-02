@@ -1,4 +1,4 @@
-import type { CommerceAnalyticsQuery, CommerceAnalyticsResponse, WorkspaceCorrectionOfferPage, WorkspaceInventoryPage, WorkspaceLotPage, WorkspaceReservationPage, WorkspaceOverridePage } from "@marketplace/schemas";
+import type { AccessPolicy, CommerceAnalyticsQuery, CommerceAnalyticsResponse, WorkspaceCorrectionOfferPage, WorkspaceInventoryPage, WorkspaceLotPage, WorkspaceReservationPage, WorkspaceOverridePage } from "@marketplace/schemas";
 import type { CreateInvitationInput, AcceptInvitationInput, UpdateMembershipInput, IdentityMember, IdentityRole, IdentitySession, IdentitySessionRevoked, InvitationSummary, InvitationCreated, InvitationDelivered, InvitationAccepted, InvitationDetails } from "@marketplace/schemas";
 import type { CreateOfferPromotion, ReviseOfferPromotion, OfferPromotionCommand, OfferPromotion, PromotionPage, PublicPromotionPage, PromotionListQuery } from "@marketplace/schemas";
 import type { WorkspacePageQuery, WorkspaceOrderQuery, WorkspaceOrderPage, WorkspaceOffer, WorkspaceOfferPage, WorkspaceCartPage, WorkspaceSummary } from "@marketplace/schemas";
@@ -293,6 +293,7 @@ export class MarketplaceApiClient {
   requestPasswordReset(email: string) { return this.post<AuthForgotAccepted>("/auth/password/forgot", { email }); }
   listMembers(organizationId: string) { return this.get<IdentityMember[]>(`/organizations/${encodeURIComponent(organizationId)}/memberships`); }
   listRoles(organizationId: string) { return this.get<IdentityRole[]>(`/organizations/${encodeURIComponent(organizationId)}/roles`); }
+  getAccessPolicy(signal?: AbortSignal) { return this.get<AccessPolicy>("/access-control/policy", { signal }); }
   updateMember(organizationId: string, memberId: string, input: UpdateMembershipInput) { return this.patch<IdentityMember>(`/organizations/${encodeURIComponent(organizationId)}/memberships/${encodeURIComponent(memberId)}`, input); }
   assignMemberRole(organizationId: string, memberId: string, roleId: string) { return this.post<unknown>(`/organizations/${encodeURIComponent(organizationId)}/memberships/${encodeURIComponent(memberId)}/roles`, { roleId }); }
   removeMemberRole(organizationId: string, memberId: string, roleId: string) { return this.request<unknown>(`/organizations/${encodeURIComponent(organizationId)}/memberships/${encodeURIComponent(memberId)}/roles/${encodeURIComponent(roleId)}`, { method: "DELETE" }); }

@@ -1,4 +1,5 @@
 import { commerceAnalyticsQuerySchema, commerceAnalyticsResponseSchema } from "@marketplace/schemas";
+import { accessPolicySchema } from "@marketplace/schemas";
 import { internalNotificationSchema, internalNotificationListSchema, notificationQuerySchema } from "@marketplace/schemas";
 import { operationObjectSchema, operationWorkQueueQuerySchema } from "@marketplace/schemas";
 import { uploadedDocumentSchema } from "@marketplace/schemas";
@@ -182,6 +183,7 @@ const coreZodSchemas = {
   IdentityCommandResult: identityCommandResultSchema,
   IdentitySessionRevoked: identitySessionRevokedSchema,
   IdentityRoles: identityRolesSchema,
+  AccessPolicy: accessPolicySchema,
   IdentityMembers: identityMembersSchema,
   IdentitySessions: identitySessionsSchema,
   UpdateProductRequest: updateProductSchema,

@@ -1,3 +1,4 @@
+import { membershipPermission } from "../access-control/access-mode";
 import { Injectable } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
 import { Prisma, type OrderTransferClaim } from "@prisma/client";
@@ -12,7 +13,7 @@ export async function notifyPaymentReview(tx: Prisma.TransactionClient, order: R
   // A revoked employee must not remain the sole recipient of a pending case.
   const active = recipient ? await tx.organizationMembership.findFirst({ where: {
     organizationId: order.supplierOrganizationId, userId: recipient, status: "ACTIVE", user: { status: "ACTIVE" },
-    roles: { some: { role: { organizationId: order.supplierOrganizationId, permissions: { some: { permission: { code: "payment.transfer.confirm" } } } } } },
+    ...membershipPermission(order.supplierOrganizationId, "payment.transfer.confirm"),
   }, select: { id: true } }) : null;
   const labels: Record<string, string> = { REPORTED: "Клиника заявила перевод", REMINDER: "Перевод ожидает проверки15 рабочих минут",
     BACKUP: "Перевод ожидает проверки30 рабочих минут", CHECK_DUE: "Наступило назначенное время проверки перевода" };

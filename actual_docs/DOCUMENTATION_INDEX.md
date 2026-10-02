@@ -14,6 +14,11 @@
 
 ## Рабочий маршрут
 
+02.10: временный полный доступ в локальных кабинетах —
+[ADR017](architecture/adr/017-temporary-local-full-access.md),
+[текущая карточка и evidence](governance/task-state/CABINET-UX-2026-10-02.md).
+Редизайн отложен отдельным решением владельца.
+
 Итог02.10: [CORE-09-INTERNAL](governance/task-state/CORE-09-INTERNAL-2026-10-02.md)
 LOCAL_CORE_PASS на64591bc: CORE01–08 сведены к одной ревизии с CI/Security PASS,
 backend/API/canonical frontend проверками. CORE05–09 завершены во внутреннем scope;

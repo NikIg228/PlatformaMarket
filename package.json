@@ -88,6 +88,7 @@
     "verify:flow-b3": "npm run build && node scripts/with-test-database.mjs run e2e:flow-b3 --workspace=@marketplace/e2e",
     "verify:flow-b3:legacy": "npm run build --workspace=@marketplace/schemas && npm run build --workspace=@marketplace/api-client && npm run build --workspace=@marketplace/api && npm run build --workspace=@marketplace/admin-web && npm run build --workspace=@marketplace/buyer-web && node scripts/with-test-database.mjs run e2e:flow-b3:legacy --workspace=@marketplace/e2e",
     "verify:web": "node scripts/with-test-database.mjs run e2e --workspace=@marketplace/e2e",
+    "verify:full-access": "node scripts/with-test-database.mjs exec -- node scripts/run-canonical-browser.mjs --config playwright.full-access.config.ts",
     "dev:watch-api": "node scripts/dev-local.mjs unified --watch-api",
     "db:prepare:dev": "node scripts/prepare-dev-database.mjs",
     "db:test": "node scripts/with-test-database.mjs",

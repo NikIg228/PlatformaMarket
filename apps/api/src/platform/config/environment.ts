@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { deploymentProfileSchema } from "@marketplace/schemas";
+import { accessControlModeSchema, deploymentProfileSchema } from "@marketplace/schemas";
 
 const booleanFromString = z.preprocess((value) => {
   if (typeof value !== "string") return value;
@@ -56,6 +56,7 @@ const environmentSchema = z
     API_HOST: z.string().default("0.0.0.0"),
     API_PORT: z.coerce.number().int().min(1).max(65_535).default(4000),
     AUTH_MODE: z.enum(["development", "jwt"]).default("development"),
+    ACCESS_CONTROL_MODE: accessControlModeSchema.default("ROLE_BASED"),
     JWT_SECRET: z.string().min(32).optional(),
     JWT_PUBLIC_KEY: z.string().min(64).optional(),
     JWT_PRIVATE_KEY: z.string().min(64).optional(),
@@ -174,6 +175,8 @@ const environmentSchema = z
       .default("info"),
   })
   .superRefine((value, context) => {
+    if (value.NODE_ENV === "production" && value.ACCESS_CONTROL_MODE !== "ROLE_BASED")
+      context.addIssue({ code: "custom", path: ["ACCESS_CONTROL_MODE"], message: "Production requires role-based access control" });
     if (value.AUTH_LOCAL_MAIL_ENABLED || value.LOCAL_OPERATOR_PASSWORD_LOGIN_ENABLED) {
       if (value.NODE_ENV === "production" || !["127.0.0.1", "::1", "localhost"].includes(value.API_HOST))
         context.addIssue({ code: "custom", path: ["AUTH_LOCAL_MAIL_ENABLED"], message: "Local auth tools require non-production loopback API" });

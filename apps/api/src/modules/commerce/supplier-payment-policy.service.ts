@@ -1,3 +1,4 @@
+import { membershipPermission } from "../access-control/access-mode";
 import { ConflictException, ForbiddenException, Injectable } from "@nestjs/common";
 import { createHash } from "node:crypto";
 import { Prisma } from "@prisma/client";
@@ -19,14 +20,14 @@ export class SupplierPaymentPolicyService {
     const member = await db.organizationMembership.findFirst({ where: {
       organizationId: context.organizationId, userId: context.actorId, status: "ACTIVE", user: { status: "ACTIVE" },
       organization: { status: "ACTIVE", capabilities: { some: { capability: "SUPPLIER" } } },
-      roles: { some: { role: { organizationId: context.organizationId, permissions: { some: { permission: { code: "supplier.profile.manage" } } } } } },
+      ...membershipPermission(context.organizationId, "supplier.profile.manage"),
     } });
     if (!member) throw new ForbiddenException("Настроить проверку оплаты может сотрудник с правом управления профилем поставщика");
   }
 
   private members(db: Prisma.TransactionClient, organizationId: string) {
     return db.organizationMembership.findMany({ where: { organizationId, status: "ACTIVE", user: { status: "ACTIVE" },
-      roles: { some: { role: { organizationId, permissions: { some: { permission: { code: "payment.transfer.confirm" } } } } } },
+      ...membershipPermission(organizationId, "payment.transfer.confirm"),
     }, select: { userId: true, user: { select: { displayName: true } } }, orderBy: { userId: "asc" }, take: 500 });
   }
 

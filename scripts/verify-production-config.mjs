@@ -92,6 +92,9 @@ const run = (env) =>
 const accepted = run(valid);
 if (accepted.status !== 0)
   throw new Error(`Valid production contract rejected: ${accepted.stderr}`);
+const fullAccess = run({ ...valid, ACCESS_CONTROL_MODE: "FULL_ACCESS" });
+if (fullAccess.status === 0 || !String(fullAccess.stderr).includes("Production requires role-based access control"))
+  throw new Error("Production accepted temporary full access");
 for (const profile of ["pilot", ""]) {
   const rejected = run({ ...valid, DEPLOYMENT_PROFILE: profile });
   if (rejected.status === 0 || !String(rejected.stderr).includes("Production requires explicit DEPLOYMENT_PROFILE=go_live")) {

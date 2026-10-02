@@ -1,4 +1,4 @@
-import { frontendDeploymentEnvironment } from "@marketplace/schemas";
+import { accessControlModeSchema, frontendDeploymentEnvironment } from "@marketplace/schemas";
 
 // The owner-approved full feature set applies only to the local launcher.
 // Shared schema / production / CI defaults remain fail-safe pilot.
@@ -13,6 +13,7 @@ export function localDevelopmentProfile(env) {
   });
   return Object.freeze({
     DEPLOYMENT_PROFILE: profile,
+    ACCESS_CONTROL_MODE: accessControlModeSchema.parse(env.ACCESS_CONTROL_MODE ?? "FULL_ACCESS"),
     ...publicEnvironment,
   });
 }

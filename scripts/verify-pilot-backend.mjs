@@ -70,6 +70,7 @@ function assertOpenApiContract(openApi) {
   }
 
   const coreOperations = [
+    ["/api/access-control/policy", "get", "200", "AccessPolicy"],
     ["/api/auth/login", "post", "201", "AuthEmailSessionResponse", "AuthEmailLoginRequest"],
     ["/api/auth/email/verify", "post", "201", "AuthEmailVerifiedResponse", "AuthEmailVerifyRequest"],
     ["/api/auth/password/reset", "post", "201", "AuthPasswordResetResult", "AuthPasswordResetRequest"],

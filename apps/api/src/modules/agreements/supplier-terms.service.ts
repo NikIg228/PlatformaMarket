@@ -1,3 +1,4 @@
+import { membershipPermission } from "../access-control/access-mode";
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma, type SupplierTermsAcceptance as AcceptanceRecord } from "@prisma/client";
 import { supplierLegalDocumentSchema, type AcceptSupplierTermsInput, type ReviewSupplierAdmissionInput, type SupplierTermsAcceptance, type SupplierTermsState } from "@marketplace/schemas";
@@ -16,7 +17,7 @@ export class SupplierTermsService {
       where: { organizationId: context.organizationId, userId: context.actorId, status: "ACTIVE",
         organization: { status: "ACTIVE", capabilities: { some: { capability: "SUPPLIER" } } },
         user: { status: "ACTIVE" },
-        roles: { some: { role: { organizationId: context.organizationId, permissions: { some: { permission: { code: permission } } } } } },
+        ...membershipPermission(context.organizationId, permission),
       }, include: { organization: true, user: true },
     });
     if (!membership) throw new ForbiddenException("Нет полномочий действовать от имени поставщика");

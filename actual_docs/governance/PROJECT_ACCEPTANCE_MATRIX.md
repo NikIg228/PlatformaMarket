@@ -1,5 +1,10 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+02.10 ROLES — LOCAL_PASS / CI_PENDING: [checkpoint](task-state/CABINET-UX-2026-10-02.md),
+[ADR017](../architecture/adr/017-temporary-local-full-access.md). FULL_ACCESS для clinic/supplier/admin;
+роли сохранены, tenant/identity/capabilities действуют. Root и contract/PG/runtime/config PASS;
+57 RBAC + 3 full-access browser PASS, local21 pages PASS. Redesign отложен.
+
 02.10 SHARED-THEME — CLOSED / CI_PASS: [checkpoint](task-state/SHARED-THEME-2026-10-02.md),
 [контракт и аудит](../ui-ux/SHARED_SEMANTIC_THEME.md). Общая светлая палитра v1,
 Fluent/CSS состояния, auth/public/workspace overrides, Tag tones и keyboard modality.

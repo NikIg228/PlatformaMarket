@@ -16,6 +16,14 @@ DEPLOYMENT_PROFILE определяет Nest module graph и build-time frontend
 
 ## Основной локальный runtime
 
+С02.10.2026 локальный launcher временно выбирает `ACCESS_CONTROL_MODE=FULL_ACCESS`
+для всех трёх кабинетов по [ADR017](../architecture/adr/017-temporary-local-full-access.md).
+Назначенные роли сохраняются, активным сотрудникам доступны все функции своей
+организации. Для возврата ролевых ограничений перед `npm run dev` задать
+`$env:ACCESS_CONTROL_MODE = 'ROLE_BASED'` и перезапустить собственный launcher.
+Для возврата к полному доступу — `FULL_ACCESS`. JWT/tenant/capability не отключаются.
+Прямой API и CI по умолчанию остаются `ROLE_BASED`; production отвергает FULL_ACCESS.
+
 npm run dev / dev:local — API4012 и apps/web3000; вход /login, оператор
 /admin/login. /catalog, /clinic, /supplier, /admin работают на одном origin.
 AUTH_MODE=jwt; проверяются реальные сессии/membership, demo headers обычным
