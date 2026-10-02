@@ -17,6 +17,7 @@ import {
 } from "@marketplace/api-client";
 import {
   DmButton,
+  ConversationCounter,
   ErrorState,
   LoadingState,
   useSessionLogout,
@@ -34,6 +35,7 @@ import { Settings24Regular } from "@fluentui/react-icons/svg/settings";
 import { Home24Regular } from "@fluentui/react-icons/svg/home";
 import { Box24Regular } from "@fluentui/react-icons/svg/box";
 import { Navigation24Regular } from "@fluentui/react-icons/svg/navigation";
+import { Chat24Regular } from "@fluentui/react-icons/svg/chat";
 import styles from "./workspace.module.css";
 import { WorkspacePermissions } from "./workspace-permissions";
 import { MessageHeader } from "./message-header";
@@ -54,10 +56,12 @@ export function useWorkspace() {
 }
 const links = {
   clinic: [
+    ["/clinic", "Главная"],
     ["/catalog", "Каталог"],
     ["/clinic/cart", "Корзина"],
     ["/clinic/orders", "Заказы"],
     ["/clinic/documents", "Документы"],
+    ["/clinic/messages", "Сообщения"],
     ["/clinic/settings", "Настройки"],
   ],
   supplier: [
@@ -65,6 +69,7 @@ const links = {
     ["/supplier/products", "Товары"],
     ["/supplier/orders", "Заказы"],
     ["/supplier/documents", "Документы"],
+    ["/supplier/messages", "Сообщения"],
     ["/supplier/settings", "Настройки"],
   ],
 };
@@ -182,13 +187,14 @@ export function Workspace({
           </Link>
           <nav className={styles.navigation} aria-label={label}>
             {links[role].map(([href, text]) => (
+              text === "Сообщения" ? <ConversationCounter key={href} api={api} href={href} icon={<Chat24Regular />} showLabel onClick={closeMenu} current={pathname === href} /> :
               <Link
                 key={href}
                 href={href}
                 onClick={closeMenu}
                 aria-current={
                   pathname === href ||
-                  (href !== "/supplier" && pathname.startsWith(href + "/"))
+                  (href !== "/supplier" && href !== "/clinic" && pathname.startsWith(href + "/"))
                     ? "page"
                     : undefined
                 }

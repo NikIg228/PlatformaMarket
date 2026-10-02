@@ -436,11 +436,13 @@ export function AppShell({
 }
 
 export function PageHeader({
+  hideHeading = false,
   eyebrow,
   title,
   description,
   actions,
 }: {
+  hideHeading?: boolean;
   eyebrow?: string;
   title: string;
   description?: string;
@@ -448,11 +450,11 @@ export function PageHeader({
 }) {
   return (
     <div className="mp-page-header">
-      <div>
+      {!hideHeading ? <div>
         {eyebrow ? <span className="mp-eyebrow">{eyebrow}</span> : null}
         <h1>{title}</h1>
         {description ? <p>{description}</p> : null}
-      </div>
+      </div> : null}
       {actions ? <div className="mp-page-actions">{actions}</div> : null}
     </div>
   );

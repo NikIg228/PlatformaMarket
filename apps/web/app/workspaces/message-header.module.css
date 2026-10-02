@@ -4,10 +4,10 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px 20px;
-  min-height: 76px;
+  min-height: 56px;
   box-sizing: border-box;
-  margin: -32px -32px 28px;
-  padding: 16px 32px;
+  margin: -32px -32px 20px;
+  padding: 6px 32px;
   background: var(--dm-surface);
   border-bottom: 1px solid var(--dm-border);
 }
@@ -26,17 +26,16 @@
   gap: 4px;
   margin-left: auto;
 }
-.actions > a, .counter > a {
+.actions > a {
   width: 44px;
   height: 44px;
   min-width: 44px;
   color: var(--dm-text-secondary);
 }
-.counter { display: inline-flex; }
 @media (min-width: 761px) and (max-width: 1100px) {
-  .header { margin: -24px -24px 24px; padding: 16px 24px; }
+  .header { margin: -24px -24px 20px; padding: 6px 24px; }
 }
 @media (max-width: 760px) {
-  .header { margin: -20px -16px 20px; padding: 12px 16px; gap: 8px; }
+  .header { margin: -20px -16px 16px; padding: 6px 16px; gap: 8px; }
   .greeting { font-size: 18px; flex-basis: 160px; }
 }

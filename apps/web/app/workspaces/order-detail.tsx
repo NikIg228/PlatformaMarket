@@ -15,7 +15,7 @@ export default function OrderDetail() {
   return (
     <div id={`supplier-order-${id}`} tabIndex={-1} className={`${styles.stack} ${styles.order}`}>
       <PermissionFields required={["support.ticket.view"]}><DmButton as="a" href={`/${role}/messages?contextType=ORDER&contextId=${id}`}>Переписка по заказу</DmButton></PermissionFields>
-      <OrderWorkflowWorkspace
+      <OrderWorkflowWorkspace hideHeading
         backHref={`/${role}/orders`}
         backLabel="← Все заказы"
         cartHref="/clinic/cart"

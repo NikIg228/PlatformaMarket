@@ -1,5 +1,23 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+02.10 COMPACT-HEADER — LOCAL_PASS, main@9d4ea6a; primary/foreign7 неизменны.
+Последний запрос: header56px, приветствие только главные, названия страниц
+в header без вводных подзаголовков; Сообщения между Документы/Настройки sidebar.
+Дополнение владельца: отдельная главная клиники (вместо redirect в корзину),
+пока без dashboard-метрик; приветствие и рабочие быстрые переходы.
+Scope UI shell/pages + optional hideHeading для shared consumers, новые routes
+не добавляются; сохраняются actions/ошибки/условия операций, logout и counter.
+Checks: web types1 PASS, page-title/greeting15 PASS, targeted lint1+counter2 PASS; web build1 PASS,
+local23 routes (supplier14/clinic9) PASS: один h1 в header, greetings only home;
+1440/390 no overflow/header<=60px/Escape PASS. После смены sidebar Counter на
+native link проверены active bg/aria-current обоих кабинетов, главные и скриншоты.
+API/данные без изменений. Local browser logs .tmp/compact-header-*.log; screenshots
+output/playwright/compact-header. НЕ root/E2E/DB suites, CI status без ожидания.
+Budget20m/build,2m/probe,max3. Тесты старого имени dashboard обновлены под header.
+Self-review PASS: actions/data/legacy headings preserved, no dependencies/API changes.
+Dev canonical go_live восстановлен launcher15276. Practices: Fluent UI,
+development-toolkit/frontend, Agency Frontend Developer, Playwright targeted smoke.
+
 02.10 HEADER — LOCAL_PASS. Новый запрос: общий clinic/supplier header, приветствие
 по локальному времени устройства и имени сотрудника; системные icon links.
 Logout остаётся в sidebar. main@04c6b4e, primary writer тот же, foreign7 сохранены.

@@ -202,6 +202,7 @@ export default function Documents() {
       ) : null}
       <ResourceStatus resource={{ lastSuccessAt, offline, refreshing: loading, error: refreshError }} />
       <DocumentArchiveWorkspace
+        hideHeading
         roleLabel={role === "clinic" ? "клиника" : "поставщик"}
         organizationId={organizationId}
         items={items}

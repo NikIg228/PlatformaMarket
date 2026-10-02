@@ -55,7 +55,7 @@ function PromotionCard({ item, api, operator, reload, edit }: { item: OfferPromo
   </Section>;
 }
 
-export function PromotionWorkspace({ api, operator = false }: { api: PromotionWorkspaceApi; operator?: boolean }) {
+export function PromotionWorkspace({ api, operator = false, hideHeading = false }: { api: PromotionWorkspaceApi; operator?: boolean; hideHeading?: boolean }) {
   const [page, setPage] = useState<PromotionPage | null>(null), [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true), [error, setError] = useState<string | null>(null), [notice, setNotice] = useState("");
   const [status, setStatus] = useState(""), [editor, setEditor] = useState<{ selected?: OfferPromotion; template?: OfferPromotion } | null>(null);
@@ -69,7 +69,7 @@ export function PromotionWorkspace({ api, operator = false }: { api: PromotionWo
   useEffect(() => { void load(); return () => { generation.current++; }; }, [load]);
   const saved = async () => { setNotice("Изменения сохранены. История обновлена."); await load(); };
   return <div className="mp-stack">
-    <h2>{operator ? "Согласование акций" : "Акции поставщика"}</h2>
+    {!hideHeading ? <h2>{operator ? "Согласование акций" : "Акции поставщика"}</h2> : null}
     {notice ? <p role="status">{notice}</p> : null}
     {!operator && !editor ? <DmButton appearance="primary" onClick={() => setEditor({})}>Новая акция</DmButton> : null}
     {editor ? <PromotionEditor key={editor.selected?.id ?? editor.template?.id ?? "new"} api={api} {...editor} onSaved={saved} onClose={() => setEditor(null)} /> : null}

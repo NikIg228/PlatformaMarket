@@ -309,6 +309,7 @@ export function DocumentArchiveUpload({
 }
 
 export function DocumentArchiveWorkspace({
+  hideHeading = false,
   roleLabel,
   organizationId,
   items,
@@ -330,6 +331,7 @@ export function DocumentArchiveWorkspace({
   calendarTimeZone,
   filterError,
 }: {
+  hideHeading?: boolean;
   roleLabel: string;
   organizationId: string;
   items: DocumentArchiveItemView[];
@@ -370,11 +372,11 @@ export function DocumentArchiveWorkspace({
   return (
     <div className="dm-document-archive">
       <header className="dm-document-archive-header">
-        <div>
+        {!hideHeading ? <div>
           <span className="dm-document-archive-eyebrow">Документолог · {roleLabel}</span>
           <h1>Документы</h1>
           <p>Договоры, счета, подтверждения оплаты и отгрузочные документы в одном защищённом архиве.</p>
-        </div>
+        </div> : null}
         <div className="dm-document-archive-actions">
           {uploadAction}
           <Button appearance="secondary" icon={<ArrowSync24Regular />} onClick={onRefresh} disabled={loading}>Обновить</Button>

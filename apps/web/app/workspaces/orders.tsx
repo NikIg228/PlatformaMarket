@@ -37,13 +37,7 @@ export default function Orders() {
     <>
       <header className={styles.heading}>
         <div>
-          <h1>Заказы</h1>
           <Link href={`/${role}/analytics`}>Аналитика {role === "clinic" ? "закупок" : "продаж"}</Link>
-          <p>
-            {role === "clinic"
-              ? "Закупки и выполнение заказов поставщиками"
-              : "Заказы покупателей, подтверждение и отгрузка"}
-          </p>
         </div>
         <DmButton
           disabled={resource.loading}

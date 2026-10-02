@@ -13,7 +13,7 @@ function NotificationList() {
   const [error, setError] = useState("");
   const load = useCallback(() => api.internalNotifications(organizationId, offset), [api, organizationId, offset]);
   const resource = useResource(load, { intervalMs: 30_000 });
-  return <section className="mp-stack"><h1>Уведомления</h1><p>Рабочие события вашей организации.</p>
+  return <section className="mp-stack">
     {error || resource.error ? <p role="alert">{error || resource.error}<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton></p> : null}
     {resource.initialLoading ? <LoadingState label="Загружаем уведомления" /> : resource.data?.length === 0 ? <EmptyState title="Уведомлений пока нет" description="Здесь появятся изменения заказов, документов и обращения." /> : null}
     {resource.data?.map(item => {

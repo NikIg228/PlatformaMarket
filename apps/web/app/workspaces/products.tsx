@@ -60,10 +60,6 @@ export default function Products() {
   return (
     <div className={styles.stack}>
       <header className={styles.heading}>
-        <div>
-          <h1>Товары</h1>
-          <p>Ваши предложения, цены, остатки и статус публикации</p>
-        </div>
         <div className={styles.actions}>
           <DmButton disabled={!has("import.manage")} onClick={() => setEditor("import")}>
             Загрузить из файла

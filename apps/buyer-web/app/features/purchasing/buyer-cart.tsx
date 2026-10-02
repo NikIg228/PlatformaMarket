@@ -28,6 +28,7 @@ import { useCartAutoRefresh } from "./use-cart-auto-refresh";
 import { cartCommercialChanges } from "./cart-commercial-changes";
 
 type BuyerCartProps = {
+  hideHeading?: boolean;
   api: MarketplaceApiClient;
   onCartChanged: (cart: Cart) => void;
   onValidated: (value: CartValidation | null) => void;
@@ -55,6 +56,7 @@ function ValidationIcon({
 }
 
 export function BuyerCart({
+  hideHeading = false,
   api, onCartChanged, onValidated,
   cart,
   validation,
@@ -84,6 +86,7 @@ export function BuyerCart({
   return (
     <div className="mp-stack" ref={root}>
       <PageHeader
+        hideHeading={hideHeading}
         eyebrow="Заказ"
         title="Корзина клиники"
         description="Перед резервированием система повторно проверяет цену, остаток и доступность каждой позиции."

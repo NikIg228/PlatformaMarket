@@ -109,6 +109,7 @@ export default function Cart() {
       }} />
       <PageNavigation navigation={navigation} nextCursor={resource.data.cursor === navigation.cursor ? resource.data.nextCursor : null} loading={resource.loading} onRefresh={() => { navigation.reset(); if (!navigation.cursor) void resource.refresh(); }} />
       <BuyerCart
+        hideHeading
         api={api}
         cart={cart}
         validation={checked}

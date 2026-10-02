@@ -17,7 +17,7 @@ type Context = { contextType: "OFFER" | "ORDER"; contextId: string };
 const announce = () => window.dispatchEvent(new Event("marketplace:conversations"));
 const time = (value: string) => new Intl.DateTimeFormat("ru-KZ", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
 
-export function ConversationCounter({ api, href, icon }: { api: Pick<ConversationApi, "conversations">; href: string; icon?: ReactElement }) {
+export function ConversationCounter({ api, href, icon, showLabel = false, onClick, current }: { api: Pick<ConversationApi, "conversations">; href: string; icon?: ReactElement; showLabel?: boolean; onClick?: () => void; current?: boolean }) {
   const [count, setCount] = useState<number | null>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -36,12 +36,16 @@ export function ConversationCounter({ api, href, icon }: { api: Pick<Conversatio
     document.addEventListener("visibilitychange", load);
     return () => { active = false; clearInterval(interval); window.removeEventListener("marketplace:conversations", load); document.removeEventListener("visibilitychange", load); };
   }, [api]);
-  return <DmButton as="a" href={href} icon={icon} appearance={icon ? "subtle" : undefined} style={icon ? { position: "relative" } : undefined} aria-label={failed ? "Сообщения, счётчик временно недоступен" : `Сообщения${count === null ? "" : `, непрочитанных диалогов: ${count}`}`}>
-    {icon ? failed || count ? <span aria-hidden="true" style={{ position: "absolute", top: 0, right: 0, minWidth: 16, borderRadius: 10, padding: "0 3px", fontSize: 11, lineHeight: "16px", background: "var(--dm-brand-primary)", color: "var(--dm-surface)" }}>{failed ? "!" : count! > 99 ? "99+" : count}</span> : null : <>Сообщения{failed ? " · !" : count ? ` · ${count}` : ""}</>}
+  const label = failed ? "Сообщения, счётчик временно недоступен" : `Сообщения${count === null ? "" : `, непрочитанных диалогов: ${count}`}`;
+  if (showLabel) return <a href={href} onClick={onClick} aria-current={current ? "page" : undefined} aria-label={label}>
+    {icon ? <span aria-hidden="true">{icon}</span> : null}Сообщения{failed ? " · !" : count ? ` · ${count}` : ""}
+  </a>;
+  return <DmButton as="a" href={href} icon={icon} onClick={onClick} aria-current={current ? "page" : undefined} appearance={icon ? "subtle" : undefined} style={icon ? { position: "relative" } : undefined} aria-label={label}>
+    {icon && !showLabel ? failed || count ? <span aria-hidden="true" style={{ position: "absolute", top: 0, right: 0, minWidth: 16, borderRadius: 10, padding: "0 3px", fontSize: 11, lineHeight: "16px", background: "var(--dm-brand-primary)", color: "var(--dm-surface)" }}>{failed ? "!" : count! > 99 ? "99+" : count}</span> : null : <>Сообщения{failed ? " · !" : count ? ` · ${count}` : ""}</>}
   </DmButton>;
 }
 
-export function ConversationWorkspace({ api, organizationId, initialId, context, canWrite = true, operator = false, contextHref }: { api: ConversationApi; organizationId: string; initialId?: string; context?: Context; canWrite?: boolean; operator?: boolean; contextHref?: (type: "OFFER" | "ORDER", id: string) => string | undefined }) {
+export function ConversationWorkspace({ api, organizationId, initialId, context, canWrite = true, operator = false, contextHref, hideHeading = false }: { api: ConversationApi; organizationId: string; initialId?: string; context?: Context; canWrite?: boolean; operator?: boolean; contextHref?: (type: "OFFER" | "ORDER", id: string) => string | undefined; hideHeading?: boolean }) {
   const [selected, setSelected] = useState(initialId);
   const [filter, setFilter] = useState<ConversationQuery["filter"]>("ALL");
   const [offset, setOffset] = useState(0);
@@ -121,7 +125,7 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
   const current = detail?.conversation;
   const href = current?.productId ? `/products/${current.productId}` : current ? contextHref?.(current.contextType, current.contextId) : undefined;
   return <section className="dm-conversations" aria-label="Сообщения">
-    <div className="dm-conversations-toolbar"><h1>Сообщения</h1><DmButton disabled={loading || busy} onClick={() => void refresh()}>Обновить</DmButton></div>
+    <div className="dm-conversations-toolbar">{!hideHeading ? <h1>Сообщения</h1> : null}<DmButton disabled={loading || busy} onClick={() => void refresh()}>Обновить</DmButton></div>
     {error ? <div role="alert"><p>{error} Введённый текст сохранён. Повторите действие после проверки соединения.</p><DmButton disabled={busy} onClick={() => { if (!lookupReady && context) setLookupAttempt(value => value + 1); else void refresh(); }}>Повторить загрузку</DmButton></div> : null}
     {feedback ? <p role="status">{feedback}</p> : null}
     <div className="dm-conversations-layout" data-selected={Boolean(selected || context)}>

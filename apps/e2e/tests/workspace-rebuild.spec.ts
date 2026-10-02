@@ -574,7 +574,7 @@ test("supplier routes load independently, product creation has one entry action"
   const state = await fixture(page, "SUPPLIER", "/workspaces/supplier/orders");
   await page.goto("/supplier");
   await expect(
-    page.getByRole("heading", { name: "Тестовая организация" }),
+    page.locator("main header").getByRole("heading", { level: 1 }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Товары", exact: true }).click();
   await expect(
@@ -675,7 +675,7 @@ test("mobile workspace keeps navigation accessible without page overflow", async
   await fixture(page, "SUPPLIER");
   await page.goto("/supplier");
   await expect(
-    page.getByRole("heading", { name: "Тестовая организация" }),
+    page.locator("main header").getByRole("heading", { level: 1 }),
   ).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Кабинет поставщика" })).toBeHidden();
   await page.getByRole("button", { name: "Меню кабинета", exact: true }).click();

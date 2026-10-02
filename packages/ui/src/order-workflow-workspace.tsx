@@ -21,12 +21,12 @@ type Api = Partial<PaymentPolicyApi> & {
 const labels: Record<string, string> = { ACCEPT_COMPOSITION: "Клиника согласовала состав", ISSUE_INVOICE: "Поставщик выставил счёт", REPORT_TRANSFER: "Клиника сообщила о переводе", REQUEST_PAYMENT_DETAILS: "Поставщик запросил уточнение оплаты", CONFIRM_TRANSFER: "Поставщик подтвердил поступление", CANCEL: "Клиника отменила неоплаченный заказ", RECORD_TRANSFER_CHECK: "Поставщик проверил перевод и назначил повторную проверку", OPEN_PAYMENT_DISPUTE: "Открыт спор по переводу", PROPOSE_PAYMENT_REDUCTION: "Предложено уменьшение заказа", DECIDE_PAYMENT_REDUCTION: "Рассмотрено уменьшение заказа" };
 
 Object.assign(labels, { REQUEST_RETURN: "Клиника запросила возврат", DECIDE_RETURN: "Поставщик рассмотрел возврат", SEND_RETURN_GOODS: "Клиника отправила товар обратно", RECEIVE_RETURN_GOODS: "Поставщик получил возвращённый товар", SEND_MANUAL_REFUND: "Поставщик сообщил об отправке денег", RECEIVE_MANUAL_REFUND: "Клиника подтвердила получение возврата", REORDER: "Создана корзина для повторной закупки" });
-type WorkflowProps = { orderId: string; organizationId: string; api: Api; onDownload: (id: string) => Promise<void>; renderFulfillment?: (data: OrderWorkflowResponse, refresh: () => Promise<void>) => ReactNode; backHref?: string; backLabel?: string; cartHref?: string };
+type WorkflowProps = { hideHeading?: boolean; orderId: string; organizationId: string; api: Api; onDownload: (id: string) => Promise<void>; renderFulfillment?: (data: OrderWorkflowResponse, refresh: () => Promise<void>) => ReactNode; backHref?: string; backLabel?: string; cartHref?: string };
 export function OrderWorkflowWorkspace(props: WorkflowProps) {
   return <OrderWorkflowSession key={`${props.organizationId}:${props.orderId}`} {...props} />;
 }
 
-function OrderWorkflowSession({ orderId, organizationId, api, onDownload, renderFulfillment, backHref = "/", backLabel = "В кабинет", cartHref = "/" }: WorkflowProps) {
+function OrderWorkflowSession({ hideHeading = false, orderId, organizationId, api, onDownload, renderFulfillment, backHref = "/", backLabel = "В кабинет", cartHref = "/" }: WorkflowProps) {
   const has = usePermissions();
   const fileInputId = useId();
   const canAct = (action: Action["action"]) => has(...(action === "SEND_MANUAL_REFUND" ? ["payment.transfer.confirm", "document.upload"] : [action === "CONFIRM_TRANSFER" ? "payment.transfer.confirm" : action === "REORDER" ? "order.create" : ["ISSUE_INVOICE", "REQUEST_PAYMENT_DETAILS", "RECORD_TRANSFER_CHECK", "DECIDE_RETURN", "RECEIVE_RETURN_GOODS"].includes(action) || (["OPEN_PAYMENT_DISPUTE", "PROPOSE_PAYMENT_REDUCTION", "DECIDE_PAYMENT_REDUCTION"].includes(action) && organizationId === data?.order.supplierOrganizationId) ? "order.confirm" : "order.approve"]));
@@ -119,7 +119,7 @@ function OrderWorkflowSession({ orderId, organizationId, api, onDownload, render
   const mayReport = buyer && !reserveOverdue && Boolean(data.invoiceDocumentId) && ["AWAITING_PAYMENT", "PAID", "ASSEMBLING", "READY_TO_SHIP", "SHIPPED", "IN_TRANSIT", "PARTIALLY_FULFILLED", "DELIVERED"].includes(data.status);
   const download = async (id: string) => { try { await onDownload(id); } catch (cause) { if (alive.current) setError(errorMessage(cause, "Не удалось скачать документ")); } };
   return <div style={{ display: "grid", gap: 20 }}>
-    <header><a href={backHref}>{backLabel}</a><h1>Заказ {data.order.orderNumber}</h1><p>{formatMoney(data.order.subtotalAmountMinor, data.order.currency)} · {formatStatus(data.status)}</p></header>
+    <header><a href={backHref}>{backLabel}</a>{hideHeading ? <p><strong>№ {data.order.orderNumber}</strong></p> : <h1>Заказ {data.order.orderNumber}</h1>}<p>{formatMoney(data.order.subtotalAmountMinor, data.order.currency)} · {formatStatus(data.status)}</p></header>
     {readError ? <DmFeedback tone="warning" title="Не удалось обновить заказ" description={readError} action={<DmButton disabled={busy} onClick={() => void refresh()}>Повторить загрузку</DmButton>} /> : null}
     {error ? <DmFeedback tone="danger" title="Требуется внимание" description={error} action={<DmButton disabled={busy} onClick={() => void refresh()}>Обновить условия</DmButton>} /> : null}
     {notice ? <DmFeedback tone="success" title="Готово" description={notice} /> : null}

@@ -24,7 +24,7 @@ export const supplierProductLinks = [
 ] as const;
 export function SupplierProductLinks() { return <nav aria-label="Разделы товаров" className={styles.actions}>{supplierProductLinks.map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}{frontendFeatures.promotions ? <Link href="/supplier/products/promotions">Акции</Link> : null}</nav>; }
 function Frame({ title, children }: { title: string; children: React.ReactNode }) {
-  return <div className={styles.stack}><Link href="/supplier/products">← Все товары</Link><h1>{title}</h1><SupplierProductLinks />{children}</div>;
+  return <div className={styles.stack} aria-label={title}><Link href="/supplier/products">← Все товары</Link><SupplierProductLinks />{children}</div>;
 }
 export function ProposalsPage() {
   return <Frame title="Заявки на новые товары"><PermissionBoundary required={["catalog.offer.edit"]}><Proposals /></PermissionBoundary></Frame>;
@@ -36,7 +36,7 @@ function Proposals() {
   const changed = useCallback(async () => { setGeneration(value => value + 1); }, []);
   const noop = useCallback(async () => {}, []);
   return <>
-    <ProductProposals key={generation} api={api} onChanged={noop} onRetry={setRetry} />
+    <ProductProposals hideHeading key={generation} api={api} onChanged={noop} onRetry={setRetry} />
     {retry ? <section className={styles.panel}><h2>Новая заявка после отказа</h2><p>Проверьте сведения и исправьте причину отказа: {retry.rejectionReason}. Прежнее решение сохранится в истории.</p><DmButton onClick={() => setRetry(null)}>Закрыть форму</DmButton><ManualOffer key={retry.id} api={api} supplierId={organizationId} initiallyOpen initialProposal={retry} onChanged={changed} /></section> : <Link href="/supplier/products">Добавить товар или отправить новую заявку</Link>}
   </>;
 }
@@ -54,13 +54,13 @@ function Corrections() {
   return <><form className={styles.actions} onSubmit={event => { event.preventDefault(); navigation.reset(); setQuery(draft.trim()); }}>
     <DmField label="Поиск карточки"><DmInput value={draft} onChange={(_, data) => setDraft(data.value)} /></DmField><DmButton type="submit">Найти</DmButton>
     <DmButton disabled={resource.loading} onClick={() => void resource.refresh()}>Обновить карточки</DmButton>
-  </form><ResourceStatus resource={resource} /><ProductCorrectionsPanel api={api} supplierId={organizationId} offers={resource.data.items} /><PageNavigation navigation={navigation} nextCursor={resource.data.nextCursor} loading={resource.loading} onRefresh={() => { if (navigation.cursor) navigation.reset(); else void resource.refresh(); }} /></>;
+  </form><ResourceStatus resource={resource} /><ProductCorrectionsPanel hideHeading api={api} supplierId={organizationId} offers={resource.data.items} /><PageNavigation navigation={navigation} nextCursor={resource.data.nextCursor} loading={resource.loading} onRefresh={() => { if (navigation.cursor) navigation.reset(); else void resource.refresh(); }} /></>;
 }
 export function InventoryPage() {
   return <Frame title="Партии и резервы"><PermissionBoundary required={["inventory.view"]}><Inventory /></PermissionBoundary></Frame>;
 }
 export function SourcesPage() {
-  return <div className={styles.stack}><Link href="/supplier/settings">← Настройки организации</Link><h1>Источники товаров</h1><PermissionBoundary required={["import.manage"]}><Sources /></PermissionBoundary></div>;
+  return <div className={styles.stack}><Link href="/supplier/settings">← Настройки организации</Link><PermissionBoundary required={["import.manage"]}><Sources /></PermissionBoundary></div>;
 }
 function Sources() {
   const { api, organizationId } = useWorkspace();

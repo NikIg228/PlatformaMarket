@@ -4,7 +4,7 @@ import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { ProductCandidateHistoryResponse } from "@marketplace/schemas";
 import { DmButton, DmTable, ErrorState, Section, errorMessage, formatDate } from "@marketplace/ui";
 
-export function ProductProposals({ api, onChanged, onRetry }: { api: MarketplaceApiClient; onChanged: () => Promise<void>; onRetry?: (item: ProductCandidateHistoryResponse["items"][number]) => void }) {
+export function ProductProposals({ api, onChanged, onRetry, hideHeading = false }: { api: MarketplaceApiClient; onChanged: () => Promise<void>; onRetry?: (item: ProductCandidateHistoryResponse["items"][number]) => void; hideHeading?: boolean }) {
   const [history, setHistory] = useState<ProductCandidateHistoryResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +23,7 @@ export function ProductProposals({ api, onChanged, onRetry }: { api: Marketplace
     finally { if (request === sequence.current) { inFlight.current = false; setBusy(false); } }
   };
   useEffect(() => { void load(); return () => { sequence.current++; inFlight.current = false; }; }, [api]);
-  return <Section title="Заявки на новые товары" description="Одобренная заявка создаёт скрытый черновик в ваших предложениях. Заполните цену и остаток, затем опубликуйте его.">
+  return <Section title={hideHeading ? undefined : "Заявки на новые товары"} description={hideHeading ? undefined : "Одобренная заявка создаёт скрытый черновик в ваших предложениях. Заполните цену и остаток, затем опубликуйте его."}>
     <DmButton disabled={busy} onClick={() => void load()}>Обновить мои заявки</DmButton>
     {busy ? <p role="status">Загружаем заявки…</p> : null}
     {error ? <ErrorState description={error} /> : null}

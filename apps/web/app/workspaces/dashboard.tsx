@@ -8,12 +8,11 @@ import { ResourceStatus } from "./resource-status";
 import styles from "./workspace.module.css";
 
 export default function Dashboard() {
-  const { api, organizationId, session } = useWorkspace();
+  const { api, organizationId } = useWorkspace();
   const load = useCallback((signal: AbortSignal) => api.workspaceSummary({ signal }), [api, organizationId]);
   const resource = useResource(load, { intervalMs: 30_000 });
   return <div className={styles.stack}>
     <header className={styles.heading}>
-      <div><h1>{session.organizationDisplayName ?? "Кабинет поставщика"}</h1><p>Заказы и товары вашей организации</p></div>
       <DmButton disabled={resource.loading} onClick={() => void resource.refresh()}>Обновить</DmButton>
     </header>
     <ResourceStatus resource={resource} />

@@ -59,7 +59,7 @@ const statusLabel: Record<Correction["status"], string> = {
   REJECTED: "Отклонено",
 };
 
-export function ProductCorrectionsPanel({ api, offers, supplierId }: { api: MarketplaceApiClient; offers: Offer[]; supplierId: string }) {
+export function ProductCorrectionsPanel({ api, offers, supplierId, hideHeading = false }: { api: MarketplaceApiClient; offers: Offer[]; supplierId: string; hideHeading?: boolean }) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const products = useMemo(() => [...new Map([...(selectedProduct ? [selectedProduct] : []), ...offers.map(offer => offer.productVariant.product)].map(product => [product.id, product])).values()], [offers, selectedProduct]);
   const productId = selectedProduct?.id ?? "";
@@ -115,7 +115,7 @@ export function ProductCorrectionsPanel({ api, offers, supplierId }: { api: Mark
     finally { setBusy(false); }
   };
 
-  return <Section title="Исправления карточек" description="Нашли ошибку? Предложите исправление и приложите подтверждение.">
+  return <Section title={hideHeading ? undefined : "Исправления карточек"} description={hideHeading ? undefined : "Нашли ошибку? Предложите исправление и приложите подтверждение."}>
     <div className={styles.layout}>
       <form className={styles.form} onSubmit={(event) => { event.preventDefault(); void submit(); }}>
         {!products.length ? <EmptyState title="Нет доступных карточек" description="Здесь появятся товары поставщика, для которых можно предложить исправление." /> : null}

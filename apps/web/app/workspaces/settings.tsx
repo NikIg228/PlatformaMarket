@@ -21,12 +21,6 @@ export default function Settings() {
   const router = useRouter();
   return (
     <div className={styles.stack}>
-      <header className={styles.heading}>
-        <div>
-          <h1>Настройки организации</h1>
-          <p>Реквизиты, контактные данные и готовность к работе</p>
-        </div>
-      </header>
       {role === "supplier" ? <Link href="/supplier/settings/sources">Источники товаров и загрузка прайса</Link> : null}
       {role === "supplier" ? (
         <OnboardingProgress
