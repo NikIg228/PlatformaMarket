@@ -1,5 +1,14 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+CORE07 CI1 FAIL только admin dynamic-panel inventory20→21. Исправлен тест,
+добавлено lazy/eager analytics assertion; admin23 PASS. Backend499/остальные
+unit suites, PG, контейнеры и Security CI PASS. Готовится test-only corrective
+commit/push; CORE08 не начат. История и точные IDs в CORE07.
+
+CORE07 опубликован02.10:3f2002b, remote SHA совпадает; CI36989630820 и
+Security36989631017 IN_PROGRESS. Все local gates PASS, CORE08 только read-only
+подготовка до green07. Dev остановлен; рабочая150000 не применялась.
+
 CORE07 LOCAL_PASS02.10 14:20+05: PostgreSQL3, core2, runtime/prisma, types2,
 webbuild1/bundle1/browser2 PASS. Self-review завершён; scoped commit/push main
 и CI — следующий шаг. CORE08–09 разрешены после green07. Worker expiry metrics

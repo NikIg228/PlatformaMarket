@@ -33,6 +33,7 @@ describe("Admin performance boundaries", () => {
     expect(source).toContain('from "./admin-section-components"');
     expect(source).toContain('from "./live-metrics"');
     expect(source).toContain('from "./operation-queue"');
+    expect(source).not.toContain('from "./commerce-analytics"');
     expect(source).not.toMatch(/from "\.\/(?:supplier|catalog|platform|trust|audit|foundation|agreement|resource|organization|integration|connector)-/);
   });
 
@@ -51,6 +52,7 @@ describe("Admin performance boundaries", () => {
     expect(source).toContain('import("./promotion-moderation")');
     expect(source).toContain('import("./support-operations")');
     expect(source).toContain('import("./operation-object-focus")');
-    expect(dynamicImports).toHaveLength(20);
+    expect(source).toContain('import("./commerce-analytics")');
+    expect(dynamicImports).toHaveLength(21);
   });
 });

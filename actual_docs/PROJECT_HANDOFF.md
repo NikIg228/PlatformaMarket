@@ -1,5 +1,13 @@
 # PlatformaMarket — текущий контекст
 
+CORE07 CI1 FAIL admin dynamic-panel test20→21; тест исправлен, admin23 PASS.
+CI PG/containers/Security PASS, остальные unit suites PASS. Corrective test-only
+publication/CI впереди; CORE08 пока не начат. Подробнее checkpoint CORE07.
+
+CORE07 опубликован02.10:3f2002b, local/remote exact; CI36989630820,
+Security36989631017 IN_PROGRESS. Следующий шаг дождаться actual CI,
+затем разрешённые CORE08–09. Working migration150000 не применена.
+
 CORE07 LOCAL_PASS02.10 14:20+05: обязательные local gates и self-review PASS,
 scoped publication main/CI впереди; затем CORE08–09. Checkpoint CORE07 содержит
 точные команды, attempts и evidence. Рабочая150000 не применялась.

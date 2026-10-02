@@ -1,6 +1,6 @@
 # CORE-07 — внутренние метрики и расчёт комиссии
 
-Статус: LOCAL_PASS / publication pending02.10. Возобновлено владельцем («продолжай») после
+Статус: CI_FIX_LOCAL_PASS02.10, публикация исправления впереди. Возобновлено владельцем («продолжай») после
 обновления правил соразмерной проверки. Primary01a0f302-2d38-75d1-b79c-141e7428b533, один writer.
 
 Новый план проверки: сначала pure date test (попытка4 после явного возобновления),
@@ -112,6 +112,27 @@ tenant/dataset/operator/window; browser добавлен для3 ролей1440/
 оставшиеся gates CORE07. CORE08–09 не начинать до полного PASS07.
 
 ## Свежий evidence02.10, 14:15+05
+
+CI1(36989630820) FAIL в npm test: admin performance-boundaries ожидал20
+dynamic panels, фактически21 с новой commerce analytics. Остальные unit suites
+PASS (включая API499, buyer97, web55); PostgreSQL и оба container jobs PASS,
+Security36989631017 PASS (CodeQL/dependencies). Это пропущенный локальный
+consumer test, не runtime дефект. Исправлен expected inventory21 и добавлены
+assertions lazy import analytics/отсутствия eager import. Целевой полный admin
+suite `npm run test --workspace=@marketplace/admin-web` PASS23/23,2.55s,
+`.tmp/core07-admin-ci-fix-1.log`. Runtime source, schema, dependencies и fixtures
+не менялись: ранее local PG/build/browser evidence переиспользуется. Scoped
+admin typecheck PASS (`npm run typecheck --workspace=@marketplace/admin-web`,
+`.tmp/core07-admin-ci-types-1.log`), diff review PASS. Test-only corrective
+commit/push и второй CI — следующий шаг; новые runtime проверки не нужны.
+
+Публикация02.10: commit3f2002b6791f3ff102854791afbe136b83bacc9c,
+`feat: add tenant-scoped commerce analytics and commission facts`,59files.
+Fetch: origin/main совпадал с HEAD4023881 (0/0); обычный push main успешен,
+`git ls-remote origin refs/heads/main` подтвердил exact3f2002b. Scoped staged
+diff-check/manifest/secret-pattern review PASS. Остались только5 прежних WIP
+и AGENTS/Workflow policy WIP. CI36989630820 и Security36989631017 IN_PROGRESS.
+CORE08 пока только read-only подготовка, код не изменяется до CI_PASS07.
 
 Финал local02.10 14:20+05: core-contract2 PASS46 core operations/174 components,
 web build1 PASS44 routes, bundle1 PASS. Typecheck2 PASS13/13, 1m25.285s.
