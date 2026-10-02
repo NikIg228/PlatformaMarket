@@ -1,6 +1,6 @@
 # CORE-09 — итоговая приёмка внутреннего ядра
 
-Статус LOCAL_CORE_PASS02.10.2026,15:57+05; docs publication впереди. Один primary writer:
+Статус CLOSED / CI_PASS / DEV_RESTORED02.10.2026. Один primary writer:
 01a0f302-2d38-75d1-b79c-141e7428b533. Продолжение явного поручения владельца
 завершить CORE05–09 с backend/frontend, устранением блокеров и итоговым аудитом.
 Canonical root C:/Users/user/Desktop/dentmarket-kz-main, main,
@@ -92,3 +92,24 @@ Foundation/Matrix исправлены: завершённые05/08/09 не чи
 root unit/PG/runtime/core suites не нужны: полный CI на той же64591bc уже PASS.
 После review/diff/link checks — итоговый docs commit/push; его фактический CI
 проверяется отдельно, без повторной реализации и без нового backlog.
+
+## Публикация и разрешённое восстановление dev
+
+Итоговый docs commit d1c1bd3 опубликован; CI36998473583 и Security36998473595
+completed SUCCESS на d1c1bd321646472bfa68acb042a0d958746a222e, remote SHA совпал.
+
+После отдельного запроса владельца «сделай миграцию и запусти dev»02.10
+применена только20261002150000_commerce_metric_facts к127.0.0.1:5432/marketplace/public.
+Read-only preflight подтвердил ровно эту pending migration, без failed migrations.
+`prisma migrate deploy --schema apps/api/prisma/schema.prisma` PASS; schema current.
+До/после сохранены505 products,510 supplier offers,508 published visible offers,
+32 supplier orders; metric events0. Seed/reclassification/backfill не запускались.
+Первая read-only count probe использовала неверное имя offer model и не выполнила
+записей; исправленная проверка supplierOffer PASS до применения миграции.
+
+`npm run dev` запущен скрыто из canonical root, go_live/JWT, launcher4476,
+API13224:4012, web1228:3000. Health ready, главная и /catalog HTTP200,
+launcher readiness PASS. Логи .tmp/core09-dev.out.log и .tmp/core09-dev.err.log.
+Процессы оставлены работающими по запросу владельца. Runtime source не менялся;
+полные suites/CI переиспользованы, этот receipt docs-only [skip ci]. Foreign7 WIP
+сохранены. Новая продуктовая фаза и внешние сервисы не запускались.

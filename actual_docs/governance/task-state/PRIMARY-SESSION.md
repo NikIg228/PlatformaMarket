@@ -1,5 +1,11 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+02.10 DEV_RESTORED по явному разрешению владельца: working150000 применена,
+counts505/510/508/32 сохранены, seed не запускался. Dev go_live/JWT из canonical
+root: launcher4476, API13224:4012, web1228:3000; health/root/catalog200.
+Оставлен работающим. CORE09 CLOSED, d1c1bd3 CI36998473583/Security36998473595 SUCCESS.
+Ниже история; POST/EXT не запускать. Foreign7 WIP сохранить.
+
 Итог02.10 15:57+05: CORE05–09 LOCAL_CORE_PASS. Код64591bc, CI36996467232 и
 Security36996467259 SUCCESS;57 canonical+7 FlowB3+2 go_live browser PASS.
 Итоговый аудит/coverage — CORE-09-INTERNAL-2026-10-02.md. Публикуется docs receipt,

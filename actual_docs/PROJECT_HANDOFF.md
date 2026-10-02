@@ -1,5 +1,10 @@
 # PlatformaMarket — текущий контекст
 
+02.10 по запросу владельца применена working migration150000 и восстановлен dev.
+Каталог/заказы505/510/508/32 сохранены, без seed. go_live/JWT, API4012/web3000,
+health/root/catalog200; процессы оставлены работающими. CORE09 CLOSED/CI_PASS:
+d1c1bd3, CI36998473583/Security36998473595 SUCCESS. Полный receipt в CORE09.
+
 Итог02.10 15:57+05: CORE05–09 LOCAL_CORE_PASS, общий код64591bc; CI36996467232 /
 Security36996467259 SUCCESS. CORE09 содержит карту доказательств и итоговый аудит:
 57 canonical+7 FlowB3+2 go_live browser, PG/API/unit/build/config PASS.
