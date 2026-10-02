@@ -1,5 +1,26 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+02.10 SIDEBAR-COMPACT — LOCAL_PASS / CI_PENDING по новому запросу владельца: убрать карточку
+компании из clinic/supplier sidebar, ширина256→200px, logo176→144px.
+Хедер пока только предложение, реализация/перенос logout не входят в этот шаг.
+Primary writer тот же; main@21b7e3f, foreign7 WIP сохранены.
+Scope: workspace.tsx/css, существующий sidebar browser regression, UI standard.
+DoD: types/npm tests (serial), web build, canonical browser + local desktop/mobile
+visual/keyboard smoke, review/commit/push/CI; восстановить own dev go_live/FULL_ACCESS.
+API/contract/PG gates REUSED_PASS4aa1e00: их inputs не меняются; рабочая БД без seed.
+Types1 PASS13/13; serial units1 PASS12/12; build1 PASS7/7; lint1 PASS.
+Browser1:56/57 PASS; BUYER session test ожидал удалённую карточку компании.
+Test expectation обновлён на authenticated navigation + absence card обоих кабинетов;
+Browser2 targeted session/documents2/2 PASS; остальные56 PASS reusable.
+E2E types1/lint2 PASS. Local go_live обе роли1440/1024/390px PASS:200px sidebar,
+144px logo, no card/overflow, Escape/focus preserved;6 screenshots просмотрены.
+Evidence .tmp/sidebar-*.log, output/playwright/sidebar-compact. Self-review PASS:
+только shell styles/card removal,2 existing regressions и docs; API/logout не менялись.
+Dev restored launcher14852/API16432:4012/web15436:3000; own test browsers closed.
+Budget20m/build,45m/suite, максимум3/gate. Отдельной новой фазы нет.
+Практики development-toolkit/frontend, Agency Frontend Developer, UI standard,
+web-interface-guidelines и Playwright: reuse shell, readable labels/focus/reflow.
+
 02.10 ROLES — CLOSED / CI_PASS. Код4aa1e004ca534cc8916bfbc99511ffb1e7122acb
 опубликован в origin/main, remote SHA проверен. CI37011303819 и Security37011303920
 completed/success (attempt1), включая canonical и FULL_ACCESS browser.

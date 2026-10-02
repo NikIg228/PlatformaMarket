@@ -157,8 +157,9 @@ for (const [capability, root] of [["BUYER", "/clinic"], ["SUPPLIER", "/supplier"
     const fixture = await installPilotWorkspace(page, capability);
     try {
       await page.goto(root);
-      if (capability === "BUYER") await expect(page.getByText(fixture.displayName, { exact: true }).first()).toBeVisible();
-      else await expect(page.getByText(fixture.displayName, { exact: true }).first()).toBeVisible();
+      const sidebar = page.locator("#workspace-sidebar");
+      await expect(sidebar.getByRole("navigation", { name: capability === "BUYER" ? "Кабинет клиники" : "Кабинет поставщика" })).toBeVisible();
+      await expect(sidebar.getByText(fixture.displayName, { exact: true })).toHaveCount(0);
       await page.goto(root + "/documents");
       await expect(page.getByRole("heading", { name: /Документы/ }).first()).toBeVisible();
       await expect(page.getByText("Войдите в кабинет", { exact: true })).toHaveCount(0);

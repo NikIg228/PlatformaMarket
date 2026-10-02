@@ -180,11 +180,6 @@ export function Workspace({
               alt="Platforma Market"
             />
           </Link>
-          <div className={styles.organization}>
-            <span>{label}</span>
-            <strong>{session.organizationDisplayName ?? "Организация"}</strong>
-            {session.displayName ? <small>{session.displayName}</small> : null}
-          </div>
           <nav className={styles.navigation} aria-label={label}>
             {links[role].map(([href, text]) => (
               <Link

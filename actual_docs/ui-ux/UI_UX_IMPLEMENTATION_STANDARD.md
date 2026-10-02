@@ -59,8 +59,10 @@ DentMarket — рабочий B2B marketplace. Для клиники важны 
 
 ### 2.1 Навигация действующего интерфейса — 30.09.2026
 
-Clinic/supplier: shared workspace shell с левым sidebar, подтверждённым
-названием организации/ролью и ссылками по permissions. Mobile menu закрывается
+Clinic/supplier: shared workspace shell с левым sidebar и основной навигацией.
+Уточнение владельца02.10: карточка организации/пользователя убрана из sidebar;
+desktop ширина200px, логотип144px. Хедер/меню аккаунта обсуждаются отдельно.
+Mobile menu закрывается
 по Escape/переходу, возвращает focus; скрытых Tab targets быть не должно.
 Новый sidebar прямо утверждён владельцем30.09 и заменяет старое предложение
 «без sidebar» для этих кабинетов. Public catalog имеет sticky header и левую

@@ -1,5 +1,10 @@
 # PlatformaMarket — текущий контекст
 
+02.10 SIDEBAR-COMPACT LOCAL_PASS / CI_PENDING: clinic/supplier sidebar200px,
+logo144px, карточка компании удалена. Хедер — только предложение владельцу.
+Types/unit/build/lint PASS, canonical browser56 + targeted retry2 PASS,
+local1440/1024/390 обе роли PASS. Checkpoint PRIMARY; dev восстановлен.
+
 02.10 ROLES — CLOSED / CI_PASS. Код4aa1e004ca534cc8916bfbc99511ffb1e7122acb
 опубликован в origin/main, remote SHA проверен. CI37011303819 и Security37011303920
 completed/success (attempt1), включая canonical и FULL_ACCESS browser.

@@ -693,15 +693,16 @@ test("mobile workspace keeps navigation accessible without page overflow", async
   ).toBe(true);
 });
 
-test("sidebar shows the session organization, stays left and supports keyboard dismissal", async ({ page }) => {
+test("compact sidebar omits the organization card and supports keyboard dismissal", async ({ page }) => {
   await fixture(page, "SUPPLIER");
   await page.goto("/supplier");
   const sidebar = page.locator("#workspace-sidebar");
-  await expect(sidebar.getByText("Тестовая организация", { exact: true })).toBeVisible();
+  await expect(sidebar.getByText("Тестовая организация", { exact: true })).toHaveCount(0);
   const side = await sidebar.boundingBox();
   const main = await page.locator("#workspace-content").boundingBox();
   expect(side!.x).toBe(0);
   expect(side!.y).toBe(0);
+  expect(side!.width).toBe(200);
   expect(side!.x + side!.width).toBeLessThanOrEqual(main!.x);
   await expect(sidebar.getByRole("link", { name: "Главная", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(sidebar.getByRole("link", { name: "Главная", exact: true })).toHaveCSS("background-color", "rgb(228, 243, 237)");
