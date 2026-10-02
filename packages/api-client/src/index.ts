@@ -142,6 +142,30 @@ export class MarketplaceApiError extends Error {
 }
 
 export class MarketplaceApiClient {
+  createSupportTicket(input: import("@marketplace/schemas").CreateSupportTicketInput) { return this.post<import("@marketplace/schemas").SupportTicketSummary>("/support/tickets", input); }
+  internalNotifications(organizationId: string, offset = 0) { return this.get<import("@marketplace/schemas").InternalNotification[]>(`/notifications/organizations/${encodeURIComponent(organizationId)}?channel=IN_APP&limit=50&offset=${offset}`); }
+  readNotification(id: string) { return this.post<import("@marketplace/schemas").InternalNotification>(`/notifications/${encodeURIComponent(id)}/read`, {}); }
+  operationObject(type: import("@marketplace/schemas").OperationQueueType, id: string) { return this.get<{ id: string; queueType: import("@marketplace/schemas").OperationQueueType; title: string; fields: { label: string; value: string }[] }>(`/operations/work-queue/${type}/${encodeURIComponent(id)}`); }
+  supportTickets(status?: string, offset = 0) { return this.get<import("@marketplace/schemas").SupportTicketSummary[]>(`/support/tickets?offset=${offset}${status ? `&status=${encodeURIComponent(status)}` : ""}`); }
+  supportTicket(id: string, beforeMessageId?: string) { return this.get<import("@marketplace/schemas").SupportTicketDetail>(`/support/tickets/${encodeURIComponent(id)}${beforeMessageId ? `?beforeMessageId=${encodeURIComponent(beforeMessageId)}` : ""}`); }
+  updateSupportTicket(id: string, input: import("@marketplace/schemas").UpdateSupportTicketInput) { return this.patch<import("@marketplace/schemas").SupportTicketSummary>(`/support/tickets/${encodeURIComponent(id)}`, input); }
+  supportTicketHistory(id: string) { return this.get<import("@marketplace/schemas").OperationHistory>(`/support/tickets/${encodeURIComponent(id)}/history`); }
+  addSupportMessage(id: string, input: import("@marketplace/schemas").AddSupportMessageInput) { return this.post<import("@marketplace/schemas").SupportTicketDetail["messages"][number]>(`/support/tickets/${encodeURIComponent(id)}/messages`, input); }
+  conversationContext(contextType: "OFFER" | "ORDER", contextId: string) { return this.get<{ conversationId: string | null }>(`/conversations/context?contextType=${contextType}&contextId=${encodeURIComponent(contextId)}`); }
+  operationWorkQueue(offset = 0) { return this.get<import("@marketplace/schemas").OperationWorkQueue>(`/operations/work-queue?offset=${offset}`); }
+  operationAssignees() { return this.get<{ id: string; displayName: string }[]>("/operations/work-queue/assignees"); }
+  assignOperation(type: import("@marketplace/schemas").OperationQueueType, id: string, input: import("@marketplace/schemas").OperationAssignment) { return this.post<import("@marketplace/schemas").OperationAssignmentResult>(`/operations/work-queue/${type}/${encodeURIComponent(id)}/assignment`, input); }
+  operationHistory(type: import("@marketplace/schemas").OperationQueueType, id: string) { return this.get<import("@marketplace/schemas").OperationHistory>(`/operations/work-queue/${type}/${encodeURIComponent(id)}/history`); }
+  conversations(query: Partial<import("@marketplace/schemas").ConversationQuery> = {}) {
+    const params = new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]));
+    return this.get<import("@marketplace/schemas").ConversationPage>(`/conversations?${params}`);
+  }
+  conversation(id: string, beforeSequence?: number) { return this.get<import("@marketplace/schemas").ConversationDetail>(`/conversations/${encodeURIComponent(id)}${beforeSequence ? `?beforeSequence=${beforeSequence}` : ""}`); }
+  startConversation(input: import("@marketplace/schemas").StartConversation) { return this.post<{ conversationId: string }>("/conversations", input); }
+  sendConversationMessage(id: string, input: import("@marketplace/schemas").ConversationMessageInput) { return this.post<{ conversationId: string }>(`/conversations/${encodeURIComponent(id)}/messages`, input); }
+  readConversation(id: string, throughSequence: number) { return this.post<{ throughSequence: number }>(`/conversations/${encodeURIComponent(id)}/read`, { throughSequence }); }
+  resolveConversation(id: string, expectedVersion: number) { return this.post<{ conversationId: string }>(`/conversations/${encodeURIComponent(id)}/resolve`, { expectedVersion }); }
+  escalateConversation(id: string, input: import("@marketplace/schemas").ConversationEscalation) { return this.post<{ ticketId: string }>(`/conversations/${encodeURIComponent(id)}/escalate`, input); }
   listPromotions(query: Partial<PromotionListQuery> = {}) { return this.get<PromotionPage>(`/promotions?${new URLSearchParams(Object.entries(query).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)]))}`); }
   listPublicPromotions(query: Partial<PromotionListQuery> = {}) { return this.get<PublicPromotionPage>(`/promotions/storefront?${new URLSearchParams(Object.entries(query).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)]))}`); }
   createOfferPromotion(input: CreateOfferPromotion) { return this.post<OfferPromotion>("/promotions", input); }

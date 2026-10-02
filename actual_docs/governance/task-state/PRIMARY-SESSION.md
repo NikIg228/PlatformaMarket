@@ -1,8 +1,45 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+Актуально02.10: CORE06 LOCAL_PASS/CI_PENDING. Browser blocker исправлен:
+controlled modal close и возврат focus; canonical55/55 + targeted keyboard PASS.
+Typecheck8/unit7/build5/bundle3 PASS; PG/core/runtime/prisma evidence reuse.
+Полный результат и attempts: CORE-06-INTERNAL-2026-10-02.md. Сейчас scoped
+publication main и CI; после CI_PASS продолжить CORE07–09+аудит, как поручил владелец.
+Dev остановлен для проверок, восстановить после последовательности. Один writer,
+без агентов/worktrees; исходные5 WIP сохранены. Ниже — хронология старых состояний.
+
+Latest02.10: владелец поручил самостоятельно устранять блокеры и полностью
+довести CORE06–09+аудит; не останавливаться только по прежнему числовому лимиту.
+Сохранять attempts/evidence, не ослаблять gates. CORE06 вновь IN_PROGRESS,
+один writer, без агентов/worktrees; новые рабочие migrations не разрешены заранее.
+
+Dev восстановлен02.10 11:28+05: launcher6116,API13740:4012,web11564:3000,
+go_live, canonical root; health/root/catalog200. Оставлен работающим.
+
+Latest02.10 после продолжения: unit blocker FIXED/PASS, CORE06 BLOCKED browser.
+54 canonical scenarios PASS; 3 фактических CORE06 browser прогона FAIL: после
+перехода из открытого DmDialog у переписки остаётся aria-hidden ancestor.
+Неэффективная useEffect гипотеза снята; точный controlled-close шаг в карточке.
+CORE07–09 не начаты, commit/push нет; dev восстанавливается по прежнему запросу.
+
+Latest02.10: владелец возобновил unit fix/checks CORE06 и последовательное
+CORE07–09 с итоговым аудитом. CORE06 IN_PROGRESS; дополнительный цикл gate
+разрешён, прежние попытки сохранены. Один primary writer, без агентов/worktrees.
+
+02.10 latest: владелец отдельно разрешил три pending local migrations и запуск dev.
+Все три применены к marketplace/public, counts505/510/32/17 сохранены.
+Dev go_live восстановлен из canonical root: launcher13212,API4012,web3000;
+health/root/catalog HTTP200. CORE06 остаётся BLOCKED по unit gate, публикации нет.
+Это отменяет прежний запрет dev/этих миграций ниже, но не возобновляет реализацию.
+
 АКТИВНОЕ разрешение02.10 после4f93f10: последовательно реализовать CORE05–09
 с backend/frontend, проверками, публикацией после PASS и итоговым кратким аудитом.
-Текущий этап: [CORE05](CORE-05-INTERNAL-2026-10-02.md), один writer primary.
+CORE05 завершён:0021438, CI36936601972 / Security36936601908 SUCCESS.
+Текущий этап: [CORE06](CORE-06-INTERNAL-2026-10-02.md), один writer primary.
+CORE06 BLOCKED02.10: третий root unit запуск FAIL (unit fixture не задаёт
+DATABASE_URL для новой environment dependency в operator queue); лимит§7.1.
+Typecheck3, PostgreSQL1, core-contract1, runtime1 PASS. Web gates NOT_RUN.
+Ничего из CORE06 не опубликовано; точный следующий шаг и attempts в карточке.
 Вопросы ведутся отдельным списком в карточке. Это возобновляет внутреннюю очередь
 после темы; прежние «CORE05 не начинать» ниже — история до нового разрешения.
 Рабочая миграция140000/dev restoration не разрешены этим поручением; тестовая

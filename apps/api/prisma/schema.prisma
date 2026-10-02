@@ -987,6 +987,9 @@ enum BuyerSupplierAgreementStatus {
 }
 
 model User {
+  operationAssignments OperationAssignment[]
+  conversationMessages ConversationMessage[]
+  conversationReads ConversationRead[]
   id                       String                    @id @default(uuid()) @db.Uuid
   email                    String                    @unique
   displayName              String
@@ -1042,6 +1045,11 @@ model UserMfaFactor {
 }
 
 model Organization {
+  operationAssignments OperationAssignment[]
+  conversationMessages ConversationMessage[]
+  conversationReads ConversationRead[]
+  buyerConversations BusinessConversation[] @relation("ConversationBuyer")
+  supplierConversations BusinessConversation[] @relation("ConversationSupplier")
   id                                String                    @id @default(uuid()) @db.Uuid
   legalName                         String
   displayName                       String
@@ -1942,6 +1950,7 @@ model SupplierItemMatchCandidate {
 }
 
 model SupplierOffer {
+  conversations BusinessConversation[]
   id                     String                   @id @default(uuid()) @db.Uuid
   supplierOrganizationId String                   @db.Uuid
   productVariantId       String                   @db.Uuid
@@ -2332,6 +2341,7 @@ model Checkout {
 }
 
 model SupplierOrder {
+  conversation BusinessConversation?
   id                       String                  @id @default(uuid()) @db.Uuid
   checkoutId               String                  @db.Uuid
   supplierOrganizationId   String                  @db.Uuid
@@ -3256,6 +3266,7 @@ model NotificationPreference {
 }
 
 model Notification {
+  requestHash String?
   id                      String                        @id @default(uuid()) @db.Uuid
   recipientOrganizationId String                        @db.Uuid
   recipientUserId         String?                       @db.Uuid
@@ -3779,6 +3790,8 @@ model PurchaseBudget {
 }
 
 model SupportTicket {
+  version Int @default(1)
+  conversation BusinessConversation?
   id              String              @id @default(uuid()) @db.Uuid
   number          String              @unique
   organizationId  String              @db.Uuid
@@ -4319,4 +4332,80 @@ model IdempotencyRecord {
 
   @@unique([scope, key])
   @@index([expiresAt])
+}
+
+model BusinessConversation {
+  id String @id @default(uuid()) @db.Uuid
+  contextType String
+  contextId String @db.Uuid
+  offerId String? @db.Uuid
+  orderId String? @unique @db.Uuid
+  buyerOrganizationId String @db.Uuid
+  supplierOrganizationId String @db.Uuid
+  title String
+  resolved Boolean @default(false)
+  version Int @default(1)
+  latestSequence Int @default(0)
+  supportTicketId String? @unique @db.Uuid
+  supportTicket SupportTicket? @relation(fields: [supportTicketId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  offer SupplierOffer? @relation(fields: [offerId], references: [id], onDelete: Restrict)
+  order SupplierOrder? @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  buyer Organization @relation("ConversationBuyer", fields: [buyerOrganizationId], references: [id], onDelete: Restrict)
+  supplier Organization @relation("ConversationSupplier", fields: [supplierOrganizationId], references: [id], onDelete: Restrict)
+  messages ConversationMessage[]
+  reads ConversationRead[]
+  @@unique([contextType, contextId, buyerOrganizationId, supplierOrganizationId])
+  @@index([buyerOrganizationId, updatedAt])
+  @@index([supplierOrganizationId, updatedAt])
+}
+
+model ConversationMessage {
+  id String @id @default(uuid()) @db.Uuid
+  conversationId String @db.Uuid
+  sequence Int
+  authorId String @db.Uuid
+  authorOrganizationId String @db.Uuid
+  authorName String
+  authorRole String
+  body String
+  idempotencyKey String @db.Uuid
+  createdAt DateTime @default(now())
+  conversation BusinessConversation @relation(fields: [conversationId], references: [id], onDelete: Restrict)
+  author User @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  authorOrganization Organization @relation(fields: [authorOrganizationId], references: [id], onDelete: Restrict)
+  @@unique([conversationId, sequence])
+  @@unique([conversationId, authorId, idempotencyKey])
+  @@index([conversationId, authorOrganizationId, sequence])
+}
+
+model ConversationRead {
+  conversationId String @db.Uuid
+  userId String @db.Uuid
+  organizationId String @db.Uuid
+  throughSequence Int @default(0)
+  updatedAt DateTime @updatedAt
+  conversation BusinessConversation @relation(fields: [conversationId], references: [id], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  @@id([conversationId, userId, organizationId])
+  @@index([conversationId, organizationId, throughSequence])
+}
+
+model OperationAssignment {
+  id String @id @default(uuid()) @db.Uuid
+  operatorOrganizationId String @db.Uuid
+  queueType String
+  entityId String @db.Uuid
+  assigneeId String? @db.Uuid
+  priority String
+  reason String
+  dueAt DateTime?
+  version Int @default(1)
+  updatedAt DateTime @updatedAt
+  operator Organization @relation(fields: [operatorOrganizationId], references: [id], onDelete: Restrict)
+  assignee User? @relation(fields: [assigneeId], references: [id], onDelete: Restrict)
+  @@unique([operatorOrganizationId, queueType, entityId])
+  @@index([operatorOrganizationId, assigneeId, dueAt])
 }

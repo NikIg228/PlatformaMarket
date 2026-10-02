@@ -3,7 +3,7 @@
 import { Button, Field, Input, Select, Spinner, Textarea } from "@fluentui/react-components";
 import { MarketplaceApiClient, frontendFeatures, type ApiContext } from "@marketplace/api-client";
 import { EmptyState, ErrorState, PageHeader, Section, StatusTag, errorMessage, formatDate, formatMoney, formatStatus } from "@marketplace/ui";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./buyer-services-panel.module.css";
 
 const BUYER_ID = "00000000-0000-4000-8000-000000000030";
@@ -60,10 +60,11 @@ function ProcurementWorkspace({ api }: { api: MarketplaceApiClient }) {
 }
 
 function SupportWorkspace({ api }: { api: MarketplaceApiClient }) {
+  const pending = useRef<{ json: string; key: string } | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]); const [subject, setSubject] = useState(""); const [description, setDescription] = useState(""); const [priority, setPriority] = useState("NORMAL"); const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null);
   const load = useCallback(async () => { setLoading(true); try { setTickets(await api.get<Ticket[]>("/support/tickets")); setError(null); } catch (cause) { setError(errorMessage(cause)); } finally { setLoading(false); } }, [api]);
   useEffect(() => { void load(); }, [load]);
-  const create = async () => { setBusy(true); try { await api.post("/support/tickets", { subject, description, category: "PROCUREMENT", priority, links: [] }); setSubject(""); setDescription(""); await load(); } catch (cause) { setError(errorMessage(cause)); } finally { setBusy(false); } };
+  const create = async () => { setBusy(true); try { const input = { subject, description, category: "PROCUREMENT", priority, links: [] }; const json = JSON.stringify(input); if (pending.current?.json !== json) pending.current = { json, key: crypto.randomUUID() }; await api.post("/support/tickets", { ...input, idempotencyKey: pending.current.key }); pending.current = null; setSubject(""); setDescription(""); await load(); } catch (cause) { setError(errorMessage(cause)); } finally { setBusy(false); } };
   return <div className={styles.stack}><PageHeader eyebrow="Сервис" title="Поддержка" description="Все обращения и ответы команды сохраняются в кабинете клиники." />{error ? <div className={styles.error}>{error}</div> : null}<div className={styles.columns}><Section title="Новое обращение" description="Опишите проблему. Мы покажем обращение в очереди поддержки."><div className={styles.ticketForm}><Field label="Тема"><Input value={subject} onChange={(_, data) => setSubject(data.value)} /></Field><Field label="Приоритет"><Select value={priority} onChange={(_, data) => setPriority(data.value)}><option value="NORMAL">Обычный</option><option value="HIGH">Высокий</option><option value="URGENT">Срочный</option><option value="LOW">Низкий</option></Select></Field><Field label="Описание"><Textarea rows={6} value={description} onChange={(_, data) => setDescription(data.value)} /></Field><Button appearance="primary" disabled={busy || subject.trim().length < 4 || description.trim().length < 10} onClick={() => void create()}>{busy ? "Отправляем…" : "Создать обращение"}</Button></div></Section><Section title="Мои обращения" description="Статус и ожидаемый срок ответа.">{loading ? <div className={styles.loading}><Spinner /></div> : tickets.length ? <div className={styles.rows}>{tickets.map((ticket) => <div className={styles.ticket} key={ticket.id}><div><small>{ticket.number}</small><strong>{ticket.subject}</strong><span>Обновлено {formatDate(ticket.updatedAt, true)}</span></div><div><StatusTag tone={ticket.status === "RESOLVED" || ticket.status === "CLOSED" ? "success" : ticket.priority === "URGENT" ? "danger" : "info"}>{formatStatus(ticket.status)}</StatusTag><small>{ticket.firstResponseDueAt ? `Ответ до ${formatDate(ticket.firstResponseDueAt, true)}` : "Срок ответа рассчитывается"}</small></div></div>)}</div> : <EmptyState title="Обращений нет" description="Новые обращения и ответы поддержки появятся здесь." />}</Section></div></div>;
 }
 

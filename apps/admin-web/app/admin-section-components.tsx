@@ -4,6 +4,8 @@ import { LoadingState } from "@marketplace/ui";
 import dynamic from "next/dynamic";
 
 const loading = () => <LoadingState label="Загружаем раздел" />;
+export const SupportOperations = dynamic(() => import("./support-operations").then(module => module.SupportOperations), { loading });
+export const OperationObjectFocus = dynamic(() => import("./operation-object-focus").then(module => module.OperationObjectFocus), { loading });
 
 export const ManualProductReview = dynamic(() => import("./manual-product-review").then(module => module.ManualProductReview), { loading });
 

@@ -1,4 +1,5 @@
 "use client";
+export { ConversationWorkspace, ConversationCounter } from "./conversation-workspace";
 export { MemberManagement } from "./member-management";
 export { SessionManagement } from "./session-management";
 export { PermissionsProvider, PermissionFields, usePermissions } from "./permissions";
@@ -108,6 +109,7 @@ export function DmCheckbox({ className, ...props }: CheckboxProps) {
 export function DmDialog({
   open,
   onOpenChange,
+  onClosed,
   title,
   description,
   children,
@@ -115,13 +117,14 @@ export function DmDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onClosed?: () => void;
   title: string;
   description?: string;
   children: ReactNode;
   actions?: ReactNode;
 }) {
   return (
-    <Dialog open={open} onOpenChange={(_, data) => onOpenChange(data.open)}>
+    <Dialog open={open} onOpenChange={(_, data) => onOpenChange(data.open)} surfaceMotion={onClosed ? { onMotionFinish: (_, data) => { if (data.direction === "exit") onClosed(); } } : undefined}>
       <DialogSurface className="dm-dialog-surface">
         <DialogBody>
           <DialogTitle

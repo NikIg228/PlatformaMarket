@@ -43,6 +43,7 @@ const ownerPermissions: Record<"BUYER" | "SUPPLIER", string[]> = {
     "recommendation.use",
   ],
   SUPPLIER: [
+    "notification.view",
     "organization.view",
     "organization.members.manage",
     "organization.roles.manage",

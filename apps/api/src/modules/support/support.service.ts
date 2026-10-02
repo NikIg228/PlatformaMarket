@@ -1,69 +1,88 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import type { AddSupportMessageInput, CreateSupportTicketInput, UpdateSupportTicketInput } from "@marketplace/schemas";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import type { SupplierActorContext } from "../suppliers/supplier-access.service";
+import { AccessControlService } from "../access-control/access-control.service";
+import { workflowCommand } from "./workflow-command";
 
 const slaHours = { LOW: 72, NORMAL: 24, HIGH: 8, URGENT: 2 } as const;
 
 @Injectable()
 export class SupportService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly access: AccessControlService) {}
 
   private async isOperator(organizationId: string) {
     return Boolean(await this.prisma.organizationCapability.findUnique({ where: { organizationId_capability: { organizationId, capability: "MARKETPLACE_OPERATOR" } } }));
   }
 
   private async requireTicket(ticketId: string, context: SupplierActorContext) {
-    const ticket = await this.prisma.supportTicket.findUnique({ where: { id: ticketId } });
-    if (!ticket || (ticket.organizationId !== context.organizationId && !(await this.isOperator(context.organizationId)))) throw new NotFoundException("Support ticket not found");
+    const operator = await this.isOperator(context.organizationId);
+    const ticket = await this.prisma.supportTicket.findFirst({ where: { id: ticketId, ...(operator ? {} : { organizationId: context.organizationId }) } });
+    if (!ticket) throw new NotFoundException("Support ticket not found");
     return ticket;
   }
 
   async create(input: CreateSupportTicketInput, context: SupplierActorContext) {
     const number = `SUP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => workflowCommand(tx, `support.create:${context.organizationId}:${context.actorId}`, input.idempotencyKey, input, async () => {
       const ticket = await tx.supportTicket.create({ data: { number, organizationId: context.organizationId, requesterId: context.actorId, subject: input.subject, description: input.description, category: input.category, priority: input.priority, slaDueAt: new Date(Date.now() + slaHours[input.priority] * 3_600_000) } });
       if (input.links.length) await tx.supportLink.createMany({ data: input.links.map((link) => ({ ticketId: ticket.id, ...link })) });
       await tx.supportMessage.create({ data: { ticketId: ticket.id, authorId: context.actorId, body: input.description } });
       await tx.auditLog.create({ data: { ...context, action: "support.ticket.created", entityType: "SupportTicket", entityId: ticket.id, after: { number, priority: input.priority, category: input.category, links: input.links } } });
       await tx.outboxEvent.create({ data: { aggregateType: "SupportTicket", aggregateId: ticket.id, eventType: "SupportTicketCreated", payload: { ticketId: ticket.id, number, organizationId: context.organizationId, priority: input.priority } } });
       return ticket;
-    });
+    }));
   }
 
-  async list(context: SupplierActorContext, status?: string) {
+  async list(context: SupplierActorContext, status?: string, offset = 0) {
     const operator = await this.isOperator(context.organizationId);
-    return this.prisma.supportTicket.findMany({ where: { organizationId: operator ? undefined : context.organizationId, status: status as never }, orderBy: [{ priority: "desc" }, { slaDueAt: "asc" }, { updatedAt: "desc" }], take: 200 });
+    return this.prisma.supportTicket.findMany({ where: { organizationId: operator ? undefined : context.organizationId, status: status as never }, orderBy: [{ priority: "desc" }, { slaDueAt: "asc" }, { updatedAt: "desc" }, { id: "desc" }], take: 50, skip: offset });
   }
 
-  async get(ticketId: string, context: SupplierActorContext) {
+  async get(ticketId: string, context: SupplierActorContext, beforeMessageId?: string) {
     const ticket = await this.requireTicket(ticketId, context);
     const operator = await this.isOperator(context.organizationId);
-    const [messages, links] = await Promise.all([this.prisma.supportMessage.findMany({ where: { ticketId, isInternal: operator ? undefined : false }, orderBy: { createdAt: "asc" } }), this.prisma.supportLink.findMany({ where: { ticketId }, orderBy: { createdAt: "asc" } })]);
-    return { ...ticket, messages, links };
+    const cursor = beforeMessageId ? await this.prisma.supportMessage.findFirst({ where: { id: beforeMessageId, ticketId, isInternal: operator ? undefined : false } }) : null;
+    if (beforeMessageId && !cursor) throw new NotFoundException("Message cursor not found");
+    const [messages, links] = await Promise.all([this.prisma.supportMessage.findMany({ where: { ticketId, isInternal: operator ? undefined : false, ...(cursor ? { OR: [{ createdAt: { lt: cursor.createdAt } }, { createdAt: cursor.createdAt, id: { lt: cursor.id } }] } : {}) }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 51 }), this.prisma.supportLink.findMany({ where: { ticketId }, orderBy: { createdAt: "asc" }, take: 20 })]);
+    return { ...ticket, messages: messages.slice(0, 50).reverse(), hasOlder: messages.length > 50, links };
   }
 
   async addMessage(ticketId: string, input: AddSupportMessageInput, context: SupplierActorContext) {
-    const ticket = await this.requireTicket(ticketId, context);
+    await this.requireTicket(ticketId, context);
     const operator = await this.isOperator(context.organizationId);
     if (input.isInternal && !operator) throw new ForbiddenException("Internal notes are available only to support operators");
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => workflowCommand(tx, `support.message:${context.organizationId}:${context.actorId}`, input.idempotencyKey, { ticketId, ...input }, async () => {
+      await tx.$queryRaw`SELECT id FROM "SupportTicket" WHERE id = ${ticketId}::uuid FOR UPDATE`;
+      const current = await tx.supportTicket.findUniqueOrThrow({ where: { id: ticketId } });
       const message = await tx.supportMessage.create({ data: { ticketId, authorId: context.actorId, body: input.body, isInternal: input.isInternal, attachments: input.attachments as Prisma.InputJsonValue } });
-      const patch = operator && !ticket.firstResponseAt ? { firstResponseAt: new Date(), status: "IN_PROGRESS" as const } : !operator && ticket.status === "WAITING_CUSTOMER" ? { status: "IN_PROGRESS" as const } : {};
-      await tx.supportTicket.update({ where: { id: ticketId }, data: patch });
+      const patch = operator && !input.isInternal && !current.firstResponseAt ? { firstResponseAt: new Date(), ...(current.status === "OPEN" ? { status: "IN_PROGRESS" as const } : {}) } : !operator && current.status === "WAITING_CUSTOMER" ? { status: "IN_PROGRESS" as const } : {};
+      await tx.supportTicket.update({ where: { id: ticketId }, data: { ...patch, version: { increment: 1 } } });
       await tx.auditLog.create({ data: { ...context, action: input.isInternal ? "support.note.added" : "support.message.added", entityType: "SupportTicket", entityId: ticketId, after: { messageId: message.id, attachmentCount: input.attachments.length } } });
       return message;
-    });
+    }));
   }
 
   async update(ticketId: string, input: UpdateSupportTicketInput, context: SupplierActorContext) {
     const ticket = await this.requireTicket(ticketId, context);
     if (!(await this.isOperator(context.organizationId))) throw new ForbiddenException("Only support operators can manage ticket workflow");
-    const now = new Date();
-    const updated = await this.prisma.supportTicket.update({ where: { id: ticketId }, data: { ...input, resolvedAt: input.status === "RESOLVED" ? now : ticket.resolvedAt, closedAt: input.status === "CLOSED" ? now : ticket.closedAt } });
-    await this.prisma.auditLog.create({ data: { ...context, action: "support.ticket.updated", entityType: "SupportTicket", entityId: ticketId, before: { status: ticket.status, priority: ticket.priority, assigneeId: ticket.assigneeId }, after: input as Prisma.InputJsonValue } });
-    return updated;
+    if (input.assigneeId && !await this.access.hasAll(input.assigneeId, context.organizationId, ["support.ticket.manage"])) throw new ConflictException("Assignee must be an active support operator in your organization");
+    const { expectedVersion, reason, idempotencyKey, slaDueAt, ...patch } = input;
+    return this.prisma.$transaction(tx => workflowCommand(tx, `support.update:${context.organizationId}:${context.actorId}`, idempotencyKey, { ticketId, ...input }, async () => {
+      const now = new Date();
+      const changed = await tx.supportTicket.updateMany({ where: { id: ticketId, version: expectedVersion }, data: { ...patch, version: { increment: 1 }, ...(slaDueAt !== undefined ? { slaDueAt: slaDueAt ? new Date(slaDueAt) : null } : {}), resolvedAt: input.status === "RESOLVED" ? now : input.status && input.status !== "CLOSED" ? null : ticket.resolvedAt, closedAt: input.status === "CLOSED" ? now : input.status ? null : ticket.closedAt } });
+      if (changed.count !== 1) throw new ConflictException("Ticket changed; refresh before updating");
+      await tx.auditLog.create({ data: { ...context, action: "support.ticket.updated", entityType: "SupportTicket", entityId: ticketId, before: { status: ticket.status, priority: ticket.priority, assigneeId: ticket.assigneeId }, after: { ...input, reason } as Prisma.InputJsonValue } });
+      await tx.outboxEvent.create({ data: { aggregateType: "SupportTicket", aggregateId: ticketId, eventType: "SupportTicketUpdated", payload: { organizationId: ticket.organizationId, ticketId, status: input.status ?? ticket.status } } });
+      return tx.supportTicket.findUniqueOrThrow({ where: { id: ticketId } });
+    }));
+  }
+
+  async history(ticketId: string, context: SupplierActorContext) {
+    await this.requireTicket(ticketId, context);
+    if (!await this.isOperator(context.organizationId)) throw new ForbiddenException("Ticket workflow history requires operator access");
+    return this.prisma.auditLog.findMany({ where: { entityType: "SupportTicket", entityId: ticketId }, select: { id: true, action: true, actorId: true, createdAt: true, before: true, after: true }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 30 });
   }
 
   async startImpersonation(input: { targetUserId: string; targetOrganizationId: string; ticketId?: string | null; reason: string; durationMinutes: number }, context: SupplierActorContext) {

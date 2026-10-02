@@ -13,6 +13,8 @@ import type {
   OutboxReplayResponse,
 } from "@marketplace/schemas";
 import { PrismaService } from "../../platform/prisma/prisma.service";
+import { assignmentView } from "./operation-workflow.service";
+import { environment } from "../../platform/config/environment";
 
 type OperationsContext = { actorId: string; organizationId: string };
 const OUTBOX_REPLAY_SCOPE = "outbox.dead-letter.replay";
@@ -226,7 +228,7 @@ export class OperationsService {
     }
   }
 
-  async workQueue(context: OperationsContext) {
+  async workQueue(context: OperationsContext, offset = 0) {
     await this.assertOperator(context.organizationId);
     const now = new Date();
     const [
@@ -237,6 +239,8 @@ export class OperationsService {
       agreements,
       orders,
       staleInventory,
+      admissions,
+      promotions,
     ] = await Promise.all([
       this.prisma.productCandidate.findMany({
         where: { status: "PENDING" },
@@ -249,7 +253,7 @@ export class OperationsService {
           createdAt: true,
         },
         orderBy: { createdAt: "asc" },
-        take: 50,
+        take: 51, skip: offset,
       }),
       this.prisma.complianceCheck.findMany({
         where: { status: "REVIEW_REQUIRED" },
@@ -264,7 +268,7 @@ export class OperationsService {
           evaluatedAt: true,
         },
         orderBy: [{ riskLevel: "desc" }, { evaluatedAt: "asc" }],
-        take: 50,
+        take: 51, skip: offset,
       }),
       this.prisma.integrationReconciliationEntry.findMany({
         where: {
@@ -281,7 +285,7 @@ export class OperationsService {
           detectedAt: true,
         },
         orderBy: { detectedAt: "asc" },
-        take: 50,
+        take: 51, skip: offset,
       }),
       this.prisma.importBatch.findMany({
         where: {
@@ -308,7 +312,7 @@ export class OperationsService {
           updatedAt: true,
         },
         orderBy: { updatedAt: "asc" },
-        take: 50,
+        take: 51, skip: offset,
       }),
       this.prisma.marketplaceAgreement.findMany({
         where: { status: "AWAITING_SIGNATURE" },
@@ -321,7 +325,7 @@ export class OperationsService {
           createdAt: true,
         },
         orderBy: { createdAt: "asc" },
-        take: 50,
+        take: 51, skip: offset,
       }),
       this.prisma.supplierOrder.findMany({
         where: { status: "AWAITING_CONFIRMATION" },
@@ -335,7 +339,7 @@ export class OperationsService {
           createdAt: true,
         },
         orderBy: { createdAt: "asc" },
-        take: 50,
+        take: 51, skip: offset,
       }),
       this.prisma.inventoryBalance.findMany({
         where: {
@@ -353,10 +357,14 @@ export class OperationsService {
           updatedAt: true,
         },
         orderBy: { updatedAt: "asc" },
-        take: 50,
+        take: 51, skip: offset,
       }),
+      this.prisma.supplierTermsAcceptance.findMany({ where: { admissionStatus: "PENDING" }, select: { id: true, organizationId: true, acceptedAt: true, organization: { select: { displayName: true } } }, orderBy: [{ acceptedAt: "asc" }, { id: "asc" }], take: 51, skip: offset }),
+      environment().DEPLOYMENT_PROFILE === "go_live" ? this.prisma.promotion.findMany({ where: { moderationStatus: "PENDING", offerId: { not: null } }, select: { id: true, name: true, supplierOrganizationId: true, createdAt: true, endsAt: true }, orderBy: [{ createdAt: "asc" }, { id: "asc" }], take: 51, skip: offset }) : Promise.resolve([]),
     ]);
     const sections = [
+      { type: "ORGANIZATION_REVIEW", priority: "HIGH", count: admissions.length, items: admissions.map(item => ({ id: item.id, proposedName: item.organization.displayName, createdAt: item.acceptedAt, supplierOrganizationId: item.organizationId })) },
+      { type: "PROMOTION_REVIEW", priority: "NORMAL", count: promotions.length, items: promotions.map(item => ({ ...item, proposedName: item.name })) },
       {
         type: "CATALOG_REVIEW",
         priority: "HIGH",
@@ -400,11 +408,18 @@ export class OperationsService {
         items: staleInventory,
       },
     ];
+    const assignments = await this.prisma.operationAssignment.findMany({ where: { operatorOrganizationId: context.organizationId, OR: sections.map(section => ({ queueType: section.type, entityId: { in: section.items.map(item => item.id) } })) }, include: { assignee: { select: { displayName: true } } } });
+    const assignmentByObject = new Map(assignments.map(item => [`${item.queueType}:${item.entityId}`, assignmentView(item)]));
+    const reasons: Record<string, string> = { CATALOG_REVIEW: "Карточка ожидает модерации", COMPLIANCE_REVIEW: "Нужна ручная проверка документов и допуска", INTEGRATION_RECONCILIATION: "Обнаружено расхождение учётных данных", IMPORT_ATTENTION: "Загрузка требует обработки или проверки ошибок", AGREEMENT_SIGNATURE: "Договор ожидает подписи", SUPPLIER_CONFIRMATION: "Заказ ожидает подтверждения поставщика", STALE_INVENTORY: "Остаток требует подтверждения актуальности" };
+    const targets: Record<string, string> = { CATALOG_REVIEW: "catalog", COMPLIANCE_REVIEW: "organizations", INTEGRATION_RECONCILIATION: "imports", IMPORT_ATTENTION: "imports", AGREEMENT_SIGNATURE: "orders", SUPPLIER_CONFIRMATION: "orders", STALE_INVENTORY: "catalog" };
+    Object.assign(reasons, { ORGANIZATION_REVIEW: "Поставщик ожидает проверки допуска", PROMOTION_REVIEW: "Условия акции ожидают модерации" });
+    Object.assign(targets, { ORGANIZATION_REVIEW: "orders", PROMOTION_REVIEW: "catalog" });
+    const visibleSections = sections.map(section => ({ ...section, count: Math.min(50, section.items.length), hasMore: section.items.length > 50, items: section.items.slice(0, 50).map(item => ({ ...item, reason: reasons[section.type], href: `/admin?section=${targets[section.type]}&queueType=${section.type}&object=${item.id}`, assignment: assignmentByObject.get(`${section.type}:${item.id}`) ?? null })) }));
     return {
       generatedAt: now.toISOString(),
       operatorOrganizationId: context.organizationId,
-      totalOpenItems: sections.reduce((sum, section) => sum + section.count, 0),
-      sections,
+      totalOpenItems: visibleSections.reduce((sum, section) => sum + section.count, 0),
+      sections: visibleSections,
     };
   }
 }

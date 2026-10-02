@@ -18,6 +18,7 @@ import { NotificationAdapterRegistry } from "./notification-adapter-registry.ser
 import { BackgroundQueueService } from "../../platform/jobs/background-queue.service";
 import type { OutboxEvent } from "@prisma/client";
 import { OutboxHandlerRegistry } from "../../platform/outbox/outbox-handler.registry";
+import { createHash } from "node:crypto";
 
 @Injectable()
 export class NotificationsService implements OnModuleInit {
@@ -135,11 +136,16 @@ export class NotificationsService implements OnModuleInit {
 
   async create(input: CreateNotificationInput, context: SupplierActorContext) {
     await this.assertOrganizationAccess(input.recipientOrganizationId, context);
+    if (input.recipientUserId && !await this.prisma.organizationMembership.findFirst({ where: { organizationId: input.recipientOrganizationId, userId: input.recipientUserId, status: "ACTIVE", user: { status: "ACTIVE" } }, select: { id: true } })) throw new NotFoundException("Active notification recipient not found");
+    const idempotencyKey = `manual:${context.organizationId}:${context.actorId}:${createHash("sha256").update(input.idempotencyKey).digest("hex")}`;
+    const requestHash = createHash("sha256").update(JSON.stringify(input)).digest("hex");
     const notification = await this.prisma.notification.upsert({
-      where: { idempotencyKey: input.idempotencyKey },
+      where: { idempotencyKey },
       update: {},
       create: {
         ...input,
+        idempotencyKey,
+        requestHash,
         scheduledAt: input.scheduledAt
           ? new Date(input.scheduledAt)
           : new Date(),
@@ -149,6 +155,7 @@ export class NotificationsService implements OnModuleInit {
             : (input.payload as Prisma.InputJsonValue),
       },
     });
+    if (notification.requestHash !== requestHash) throw new ConflictException("Notification key was already used for different content");
     return notification;
   }
 
@@ -161,12 +168,15 @@ export class NotificationsService implements OnModuleInit {
     return this.prisma.notification.findMany({
       where: {
         recipientOrganizationId: organizationId,
+        OR: [{ recipientUserId: null }, { recipientUserId: context.actorId }],
+        channel: input.channel,
         status: input.status,
         ...(input.unreadOnly ? { readAt: null } : {}),
       },
       include: { deliveryAttempts: { orderBy: { attempt: "desc" }, take: 3 } },
       orderBy: { createdAt: "desc" },
       take: input.limit,
+      skip: input.offset,
     });
   }
 
@@ -175,6 +185,7 @@ export class NotificationsService implements OnModuleInit {
       where: { id: notificationId },
     });
     if (!notification) throw new NotFoundException("Notification not found");
+    if (notification.recipientUserId && notification.recipientUserId !== context.actorId) throw new NotFoundException("Notification not found");
     await this.assertOrganizationAccess(
       notification.recipientOrganizationId,
       context,
@@ -200,19 +211,21 @@ export class NotificationsService implements OnModuleInit {
       )
     )
       throw new ConflictException("Only failed notifications can be retried");
-    return this.prisma.notification.update({
-      where: { id: notificationId },
-      data: {
-        status: "PENDING",
-        scheduledAt: new Date(),
-        lastError: null,
-        ...(notification.status === "DEAD" ? { attempts: 0 } : {}),
-      },
+    return this.prisma.$transaction(async tx => {
+      const updated = await tx.notification.updateMany({ where: { id: notificationId, status: notification.status, attempts: notification.attempts }, data: { status: "PENDING", scheduledAt: new Date(), lastError: null, ...(notification.status === "DEAD" ? { maxAttempts: notification.attempts + 5 } : {}) } });
+      if (updated.count !== 1) throw new ConflictException("Notification changed before retry");
+      await tx.auditLog.create({ data: { ...context, action: "notification.retry.requested", entityType: "Notification", entityId: notificationId, after: { previousStatus: notification.status, attempts: notification.attempts } } });
+      return tx.notification.findUniqueOrThrow({ where: { id: notificationId } });
     });
   }
 
   capabilities() {
     return this.registry.capabilities();
+  }
+
+  async processForOperator(context: SupplierActorContext) {
+    if (!await this.isOperator(context.organizationId)) throw new ForbiddenException("Only operators can process the delivery queue");
+    return this.tick();
   }
 
   @Cron("*/5 * * * * *")
@@ -272,9 +285,10 @@ export class NotificationsService implements OnModuleInit {
         Object.entries(payload)
           .filter(
             ([key, value]) =>
-              /OrganizationId$/.test(key) && typeof value === "string",
+              /(?:^organizationId$|OrganizationId$)/.test(key) && typeof value === "string",
           )
-          .map(([, value]) => value as string),
+          .map(([, value]) => value as string)
+          .filter(id => event.eventType !== "ConversationMessageSaved" || id !== payload.authorOrganization),
       ),
     ];
     let created = 0;
@@ -290,20 +304,20 @@ export class NotificationsService implements OnModuleInit {
         where: {
           organizationId,
           eventType: { in: [event.eventType, "*"] },
-          enabled: true,
         },
       });
-      const channels =
-        preferences.length > 0
-          ? preferences
-          : [{ userId: null, channel: "IN_APP" as const, destination: null }];
+      const preferencesByScope = new Map<string, typeof preferences[number]>();
+      for (const preference of preferences) {
+        const key = `${preference.userId ?? "org"}:${preference.channel}`;
+        if (!preferencesByScope.has(key) || preference.eventType === event.eventType) preferencesByScope.set(key, preference);
+      }
+      const channels = preferences.length > 0
+        ? [...preferencesByScope.values()].filter(preference => preference.enabled)
+        : [{ userId: null, channel: "IN_APP" as const, destination: null }];
       for (const preference of channels) {
-        const result = await this.prisma.notification.upsert({
-          where: {
-            idempotencyKey: `outbox:${event.id}:${organizationId}:${preference.userId ?? "org"}:${preference.channel}`,
-          },
-          update: {},
-          create: {
+        const result = await this.prisma.notification.createMany({
+          skipDuplicates: true,
+          data: {
             recipientOrganizationId: organizationId,
             recipientUserId: preference.userId,
             eventType: event.eventType,
@@ -317,10 +331,8 @@ export class NotificationsService implements OnModuleInit {
             idempotencyKey: `outbox:${event.id}:${organizationId}:${preference.userId ?? "org"}:${preference.channel}`,
             payload: payload as Prisma.InputJsonValue,
           },
-          select: { createdAt: true, updatedAt: true },
         });
-        if (result.createdAt.getTime() === result.updatedAt.getTime())
-          created += 1;
+        created += result.count;
       }
     }
     return created;
@@ -331,7 +343,6 @@ export class NotificationsService implements OnModuleInit {
       where: {
         status: { in: ["PENDING", "FAILED"] },
         scheduledAt: { lte: new Date() },
-        attempts: { lt: 5 },
       },
       orderBy: [{ priority: "desc" }, { scheduledAt: "asc" }],
       take: 50,
@@ -349,8 +360,8 @@ export class NotificationsService implements OnModuleInit {
       });
       if (claimed.count !== 1) continue;
       const attempt = notification.attempts + 1;
-      const adapter = this.registry.resolve(notification.channel);
       try {
+        const adapter = this.registry.resolve(notification.channel);
         const result = await adapter.send({
           id: notification.id,
           channel: notification.channel,
@@ -428,6 +439,11 @@ export class NotificationsService implements OnModuleInit {
 
   private subjectFor(eventType: string) {
     const subjects: Record<string, string> = {
+      ConversationMessageSaved: "Новое сообщение",
+      SupportTicketCreated: "Обращение принято",
+      SupportTicketUpdated: "Обращение обновлено",
+      OrderWorkflowChanged: "Заказ обновлён",
+      OrderReceived: "Получение заказа подтверждено",
       ComplianceBlocked: "Продажа заблокирована compliance-проверкой",
       ComplianceReviewRequired: "Требуется ручная compliance-проверка",
       DocumentSigned: "Документ подписан",
@@ -439,6 +455,13 @@ export class NotificationsService implements OnModuleInit {
   }
 
   private bodyFor(eventType: string, payload: Record<string, unknown>) {
+    if (eventType === "ConversationMessageSaved") return "В диалоге по предложению или заказу появилось новое сообщение.";
+    if (eventType === "SupportTicketCreated") return "Обращение зарегистрировано. Его статус и ответы доступны в поддержке.";
+    if (eventType === "SupportTicketUpdated") return "Оператор обновил обращение. Откройте его для просмотра решения.";
+    if (eventType === "OrderWorkflowChanged") {
+      const actions: Record<string, string> = { ACCEPT_COMPOSITION: "Клиника согласовала состав заказа.", ISSUE_INVOICE: "Поставщик выставил счёт.", REPORT_TRANSFER: "Клиника сообщила о переводе оплаты.", REQUEST_PAYMENT_DETAILS: "Поставщик запросил уточнение оплаты.", CONFIRM_TRANSFER: "Поставщик подтвердил поступление оплаты.", CANCEL: "Заказ отменён.", REQUEST_RETURN: "Клиника запросила возврат.", DECIDE_RETURN: "Поставщик рассмотрел возврат.", RECEIVE_MANUAL_REFUND: "Клиника подтвердила получение возврата денег.", REORDER: "Создана корзина для повторной закупки." };
+      return actions[String(payload.action)] ?? "Условия или исполнение заказа обновлены. Проверьте состояние заказа.";
+    }
     if (eventType === "ShipmentStatusChanged") {
       const shipment = typeof payload.shipmentNumber === "string" ? payload.shipmentNumber : "отгрузка";
       const order = typeof payload.orderNumber === "string" ? ` по заказу ${payload.orderNumber}` : "";

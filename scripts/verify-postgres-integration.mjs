@@ -16,6 +16,7 @@ import { verifyManualPayments } from "./lib/verify-manual-payments.mjs";
 import { verifyManualPaymentUpgrade } from "./lib/verify-manual-payment-upgrade.mjs";
 import { verifyOfferPromotions } from "./lib/verify-offer-promotions.mjs";
 import { verifyPromotionUpgrade } from "./lib/verify-promotion-upgrade.mjs";
+import { verifyConversations } from "./lib/verify-conversations.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const apiDirectory = path.join(root, "apps", "api");
@@ -250,7 +251,7 @@ async function createFixtureCatalog() {
     },
   });
   fixture.productId = product.id;
-  const quantities = [10, 10, 5, 20, 10, 1, 1, 1, 1, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 100, 10, 100, 2, 100, 10];
+  const quantities = [10, 10, 5, 20, 10, 1, 1, 1, 1, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 100, 10, 100, 2, 100, 10, 10];
   const created = [];
   for (let index = 0; index < quantities.length; index += 1) {
     const quantity = quantities[index];
@@ -371,12 +372,20 @@ function checkout(cartId, identity, idempotencyKey) {
 }
 
 async function cleanupFixtures() {
+  const conversations = await prisma.businessConversation.findMany({ where: { buyerOrganizationId: { in: fixture.buyerIds } }, select: { id: true } });
+  const conversationIds = conversations.map(item => item.id);
+  await prisma.conversationRead.deleteMany({ where: { conversationId: { in: conversationIds } } });
+  await prisma.conversationMessage.deleteMany({ where: { conversationId: { in: conversationIds } } });
+  await prisma.businessConversation.deleteMany({ where: { id: { in: conversationIds } } });
+  await prisma.outboxEvent.deleteMany({ where: { aggregateType: "BusinessConversation", aggregateId: { in: conversationIds } } });
+  await prisma.operationAssignment.deleteMany({ where: { operatorOrganizationId: { in: fixture.buyerIds } } });
+  await prisma.idempotencyRecord.deleteMany({ where: { OR: fixture.buyerIds.flatMap(id => ["support.update", "support.message", "operation.assign"].map(prefix => ({ scope: { startsWith: `${prefix}:${id}:` } }))) } });
   const ownedCartIds = (await prisma.cart.findMany({ where: { buyerOrganizationId: { in: fixture.buyerIds } }, select: { id: true } })).map(cart => cart.id);
   fixture.cartIds = [...new Set([...fixture.cartIds, ...ownedCartIds])];
   await prisma.outboxEvent.deleteMany({ where: { aggregateType: "Cart", aggregateId: { in: ownedCartIds } } });
   if (fixture.supplierId) await prisma.idempotencyRecord.deleteMany({ where: { scope: { startsWith: `offer-commercial:${fixture.supplierId}:` } } });
   if (fixture.supplierId) await prisma.idempotencyRecord.deleteMany({ where: { scope: `supplier-payment-policy:${fixture.supplierId}` } });
-  const paymentTickets = await prisma.supportTicket.findMany({ where: { organizationId: { in: fixture.buyerIds }, category: "PAYMENT_REVIEW" }, select: { id: true } });
+  const paymentTickets = await prisma.supportTicket.findMany({ where: { organizationId: { in: fixture.buyerIds }, category: { in: ["PAYMENT_REVIEW", "CONVERSATION"] } }, select: { id: true } });
   const paymentTicketIds = paymentTickets.map(ticket => ticket.id);
   await prisma.supportMessage.deleteMany({ where: { ticketId: { in: paymentTicketIds } } });
   await prisma.supportLink.deleteMany({ where: { ticketId: { in: paymentTicketIds } } });
@@ -610,8 +619,9 @@ try {
   await verifyCartRecovery({ prisma, offers: lotOffers.slice(5, 7), createBuyer, createCartWithItem, request, runId, assert });
   await verifyReservationExpiry({ prisma, offers: lotOffers.slice(7, 14), supplierId: fixture.supplierId, createBuyer, createCartWithItem, runId, assert });
   await verifyManualPayments({ prisma, offers: lotOffers.slice(14, 20), supplierId: fixture.supplierId, createBuyer, createCartWithItem, runId, assert, request });
-  await verifyOfferPromotions({ prisma, offers: lotOffers.slice(20), supplierId: fixture.supplierId, createBuyer, runId, assert, request });
+  await verifyOfferPromotions({ prisma, offers: lotOffers.slice(20, 26), supplierId: fixture.supplierId, createBuyer, runId, assert, request });
   await verifyLocalPermissions({ prisma, supplierId: fixture.supplierId, offerId: lotOffers[4].offerId, createBuyer, request, runId, assert });
+  await verifyConversations({ prisma, offer: lotOffers[26], supplierId: fixture.supplierId, createBuyer, createCartWithItem, runId, assert, request });
 
   const onboardingBuyer = await createBuyer(90, false);
   const profileRoute = "/organizations/current/profile";

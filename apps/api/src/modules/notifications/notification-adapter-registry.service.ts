@@ -1,6 +1,6 @@
 import { Injectable, ServiceUnavailableException } from "@nestjs/common";
 import type { NotificationChannel } from "@prisma/client";
-import { HttpNotificationAdapter, InAppNotificationAdapter, MockNotificationAdapter, WebhookNotificationAdapter } from "./notification-adapters";
+import { HttpNotificationAdapter, InAppNotificationAdapter, WebhookNotificationAdapter } from "./notification-adapters";
 import { OutboundRequestGateway } from "../../platform/security/outbound-request.gateway";
 
 @Injectable()
@@ -17,8 +17,7 @@ export class NotificationAdapterRegistry {
     const prefix = channel === "EMAIL" ? "EMAIL" : "SMS";
     const endpoint = process.env[`${prefix}_PROVIDER_URL`];
     if (endpoint) return new HttpNotificationAdapter(endpoint, prefix.toLowerCase(), process.env[`${prefix}_PROVIDER_TOKEN`]);
-    if (process.env.NODE_ENV === "production") throw new ServiceUnavailableException(`${prefix} provider is not configured`);
-    return new MockNotificationAdapter(`mock-${prefix.toLowerCase()}`);
+    throw new ServiceUnavailableException(`${prefix} provider is not configured`);
   }
 
   capabilities() {

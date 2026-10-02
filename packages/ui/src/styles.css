@@ -331,3 +331,25 @@ html[data-input-modality="keyboard"] :is(a,button,input,select,textarea,summary,
 :is(.fui-Dropdown, .fui-Combobox, .fui-Select):not([aria-invalid="true"]):not(:has([aria-invalid="true"])):not(:has(:disabled)):not([aria-disabled="true"]):is(:hover, :active, :focus-within) {
   border-color: var(--dm-border-control);
 }
+
+.dm-conversations { min-width: 0; }
+.dm-conversations-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin: 12px 0; }
+.dm-conversations-layout { display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.dm-conversations-list, .dm-conversations-detail { min-width: 0; padding: 16px; background: var(--dm-surface); border: 1px solid var(--dm-border); border-radius: 12px; }
+.dm-conversations-list { display: grid; gap: 12px; }
+.dm-conversations-item { width: 100%; text-align: left; justify-content: flex-start !important; }
+.dm-conversations-item > span { display: grid; gap: 6px; min-width: 0; width: 100%; }
+.dm-conversations-preview { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dm-conversations-history { display: grid; list-style: none; gap: 12px; padding: 0; max-height: 55vh; overflow: auto; }
+.dm-conversations-history li { padding: 12px; background: var(--dm-surface-subtle); border: 1px solid var(--dm-border); border-radius: 8px; overflow-wrap: anywhere; }
+.dm-conversations-history li[data-own="true"] { border-inline-start: 3px solid var(--dm-brand-primary); }
+.dm-conversations-history p { white-space: pre-wrap; }
+.dm-conversations-detail form { display: grid; gap: 12px; margin-top: 16px; }
+.dm-conversations-detail h2, .dm-conversations-item strong { overflow-wrap: anywhere; }
+.dm-conversations-back { display: none !important; }
+@media (max-width: 760px) {
+  .dm-conversations-layout { grid-template-columns: minmax(0, 1fr); }
+  .dm-conversations-layout[data-selected="true"] .dm-conversations-list { display: none; }
+  .dm-conversations-layout[data-selected="false"] .dm-conversations-detail { display: none; }
+  .dm-conversations-back { display: inline-flex !important; }
+}

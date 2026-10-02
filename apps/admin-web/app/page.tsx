@@ -33,6 +33,8 @@ import {
   ResourceLists,
   SupplierControls,
   SupplierOperations,
+  SupportOperations,
+  OperationObjectFocus,
   TrustOperations,
 } from "./admin-section-components";
 import { LiveMetrics } from "./live-metrics";
@@ -46,6 +48,7 @@ type SectionId =
   | "catalog"
   | "imports"
   | "orders"
+  | "support"
   | "security"
   | "settings";
 
@@ -56,11 +59,13 @@ const navigation: Array<{ id: SectionId; label: string; icon: ReactNode }> = [
   { id: "catalog", label: "Каталог", icon: <Cube24Regular /> },
   { id: "imports", label: "Загрузка товаров", icon: <Database24Regular /> },
   { id: "orders", label: "Заказы и договоры", icon: <Cart24Regular /> },
+  { id: "support", label: "Обращения и споры", icon: <PeopleTeam24Regular /> },
   { id: "security", label: frontendFeatures.trust ? "Контроль и доверие" : "Контроль и аудит", icon: <ShieldLock24Regular /> },
   { id: "settings", label: "Настройки", icon: <Settings24Regular /> },
 ];
 
 const sectionMeta: Record<SectionId, { title: string; description: string }> = {
+  support: { title: "Обращения и споры", description: "Ответы участникам, сроки и история операторских решений." },
   overview: {
     title: "Обзор",
     description: "Главные показатели и задачи команды PlatformaMarket.",
@@ -109,6 +114,8 @@ export default function OperationsWorkspace() {
   const [active, setActive] = useState<SectionId>("overview");
 
   useEffect(() => {
+    const section = new URLSearchParams(window.location.search).get("section");
+    if (navigation.some(item => item.id === section)) setActive(section as SectionId);
     if (readAdminSession() || isLocalAdminDevelopment()) setAuthorized(true);
     else window.location.replace(workspacePath("ADMIN", "/login"));
   }, []);
@@ -169,6 +176,7 @@ export default function OperationsWorkspace() {
   );
 
   const content: Record<SectionId, ReactNode> = {
+    support: <SupportOperations />,
     overview,
     organizations: <><ResourceLists /><FoundationManagement /></>,
     access: <><SupplierControls /><PlatformAssurance /></>,
@@ -212,7 +220,7 @@ export default function OperationsWorkspace() {
           </div>
           {active === "organizations" ? <OrganizationQuickCreate /> : null}
         </div>
-        <div className={styles.sectionStack}>{content[active]}</div>
+        <div className={styles.sectionStack}><OperationObjectFocus />{content[active]}</div>
       </div>
     </AppShell>
   );

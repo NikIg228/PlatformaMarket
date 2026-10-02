@@ -1,3 +1,9 @@
+import { internalNotificationSchema, internalNotificationListSchema, notificationQuerySchema } from "@marketplace/schemas";
+import { operationObjectSchema } from "@marketplace/schemas";
+import { createSupportTicketSchema, addSupportMessageSchema, updateSupportTicketSchema, supportTicketSummarySchema, supportTicketListSchema, supportTicketQuerySchema, supportTicketDetailSchema, supportMessageQuerySchema, supportMessageResponseSchema } from "@marketplace/schemas";
+import { conversationContextSchema, conversationLookupSchema } from "@marketplace/schemas";
+import { operationAssignmentSchema, operationAssignmentResultSchema, operationHistorySchema, operationAssigneesSchema, operationWorkQueueSchema } from "@marketplace/schemas";
+import { startConversationSchema, conversationMessageInputSchema, conversationQuerySchema, conversationReadSchema, conversationEscalationSchema, conversationResolveSchema, conversationPageSchema, conversationDetailSchema, conversationMessageQuerySchema, conversationResultSchema, conversationReadResultSchema, conversationEscalationResultSchema } from "@marketplace/schemas";
 import { workspaceCorrectionOfferPageSchema, workspaceInventoryPageSchema, workspaceLotPageSchema, workspaceReservationPageSchema, workspaceOverridePageSchema } from "@marketplace/schemas";
 import { createInvitationSchema, acceptInvitationSchema, invitationProofSchema, invitationDetailsSchema, invitationListSchema, invitationCreatedSchema, invitationDeliveredSchema, invitationAcceptedSchema, identityCommandResultSchema, identitySessionRevokedSchema, identityRolesSchema, identityMembersSchema, identitySessionsSchema } from "@marketplace/schemas";
 import { createOfferPromotionSchema, reviseOfferPromotionSchema, offerPromotionCommandSchema, offerPromotionSchema, promotionPageSchema, publicPromotionPageSchema } from "@marketplace/schemas";
@@ -109,6 +115,38 @@ const authenticatedCompareOffersQuerySchema = compareOffersSchema.omit({
 const supplierOrdersQuerySchema = z.object({ checkoutId: z.uuid().optional() });
 
 const coreZodSchemas = {
+  InternalNotification: internalNotificationSchema,
+  InternalNotificationList: internalNotificationListSchema,
+  NotificationQuery: notificationQuerySchema,
+  CreateSupportTicket: createSupportTicketSchema,
+  AddSupportMessage: addSupportMessageSchema,
+  UpdateSupportTicket: updateSupportTicketSchema,
+  SupportTicketSummary: supportTicketSummarySchema,
+  SupportTicketList: supportTicketListSchema,
+  SupportTicketQuery: supportTicketQuerySchema,
+  SupportTicketDetail: supportTicketDetailSchema,
+  SupportMessageQuery: supportMessageQuerySchema,
+  SupportMessage: supportMessageResponseSchema,
+  ConversationContext: conversationContextSchema,
+  ConversationLookup: conversationLookupSchema,
+  OperationAssignment: operationAssignmentSchema,
+  OperationAssignmentResult: operationAssignmentResultSchema,
+  OperationHistory: operationHistorySchema,
+  OperationAssignees: operationAssigneesSchema,
+  OperationWorkQueue: operationWorkQueueSchema,
+  OperationObject: operationObjectSchema,
+  StartConversation: startConversationSchema,
+  ConversationMessageInput: conversationMessageInputSchema,
+  ConversationQuery: conversationQuerySchema,
+  ConversationRead: conversationReadSchema,
+  ConversationEscalation: conversationEscalationSchema,
+  ConversationResolve: conversationResolveSchema,
+  ConversationPage: conversationPageSchema,
+  ConversationDetail: conversationDetailSchema,
+  ConversationMessageQuery: conversationMessageQuerySchema,
+  ConversationResult: conversationResultSchema,
+  ConversationReadResult: conversationReadResultSchema,
+  ConversationEscalationResult: conversationEscalationResultSchema,
   CreateOfferPromotion: createOfferPromotionSchema,
   ReviseOfferPromotion: reviseOfferPromotionSchema,
   OfferPromotionCommand: offerPromotionCommandSchema,

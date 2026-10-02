@@ -145,6 +145,7 @@ export const createPurchaseBudgetSchema = z.object({
 }).refine((value) => value.periodStart < value.periodEnd, { path: ["periodEnd"], message: "Budget end must be after start" });
 
 export const createSupportTicketSchema = z.object({
+  idempotencyKey: z.uuid(),
   subject: z.string().trim().min(4).max(200),
   description: z.string().trim().min(10).max(10_000),
   category: z.string().trim().min(2).max(80),
@@ -153,17 +154,22 @@ export const createSupportTicketSchema = z.object({
 });
 
 export const addSupportMessageSchema = z.object({
+  idempotencyKey: z.uuid(),
   body: z.string().trim().min(1).max(20_000),
   isInternal: z.boolean().default(false),
   attachments: z.array(z.object({ assetId: z.uuid(), name: z.string().trim().max(240) })).max(10).default([]),
 });
 
 export const updateSupportTicketSchema = z.object({
+  expectedVersion: z.number().int().positive(),
+  reason: z.string().trim().min(10).max(1_000),
+  idempotencyKey: z.uuid(),
+  slaDueAt: z.iso.datetime().nullable().optional(),
   status: z.enum(["OPEN", "IN_PROGRESS", "WAITING_CUSTOMER", "RESOLVED", "CLOSED"]).optional(),
   priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).optional(),
   assigneeId: z.uuid().nullable().optional(),
   tags: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
-}).refine((value) => Object.keys(value).length > 0, "At least one support field must be updated");
+}).refine((value) => [value.status, value.priority, value.assigneeId, value.tags, value.slaDueAt].some(field => field !== undefined), "At least one support field must be updated");
 
 export const startImpersonationSchema = z.object({
   targetUserId: z.uuid(),

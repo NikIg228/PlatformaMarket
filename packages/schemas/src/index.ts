@@ -1204,6 +1204,8 @@ export const createNotificationSchema = z.object({
 });
 
 export const notificationQuerySchema = z.object({
+  channel: z.enum(["IN_APP", "EMAIL", "SMS", "WEBHOOK"]).optional(),
+  offset: z.coerce.number().int().min(0).max(100_000).default(0),
   status: z.enum(["PENDING", "PROCESSING", "SENT", "FAILED", "DEAD", "CANCELLED"]).optional(),
   unreadOnly: z.coerce.boolean().default(false),
   limit: z.coerce.number().int().min(1).max(200).default(50),
@@ -1400,3 +1402,6 @@ export * from "./order-workflow.js";
 export * from "./manual-payments.js";
 export * from "./order-returns.js";
 export * from "./promotions.js";
+export * from "./conversations.js";
+export * from "./operations-workflow.js";
+export * from "./support-workflow.js";

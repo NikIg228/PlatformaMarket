@@ -8,8 +8,10 @@
 Это реестр оставшихся результатов, а не разрешение выполнять весь backlog.
 Разрешение владельца 02.10 после завершения темы: последовательно CORE-05–09,
 backend/frontend, проверки, публикация после PASS и краткий итоговый аудит.
-[CORE-05](../governance/task-state/CORE-05-INTERNAL-2026-10-02.md) LOCAL_PASS,
-CI ожидается; внешняя доставка не принята. CORE-08 сохраняет production guards
+[CORE-05](../governance/task-state/CORE-05-INTERNAL-2026-10-02.md) CLOSED/CI_PASS,
+0021438, CI36936601972 / Security36936601908 SUCCESS; внешняя доставка не принята.
+[CORE-06](../governance/task-state/CORE-06-INTERNAL-2026-10-02.md) IN_PROGRESS.
+CORE-08 сохраняет production guards
 по ответу владельца Q01; реальные сервисы/production — отдельный этап.
 Последний запрос владельца01.10 после371aa9d: выполнять внутренний список6.2
 по порядку без внешних интеграций и боевых данных. Первый этап —
@@ -49,7 +51,7 @@ stale versions и их проверки. Старые задания «испр�
 | CORE-04.1–04.5 | Ограниченные catalog/import/manual/new-product outcomes приняты | Не повторять принятые slices; live whitelist, реальные данные и media rights не подтверждены fixture |
 | CORE-04.6–04.7 | [CI_PASS01.10](../governance/task-state/CORE-04-INTERNAL-2026-10-01.md) на f14cbe1: discount/N+M, immutable versions/price evidence, operator moderation, gift reservation/consent, storefront/history/templates и условия заказа | PG upgrade/tenant/race/replay, pilot46/46 и go_live2/2 desktop/390 PASS. CI36874461180 и Security36874461153 SUCCESS. Рабочая миграция140000 требует отдельного разрешения; dev остановлен. Реальные акции и legal launch не приняты; optional promotions остаются только go_live |
 | CORE-05.1–05.3 | identity/access-control/organizations; registration/resume/workspace/logout/MFA slices | Общая матрица verification/reset, invites/role/disable, revoke/multi-tab и всех ролей CORE; локальный transport не внешняя доставка |
-| CORE-06.1–06.6 | operations/moderation/in-app/outbox и ролевые страницы | Очередь reason/priority/owner/deadline/history; dedup CORE02/03 событий, missing external adapter без ложной доставки; guarded rollback, внутренние диалоги, operator §23.4 без SQL и обхода identity |
+| CORE-06.1–06.6 | Реализованы contracts/API/UI очереди9 доменов, assignment/CAS/history, support и внутренние диалоги трёх ролей; [evidence](../governance/task-state/CORE-06-INTERNAL-2026-10-02.md) | Локальные PG/core/runtime/browser55 и targeted keyboard PASS; финальная публикация/CI ещё ожидаются. Внешние каналы/реальные дежурные не приняты; пропавший адаптер не означает доставку |
 | CORE-07.1–07.3 | Operational/search metrics, workspace summaries | События/window/timezone: created/confirmed/received/repeat, price/stock refusals, delays; demo отдельно/dedup; защищённая аналитика организаций. Комиссия10% утверждена, целевое начисление по полученному товару не реализовано старым PSP fee |
 | CORE-08.1–08.5 | Schemas/client/OpenAPI, upload bounds, security/config guards | Полнота CORE contracts; настоящий lint вместо tsc; npm-only lockfile housekeeping; body/upload/memory bounds по реальному пути; согласовать ADR009/production+pilot и Swagger policy. Не менять guards ради docs |
 | CORE-09 | Единой итоговой приёмки нет | Scoped CORE01–08 outcomes, обязательные gates одной revision, отсутствие незакрытого критического риска, актуальная Matrix. Публикация и отдельные LOCAL_PASS не равны backend completion |

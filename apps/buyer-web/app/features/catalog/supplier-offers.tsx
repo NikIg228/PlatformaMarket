@@ -86,6 +86,7 @@ export function SupplierOffers({ offers, loginHref, compact = false }: {
           {offer.normalizedPriceMinor && offer.packaging?.unit && !(offer.packaging.quantityInBaseUnit === "1" && offer.normalizedPriceMinor === offer.priceMinor) ? <small>{formatCatalogMoney(offer.normalizedPriceMinor, offer.currency)} / {offer.packaging.unit}</small> : null}
         </div>
         <div className={styles.action}>
+          {session?.organizationId ? <DmButton as="a" href={`/clinic/messages?contextType=OFFER&contextId=${offer.id}`}>Задать вопрос поставщику</DmButton> : null}
           <label>Количество<input type="number" min={min} step={step} max="1000000" value={quantity} disabled={busy !== null || !offer.available}
             aria-label={`Количество у ${offer.supplier.name}`} aria-invalid={!valid}
             onChange={e => setQuantities(current => ({ ...current, [offer.id]: e.target.value }))} /></label>

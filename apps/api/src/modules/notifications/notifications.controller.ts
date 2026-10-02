@@ -4,8 +4,11 @@ import { ApiTags } from "@nestjs/swagger";
 import { PermissionsGuard } from "../access-control/permissions.guard";
 import { RequirePermissions } from "../access-control/require-permissions.decorator";
 import { NotificationsService } from "./notifications.service";
+import { ApiCoreErrors, ApiCoreProtected, ApiCoreQuery, ApiCoreResponse, ApiUuidParam } from "../../platform/openapi/core-openapi";
 
 @ApiTags("notifications")
+@ApiCoreProtected()
+@ApiCoreErrors()
 @UseGuards(PermissionsGuard)
 @Controller("notifications")
 export class NotificationsController {
@@ -37,6 +40,7 @@ export class NotificationsController {
   }
 
   @Get("organizations/:organizationId")
+  @ApiUuidParam("organizationId", "Recipient organization") @ApiCoreQuery("NotificationQuery") @ApiCoreResponse("InternalNotificationList")
   @RequirePermissions("notification.view")
   list(@Param("organizationId") organizationId: string, @Query() query: Record<string, unknown>, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") actorOrganizationId: string) {
     const parsed = notificationQuerySchema.safeParse(query); if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
@@ -44,6 +48,7 @@ export class NotificationsController {
   }
 
   @Post(":notificationId/read")
+  @ApiUuidParam("notificationId", "Notification") @ApiCoreResponse("InternalNotification", 201)
   @RequirePermissions("notification.view")
   markRead(@Param("notificationId") notificationId: string, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     return this.notifications.markRead(notificationId, this.context(actorId, organizationId));
@@ -57,5 +62,5 @@ export class NotificationsController {
 
   @Post("process")
   @RequirePermissions("notification.manage")
-  process() { return this.notifications.tick(); }
+  process(@Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { return this.notifications.processForOperator(this.context(actorId, organizationId)); }
 }

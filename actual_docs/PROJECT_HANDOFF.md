@@ -1,9 +1,29 @@
 # PlatformaMarket — текущий контекст
 
+Актуально02.10: CORE06 LOCAL_PASS/CI_PENDING. Browser blocker исправлен:
+controlled modal close и возврат focus; canonical55/55 + targeted keyboard PASS.
+Typecheck8/unit7/build5/bundle3 PASS; PG/core/runtime/prisma evidence reuse.
+Полный результат и attempts: CORE-06-INTERNAL-2026-10-02.md. Сейчас scoped
+publication main и CI; после CI_PASS продолжить CORE07–09+аудит, как поручил владелец.
+Dev остановлен для проверок, восстановить после последовательности. Один writer,
+без агентов/worktrees; исходные5 WIP сохранены. Ниже — хронология старых состояний.
+
+Latest02.10: после явного продолжения unit configuration исправлен, root unit5
+и typecheck4 PASS. CORE06 BLOCKED browser limit: переход из DmDialog в переписку
+оставляет aria-hidden ancestor (3 фактических прогона);54 других сценария PASS.
+Следующий шаг controlled Dialog close/cleanup записан в CORE06. CORE07–09 ещё
+не начаты; публикации нет. Три рабочие миграции уже отдельно разрешены и применены,
+505products/510offers/32orders/17users сохранены; dev восстановить после проверок.
+
 Актуальное поручение 02.10 после темы: последовательно завершить CORE-05–09.
-[CORE-05](governance/task-state/CORE-05-INTERNAL-2026-10-02.md) — LOCAL_PASS,
-публикация/CI ожидаются. Один primary writer, прежние пять WIP сохранены.
-CORE-06 начинается только после успешного CI CORE-05. Рабочая миграция140000,
+[CORE-05](governance/task-state/CORE-05-INTERNAL-2026-10-02.md) — CLOSED/CI_PASS,
+0021438; CI36936601972 / Security36936601908 SUCCESS. Один primary writer,
+прежние пять WIP сохранены. [CORE-06](governance/task-state/CORE-06-INTERNAL-2026-10-02.md)
+BLOCKED по лимиту третьего запуска unit gate: fixture операторской очереди
+не задаёт DATABASE_URL для environment dependency. Контракты/API/UI реализованы,
+typecheck/PG/core-contract/runtime PASS; web gates NOT_RUN. CORE06 не опубликован.
+Следующий точный шаг и все attempts — в карточке CORE06; CORE07–09 не начаты.
+Рабочая миграция140000,
 восстановление dev, внешние интеграции и production не входят в это разрешение.
 Q01 решён: текущие production guards сохраняются; подключение сервисов отдельно.
 Сведения о приостановке CORE ниже относятся к предыдущему поручению о теме.

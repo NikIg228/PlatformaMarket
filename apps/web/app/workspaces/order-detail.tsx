@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import { OrderWorkflowWorkspace, PermissionFields } from "@marketplace/ui";
+import { DmButton, OrderWorkflowWorkspace, PermissionFields } from "@marketplace/ui";
 import { OrderConfirmationPanel } from "../../../supplier-web/app/order-confirmation-panel";
 import {
   ShipmentPanel,
@@ -14,6 +14,7 @@ export default function OrderDetail() {
   const { api, role, organizationId } = useWorkspace();
   return (
     <div id={`supplier-order-${id}`} tabIndex={-1} className={`${styles.stack} ${styles.order}`}>
+      <PermissionFields required={["support.ticket.view"]}><DmButton as="a" href={`/${role}/messages?contextType=ORDER&contextId=${id}`}>Переписка по заказу</DmButton></PermissionFields>
       <OrderWorkflowWorkspace
         backHref={`/${role}/orders`}
         backLabel="← Все заказы"

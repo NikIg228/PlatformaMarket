@@ -1,0 +1,142 @@
+import { createRequire } from "node:module";
+import { randomUUID } from "node:crypto";
+import { commerce } from "./verify-checkout-snapshot.mjs";
+const require = createRequire(import.meta.url);
+const domain = (file, name) => require(`../../apps/api/dist/src/modules/${file}.js`)[name];
+
+// Runs under the parent's disposable DB manifest and owned API, including in CI.
+export async function verifyConversations({ prisma, offer, supplierId, createBuyer, createCartWithItem, runId, assert, request }) {
+  const [buyer, seller, operator, outsider, employee] = await Promise.all([75, 76, 77, 78, 79].map(index => createBuyer(index)));
+  const supplier = { userId: seller.userId, organizationId: supplierId };
+  const colleague = { userId: employee.userId, organizationId: buyer.organizationId };
+  const context = actor => ({ actorId: actor.userId, organizationId: actor.organizationId });
+  const codes = ["support.ticket.view", "support.ticket.create", "notification.view", "notification.manage"];
+  for (const actor of [buyer, outsider, operator]) {
+    const role = await prisma.role.findFirstOrThrow({ where: { organizationId: actor.organizationId } });
+    const required = [...codes, ...(actor === operator ? ["support.ticket.manage"] : [])];
+    await prisma.rolePermission.createMany({ data: (await prisma.permission.findMany({ where: { code: { in: required } } })).map(permission => ({ roleId: role.id, permissionId: permission.id })), skipDuplicates: true });
+    if (actor === buyer) await prisma.organizationMembership.create({ data: { userId: employee.userId, organizationId: buyer.organizationId, status: "ACTIVE", roles: { create: { roleId: role.id } } } });
+  }
+  const supplierRole = await prisma.role.create({ data: { organizationId: supplierId, code: `${runId}-messages`, name: "Synthetic message permission", permissions: { create: codes.map(code => ({ permission: { connect: { code } } })) } } });
+  await prisma.organizationMembership.create({ data: { userId: seller.userId, organizationId: supplierId, status: "ACTIVE", roles: { create: { roleId: supplierRole.id } } } });
+  await prisma.organizationCapability.create({ data: { organizationId: operator.organizationId, capability: "MARKETPLACE_OPERATOR" } });
+  const call = async (route, identity = buyer, body, status = body === undefined ? 200 : 201, method = body === undefined ? "GET" : "POST") => {
+    const response = await request(route, { identity, body, method });
+    assert(response.status === status, `CORE06 ${method} ${route}: expected ${status}, received ${response.status} ${JSON.stringify(response.body)}`);
+    return response.body;
+  };
+  const Permissions = domain("access-control/access-control.service", "AccessControlService");
+  const Conversations = domain("support/conversations.service", "ConversationsService");
+  const Notifications = domain("notifications/notifications.service", "NotificationsService");
+  const notificationService = new Notifications(prisma, { resolve() { throw new Error("External delivery must not be called in projection verification"); } }, {}, {});
+  const permissionService = new Permissions(prisma);
+  const conversations = new Conversations(prisma, permissionService);
+  assert(await prisma.supportTicket.count({ where: { version: { lt: 1 } } }) === 0, "Existing tickets received invalid migration version");
+  const empty = await call("/conversations");
+  assert(empty.items.length === 0 && empty.unreadCount === 0, "Empty conversations must not appear");
+  const input = { contextType: "OFFER", contextId: offer.offerId, body: "Synthetic question about the offer", idempotencyKey: randomUUID() };
+  await call("/conversations", supplier, input, 403);
+  await call("/conversations", buyer, { ...input, authorId: outsider.userId }, 400);
+  const starts = await Promise.all([1, 2].map(() => call("/conversations", buyer, input)));
+  assert(starts[0].conversationId === starts[1].conversationId, "Concurrent starts created duplicate conversations");
+  const id = starts[0].conversationId, route = `/conversations/${id}`;
+  assert(await prisma.conversationMessage.count({ where: { conversationId: id } }) === 1, "Concurrent first message was saved twice");
+  await call(route, outsider, undefined, 404);
+  await call(route, operator, undefined, 404);
+  await call(route + "/messages", outsider, { body: "Foreign message", idempotencyKey: randomUUID() }, 404);
+  await call(route + "/messages", buyer, { body: "Different content", idempotencyKey: input.idempotencyKey }, 409);
+  const supplierInbox = await call("/conversations?filter=UNREAD", supplier);
+  assert(supplierInbox.unreadCount === 1 && supplierInbox.items[0].id === id, "Supplier personal unread count missing");
+  await call(route + "/read", supplier, { throughSequence: 99 }, 400);
+  await call(route + "/read", supplier, { throughSequence: 1 });
+  const seen = await call(route);
+  assert(seen.messages[0].readByCounterparty === true, "Company read marker did not reflect recipient's read");
+  const reply = { body: "Synthetic supplier reply", idempotencyKey: randomUUID() };
+  await Promise.all([1, 2].map(() => call(route + "/messages", supplier, reply)));
+  assert(await prisma.conversationMessage.count({ where: { conversationId: id } }) === 2, "Supplier message replay duplicated history");
+  assert((await call("/conversations?filter=UNREAD", buyer)).unreadCount === 1, "Buyer unread reply missing");
+  assert((await call("/conversations?filter=UNREAD", colleague)).unreadCount === 1, "Coworker's unread state was not independent");
+  await call(route + "/read", buyer, { throughSequence: 2 });
+  await call(route + "/read", buyer, { throughSequence: 1 });
+  assert((await call("/conversations?filter=UNREAD", buyer)).unreadCount === 0, "Read cursor moved backwards");
+  assert((await call("/conversations?filter=UNREAD", colleague)).unreadCount === 1, "One employee cleared another employee's unread state");
+  const membership = await prisma.organizationMembership.findUniqueOrThrow({ where: { userId_organizationId: { userId: buyer.userId, organizationId: buyer.organizationId } } });
+  await prisma.organizationMembership.update({ where: { id: membership.id }, data: { status: "BLOCKED" } });
+  await call(route, buyer, undefined, 403);
+  assert((await call(route, colleague)).messages.length === 2, "Disabled author removed organization history");
+  await prisma.organizationMembership.update({ where: { id: membership.id }, data: { status: "ACTIVE" } });
+  const beforeResolve = await call(route);
+  await call(route + "/resolve", buyer, { expectedVersion: beforeResolve.conversation.version });
+  await call(route + "/resolve", supplier, { expectedVersion: beforeResolve.conversation.version }, 409);
+  await call(route + "/messages", supplier, { body: "Synthetic reopen", idempotencyKey: randomUUID() });
+  assert((await call(route)).conversation.resolved === false, "New message did not reopen a resolved question");
+  const escalation = { reason: "Synthetic operator assistance requested", idempotencyKey: randomUUID() };
+  const tickets = await Promise.all([1, 2].map(() => call(route + "/escalate", buyer, escalation)));
+  assert(tickets[0].ticketId === tickets[1].ticketId, "Escalation replay created duplicate support tickets");
+  assert((await call(route, supplier)).conversation.supportTicketId === tickets[0].ticketId, "Escalation not visible to both companies");
+  await call(route, operator);
+  await call(route + "/messages", operator, { body: "Synthetic operator response", idempotencyKey: randomUUID() });
+  assert((await call(route)).messages.at(-1).authorRole === "OPERATOR", "Operator author is not identified");
+  await call(`/support/tickets/${tickets[0].ticketId}`, outsider, undefined, 404);
+
+  const cart = await createCartWithItem(buyer, offer.offerId, 1);
+  const checkout = await commerce(prisma).checkout(cart.id, { idempotencyKey: `${runId}-conversation-order` }, context(buyer));
+  const order = checkout.supplierOrders[0];
+  const orderInput = { contextType: "ORDER", contextId: order.id, body: "Synthetic supplier order question", idempotencyKey: randomUUID() };
+  await call("/conversations", outsider, orderInput, 404);
+  const beforeOrderChat = await prisma.supplierOrder.findUniqueOrThrow({ where: { id: order.id } });
+  const orderConversation = await call("/conversations", supplier, orderInput);
+  assert(orderConversation.conversationId !== id, "Offer history was silently moved into order history");
+  const storedOrder = await prisma.supplierOrder.findUniqueOrThrow({ where: { id: order.id } });
+  assert(storedOrder.status === beforeOrderChat.status && storedOrder.version === beforeOrderChat.version, "Conversation changed commercial order state");
+  const orderRoute = `/conversations/${orderConversation.conversationId}`;
+  await prisma.supplierOrder.update({ where: { id: order.id }, data: { status: "DELIVERED" } });
+  await call(orderRoute + "/messages", buyer, { body: "Question after order closure", idempotencyKey: randomUUID() });
+  assert((await call("/conversations?filter=ORDERS")).items.every(item => item.contextType === "ORDER"), "Order inbox filter mixed offer conversations");
+
+  // A complete bounded history page plus an older page, using the real domain transaction.
+  for (let index = 0; index < 51; index++) await conversations.send(id, { body: `Synthetic history ${index}`, idempotencyKey: randomUUID() }, context(supplier));
+  const recent = await call(route);
+  assert(recent.messages.length === 50 && recent.hasOlder, "Conversation history is not bounded");
+  const older = await call(route + `?beforeSequence=${recent.messages[0].sequence}`);
+  assert(older.messages.length > 0 && older.messages.at(-1).sequence < recent.messages[0].sequence, "History cursor repeated messages");
+
+  const events = await prisma.outboxEvent.findMany({ where: { aggregateType: "BusinessConversation", aggregateId: id }, orderBy: { createdAt: "asc" }, take: 1 });
+  const projected = await Promise.all([notificationService.projectOutboxEvent(events[0]), notificationService.projectOutboxEvent(events[0])]);
+  assert(projected.reduce((sum, count) => sum + count, 0) === 1, "Projection created count included replays");
+  assert(await prisma.notification.count({ where: { idempotencyKey: { startsWith: `outbox:${events[0].id}:` } } }) === 1, "Outbox replay duplicated recipient notifications");
+  const invoiceEvent = { id: randomUUID(), aggregateType: "SupplierOrder", aggregateId: order.id, eventType: "OrderReceived", payload: { organizationId: buyer.organizationId } };
+  assert(await notificationService.projectOutboxEvent(invoiceEvent) === 1, "Lowercase organizationId was not projected");
+  assert(await notificationService.projectOutboxEvent(invoiceEvent) === 0, "CORE02/03 event replay was not deduplicated");
+  const personalInput = { recipientOrganizationId: buyer.organizationId, recipientUserId: buyer.userId, eventType: "InternalTest", channel: "IN_APP", priority: "NORMAL", subject: "Synthetic personal", body: "Synthetic personal message", idempotencyKey: randomUUID() };
+  const personal = await notificationService.create(personalInput, context(buyer));
+  assert(!(await notificationService.list(buyer.organizationId, { unreadOnly: false, limit: 200, offset: 0 }, context(colleague))).some(item => item.id === personal.id), "Personal notification leaked to colleague");
+  await call(`/notifications/${personal.id}/read`, colleague, {}, 404);
+  await call("/notifications", buyer, { ...personalInput, body: "Conflicting replay" }, 409);
+
+  const assignment = { expectedVersion: 0, priority: "HIGH", assigneeId: operator.userId, dueAt: new Date(Date.now() + 3_600_000).toISOString(), reason: "Synthetic assignment review", idempotencyKey: randomUUID() };
+  const assignmentRoute = `/operations/work-queue/SUPPLIER_CONFIRMATION/${order.id}/assignment`;
+  await call(assignmentRoute, buyer, assignment, 403);
+  await call(assignmentRoute, operator, { ...assignment, assigneeId: outsider.userId }, 409);
+  const assigned = await call(assignmentRoute, operator, assignment);
+  assert((await call(assignmentRoute, operator, assignment)).version === assigned.version, "Assignment replay changed version");
+  const race = await Promise.all([1, 2].map(index => request(assignmentRoute, { method: "POST", identity: operator, body: { ...assignment, expectedVersion: assigned.version, reason: `Synthetic concurrent reason ${index}`, idempotencyKey: randomUUID() } })));
+  assert(race.map(result => result.status).sort().join(",") === "201,409", "Concurrent queue assignment did not produce one conflict");
+  const history = await call(`/operations/work-queue/SUPPLIER_CONFIRMATION/${order.id}/history`, operator);
+  assert(history.length === 2 && history.every(item => item.after.reason), "Assignment history or reasons missing");
+  await call(`/operations/work-queue/SUPPLIER_CONFIRMATION/${order.id}`, operator);
+
+  const ticketRoute = `/support/tickets/${tickets[0].ticketId}`;
+  const ticket = await call(ticketRoute, operator);
+  const update = { expectedVersion: ticket.version, status: "IN_PROGRESS", priority: "HIGH", assigneeId: operator.userId, reason: "Synthetic ticket decision", idempotencyKey: randomUUID() };
+  await call(ticketRoute, operator, { ...update, assigneeId: outsider.userId }, 409, "PATCH");
+  const changed = await call(ticketRoute, operator, update, 200, "PATCH");
+  assert((await call(ticketRoute, operator, update, 200, "PATCH")).version === changed.version, "Ticket command replay changed state");
+  await call(ticketRoute, operator, { ...update, idempotencyKey: randomUUID() }, 409, "PATCH");
+  const note = { body: "Synthetic private operator note", isInternal: true, attachments: [], idempotencyKey: randomUUID() };
+  await call(ticketRoute + "/messages", buyer, note, 403);
+  await Promise.all([1, 2].map(() => call(ticketRoute + "/messages", operator, note)));
+  assert((await call(ticketRoute, operator)).messages.filter(message => message.body === note.body).length === 1, "Support message replay duplicated a note");
+  assert(!(await call(ticketRoute, buyer)).messages.some(message => message.isInternal), "Internal operator note leaked to requester");
+  console.log(JSON.stringify({ status: "passed", scenarios: ["conversation-tenants-and-permissions", "concurrent-message-replay", "personal-and-company-read", "revoked-author-history", "resolve-and-reopen", "operator-escalation", "offer-order-separation-and-closed-order-chat", "bounded-history", "notification-projection-dedup-and-privacy", "operator-assignment-cas-and-history", "support-command-replay-and-internal-notes"] }));
+}

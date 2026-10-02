@@ -36,6 +36,7 @@ import { Box24Regular } from "@fluentui/react-icons/svg/box";
 import { Navigation24Regular } from "@fluentui/react-icons/svg/navigation";
 import styles from "./workspace.module.css";
 import { WorkspacePermissions } from "./workspace-permissions";
+import { MessageHeader } from "./message-header";
 
 export type WorkspaceRole = "clinic" | "supplier";
 type WorkspaceContext = {
@@ -253,7 +254,7 @@ export function Workspace({
               session,
             }}
           >
-            <WorkspacePermissions api={api} organizationId={session.organizationId}>{children}</WorkspacePermissions>
+            <WorkspacePermissions api={api} organizationId={session.organizationId}><MessageHeader />{children}</WorkspacePermissions>
           </Context.Provider>
         )}
       </main>

@@ -1,0 +1,12 @@
+import { z } from "zod";
+export const supportTicketSummarySchema = z.object({ id: z.uuid(), version: z.number().int().positive(), number: z.string(), organizationId: z.uuid(), requesterId: z.uuid(), assigneeId: z.uuid().nullable(), subject: z.string(), description: z.string(), status: z.enum(["OPEN", "IN_PROGRESS", "WAITING_CUSTOMER", "RESOLVED", "CLOSED"]), priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]), category: z.string(), slaDueAt: z.string().nullable(), firstResponseAt: z.string().nullable(), resolvedAt: z.string().nullable(), closedAt: z.string().nullable(), tags: z.array(z.string()), createdAt: z.string(), updatedAt: z.string() });
+export const supportTicketListSchema = z.array(supportTicketSummarySchema);
+export const supportTicketQuerySchema = z.object({ status: supportTicketSummarySchema.shape.status.optional(), offset: z.coerce.number().int().min(0).max(100_000).default(0) });
+export const supportMessageResponseSchema = z.object({ id: z.uuid(), ticketId: z.uuid(), authorId: z.uuid(), body: z.string(), isInternal: z.boolean(), attachments: z.unknown(), createdAt: z.string() });
+export const supportTicketDetailSchema = supportTicketSummarySchema.extend({ messages: z.array(supportMessageResponseSchema), hasOlder: z.boolean(), links: z.array(z.object({ id: z.uuid(), ticketId: z.uuid(), entityType: z.string(), entityId: z.string(), label: z.string().nullable(), createdAt: z.string() })) });
+export const supportMessageQuerySchema = z.object({ beforeMessageId: z.uuid().optional() });
+export type SupportTicketSummary = z.infer<typeof supportTicketSummarySchema>;
+export type SupportTicketDetail = z.infer<typeof supportTicketDetailSchema>;
+export const internalNotificationSchema = z.object({ id: z.uuid(), recipientOrganizationId: z.uuid(), recipientUserId: z.uuid().nullable(), eventType: z.string(), channel: z.enum(["IN_APP", "EMAIL", "SMS", "WEBHOOK"]), status: z.enum(["PENDING", "PROCESSING", "SENT", "FAILED", "DEAD", "CANCELLED"]), subject: z.string(), body: z.string(), aggregateType: z.string().nullable(), aggregateId: z.string().nullable(), createdAt: z.string(), sentAt: z.string().nullable(), readAt: z.string().nullable(), attempts: z.number().int(), lastError: z.string().nullable() });
+export const internalNotificationListSchema = z.array(internalNotificationSchema);
+export type InternalNotification = z.infer<typeof internalNotificationSchema>;

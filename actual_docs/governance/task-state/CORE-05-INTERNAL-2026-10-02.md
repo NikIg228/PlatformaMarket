@@ -1,6 +1,6 @@
 # CORE-05 — внутренний identity/access цикл
 
-Статус: LOCAL_PASS / CI_PENDING. Владелец: primary 01a0f302-2d38-75d1-b79c-141e7428b533.
+Статус: CLOSED / CI_PASS. Владелец: primary 01a0f302-2d38-75d1-b79c-141e7428b533.
 Основание02.10: владелец явно поручил последовательную реализацию CORE05–09,
 полный функционал backend/frontend, проверки, push после PASS и краткий аудит
 в конце последовательности. Вопросы — отдельный список ниже.
@@ -160,3 +160,14 @@ canonical web собирает импортируемые admin/landing UI, по
 Self-review завершён: tenant/actor, secrets, CAS, роли/сессии, контракты, состояния UI,
 обратная совместимость logout. Проверенные дефекты исправлены; следующий шаг —
 scoped commit/push main и фактический CI. Остаток CORE06–09 не объявлен завершённым.
+
+Публикация02.10: commit0021438ea9f25b7543d8f12a28af14c1ff2bad67 на main,
+обычный push выполнен, ls-remote подтвердил тот же SHA. Остались только5 исходных
+WIP. CI36936601972 и Security36936601908 запущены, IN_PROGRESS; PASS не заявлен.
+До их результата CORE06 код не изменяется; допустим read-only inventory очередей,
+notifications/support и утверждённого Product22.12. Новых процессов dev нет.
+
+CI receipt02.10: CI36936601972 и Security36936601908 completed/success на
+0021438ea9f25b7543d8f12a28af14c1ff2bad67. Все4 CI jobs (verify, PG и2Docker)
+SUCCESS; Security CodeQL/dependencies SUCCESS. CORE05 CLOSED / CI_PASS.
+Следующий разрешённый этап CORE06 начат отдельной карточкой; рабочая БД неизменна.
