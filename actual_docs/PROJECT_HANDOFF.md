@@ -1,5 +1,15 @@
 # PlatformaMarket — текущий контекст
 
+02.10 ROLES — CLOSED / CI_PASS. Код4aa1e004ca534cc8916bfbc99511ffb1e7122acb
+опубликован в origin/main, remote SHA проверен. CI37011303819 и Security37011303920
+completed/success (attempt1), включая canonical и FULL_ACCESS browser.
+Локальное окружение оставлено работающим: go_live/JWT/FULL_ACCESS,
+API4012/web3000, clinic8/supplier13 страниц PASS; все три capability проверены
+real JWT/no-role fixtures. Роли/назначения сохранены; tenant/identity действуют.
+Финальная запись только docs: runtime gates REUSED_PASS с4aa1e00 по Workflow4.2;
+новый CI для receipt намеренно NOT_RUN [skip ci]. Redesign/референсы отложены.
+Foreign7 WIP сохранены. Следующей фазы и передачи задачи нет.
+
 02.10 ROLES — LOCAL_PASS: временный FULL_ACCESS действует во всех трёх кабинетах.
 Сохранены роли/назначения, JWT, активная membership, tenant/capability boundaries;
 production требует ROLE_BASED. Redesign/референсы отложены решением владельца.
