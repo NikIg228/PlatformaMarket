@@ -1,5 +1,22 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+02.10 HEADER — LOCAL_PASS. Новый запрос: общий clinic/supplier header, приветствие
+по локальному времени устройства и имени сотрудника; системные icon links.
+Logout остаётся в sidebar. main@04c6b4e, primary writer тот же, foreign7 сохранены.
+Scope message-header/css, pure greeting+boundary tests, optional icon Counter
+(старые consumers сохраняют текст). Утро05–12/день12–18/вечер18–23/ночь23–05.
+Пропорциональная проверка по последнему решению владельца: greeting test,
+web types/build один раз, targeted lint и local desktop/mobile/keyboard smoke.
+Без root suites/полного E2E/API/DB gates; после push CI status отдельно, не ждать.
+Greeting12 PASS; web types1 FAIL icon ReactNode/Fluent slot mismatch, narrowed
+to ReactElement; types2 PASS; targeted lint1 PASS. Browser tool waiter1 typo
+/Добро/ missed Добрый; corrected /Добр/, smoke2 both roles1440/390 PASS;
+focus,icon-only links,no overflow,support navigation;4 screenshots inspected.
+Web build1 PASS. Self-review PASS: session identity/logout/API preserved;
+scoped header/optional counter icon only; no new dependencies. Dev launcher5920 restoring. No root/DB/full E2E. budget20m/build,2m/probe,max3.
+Practices: development-toolkit/frontend, Fluent UI, Agency Frontend Developer,
+Playwright targeted smoke, existing tokens and readable keyboard names.
+
 SIDEBAR receipt02.10: код57d75f569593f31aaa610cd344399c9dcf786d89 в origin/main,
 remote SHA совпал; CI37021253380 / Security37021253329 completed/success attempt1.
 Финальная запись только docs [skip ci], runtime evidence REUSED_PASS, новый CI NOT_RUN.

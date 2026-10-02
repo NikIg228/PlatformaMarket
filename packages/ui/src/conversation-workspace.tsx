@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactElement } from "react";
 import type { ConversationDetail, ConversationEscalation, ConversationMessageInput, ConversationPage, ConversationQuery, StartConversation } from "@marketplace/schemas";
 import { DmButton, DmField, DmSelect, DmTextarea, EmptyState, LoadingState, errorMessage } from "./index";
 
@@ -17,7 +17,7 @@ type Context = { contextType: "OFFER" | "ORDER"; contextId: string };
 const announce = () => window.dispatchEvent(new Event("marketplace:conversations"));
 const time = (value: string) => new Intl.DateTimeFormat("ru-KZ", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
 
-export function ConversationCounter({ api, href }: { api: Pick<ConversationApi, "conversations">; href: string }) {
+export function ConversationCounter({ api, href, icon }: { api: Pick<ConversationApi, "conversations">; href: string; icon?: ReactElement }) {
   const [count, setCount] = useState<number | null>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -36,8 +36,8 @@ export function ConversationCounter({ api, href }: { api: Pick<ConversationApi, 
     document.addEventListener("visibilitychange", load);
     return () => { active = false; clearInterval(interval); window.removeEventListener("marketplace:conversations", load); document.removeEventListener("visibilitychange", load); };
   }, [api]);
-  return <DmButton as="a" href={href} aria-label={failed ? "Сообщения, счётчик временно недоступен" : `Сообщения${count === null ? "" : `, непрочитанных диалогов: ${count}`}`}>
-    Сообщения{failed ? " · !" : count ? ` · ${count}` : ""}
+  return <DmButton as="a" href={href} icon={icon} appearance={icon ? "subtle" : undefined} style={icon ? { position: "relative" } : undefined} aria-label={failed ? "Сообщения, счётчик временно недоступен" : `Сообщения${count === null ? "" : `, непрочитанных диалогов: ${count}`}`}>
+    {icon ? failed || count ? <span aria-hidden="true" style={{ position: "absolute", top: 0, right: 0, minWidth: 16, borderRadius: 10, padding: "0 3px", fontSize: 11, lineHeight: "16px", background: "var(--dm-brand-primary)", color: "var(--dm-surface)" }}>{failed ? "!" : count! > 99 ? "99+" : count}</span> : null : <>Сообщения{failed ? " · !" : count ? ` · ${count}` : ""}</>}
   </DmButton>;
 }
 
