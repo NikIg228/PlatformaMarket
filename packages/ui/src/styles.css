@@ -154,9 +154,6 @@ button, input, select, textarea { font: inherit; }
 .dm-control.fui-Input:hover,
 .dm-control.fui-Select:hover,
 .dm-control.fui-Textarea:hover { border-color: var(--dm-brand-primary); }
-html[data-input-modality="keyboard"] .dm-control.fui-Input:focus-within,
-html[data-input-modality="keyboard"] .dm-control.fui-Select:focus-within,
-html[data-input-modality="keyboard"] .dm-control.fui-Textarea:focus-within { border-color: var(--dm-brand-primary); box-shadow: 0 0 0 2px var(--dm-focus-halo); }
 .dm-control:has(:disabled), .dm-control:has(:disabled):hover { background: var(--dm-disabled-surface); color: var(--dm-disabled-content); border-color: var(--dm-disabled-border); }
 .dm-control:has([aria-invalid="true"]):not(:has(:disabled)) { border-color: var(--dm-danger-text); }
 .dm-textarea { min-height: 112px; }
@@ -174,18 +171,30 @@ html[data-input-modality="keyboard"] .dm-control.fui-Textarea:focus-within { bor
 .dm-button.fui-Button[data-dm-appearance="subtle"]:hover:not(:disabled):not([aria-disabled="true"]),
 .dm-button.fui-Button[data-dm-appearance="transparent"]:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--dm-brand-surface); color: var(--dm-brand-deep); }
 .dm-button.fui-Button:disabled, .dm-button.fui-Button[aria-disabled="true"] { cursor: not-allowed; opacity: 1; transform: none; border-color: var(--dm-disabled-border); background: var(--dm-disabled-surface); color: var(--dm-disabled-content); }
-.dm-button.fui-Button:focus-visible { outline: 2px solid var(--dm-brand-primary); outline-offset: 2px; }
 .dm-checkbox.fui-Checkbox { min-height: 32px; }
 .dm-checkbox .fui-Checkbox__input { width: 18px; height: 18px; margin: 5px 8px 0 0; accent-color: var(--dm-brand-primary); cursor: pointer; }
-html[data-input-modality="keyboard"] .dm-checkbox.fui-Checkbox:focus-within { outline: 2px solid var(--dm-brand-primary); outline-offset: 2px; border-radius: 4px; }
 
 /* Pointer focus must not borrow keyboard rings (text fields match :focus-visible
    even on mouse click). Keep borders, validation, selection and open states. */
 html[data-input-modality="pointer"] :focus,
 html[data-input-modality="pointer"] :focus::before,
 html[data-input-modality="pointer"] :focus::after { outline: none !important; }
-html[data-input-modality="pointer"] :is(.fui-Input,.fui-Textarea):focus-within::after { transform: scaleX(0) !important; }
-html[data-input-modality="keyboard"] :is(a,button,input,select,textarea,summary,[tabindex]):focus-visible { outline: 2px solid var(--dm-brand-primary, #007f67); outline-offset: 2px; }
+/* One indicator per control, also for portalled Fluent controls. The outline
+   does not replace normal/invalid borders or the checkbox/radio selection mark.
+   Important is deliberate: page styles and runtime Griffel rules load later. */
+html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown,.fui-Combobox,.fui-Checkbox,.fui-Radio,.fui-Switch):focus-within { outline: none; box-shadow: none; }
+html[data-input-modality] :is(.fui-Input,.fui-Textarea)::after { display: none; }
+html[data-input-modality] :is([data-fui-focus-visible],[data-fui-focus-within]:focus-within)::after { border: 0 !important; outline: none !important; box-shadow: none !important; }
+html[data-input-modality="keyboard"] :is(:focus-visible,[data-fui-focus-visible]),
+html[data-input-modality="keyboard"] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown,.fui-Combobox,.fui-Checkbox,.fui-Radio,.fui-Switch):has(> :is(input,textarea,select,button):focus) { outline: 1px solid var(--dm-brand-primary, #007f67) !important; outline-offset: 2px !important; }
+/* On a regular field the thin indicator occupies the existing border, rather
+   than drawing a second frame. Invalid fields retain their separate red edge. */
+html[data-input-modality="keyboard"] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown,.fui-Combobox):has(> :is(input,textarea,select,button):focus):not([aria-invalid="true"]):not(:has([aria-invalid="true"])) { outline-offset: -1px !important; }
+html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown,.fui-Combobox,.fui-Checkbox,.fui-Radio,.fui-Switch) > :is(input,textarea,select,button):focus { outline: none !important; }
+@media (forced-colors: active) {
+  html[data-input-modality="keyboard"] :is(:focus-visible,[data-fui-focus-visible]),
+  html[data-input-modality="keyboard"] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown,.fui-Combobox,.fui-Checkbox,.fui-Radio,.fui-Switch):has(> :is(input,textarea,select,button):focus) { outline-color: Highlight !important; }
+}
 
 .dm-dialog-surface {
   width: min(620px, calc(100vw - 32px));

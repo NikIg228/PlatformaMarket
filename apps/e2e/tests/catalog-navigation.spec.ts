@@ -70,6 +70,9 @@ for (const [name, url] of [["landing", "http://127.0.0.1:3003/login"], ["operato
   await page.goto(url);
   const input = page.locator('input:not([type="hidden"])').first();
   await expect(input).toBeVisible(); await input.click(); await expect(input).toHaveCSS("outline-style", "none");
-  await page.keyboard.press("Tab"); await page.keyboard.press("Shift+Tab"); await expect(input).toHaveCSS("outline-style", "solid");
+  await input.pressSequentially("text"); await expect(input).toHaveCSS("outline-style", "none");
+  await page.keyboard.press("Tab"); await page.keyboard.press("Shift+Tab");
+  await expect(input).toHaveCSS("outline-style", "none");
+  await expect(input.locator("xpath=.." )).toHaveCSS("outline-width", "1px");
   await input.click(); await expect(input).toHaveCSS("outline-style", "none");
 });

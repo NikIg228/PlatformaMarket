@@ -1,5 +1,36 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 05.10.2026 — SHARED-FOCUS (LOCAL_PASS)
+
+Owner same primary; canonical main@a009886. User explicitly requests central
+removal of thick/double focus rings throughout shared controls. Keep one thin
+Tab indicator, normal field borders and errors. Scope input-modality + shared
+CSS; representative supplier proposal search, fields/buttons/selectors/checks.
+Plan: editing keys preserve modality; Tab and non-editor navigation enable it.
+One outline on Fluent wrapper, none on inner input/Fluent focus decoration.
+Risk shared keyboard/portals/validation/forced colors. Focused modality units,
+targeted real browser interactions (pointer typing/Tab/ShiftTab/error/selection),
+UI/e2e types + lint, canonical web build at completion. No backend/full E2E.
+Budgets check20min/diagnosis15min, max3 attempts; preserve foreign WIP.
+Dev launcher4168 API4012/web3000 canonical; stop only owned tree for web build.
+DoD focused PASS + review + owned commit/push main, CI snapshot only.
+Implemented: typing/IME/edit shortcuts preserve mode; Tab enables keyboard mode,
+pointerdown clears it. One1px outline on Fluent wrapper, native focusable or
+keyboard action; inner input/Fluent pseudo focus rings suppressed. Normal fields
+use border-aligned outline, errors retain red edge; forced colors use Highlight.
+Checkbox label links retain their own focus target rather than a wrapper ring.
+Evidence .tmp/shared-focus-*: unit1 PASS3/3, browser1 PASS3/3; browser2 PASS3/3
+after border-aligned polish and explicit error-color assertion. UI/e2e types1
+PASS, final e2e types2 PASS; lint1 PASS; canonical go_live web build1 PASS.
+Visual output/playwright/shared-focus/: typing desktop, Tab mobile, registration
+errors/checkbox inspected. Supplier search1440/390, textarea, button, Dropdown
+portal/Escape/forced-colors, invalid field and checkbox Space/Tab all verified.
+Legacy focus test expectation adapted to outer wrapper (separate legacy stacks
+not started; same controls exercised in unified app). No writes to working DB.
+Applied Development Toolkit frontend/accessibility, Code Reviewer and Git
+Workflow Master checklists; no new agents/worktrees. Full E2E/backend gates
+not applicable. Diff hygiene and staged scope review before publication.
+
 ## 05.10.2026 — PRODUCTS-UX-V2 (LOCAL_PASS)
 
 Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40; canonical main, base29c57b0.

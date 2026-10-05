@@ -1,6 +1,78 @@
 import { test, expect } from "@playwright/test";
 import { productFixture, choose, noOverflow, id, offerId, samplePromotion } from "./supplier-products.fixture";
 test.use({ contextOptions: { reducedMotion: "reduce" } });
+
+for (const width of [1440, 390]) test(`shared focus keeps proposal search typing quiet and Tab visible ${width}`, async ({ page }, testInfo) => {
+  await page.setViewportSize({ width, height: 900 });
+  const state = await productFixture(page);
+  await page.goto("/supplier/products/proposals");
+  const input = page.getByRole("textbox", { name: "Найти заявку", exact: true });
+  const field = input.locator("xpath=..");
+  await input.click(); await input.pressSequentially("Новый"); await input.press("ArrowLeft");
+  await expect(page.locator("html")).toHaveAttribute("data-input-modality", "pointer");
+  await expect(input).toHaveCSS("outline-style", "none"); await expect(field).toHaveCSS("outline-style", "none");
+  await expect(field).toHaveCSS("border-top-width", "1px"); await expect(field).toHaveCSS("box-shadow", "none");
+  expect(await field.evaluate(el => getComputedStyle(el, "::after").display)).toBe("none");
+  await page.screenshot({ path: testInfo.outputPath(`focus-search-typing-${width}.png`) });
+  await input.press("Tab");
+  const search = page.getByRole("button", { name: "Найти заявку", exact: true });
+  await expect(search).toBeFocused(); await expect(search).toHaveCSS("outline-width", "1px");
+  expect(await search.evaluate(el => getComputedStyle(el, "::after").borderTopWidth)).toBe("0px");
+  await search.press("Shift+Tab"); await expect(input).toBeFocused();
+  await expect(input).toHaveCSS("outline-style", "none"); await expect(field).toHaveCSS("outline-width", "1px");
+  await expect(field).toHaveCSS("outline-offset", "-1px");
+  await input.pressSequentially(" текст"); await expect(field).toHaveCSS("outline-width", "1px");
+  await page.screenshot({ path: testInfo.outputPath(`focus-search-tab-${width}.png`) });
+  await input.click(); await expect(field).toHaveCSS("outline-style", "none");
+  await input.press("Tab"); await page.keyboard.press("Tab");
+  const status = page.getByRole("combobox", { name: "Статус заявки", exact: true });
+  await expect(status).toBeFocused(); await expect(status).toHaveCSS("outline-style", "none");
+  await expect(status.locator("xpath=..")).toHaveCSS("outline-width", "1px");
+  await status.press("ArrowDown"); await expect(page.getByRole("listbox")).toBeVisible();
+  await page.keyboard.press("Escape"); await expect(status).toBeFocused();
+  await page.emulateMedia({ forcedColors: "active" });
+  await expect(status.locator("xpath=..")).toHaveCSS("outline-style", "solid");
+  await page.emulateMedia({ forcedColors: "none" });
+  expect(state.writes).toEqual([]); expect(state.unexpected).toEqual([]);
+});
+
+test("shared focus preserves textarea editing, validation borders and checkbox selection", async ({ page }, testInfo) => {
+  const state = await productFixture(page);
+  await page.goto("/supplier/products/new?request=1");
+  const textarea = page.getByRole("textbox", { name: "Описание, упаковка и ссылка на материалы" });
+  await textarea.click(); await textarea.pressSequentially("Описание товара"); await textarea.press("Home");
+  await expect(page.locator("html")).toHaveAttribute("data-input-modality", "pointer");
+  await expect(textarea.locator("xpath=..")).toHaveCSS("outline-style", "none");
+  await textarea.press("Tab"); await page.keyboard.press("Shift+Tab");
+  await expect(textarea).toBeFocused(); await expect(textarea).toHaveCSS("outline-style", "none");
+  await expect(textarea.locator("xpath=..")).toHaveCSS("outline-width", "1px");
+  // Fresh navigation in the fixture; no successful registration is submitted.
+  await page.goto("/register");
+  await page.getByRole("button", { name: "Продолжить", exact: true }).click();
+  const invalid = page.locator('input[aria-invalid="true"]').first();
+  await expect(invalid).toBeVisible();
+  const border = invalid.locator("xpath=..");
+  const danger = await border.evaluate(el => getComputedStyle(el).getPropertyValue("--dm-danger-text").trim());
+  await invalid.click(); await invalid.pressSequentially("а");
+  await expect(border).toHaveCSS("outline-style", "none");
+  const errorBorder = await border.evaluate(el => getComputedStyle(el).borderTopColor);
+  expect(errorBorder).not.toBe("rgba(0, 0, 0, 0)"); expect(danger).not.toBe("");
+  const validation = invalid.locator('xpath=ancestor::*[contains(@class,"fui-Field")][1]').locator(".fui-Field__validationMessage");
+  await expect(validation).toBeVisible(); await expect(validation).toHaveCSS("color", errorBorder);
+  await invalid.press("Tab"); await page.keyboard.press("Shift+Tab");
+  await expect(border).toHaveCSS("outline-width", "1px"); await expect(border).toHaveCSS("border-top-color", errorBorder);
+  await expect(border).toHaveCSS("outline-offset", "2px");
+  const checkbox = page.getByRole("checkbox", { name: "Получать новости продукта (необязательно)" });
+  await checkbox.click(); await expect(checkbox).toBeChecked();
+  const checkboxRoot = checkbox.locator("xpath=..");
+  await expect(checkboxRoot).toHaveCSS("outline-style", "none");
+  await checkbox.press("Tab"); await page.keyboard.press("Shift+Tab");
+  await expect(checkbox).toBeFocused(); await expect(checkbox).toHaveCSS("outline-style", "none");
+  await expect(checkboxRoot).toHaveCSS("outline-width", "1px");
+  await checkbox.press("Space"); await expect(checkbox).not.toBeChecked();
+  await page.screenshot({ path: testInfo.outputPath("focus-registration-errors.png"), fullPage: true });
+  expect(state.writes).toEqual([]);
+});
 const sections = [
   ["new", "Добавить товар", "Найти"], ["import", "Загрузить из файла", "Настроить столбцы"],
   ["proposals", "Заявки на новые товары", "Найти заявку"], ["corrections", "Исправления карточек", "Предложить исправление"],

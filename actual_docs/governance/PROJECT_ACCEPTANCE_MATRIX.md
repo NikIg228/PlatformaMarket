@@ -1,5 +1,15 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+05.10 SHARED-FOCUS — LOCAL_PASS (CI отдельно при доставке):
+[контракт](../ui-ux/SHARED_SEMANTIC_THEME.md). Единый тонкий Tab-индикатор;
+клик/набор/редактирование не включают keyboard mode и не создают двойную рамку.
+Modality units3/3 PASS1; browser3/3 PASS2 после уточнения outline offset:
+поиск заявок1440/390, textarea, button, Dropdown/portal/Escape, forced colors,
+ошибки регистрации и checkbox. UI/e2e types, scoped ESLint и canonical go_live
+web build PASS; визуально проверены сохранённые desktop/mobile снимки.
+Снимки `output/playwright/shared-focus/`, логи `.tmp/shared-focus-*.log`.
+Без backend/DB/full E2E: изменение общего frontend focus, не release gate.
+
 05.10 PRODUCTS-UX-V2 — LOCAL_PASS (CI проверяется отдельно при доставке):
 [контракт](../applications/supplier-web.md), [checkpoint](task-state/PRIMARY-SESSION.md).
 Семь согласованных поверхностей: добавление, импорт, заявки, исправления,
