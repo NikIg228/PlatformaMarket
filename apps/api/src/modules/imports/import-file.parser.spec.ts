@@ -3,10 +3,11 @@ import ExcelJS from "exceljs";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import { ImportFileParser } from "./import-file.parser";
 import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 
 describe("ImportFileParser", () => {
   it("reads the downloadable XLSX template as one row, preserving price and text identifiers", async () => {
-    const bytes = await readFile(new URL("../../../../supplier-web/public/templates/supplier-price-template.xlsx", import.meta.url));
+    const bytes = await readFile(resolve(__dirname, "../../../../supplier-web/public/templates/supplier-price-template.xlsx"));
     const result = await new ImportFileParser().parseWithDiagnostics({
       sourceId: "00000000-0000-4000-8000-000000000022", fileName: "supplier-price-template.xlsx", fileType: "EXCEL",
       contentBase64: bytes.toString("base64"), columnMapping: { externalId: "Код", name: "Название", priceMinor: "Цена", priceUnit: "MAJOR", quantityOnHand: "Остаток" },

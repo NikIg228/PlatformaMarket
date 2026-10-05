@@ -4,12 +4,14 @@
 [контракт](../applications/supplier-web.md), [общий поиск](../ui-ux/SHARED_SEMANTIC_THEME.md).
 DmSearch440×44, inner Find/clear/Enter/IME; компактные corrections/promotions,
 формы без roadmap, inventory cursor loading/retry/cancellation без нижних панелей.
-Рабочий XLSX с примером/инструкцией: ImportFileParser13/13 PASS2 после исправления
-XML namespace экспорта. Browser31 уникальный case PASS: supplier20, refinement4,
+Рабочий XLSX с примером/инструкцией: ImportFileParser13/13 PASS3 после исправления
+XML namespace экспорта и CommonJS-пути fixture. Browser31 уникальный case PASS: supplier20, refinement4,
 shared3, catalog2 и calendar2. Search PASS3 после исправления тестовых assertions;
 catalog PASS2 после исправления fixture. Финальные снимки1920/390 PASS2 после
 исправления mobile grid overflow в picker; manual/recovery повтор2/2 PASS.
 UI/web/buyer/supplier/e2e types, scoped ESLint, canonical go_live web build PASS.
+API build при восстановлении dev: FAIL1 из-за import.meta в новом spec;
+CommonJS-compatible fixture path исправлен, API build PASS2, parser13/13 PASS3.
 `git diff --check` PASS. Логи `.tmp/refine-*.log`; снимки
 `output/playwright/product-refinement/`. Применены Development Toolkit,
 Agency UI/UX/Code Reviewer/Git Workflow и Spreadsheets для XLSX.
