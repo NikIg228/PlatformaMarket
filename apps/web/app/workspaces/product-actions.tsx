@@ -1,0 +1,56 @@
+"use client";
+
+import Link from "next/link";
+import { frontendFeatures } from "@marketplace/api-client";
+import { DmButton } from "@marketplace/ui";
+import { AddSquare24Regular } from "@fluentui/react-icons/svg/add-square";
+import { ArrowUpload24Regular } from "@fluentui/react-icons/svg/arrow-upload";
+import { DocumentAdd24Regular } from "@fluentui/react-icons/svg/document-add";
+import { DocumentEdit24Regular } from "@fluentui/react-icons/svg/document-edit";
+import { BoxMultiple24Regular } from "@fluentui/react-icons/svg/box-multiple";
+import { Tag24Regular } from "@fluentui/react-icons/svg/tag";
+import { supplierProductLinks } from "./supplier-product-pages";
+import styles from "./products.module.css";
+
+const sectionIcons = {
+  "/supplier/products/proposals": DocumentAdd24Regular,
+  "/supplier/products/corrections": DocumentEdit24Regular,
+  "/supplier/products/inventory": BoxMultiple24Regular,
+};
+
+type ProductActionsProps = {
+  canAdd: boolean;
+  canImport: boolean;
+  onAdd: () => void;
+  onImport: () => void;
+};
+
+export function ProductActions({ canAdd, canImport, onAdd, onImport }: ProductActionsProps) {
+  return (
+    <div role="group" aria-label="Действия с товарами" className={styles.actions} data-promotions={frontendFeatures.promotions}>
+      <DmButton className={styles.card} disabled={!canAdd} onClick={onAdd}>
+        <AddSquare24Regular className={styles.icon} aria-hidden="true" />
+        <span>Добавить товар</span>
+      </DmButton>
+      <DmButton className={styles.card} disabled={!canImport} onClick={onImport}>
+        <ArrowUpload24Regular className={styles.icon} aria-hidden="true" />
+        <span>Загрузить из файла</span>
+      </DmButton>
+      {supplierProductLinks.map(([href, label]) => {
+        const Icon = sectionIcons[href];
+        return (
+          <Link key={href} href={href} className={styles.card}>
+            <Icon className={styles.icon} aria-hidden="true" />
+            <span>{label}</span>
+          </Link>
+        );
+      })}
+      {frontendFeatures.promotions ? (
+        <Link href="/supplier/products/promotions" className={styles.card}>
+          <Tag24Regular className={styles.icon} aria-hidden="true" />
+          <span>Акции</span>
+        </Link>
+      ) : null}
+    </div>
+  );
+}

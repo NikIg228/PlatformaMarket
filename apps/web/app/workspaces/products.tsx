@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { SupplierProductLinks } from "./supplier-product-pages";
+import { ProductActions } from "./product-actions";
 import {
   DmButton,
   DmField,
@@ -25,6 +25,7 @@ import { PageNavigation, usePageNavigation } from "./page-navigation";
 import { OfferPrice, OfferSaleUnit, OfferStock } from "./offer-information";
 import { PermissionBoundary } from "./permission-boundary";
 import styles from "./workspace.module.css";
+import productStyles from "./products.module.css";
 
 export default function Products() {
   const { api, organizationId } = useWorkspace();
@@ -58,18 +59,13 @@ export default function Products() {
     await resource.refreshAfterWrite();
   };
   return (
-    <div className={styles.stack}>
-      <header className={styles.heading}>
-        <div className={styles.actions}>
-          <DmButton disabled={!has("import.manage")} onClick={() => setEditor("import")}>
-            Загрузить из файла
-          </DmButton>
-          <DmButton disabled={!has("catalog.offer.edit", "catalog.product.view")} appearance="primary" onClick={() => setEditor("new")}>
-            Добавить товар
-          </DmButton>
-        </div>
-      </header>
-      <SupplierProductLinks />
+    <div className={productStyles.page}>
+      <ProductActions
+        canAdd={has("catalog.offer.edit", "catalog.product.view")}
+        canImport={has("import.manage")}
+        onAdd={() => setEditor("new")}
+        onImport={() => setEditor("import")}
+      />
       {!has("catalog.offer.edit", "import.manage") ? <p>Некоторые действия недоступны вашей роли. Обратитесь к администратору организации.</p> : null}
       {editor ? (
         <section className={styles.panel}>
