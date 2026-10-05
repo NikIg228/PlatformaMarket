@@ -8,6 +8,8 @@ describe("workspace page titles", () => {
     expect(workspacePageTitle(`/${role}/documents/`)).toBe("Документы");
   });
   it("names supplier subpages and analytics", () => {
+    expect(workspacePageTitle("/supplier/products/new")).toBe("Добавить товар");
+    expect(workspacePageTitle("/supplier/products/import")).toBe("Загрузить из файла");
     expect(workspacePageTitle("/supplier/products/proposals")).toBe("Заявки на новые товары");
     expect(workspacePageTitle("/supplier/settings/sources")).toBe("Источники товаров");
     expect(workspacePageTitle("/clinic/analytics")).toBe("Аналитика закупок");

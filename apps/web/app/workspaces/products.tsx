@@ -13,17 +13,14 @@ import {
   usePermissions,
 } from "@marketplace/ui";
 import { ManualOffer } from "../../../supplier-web/app/features/supplier-workspace/manual-offer";
-import { SpreadsheetImport } from "../../../supplier-web/app/features/supplier-workspace/spreadsheet-import";
-import type {
-  Offer,
-  SupplierDataSource,
-} from "../../../supplier-web/app/features/supplier-workspace/types";
+
+import type { Offer } from "../../../supplier-web/app/features/supplier-workspace/types";
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
 import { ResourceStatus } from "./resource-status";
 import { PageNavigation, usePageNavigation } from "./page-navigation";
 import { OfferPrice, OfferSaleUnit, OfferStock } from "./offer-information";
-import { PermissionBoundary } from "./permission-boundary";
+
 import styles from "./workspace.module.css";
 import productStyles from "./products.module.css";
 
@@ -38,21 +35,20 @@ export default function Products() {
     [api, organizationId, appliedQuery, navigation.cursor],
   );
   const resource = useResource(load);
-  const [editor, setEditor] = useState<Offer | "new" | "import" | null>(null);
+  const [editor, setEditor] = useState<Offer | null>(null);
   const searchParams = useSearchParams();
   const selectedOfferId = searchParams.get("offer");
-  const selectedEditor = searchParams.get("editor");
+
   const loadSelected = useCallback((signal: AbortSignal) => selectedOfferId ? api.workspaceOffer(selectedOfferId, { signal }) : Promise.resolve(null), [api, organizationId, selectedOfferId]);
   const selected = useResource(loadSelected, { automatic: false });
   const appliedSelection = useRef<string | null>(null);
   useEffect(() => {
-    const selection = `${selectedEditor ?? ""}/${selectedOfferId ?? ""}`;
+    const selection = selectedOfferId ?? "";
     if (appliedSelection.current === selection) return;
     if (selectedOfferId && selected.data?.id !== selectedOfferId) return;
     appliedSelection.current = selection;
-    if (selectedEditor === "import") setEditor("import");
-    else if (selectedOfferId && selected.data) setEditor(selected.data);
-  }, [selectedOfferId, selectedEditor, selected.data]);
+    if (selectedOfferId && selected.data) setEditor(selected.data);
+  }, [selectedOfferId, selected.data]);
   const items = resource.data?.items ?? [];
   const refresh = () => { if (navigation.cursor) navigation.reset(); else void resource.refresh(); };
   const changed = async () => {
@@ -60,37 +56,22 @@ export default function Products() {
   };
   return (
     <div className={productStyles.page}>
-      <ProductActions
-        canAdd={has("catalog.offer.edit", "catalog.product.view")}
-        canImport={has("import.manage")}
-        onAdd={() => setEditor("new")}
-        onImport={() => setEditor("import")}
-      />
+      <ProductActions />
       {!has("catalog.offer.edit", "import.manage") ? <p>Некоторые действия недоступны вашей роли. Обратитесь к администратору организации.</p> : null}
       {editor ? (
         <section className={styles.panel}>
           <div className={styles.heading}>
-            <h2>
-              {editor === "new"
-                ? "Новое предложение"
-                : editor === "import"
-                  ? "Импорт товаров"
-                  : "Редактирование предложения"}
-            </h2>
+            <h2>Редактирование предложения</h2>
             <DmButton onClick={() => setEditor(null)}>Закрыть</DmButton>
           </div>
-          {editor === "import" ? (
-            <PermissionBoundary required={["import.manage"]}><ImportProducts onChanged={changed} /></PermissionBoundary>
-          ) : (
-            <ManualOffer
-              initiallyOpen
-              key={editor === "new" ? "new" : editor.id}
-              api={api}
-              supplierId={organizationId}
-              initialOffer={editor === "new" ? undefined : editor}
-              onChanged={changed}
-            />
-          )}
+          <ManualOffer
+            initiallyOpen
+            key={editor.id}
+            api={api}
+            supplierId={organizationId}
+            initialOffer={editor}
+            onChanged={changed}
+          />
         </section>
       ) : null}
       {selectedOfferId && selected.error ? <ErrorState description={selected.error} action={<DmButton onClick={() => void selected.refresh()}>Повторить загрузку предложения</DmButton>} /> : null}
@@ -182,36 +163,5 @@ export default function Products() {
         <PageNavigation navigation={navigation} nextCursor={resource.data?.nextCursor} loading={resource.loading} onRefresh={refresh} />
       </section>
     </div>
-  );
-}
-function ImportProducts({ onChanged }: { onChanged: () => Promise<void> }) {
-  const { api, organizationId } = useWorkspace();
-  const load = useCallback(
-    () =>
-      api.get<SupplierDataSource[]>(
-        `/suppliers/${organizationId}/data-sources`,
-      ),
-    [api, organizationId],
-  );
-  const resource = useResource(load);
-  if (resource.error && !resource.data)
-    return (
-      <ErrorState
-        description={resource.error}
-        action={
-          <DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>
-        }
-      />
-    );
-  if (!resource.data) return <LoadingState label="Подготавливаем импорт" />;
-  return (
-    <><ResourceStatus resource={resource} />
-    <SpreadsheetImport
-      api={api}
-      supplierId={organizationId}
-      sources={resource.data}
-      onChanged={onChanged}
-    />
-    </>
   );
 }

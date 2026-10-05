@@ -13,23 +13,28 @@ for (const width of [1366, 390]) test(`real promotion moderation and gift checko
   const name = `Подарок к покупке ${fixture.key.slice(0, 8)}`;
   try {
     await page.goto("/supplier/products/promotions");
-    const create = page.getByRole("button", { name: "Новая акция", exact: true });
-    await create.focus(); await expect(create).toBeFocused(); await page.keyboard.press("Enter");
-    await page.getByLabel("Поиск: Товар акции", { exact: true }).fill(main.name);
-    await page.getByRole("button", { name: "Найти: Товар акции", exact: true }).click();
-    await page.getByRole("combobox", { name: "Товар акции", exact: true }).selectOption(main.id);
-    await page.getByRole("textbox", { name: "Название акции", exact: true }).fill(name);
-    await page.getByLabel("Механика", { exact: true }).selectOption("BUY_X_GET_Y");
-    await page.getByRole("textbox", { name: "Количество покупки N", exact: true }).fill("5");
-    await page.getByLabel("Поиск: Подарок", { exact: true }).fill(gift.name);
-    await page.getByRole("button", { name: "Найти: Подарок", exact: true }).click();
-    await page.getByRole("combobox", { name: "Подарок", exact: true }).selectOption(gift.id);
-    await page.getByRole("textbox", { name: "Количество подарка M", exact: true }).fill("2");
-    await page.getByRole("button", { name: "Сохранить черновик", exact: true }).click();
-    await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Согласовать версию", exact: true })).toHaveCount(0);
-    await page.getByRole("button", { name: "Отправить на согласование", exact: true }).click();
-    await expect(page.locator("strong").filter({ hasText: /^На проверке$/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Акции поставщика", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Новая акция", exact: true })).toHaveCount(0);
+    // Supplier page is intentionally empty during the owner-approved redesign.
+    // Seed through the existing API so moderation and gift checkout remain covered.
+    const supplierHeaders = { authorization: `Bearer ${supplier.accessToken}` };
+    const created = await request.post("http://127.0.0.1:4012/api/promotions", {
+      headers: supplierHeaders,
+      data: { idempotencyKey: `create-${fixture.key}`, terms: {
+        offerId: main.id, name, kind: "BUY_X_GET_Y", buyQuantity: "5",
+        giftOfferId: gift.id, giftQuantity: "2", minimumQuantity: "1", quantityLimit: "100",
+        startsAt: new Date(Date.now() - 60000).toISOString(),
+        endsAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+      } },
+    });
+    expect(created.status()).toBe(201);
+    const draft = await created.json();
+    const submitted = await request.post(`http://127.0.0.1:4012/api/promotions/${draft.id}/commands`, {
+      headers: supplierHeaders,
+      data: { action: "SUBMIT", expectedVersion: draft.version, idempotencyKey: `submit-${fixture.key}` },
+    });
+    expect(submitted.status()).toBe(201);
+    expect((await submitted.json()).moderationStatus).toBe("PENDING");
     const p = await db.promotion.findFirstOrThrow({ where: { supplierOrganizationId: supplier.organizationId, name } });
     const denied = await request.post(`http://127.0.0.1:4012/api/promotions/${p.id}/commands`, { headers: { authorization: `Bearer ${supplier.accessToken}` }, data: { action: "APPROVE", reason: "Self approval must fail", expectedVersion: p.version, idempotencyKey: `deny-${fixture.key}` } });
     expect(denied.status()).toBe(403);

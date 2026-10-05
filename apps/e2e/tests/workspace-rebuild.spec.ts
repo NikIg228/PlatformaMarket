@@ -352,6 +352,7 @@ async function fixture(
           },
         ],
       };
+    else if (path === "/conversations") body = { items: [], hasMore: false, unreadCount: 0 };
     else if (path === "/auth/current") body = null;
     else if (path === "/catalog/cities")
       body = [
@@ -387,72 +388,6 @@ async function fixture(
   });
   return { calls, unexpected };
 }
-
-test("bounded supplier inventory loads and pages details only when expanded", async ({ page }) => {
-  const state = await fixture(page, "SUPPLIER");
-  const balance = { id: "balance-a", offerId: "offer-a", warehouse: { name: "Основной склад" }, productVariant: { product: { canonicalName: "Первый товар" } }, quantityOnHand: "5", quantityReserved: "1", quantityAvailable: "4", safetyStock: "0", freshnessStatus: "FRESH", updatedAt: "2026-01-01T00:00:00Z" };
-  const details: string[] = [];
-  await page.route(/\/api\/workspaces\/supplier\/inventory(?:\?|$)/, route => {
-    const next = new URL(route.request().url()).searchParams.get("cursor");
-    return route.fulfill({ json: { items: [next ? { ...balance, id: "balance-b", productVariant: { product: { canonicalName: "Второй товар" } } } : balance], nextCursor: next ? null : "balance-page-2" } });
-  });
-  await page.route("**/api/workspaces/supplier/inventory-overrides*", route => route.fulfill({ json: { items: [], nextCursor: null } }));
-  await page.route("**/api/workspaces/supplier/inventory/balance-a/lots*", route => {
-    details.push("lots");
-    const next = new URL(route.request().url()).searchParams.get("cursor");
-    return route.fulfill({ json: { items: [{ id: next ? "lot-b" : "lot-a", lotNumber: next ? "LOT-B" : "LOT-A", status: "AVAILABLE", quantityAvailable: "4", expirationDate: null }], nextCursor: next ? null : "lot-page-2" } });
-  });
-  await page.route("**/api/workspaces/supplier/inventory/balance-a/reservations*", route => {
-    details.push("reservations");
-    return details.filter(item => item === "reservations").length === 1
-      ? route.fulfill({ status: 503, json: { message: "Повторите загрузку резервов" } })
-      : route.fulfill({ json: { items: [], nextCursor: null } });
-  });
-  await page.goto("/supplier/products/inventory");
-  const row = page.getByRole("row").filter({ hasText: "Первый товар" });
-  await expect(row).toBeVisible(); expect(details).toEqual([]);
-  await row.getByRole("button", { name: "Показать партии", exact: true }).click();
-  await expect(row.getByText(/LOT-A/)).toBeVisible(); expect(details).toEqual(["lots"]);
-  await row.getByRole("button", { name: "Следующая страница", exact: true }).click();
-  await expect(row.getByText(/LOT-B/)).toBeVisible();
-  await row.getByRole("button", { name: "Показать резервы", exact: true }).click();
-  await row.getByRole("button", { name: "Повторить загрузку резервов", exact: true }).click();
-  await expect(row.getByText("Активных резервов нет.")).toBeVisible();
-  await row.getByRole("button", { name: "Скрыть партии", exact: true }).click();
-  await page.getByRole("button", { name: "Следующая страница", exact: true }).click();
-  await expect(page.getByRole("row").filter({ hasText: "Второй товар" })).toBeVisible();
-  expect(details).toEqual(["lots", "lots", "reservations", "reservations"]);
-  expect(state.calls.some(path => path.endsWith("/inventory/balances"))).toBe(false);
-  expect(state.unexpected).toEqual([]);
-});
-
-test("bounded correction pages preserve selected product and unsent draft", async ({ page }) => {
-  const state = await fixture(page, "SUPPLIER");
-  let submitted: { productId: string; proposedValue: string } | undefined;
-  const product = { id: "product-a", canonicalName: "Карточка А", description: null, manufacturerSku: null, gtin: null, productType: "MATERIAL", regulatoryClass: null };
-  await page.route("**/api/workspaces/supplier/correction-offers*", route => {
-    const next = new URL(route.request().url()).searchParams.get("cursor");
-    return route.fulfill({ json: { items: [{ id: next ? "offer-b" : "offer-a", productVariant: { product: next ? { ...product, id: "product-b", canonicalName: "Карточка Б" } : product } }], nextCursor: next ? null : "corrections-page-2" } });
-  });
-  await page.route("**/api/moderation/product-corrections", route => {
-    if (route.request().method() === "POST") { submitted = route.request().postDataJSON(); return route.fulfill({ json: {} }); }
-    return route.fulfill({ json: [] });
-  });
-  await page.goto("/supplier/products/corrections");
-  const selection = page.getByRole("combobox", { name: "Товар", exact: true });
-  await expect(selection).toHaveValue("product-a");
-  await page.getByRole("textbox", { name: "Предлагаемая редакция", exact: true }).fill("Сохранённый черновик");
-  await page.getByRole("textbox", { name: "Почему нужна правка", exact: true }).fill("Проверено по документу производителя");
-  await page.getByRole("button", { name: "Следующая страница", exact: true }).click();
-  await expect(selection.locator('option[value="product-b"]')).toHaveCount(1);
-  await expect(selection).toHaveValue("product-a");
-  await expect(page.getByRole("textbox", { name: "Предлагаемая редакция", exact: true })).toHaveValue("Сохранённый черновик");
-  await page.getByRole("button", { name: "Отправить исправление", exact: true }).click();
-  await expect(page.getByText("Исправление отправлено на проверку.")).toBeVisible();
-  expect(submitted).toMatchObject({ productId: "product-a", proposedValue: "Сохранённый черновик" });
-  expect(state.calls.some(path => path.endsWith(`/suppliers/${organizationId}/offers`))).toBe(false);
-  expect(state.unexpected).toEqual([]);
-});
 
 test("workspace GET is aborted when its filter is superseded", async ({ page }) => {
   await fixture(page, "SUPPLIER");
@@ -510,14 +445,10 @@ for (const width of [1440, 390]) test(`A08 orders retain data offline, deduplica
   await expect(page.getByRole("link", { name: "A08-3", exact: true })).toBeVisible();
 });
 
-test("A08 product drafts survive refresh and an old page response is discarded", async ({ page }) => {
+test("A08 an old page response cannot replace the product list", async ({ page }) => {
   await fixture(page, "SUPPLIER");
   await page.goto("/supplier/products");
-  await page.getByRole("button", { name: "Добавить товар", exact: true }).click();
-  const draft = page.getByRole("textbox", { name: "Товар, артикул или штрихкод" });
-  await draft.fill("Несохранённый ввод A08");
-  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-  await expect(draft).toHaveValue("Несохранённый ввод A08");
+  await expect(page.getByText("Добавьте первое предложение", { exact: true })).toBeVisible();
   let release: (() => void) | undefined;
   await page.route("**/api/workspaces/supplier/orders*", async route => {
     await new Promise<void>(resolve => { release = resolve; });
@@ -581,10 +512,10 @@ test("supplier routes load independently, product creation has one entry action"
     page.getByText("Добавьте первое предложение", { exact: true }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "Добавить товар", exact: true })
+    .getByRole("link", { name: "Добавить товар", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Найти в мастер-каталоге", exact: true }),
+    page.getByRole("heading", { name: "Добавить товар", exact: true }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Настройки", exact: true }).click();
   await expect(

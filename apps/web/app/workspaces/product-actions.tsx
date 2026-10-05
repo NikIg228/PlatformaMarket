@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { frontendFeatures } from "@marketplace/api-client";
-import { DmButton } from "@marketplace/ui";
 import { AddSquare24Regular } from "@fluentui/react-icons/svg/add-square";
 import { ArrowUpload24Regular } from "@fluentui/react-icons/svg/arrow-upload";
 import { DocumentAdd24Regular } from "@fluentui/react-icons/svg/document-add";
@@ -18,24 +17,17 @@ const sectionIcons = {
   "/supplier/products/inventory": BoxMultiple24Regular,
 };
 
-type ProductActionsProps = {
-  canAdd: boolean;
-  canImport: boolean;
-  onAdd: () => void;
-  onImport: () => void;
-};
-
-export function ProductActions({ canAdd, canImport, onAdd, onImport }: ProductActionsProps) {
+export function ProductActions() {
   return (
     <div role="group" aria-label="Действия с товарами" className={styles.actions} data-promotions={frontendFeatures.promotions}>
-      <DmButton className={styles.card} disabled={!canAdd} onClick={onAdd}>
+      <Link href="/supplier/products/new" className={styles.card}>
         <AddSquare24Regular className={styles.icon} aria-hidden="true" />
         <span>Добавить товар</span>
-      </DmButton>
-      <DmButton className={styles.card} disabled={!canImport} onClick={onImport}>
+      </Link>
+      <Link href="/supplier/products/import" className={styles.card}>
         <ArrowUpload24Regular className={styles.icon} aria-hidden="true" />
         <span>Загрузить из файла</span>
-      </DmButton>
+      </Link>
       {supplierProductLinks.map(([href, label]) => {
         const Icon = sectionIcons[href];
         return (

@@ -13,7 +13,6 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
-.actions > button.card,
 .actions > a.card {
   display: flex;
   flex-direction: column;
@@ -51,10 +50,6 @@
   height: 24px;
   flex-shrink: 0;
   color: var(--dm-brand-primary);
-}
-
-.card:disabled .icon {
-  color: inherit;
 }
 
 @media (max-width: 900px) {
