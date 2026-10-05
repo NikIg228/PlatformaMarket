@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferOption, OfferOptionsResponse, SupplierWarehouseList } from "@marketplace/schemas";
-import { DmButton, DmField, DmInput, DmDropdown as DmSelect, ErrorState, Section, errorMessage, usePermissions } from "@marketplace/ui";
+import { DmSearch, DmButton, DmField, DmInput, DmDropdown as DmSelect, ErrorState, Section, errorMessage, usePermissions } from "@marketplace/ui";
 import { offerQuantity } from "./offer-editor-model";
 import type { Offer } from "./types";
 import { OfferDelivery } from "./offer-delivery";
@@ -65,8 +65,8 @@ export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiall
     try { await action(); } catch (cause) { setError(errorMessage(cause)); }
     finally { inFlight.current = false; setBusy(false); }
   };
-  const search = (more = false) => run(async () => {
-    const nextQuery = more ? searched : query.trim();
+  const search = (more = false, text = query) => run(async () => {
+    const nextQuery = more ? searched : text.trim();
     const response = await api.searchOfferOptions({ q: nextQuery, limit: 20, ...(more && result?.nextCursor ? { cursor: result.nextCursor } : {}) });
     setResult(current => ({ ...response, items: more ? [...(current?.items ?? []), ...response.items] : response.items }));
     setSearched(nextQuery);
@@ -111,16 +111,12 @@ export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiall
     await onChanged();
   });
   return <Section className={formStyles.panel} title={hideHeading ? undefined : initialOffer ? "Редактировать предложение" : "Добавить товар"}>
-    {!initialOffer && !initialProposal ? <ol className={formStyles.steps} aria-label="Этапы добавления"><li aria-current={!selected ? "step" : undefined}>1. Товар</li><li aria-current={selected && !createdId ? "step" : undefined}>2. Упаковка</li><li aria-current={createdId ? "step" : undefined}>3. Условия и публикация</li></ol> : null}
     {!open ? <DmButton appearance="primary" onClick={() => setOpen(true)}>Добавить предложение вручную</DmButton> : <div className="mp-stack">
       {error ? <ErrorState description={error} /> : null}
       {notice ? <p role="status">{notice}</p> : null}
       {!has("catalog.offer.edit") ? <p role="status">Создание и изменение предложения недоступны вашей роли. Ввод сохранён.</p> : null}
       {!selected ? <>
-        <form onSubmit={event => { event.preventDefault(); void search(); }}>
-          <DmField label="Товар, артикул или штрихкод"><DmInput value={query} maxLength={160} disabled={busy} onChange={(_, data) => setQuery(data.value)} /></DmField>
-          <DmButton type="submit" disabled={busy}>{busy ? "Загружаем…" : "Найти в мастер-каталоге"}</DmButton>
-        </form>
+        <DmSearch aria-label="Товар, артикул или штрихкод" placeholder="Найти товар" value={query} maxLength={160} disabled={busy} onChange={setQuery} onSearch={value => void search(false, value)} />
         {result?.items.length === 0 ? <p>Товар не найден. Измените запрос или отправьте заявку модератору.</p> : null}
         {result?.items.map(option => <div key={option.id}>
           <strong>{option.name}</strong><p>Артикул: {option.sku ?? "не указан"} · Штрихкод: {option.gtin ?? "не указан"}</p>

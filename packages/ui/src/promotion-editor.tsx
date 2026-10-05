@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { OfferPromotion, PromotionTerms, WorkspaceOffer } from "@marketplace/schemas";
 import { promotionTermsSchema } from "@marketplace/schemas/promotions";
-import { DmButton, DmField, DmInput, DmDropdown as DmSelect, DmTextarea, ErrorState, LoadingState, StatusTag, errorMessage, formatMoney, formatDate } from "./index";
-import { WorkflowSteps, ProductThumbnail, useUnsavedChanges, productWorkflowStyles as styles } from "./product-workflow";
+import { DmSearch, DmButton, DmField, DmInput, DmDropdown as DmSelect, DmTextarea, ErrorState, LoadingState, StatusTag, errorMessage, formatMoney, formatDate } from "./index";
+import { ProductThumbnail, useUnsavedChanges, productWorkflowStyles as styles } from "./product-workflow";
 import { promotionLocalDate, type PromotionWorkspaceApi } from "./promotion-workspace-types";
 import { promotionPreviewPrice, promotionDiscountFromPrice, promotionPriceText } from "./promotion-preview";
 import local from "./promotion-wizard.module.css";
@@ -12,22 +12,25 @@ function OfferPicker({ api, label, value, name, disabled, onChange, onOffer }: {
   const [items, setItems] = useState<WorkspaceOffer[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const search = async () => {
+  const generation = useRef(0);
+  const search = useCallback(async (text: string) => {
+    const ticket = ++generation.current;
     setLoading(true); setError(null);
-    try { setItems((await api.workspaceOffers({ q: query, limit: 25 })).items); }
-    catch (cause) { setError(errorMessage(cause)); }
-    finally { setLoading(false); }
-  };
-  return <div className="mp-stack">
-    <DmField label={`Поиск: ${label}`}><DmInput value={query} disabled={disabled || loading} onChange={(_, data) => setQuery(data.value)} /></DmField>
-    <DmButton type="button" disabled={disabled || loading} onClick={() => void search()}>{loading ? "Ищем…" : `Найти: ${label}`}</DmButton>
-    {error ? <ErrorState description={error} /> : null}
+    try { const page = await api.workspaceOffers({ q: text, limit: 25 }); if (ticket === generation.current) setItems(page.items); }
+    catch (cause) { if (ticket === generation.current) setError(errorMessage(cause)); }
+    finally { if (ticket === generation.current) setLoading(false); }
+  }, [api]);
+  useEffect(() => { void search(""); return () => { generation.current++; }; }, [search]);
+  return <div className={local.picker}>
+    <DmSearch aria-label={`Поиск: ${label}`} placeholder={label === "Подарок" ? "Найти подарок" : "Найти товар"} value={query} disabled={disabled} pending={loading} onChange={setQuery} onSearch={value => void search(value)} />
+    {error ? <ErrorState description={error} action={<DmButton type="button" onClick={() => void search(query)}>Повторить поиск товара</DmButton>} /> : null}
+    {loading ? <LoadingState label="Ищем товары" /> : null}
     <DmField label={label} required><DmSelect value={value} disabled={disabled} onChange={(_, data) => { onChange(data.value); onOffer?.(items.find(item => item.id === data.value) ?? null); }}>
-      <option value="">Выберите предложение из результатов поиска</option>
+      <option value="">Выберите товар</option>
       {value && !items.some(item => item.id === value) ? <option value={value}>{name ?? "Выбранное предложение"}</option> : null}
       {items.map(item => <option key={item.id} value={item.id}>{item.productVariant.product.canonicalName} · {item.supplierSku ?? item.id.slice(0, 8)}</option>)}
     </DmSelect></DmField>
-    <small>Первые 25 совпадений. Уточните название, если нужного предложения нет.</small>
+    {!loading && !error && !items.length ? <p className={styles.hint}>Товары не найдены. Измените запрос или добавьте предложение.</p> : items.length >= 25 ? <small className={styles.hint}>Первые 25 совпадений. Уточните название, если нужного предложения нет.</small> : null}
   </div>;
 }
 
@@ -86,7 +89,6 @@ export function PromotionEditor({ api, selected, template, initialOfferId, onSav
   const quantityField = (key: "minimumQuantity" | "quantityLimit" | "buyQuantity" | "giftQuantity", label: string) => <DmField label={label} required validationMessage={errors[key]} validationState={errors[key] ? "error" : "none"}><DmInput required disabled={busy || Boolean(savedDraft)} value={terms[key] ?? ""} inputMode="decimal" onChange={(_, data) => change(key, data.value)} /></DmField>;
   const close = () => { if (!dirty || savedDraft || window.confirm("Закрыть форму без сохранения?")) onClose(); };
   return <div className={styles.form}>
-    <WorkflowSteps steps={["Выбор товара", "Условия акции", "Сроки и лимит", "Подтверждение"]} current={step} onSelect={!busy && !savedDraft ? setStep : undefined} />
     {error ? <ErrorState description={error} action={initialOfferId && !offer ? <DmButton onClick={() => setOfferRetry(value => value + 1)}>Повторить загрузку товара</DmButton> : undefined} /> : null}
     {offerLoading ? <LoadingState label="Загружаем товар акции" /> : <div className={local.columns}>
     <form ref={form} className={`${styles.panel} ${styles.form}`} onSubmit={event => { event.preventDefault(); if (step < 3) next(); else void save(true); }}>
@@ -103,7 +105,6 @@ export function PromotionEditor({ api, selected, template, initialOfferId, onSav
     <aside className={`${styles.panel} ${styles.summary}`} aria-label="Предпросмотр акции"><div className={local.previewTitle}><h3>Так увидит покупатель</h3><StatusTag>Предпросмотр</StatusTag></div><ProductThumbnail large src={offer?.productVariant.product.media?.[0]?.sourceUrl} name={offer?.productVariant.product.canonicalName ?? original?.offerName ?? "Товар"} /><div><h3>{offer?.productVariant.product.canonicalName ?? original?.offerName ?? "Выберите товар"}</h3>{offer?.packaging ? <p>{offer.packaging.name}</p> : null}</div>
       {terms.kind === "BUY_X_GET_Y" ? <strong>За {terms.buyQuantity || "N"} — {terms.giftQuantity || "M"} в подарок</strong> : previewPrice ? <div><s className={styles.hint}>{formatMoney(baseMinor!, currency)}</s><div className={local.price}>{formatMoney(previewPrice, currency)}</div><StatusTag tone="success">−{(Number((BigInt(baseMinor!) - BigInt(previewPrice)) * BigInt(1000) / BigInt(baseMinor!)) / 10).toLocaleString("ru")} %</StatusTag></div> : <p>Укажите акционную цену</p>}
       <p className={styles.hint}>От {terms.minimumQuantity || "—"} · лимит {terms.quantityLimit || "—"}</p><p className={styles.hint}>Цена и доступность будут проверены при сохранении.</p>
-      <ol className={local.lifecycle} aria-label="Путь акции после заполнения"><li><span>1</span>Черновик</li><li><span>2</span>Проверка</li><li><span>3</span>Запуск</li></ol>
     </aside></div>}
   </div>;
 }

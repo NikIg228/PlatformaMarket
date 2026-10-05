@@ -5,7 +5,7 @@ export function workspacePageTitle(pathname: string) {
     settings: "Настройки организации", notifications: "Уведомления", messages: "Сообщения", support: "Поддержка",
     "products/proposals": "Заявки на новые товары", "products/corrections": "Исправления карточек",
     "products/new": "Добавить товар", "products/import": "Загрузить из файла",
-    "products/inventory": "Партии и резервы", "products/promotions": "Акции поставщика", "settings/sources": "Источники товаров",
+    "products/inventory": "Остатки", "products/promotions": "Акции поставщика", "settings/sources": "Источники товаров",
   };
   if (page === "analytics") return pathname.startsWith("/clinic") ? "Аналитика закупок" : "Аналитика продаж";
   if (page.startsWith("orders/")) return "Заказ";

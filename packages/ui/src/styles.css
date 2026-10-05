@@ -277,7 +277,9 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
 .dm-document-summary-card { display: grid; gap: 8px; min-height: 96px; padding: 18px; border: 1px solid var(--dm-border); border-radius: var(--dm-radius-card); background: var(--dm-surface); box-shadow: var(--dm-shadow-subtle); }
 .dm-document-summary-card span { color: var(--dm-text-secondary); font-size: 12px; }
 .dm-document-summary-card strong { font-size: 28px; line-height: 1; }
-.dm-document-filters { display: grid; grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(150px, .7fr)) auto auto; gap: 10px; align-items: center; padding: 14px; border: 1px solid var(--dm-border); border-radius: var(--dm-radius-card); background: var(--dm-surface); }
+.dm-document-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 14px; border: 1px solid var(--dm-border); border-radius: var(--dm-radius-card); background: var(--dm-surface); }
+.dm-document-filters > .fui-Select { width: 180px; min-width: 0; }
+.dm-document-filters > .fui-Input:has(input[type="date"]) { width: 160px; min-width: 0; }
 .dm-document-table-wrap { overflow-x: auto; border: 1px solid var(--dm-border); border-radius: var(--dm-radius-card); background: var(--dm-surface); box-shadow: var(--dm-shadow-subtle); }
 .dm-document-table { width: 100%; min-width: 900px; border-collapse: collapse; }
 .dm-document-table th { padding: 12px 16px; border-bottom: 1px solid var(--dm-border); color: var(--dm-text-muted); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-align: left; text-transform: uppercase; }
@@ -316,7 +318,8 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
 
 @media (max-width: 1080px) {
   .dm-document-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .dm-document-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dm-document-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dm-document-filters > .fui-Select, .dm-document-filters > .fui-Input:has(input[type="date"]) { width: 100%; }
   .dm-document-filters > :first-child { grid-column: 1 / -1; }
 }
 

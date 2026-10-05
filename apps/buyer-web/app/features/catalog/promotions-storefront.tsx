@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MarketplaceApiClient, frontendFeatures } from "@marketplace/api-client";
 import type { PromotionListQuery, PublicPromotionPage } from "@marketplace/schemas";
-import { DmButton, DmField, DmInput, DmSelect, EmptyState, ErrorState, LoadingState, Section, errorMessage, formatDate, formatMoney } from "@marketplace/ui";
+import { DmButton, DmField, DmSearch, DmSelect, EmptyState, ErrorState, LoadingState, Section, errorMessage, formatDate, formatMoney } from "@marketplace/ui";
 import { fetchLiveCatalog } from "../../catalog/live-search";
 import type { SearchResult } from "../../catalog-search-types";
 import { MarketplaceHeader } from "../marketplace-header/marketplace-header";
@@ -49,8 +49,7 @@ export function PromotionsStorefront({ featured = false, productId }: { featured
   return <Section title={productId ? "Акции на этот товар" : "Акции поставщиков"} description="Условия действуют в указанный срок и в пределах доступного количества. При оформлении проверим цену и наличие подарка.">
     <div className="mp-stack">
       {!featured && !productId ? <form className="mp-stack" onSubmit={event => { event.preventDefault(); update({ q: draft }); }}>
-        <DmField label="Поиск акций"><DmInput value={draft} onChange={(_, data) => setDraft(data.value)} /></DmField>
-        <DmButton type="submit">Найти</DmButton>
+        <DmSearch aria-label="Поиск акций" placeholder="Найти акцию" value={draft} onChange={setDraft} onSearch={value => update({ q: value })} />
         <DmField label="Механика"><DmSelect value={query.kind ?? ""} onChange={(_, data) => update({ kind: data.value as PromotionListQuery["kind"] || undefined })}><option value="">Все механики</option><option value="PERCENTAGE">Процентная скидка</option><option value="FIXED_AMOUNT">Фиксированная скидка</option><option value="BUY_X_GET_Y">Подарок N + M</option></DmSelect></DmField>
         {facets ? <>{([ ["categoryId", "Категория", facets.categories], ["supplierOrganizationId", "Поставщик", facets.suppliers] ] as const).map(([key, label, items]) => <DmField key={key} label={label}><DmSelect value={query[key] ?? ""} onChange={(_, data) => update({ [key]: data.value || undefined })}><option value="">Все</option>{items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</DmSelect></DmField>)}</> : <DmButton onClick={() => setRetry(value => value + 1)}>Загрузить категории и поставщиков</DmButton>}
         <DmField label="Сортировка"><DmSelect value={query.sort ?? "ENDING"} onChange={(_, data) => update({ sort: data.value as PromotionListQuery["sort"] })}><option value="ENDING">Скоро заканчиваются</option><option value="NEWEST">Сначала новые</option></DmSelect></DmField>

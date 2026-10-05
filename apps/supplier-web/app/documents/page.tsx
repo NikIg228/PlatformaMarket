@@ -150,7 +150,7 @@ export default function SupplierDocumentsPage() {
       busyDocumentId={busyDocumentId}
       uploadAction={<DocumentArchiveUpload key={organizationId} kinds={["INVOICE", "PAYMENT_CONFIRMATION", "REFUND_CONFIRMATION", "CONTRACT_ADDENDUM", "WAYBILL", "ACCEPTANCE_ACT", "TAX_CLOSING_DOCUMENT", "WARRANTY", "CERTIFICATE", "OTHER"]} busy={uploading} onUpload={upload} loadOrderOptions={loadOrderOptions} loadAgreementOptions={loadAgreementOptions} />}
       onFiltersChange={setFilters}
-      onApplyFilters={() => { setAppliedFilters(filters); setNextCursor(null); }}
+      onApplyFilters={next => { setAppliedFilters(next); setNextCursor(null); }}
       onResetFilters={() => { setFilters(initialFilters); setAppliedFilters(initialFilters); setNextCursor(null); }}
       onRefresh={() => void load(false)}
       onLoadMore={() => void load(true)}

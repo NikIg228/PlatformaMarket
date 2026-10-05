@@ -17,6 +17,7 @@ async function collect(dir, relative = "") {
 }
 await collect(path.join(root, "apps/buyer-web/public"));
 await collect(path.join(root, "apps/landing-web/public"));
+await collect(path.join(root, "apps/supplier-web/public"));
 for (const [name, source] of assets) {
   const destination = path.join(target, "public", name);
   await mkdir(path.dirname(destination), { recursive: true }); await copyFile(source, destination);

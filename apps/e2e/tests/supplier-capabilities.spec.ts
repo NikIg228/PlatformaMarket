@@ -15,16 +15,18 @@ for (const width of [1440, 390]) test(`shared focus keeps proposal search typing
   expect(await field.evaluate(el => getComputedStyle(el, "::after").display)).toBe("none");
   await page.screenshot({ path: testInfo.outputPath(`focus-search-typing-${width}.png`) });
   await input.press("Tab");
-  const search = page.getByRole("button", { name: "Найти заявку", exact: true });
+  const clear = page.getByRole("button", { name: "Очистить поиск", exact: true });
+  await expect(clear).toBeFocused(); await page.keyboard.press("Tab");
+  const search = page.getByRole("button", { name: "Найти", exact: true });
   await expect(search).toBeFocused(); await expect(search).toHaveCSS("outline-width", "1px");
   expect(await search.evaluate(el => getComputedStyle(el, "::after").borderTopWidth)).toBe("0px");
-  await search.press("Shift+Tab"); await expect(input).toBeFocused();
+  await search.press("Shift+Tab"); await page.keyboard.press("Shift+Tab"); await expect(input).toBeFocused();
   await expect(input).toHaveCSS("outline-style", "none"); await expect(field).toHaveCSS("outline-width", "1px");
   await expect(field).toHaveCSS("outline-offset", "-1px");
   await input.pressSequentially(" текст"); await expect(field).toHaveCSS("outline-width", "1px");
   await page.screenshot({ path: testInfo.outputPath(`focus-search-tab-${width}.png`) });
   await input.click(); await expect(field).toHaveCSS("outline-style", "none");
-  await input.press("Tab"); await page.keyboard.press("Tab");
+  await input.press("Tab"); await page.keyboard.press("Tab"); await page.keyboard.press("Tab");
   const status = page.getByRole("combobox", { name: "Статус заявки", exact: true });
   await expect(status).toBeFocused(); await expect(status).toHaveCSS("outline-style", "none");
   await expect(status.locator("xpath=..")).toHaveCSS("outline-width", "1px");
@@ -39,7 +41,7 @@ for (const width of [1440, 390]) test(`shared focus keeps proposal search typing
 test("shared focus preserves textarea editing, validation borders and checkbox selection", async ({ page }, testInfo) => {
   const state = await productFixture(page);
   await page.goto("/supplier/products/new?request=1");
-  const textarea = page.getByRole("textbox", { name: "Описание, упаковка и ссылка на материалы" });
+  const textarea = page.getByRole("textbox", { name: "Сведения о товаре" });
   await textarea.click(); await textarea.pressSequentially("Описание товара"); await textarea.press("Home");
   await expect(page.locator("html")).toHaveAttribute("data-input-modality", "pointer");
   await expect(textarea.locator("xpath=..")).toHaveCSS("outline-style", "none");
@@ -74,9 +76,9 @@ test("shared focus preserves textarea editing, validation borders and checkbox s
   expect(state.writes).toEqual([]);
 });
 const sections = [
-  ["new", "Добавить товар", "Найти"], ["import", "Загрузить из файла", "Настроить столбцы"],
+  ["new", "Добавить товар", "Товар, артикул или штрихкод"], ["import", "Загрузить из файла", "Настроить столбцы"],
   ["proposals", "Заявки на новые товары", "Найти заявку"], ["corrections", "Исправления карточек", "Предложить исправление"],
-  ["inventory", "Партии и резервы", "Найти"], ["promotions", "Акции", "Новая акция"],
+  ["inventory", "Остатки", "Поиск товара"], ["promotions", "Акции", "Новая акция"],
 ] as const;
 for (const width of [1440, 390]) test(`six product pages are reachable and usable at ${width}px`, async ({ page }, testInfo) => {
   await page.setViewportSize({ width, height: 900 });
@@ -88,7 +90,7 @@ for (const width of [1440, 390]) test(`six product pages are reachable and usabl
     await actions.locator(`a[href="/supplier/products/${path}"]`).focus(); await page.keyboard.press("Enter");
     await expect(page).toHaveURL(new RegExp(`/supplier/products/${path}$`));
     await expect(page.getByRole("heading", { level: 1, name: title, exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: action, exact: true })).toBeVisible();
+    await expect(page.getByRole(["new", "proposals", "inventory"].includes(path) ? "textbox" : "button", { name: action, exact: true })).toBeVisible();
     await noOverflow(page);
     await page.screenshot({ path: testInfo.outputPath(`${path}-${width}.png`), fullPage: true });
     await page.getByRole("link", { name: width === 390 ? "Вернуться: Товары" : "Товары", exact: true }).last().click();
@@ -258,7 +260,7 @@ test("rejected proposal shows submitted details and supports a corrected submiss
   await page.getByRole("button", { name: /Новый материал NEW-1/ }).click();
   await expect(page.getByText("Исходные сведения и упаковка", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Исправить и подать заново" }).click();
-  const description = page.getByRole("textbox", { name: "Описание, упаковка и ссылка на материалы", exact: true });
+  const description = page.getByRole("textbox", { name: "Сведения о товаре", exact: true });
   await expect(description).toHaveValue("Исходные сведения и упаковка"); await description.fill("Уточнённая упаковка из 10 штук");
   await page.getByRole("button", { name: "Проверить заявку", exact: true }).click(); await page.getByRole("button", { name: "Отправить заявку", exact: true }).click();
   await expect(page.getByText("Не удалось отправить заявку", { exact: true })).toBeVisible();
@@ -290,20 +292,17 @@ test("correction wizard keeps the comparison and input through a failed submissi
   expect(state.writes).toHaveLength(2); expect(state.writes[0]!.body).toEqual(state.writes[1]!.body);
   expect(state.unexpected).toEqual([]);
 });
-test("inventory tabs load lots and linked reservations with warehouse filtering", async ({ page }, testInfo) => {
+test("inventory keeps warehouse filtering without ERP tabs or product redirects", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 900 });
   const state = await productFixture(page);
   await page.goto("/supplier/products/inventory");
-  await expect(page.getByRole("table", { name: "Остатки по складам" })).toContainText("25 уп.");
+  const table = page.getByRole("table", { name: "Остатки по складам" });
+  await expect(table).toContainText("25 уп.");
   await choose(page, "Склад", "Второй склад"); await expect(page.getByText("Остатки не найдены", { exact: true })).toBeVisible();
-  await choose(page, "Склад", "Все склады");
-  await page.getByRole("tab", { name: "Партии", exact: true }).click();
-  await choose(page, "Товар и склад", "Композит для реставрации · Основной склад");
-  await expect(page.getByText(/LOT-2026/)).toBeVisible(); await expect(page.getByText("1 янв. 2030 г.", { exact: true })).toBeVisible();
-  await page.getByRole("tab", { name: "Резервы", exact: true }).click();
-
-  await expect(page.getByRole("link", { name: "Заказ ORD-100" })).toHaveAttribute("href", `/supplier/orders/${id(25)}`);
-  await noOverflow(page); await page.screenshot({ path: testInfo.outputPath("reservations-mobile.png"), fullPage: true });
+  await choose(page, "Склад", "Все склады"); await expect(table).toContainText("25 уп.");
+  await expect(table.getByRole("link")).toHaveCount(0); await expect(page.getByRole("tab")).toHaveCount(0);
+  await expect(page.getByText("Актуальность и история корректировок", { exact: true })).toHaveCount(0);
+  await noOverflow(page); await page.screenshot({ path: testInfo.outputPath("inventory-mobile.png"), fullPage: true });
   expect(state.unexpected).toEqual([]); expect(state.writes).toEqual([]);
 });
 
@@ -311,11 +310,12 @@ test("promotion draft previews the lower price and requires separate moderation 
   await page.setViewportSize({ width: 390, height: 900 });
   const state = await productFixture(page); state.failPromotions = true;
   await page.goto("/supplier/products/promotions");
-  await page.getByRole("tab", { name: "Архив", exact: true }).click(); await expect(page.getByText("Акций пока нет", { exact: true })).toBeVisible();
+  await page.getByRole("tab", { name: "Архив", exact: true }).click(); await expect(page.getByText("Акции не найдены", { exact: true })).toBeVisible();
   expect(state.reads.some(path => path.includes("phase=ENDED"))).toBe(true);
   await page.getByRole("tab", { name: "Все", exact: true }).click();
   await page.getByRole("button", { name: "Новая акция", exact: true }).click();
-  await page.getByRole("button", { name: "Найти: Товар акции", exact: true }).click();
+  await page.getByRole("textbox", { name: "Поиск: Товар акции", exact: true }).fill("Композит");
+  await page.getByRole("textbox", { name: "Поиск: Товар акции", exact: true }).press("Enter");
   await choose(page, "Товар акции", "Композит для реставрации · COMP-10");
   await page.getByRole("button", { name: "Далее", exact: true }).click(); await page.getByRole("textbox", { name: "Название акции", exact: true }).fill("Скидка для клиник");
   await page.getByRole("textbox", { name: "Акционная цена, ₸", exact: true }).fill("800");
@@ -355,10 +355,10 @@ test("product context links and list filters survive a round trip", async ({ pag
   await expect(page.getByRole("textbox", { name: "Поиск по товарам" })).toHaveValue("Композит");
   await expect(page.getByRole("button", { name: "Адгезив универсальный", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Композит для реставрации", exact: true }).click();
-  await page.getByRole("dialog").getByRole("link", { name: "Резервы", exact: true }).click();
-  await expect(page.getByRole("link", { name: "Заказ ORD-100" })).toBeVisible();
+  await page.getByRole("dialog").getByRole("link", { name: "Остатки", exact: true }).click();
+  await expect(page.getByRole("table", { name: "Остатки по складам" })).toContainText("25 уп.");
   expect(state.reads.some(path => path.includes(`offerId=${offerId}`) && path.includes(`balanceId=${id(8)}`))).toBe(true);
-  await noOverflow(page); await page.screenshot({ path: testInfo.outputPath("linked-reserves-mobile.png"), fullPage: true });
+  await noOverflow(page); await page.screenshot({ path: testInfo.outputPath("linked-inventory-mobile.png"), fullPage: true });
   expect(state.unexpected).toEqual([]); expect(state.writes).toEqual([]);
 });
 
@@ -389,6 +389,7 @@ test("desktop workflows keep entered conditions when stepping back", async ({ pa
   const state = await productFixture(page);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/supplier/products/new");
+  await page.getByRole("textbox", { name: "Товар, артикул или штрихкод", exact: true }).fill("Композит");
   await page.getByRole("button", { name: "Найти", exact: true }).click();
   await page.getByRole("button", { name: "Выбрать COMP", exact: true }).click();
   await page.getByRole("button", { name: "Условия продажи", exact: true }).click();

@@ -396,6 +396,26 @@ async function fixture(
   return { calls, unexpected };
 }
 
+for (const role of ["clinic", "supplier"] as const) test(`refinement ${role} document search applies and clears with one action`, async ({ page }) => {
+  await fixture(page, role === "clinic" ? "BUYER" : "SUPPLIER");
+  const queries: string[] = [];
+  await page.route("**/api/documents/archive?*", route => {
+    queries.push(new URL(route.request().url()).searchParams.get("q") ?? "");
+    return route.fulfill({ json: { items: [], nextCursor: null } });
+  });
+  await page.goto(`/${role}/documents`);
+  const input = page.getByRole("textbox", { name: "Поиск документов" });
+  await expect(input).toBeVisible();
+  await input.fill("DOC-12"); await input.press("Enter");
+  await expect.poll(() => queries.at(-1)).toBe("DOC-12");
+  await page.getByRole("button", { name: "Очистить поиск", exact: true }).click();
+  await expect.poll(() => queries.at(-1)).toBe("");
+  await input.fill("DOC-15"); await page.getByRole("button", { name: "Применить", exact: true }).click();
+  await expect.poll(() => queries.at(-1)).toBe("DOC-15");
+  await page.getByRole("button", { name: "Сбросить", exact: true }).click();
+  await expect(input).toHaveValue("");
+});
+
 test("workspace GET is aborted when its filter is superseded", async ({ page }) => {
   await fixture(page, "SUPPLIER");
   let release!: () => void;

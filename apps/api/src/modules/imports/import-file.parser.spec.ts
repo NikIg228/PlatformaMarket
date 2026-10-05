@@ -2,8 +2,19 @@ import { describe, expect, it } from "vitest";
 import ExcelJS from "exceljs";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import { ImportFileParser } from "./import-file.parser";
+import { readFile } from "node:fs/promises";
 
 describe("ImportFileParser", () => {
+  it("reads the downloadable XLSX template as one row, preserving price and text identifiers", async () => {
+    const bytes = await readFile(new URL("../../../../supplier-web/public/templates/supplier-price-template.xlsx", import.meta.url));
+    const result = await new ImportFileParser().parseWithDiagnostics({
+      sourceId: "00000000-0000-4000-8000-000000000022", fileName: "supplier-price-template.xlsx", fileType: "EXCEL",
+      contentBase64: bytes.toString("base64"), columnMapping: { externalId: "Код", name: "Название", priceMinor: "Цена", priceUnit: "MAJOR", quantityOnHand: "Остаток" },
+    });
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]).toMatchObject({ Код: "EXAMPLE-001", Артикул: "MY-001", Цена: 1250.5, Валюта: "KZT", Остаток: 25 });
+    expect(result.rowNumbers).toEqual([2]);
+  });
   it("parses CSV content while preserving headers", async () => {
     const parser = new ImportFileParser();
     const rows = await parser.parse({

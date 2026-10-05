@@ -95,7 +95,7 @@ export async function productFixture(page: Page, allowed = permissions) {
         if (state.failPromotions) return fail("Не удалось сохранить акцию");
         const promotion = { ...samplePromotion, id: id(31), terms: input.terms as OfferPromotion["terms"], moderationStatus: "DRAFT" as const, temporalStatus: "DRAFT" as const, status: "DRAFT" };
         state.promotions.push(promotion); body = promotion;
-      } else { const items = state.promotions.filter(item => (!url.searchParams.get("phase") || item.temporalStatus === url.searchParams.get("phase")) && (!url.searchParams.get("moderationStatus") || item.moderationStatus === url.searchParams.get("moderationStatus"))); body = { items, total: items.length, offset: 0, limit: 10 }; }
+      } else { const items = state.promotions.filter(item => (!url.searchParams.get("q") || item.terms.name.toLowerCase().includes(url.searchParams.get("q")!.toLowerCase())) && (!url.searchParams.get("phase") || item.temporalStatus === url.searchParams.get("phase")) && (!url.searchParams.get("moderationStatus") || item.moderationStatus === url.searchParams.get("moderationStatus"))); body = { items, total: items.length, offset: 0, limit: 10 }; }
     } else if (path.endsWith("/commands") && path.startsWith("/promotions/")) { if (state.failPromotionSubmit) return fail("Не удалось отправить акцию"); state.promotions = state.promotions.map(item => item.id === path.split("/")[2] ? { ...item, moderationStatus: "PENDING", version: 2 } : item); body = state.promotions.at(-1); }
     else { state.unexpected.push(path); return fail(`Unexpected fixture path ${path}`); }
     return route.fulfill({ json: body });

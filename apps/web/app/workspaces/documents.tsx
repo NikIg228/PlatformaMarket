@@ -240,8 +240,8 @@ export default function Documents() {
           />
         }
         onFiltersChange={next => { setFilters(next); setFilterError(null); }}
-        onApplyFilters={() => {
-          try { documentArchiveDateRange(filters.dateFrom, filters.dateTo); setFilterError(null); setApplied({ ...filters }); }
+        onApplyFilters={next => {
+          try { documentArchiveDateRange(next.dateFrom, next.dateTo); setFilterError(null); setApplied({ ...next }); }
           catch (cause) { setFilterError(cause instanceof Error ? cause.message : "Проверьте даты периода."); }
         }}
         onResetFilters={() => {

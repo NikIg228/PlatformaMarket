@@ -16,7 +16,7 @@ function options(children: ReactNode): Array<{ value: string; label: string; dis
 /** Opt-in themed selector for edited forms; existing native consumers are unchanged. */
 export function DmDropdown({ value, children, onChange, className, ...props }: Props) {
   const items = options(children);
-  return <Dropdown {...props} className={`dm-control ${className ?? ""}`} style={{ minWidth: 0, width: "100%" }}
+  return <Dropdown {...props} className={`dm-control dm-dropdown ${className ?? ""}`} style={{ minWidth: 0, width: "100%" }}
     positioning={{ position: "below", align: "start", matchTargetSize: "width", autoSize: "height" }}
     value={items.find(item => item.value === value)?.label ?? ""} selectedOptions={[value]}
     onOptionSelect={(event, data) => { if (data.optionValue !== undefined) onChange(event, { value: data.optionValue }); }}>

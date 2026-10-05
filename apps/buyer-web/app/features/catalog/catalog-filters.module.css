@@ -91,7 +91,7 @@
 }
 
 /* Search, category and full filter inspector share one sticky toolbar. */
-.searchSlot { flex: 1 1 400px; min-width: 0; max-width: 560px; margin-right: auto; }
+.searchSlot { flex: 0 1 440px; min-width: 0; max-width: 440px; margin-right: auto; }
 .searchSlot > form { max-width: none; }
 .categorySlot { flex: 0 1 240px; min-width: 180px; }
 .categorySlot .choice { min-height: 44px; border-radius: var(--dm-radius-button, 8px); }

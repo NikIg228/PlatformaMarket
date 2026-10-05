@@ -2,9 +2,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { ProductCandidateHistoryResponse, ProductCandidateSummary } from "@marketplace/schemas";
-import { DmButton, DmDropdown, DmInput, ErrorState, LoadingState, ProductThumbnail, StatusTag, errorMessage, formatDate, productWorkflowStyles as s } from "@marketplace/ui";
+import { DmButton, DmDropdown, DmSearch, ErrorState, LoadingState, ProductThumbnail, StatusTag, errorMessage, formatDate, productWorkflowStyles as s } from "@marketplace/ui";
 import { Add20Regular } from "@fluentui/react-icons/svg/add";
-import { Search20Regular } from "@fluentui/react-icons/svg/search";
 import { Checkmark20Regular } from "@fluentui/react-icons/svg/checkmark";
 import styles from "./product-proposals.module.css";
 const labels = { PENDING: "На проверке", APPROVED: "Одобрена", REJECTED: "Отклонена" } as const;
@@ -27,7 +26,7 @@ export function ProductProposals({ api, onRetry, hideHeading = false, initialSel
   return <div className={styles.workspace}>
     {!hideHeading ? <h2>Заявки на новые товары</h2> : null}
     <div className={styles.toolbarGrid}>
-      <div className={styles.filters}><form className={s.search} onSubmit={event => { event.preventDefault(); setSelectedId(""); setQ(draft.trim()); }}><DmInput aria-label="Найти заявку" placeholder="Найти заявку" value={draft} contentBefore={<Search20Regular />} onChange={(_, data) => setDraft(data.value)} /><DmButton type="submit" icon={<Search20Regular />} aria-label="Найти заявку" /></form>
+      <div className={styles.filters}><DmSearch aria-label="Найти заявку" placeholder="Найти заявку" value={draft} onChange={setDraft} onSearch={value => { setSelectedId(""); setQ(value); }} />
         <DmDropdown aria-label="Статус заявки" value={status} onChange={(_, data) => { setSelectedId(""); setStatus(data.value as typeof status); }}><option value="">Все статусы</option>{Object.entries(labels).map(([value, text]) => <option key={value} value={value}>{text}</option>)}</DmDropdown>
       </div>
       <div className={styles.primary}><DmButton as="a" href="/supplier/products/new?request=1" appearance="primary" icon={<Add20Regular />}>Новая заявка</DmButton></div>

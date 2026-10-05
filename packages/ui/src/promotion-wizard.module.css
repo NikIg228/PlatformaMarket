@@ -1,4 +1,6 @@
 .columns { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr); gap:20px; align-items:start; }
+.picker { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; }
+.picker > :global(.dm-field) { width: 440px; max-width: 100%; }
 .previewTitle { display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .previewTitle > span { flex-shrink:0; }
 .lifecycle { border-top:1px solid var(--dm-border); padding-top:24px; display:flex; justify-content:space-between; list-style:none; margin:0; padding-left:0; gap:12px; color:var(--dm-text-secondary); font-size:13px; }

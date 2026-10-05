@@ -19,7 +19,7 @@ import { ArrowDownload24Regular } from "@fluentui/react-icons/svg/arrow-download
 import { ArrowSync24Regular } from "@fluentui/react-icons/svg/arrow-sync";
 import { Dismiss24Regular } from "@fluentui/react-icons/svg/dismiss";
 import { Document24Regular } from "@fluentui/react-icons/svg/document";
-import { Search24Regular } from "@fluentui/react-icons/svg/search";
+import { DmSearch } from "./dm-search";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { documentDateValid, documentUploadError, documentUploadFileError, formatDocumentAmount, parseDocumentAmount } from "./document-upload-model";
 import { DocumentRelationSelect } from "./document-relation-select";
@@ -343,7 +343,7 @@ export function DocumentArchiveWorkspace({
   busyDocumentId: string | null;
   uploadAction?: ReactNode;
   onFiltersChange: (next: DocumentArchiveFilters) => void;
-  onApplyFilters: () => void;
+  onApplyFilters: (next: DocumentArchiveFilters) => void;
   onResetFilters: () => void;
   onRefresh: () => void;
   onLoadMore: () => void;
@@ -354,6 +354,8 @@ export function DocumentArchiveWorkspace({
   filterError?: string | null;
 }) {
   const has = usePermissions();
+  const [searchDraft, setSearchDraft] = useState(filters.q);
+  useEffect(() => setSearchDraft(filters.q), [filters.q]);
   const showDate = (value: string) => formatDate(value, calendarTimeZone);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedDetail, setSelectedDetail] = useState<DocumentArchiveItemView | null>(null);
@@ -393,8 +395,8 @@ export function DocumentArchiveWorkspace({
       </div>
 
       {calendarTimeZone ? <p>Даты в часовом поясе: {calendarTimeZone}.</p> : null}
-      <form className="dm-document-filters" onSubmit={(event) => { event.preventDefault(); onApplyFilters(); }}>
-        <Input aria-label="Поиск документов" contentBefore={<Search24Regular />} placeholder="Номер, название, заказ, контрагент или БИН" value={filters.q} onChange={(_, data) => onFiltersChange({ ...filters, q: data.value })} />
+      <form className="dm-document-filters" onSubmit={(event) => { event.preventDefault(); const next = { ...filters, q: searchDraft.trim() }; onFiltersChange(next); onApplyFilters(next); }}>
+        <DmSearch aria-label="Поиск документов" placeholder="Найти документ" value={searchDraft} onChange={setSearchDraft} onSearch={value => { const next = { ...filters, q: value }; onFiltersChange(next); onApplyFilters(next); }} />
         <Select aria-label="Категория документа" value={filters.category} onChange={(_, data) => onFiltersChange({ ...filters, category: data.value })}>
           <option value="">Все категории</option>
           {Object.entries(categoryLabels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}

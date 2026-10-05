@@ -150,7 +150,7 @@ export default function BuyerDocumentsPage() {
       busyDocumentId={busyDocumentId}
       uploadAction={<DocumentArchiveUpload key={organizationId} kinds={["PAYMENT_CONFIRMATION", "CONTRACT_ADDENDUM", "ACCEPTANCE_ACT", "OTHER"]} busy={uploading} onUpload={upload} loadOrderOptions={loadOrderOptions} loadAgreementOptions={loadAgreementOptions} />}
       onFiltersChange={setFilters}
-      onApplyFilters={() => { setAppliedFilters(filters); setNextCursor(null); }}
+      onApplyFilters={next => { setAppliedFilters(next); setNextCursor(null); }}
       onResetFilters={() => { setFilters(initialFilters); setAppliedFilters(initialFilters); setNextCursor(null); }}
       onRefresh={() => void load(false)}
       onLoadMore={() => void load(true)}

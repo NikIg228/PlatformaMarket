@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
-import { Button, Input } from "@fluentui/react-components";
-import { Search20Regular } from "@fluentui/react-icons/svg/search";
+import { Button } from "@fluentui/react-components";
+import { DmSearch } from "@marketplace/ui";
 import { catalogContext, searchDestination } from "./navigation";
 import styles from "./header.module.css";
 type Suggestion = { id: string; name: string; brand: string | null };
@@ -46,11 +46,11 @@ export function HeaderSearch() {
     window.location.assign(item ? `/products/${encodeURIComponent(item.id)}?${new URLSearchParams({ returnTo: results })}` : results);
   };
   return <form ref={root} role="search" className={styles.search} onSubmit={e => { e.preventDefault(); navigate(); }} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false); }}>
-    <Input className={styles.input} aria-label="Поиск по каталогу" role="combobox" aria-autocomplete="list" aria-expanded={open && query.trim().length >= 2} aria-controls={listId} aria-activedescendant={selected >= 0 ? `${listId}-${selected}` : undefined}
-      placeholder="Название товара, бренд или артикул" value={query} maxLength={240}
-      onFocus={() => setOpen(true)} onChange={(_, d) => { generation.current++; request.current?.abort(); setQuery(d.value); setOpen(true); }}
+    <DmSearch className={styles.input} aria-label="Поиск по каталогу" role="combobox" aria-autocomplete="list" aria-expanded={open && query.trim().length >= 2} aria-controls={listId} aria-activedescendant={selected >= 0 ? `${listId}-${selected}` : undefined}
+      placeholder="Найти товар" value={query} maxLength={240}
+      onFocus={() => setOpen(true)} onChange={value => { generation.current++; request.current?.abort(); setQuery(value); setOpen(true); }}
       onKeyDown={e => { if (e.key === "Enter" && open && selected >= 0 && items[selected]) { e.preventDefault(); navigate(items[selected]); } if (e.key === "Escape") { e.preventDefault(); setOpen(false); } if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); setOpen(true); setSelected(n => items.length ? (n + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length : -1); } }}
-      contentAfter={<>{query ? <Button type="button" appearance="transparent" aria-label="Очистить поиск" onClick={() => { generation.current++; request.current?.abort(); setQuery(""); setOpen(false); root.current?.querySelector("input")?.focus(); }}>×</Button> : null}<Button appearance="transparent" type="submit" icon={<Search20Regular />} aria-label="Найти" title="Найти" /></>} />
+      onClear={() => { generation.current++; request.current?.abort(); setOpen(false); root.current?.querySelector("input")?.focus(); }} />
     {open && query.trim().length >= 2 ? <div className={styles.suggestions}>
       {status === "loading" ? <p role="status">Ищем товары…</p> : status === "error" ? <div role="alert"><p>Не удалось загрузить подсказки.</p><Button onClick={() => setRetry(v => v + 1)}>Повторить</Button></div> : null}
       <ul id={listId} role="listbox" aria-label="Подсказки товаров">{items.map((item, i) => <li id={`${listId}-${i}`} role="option" aria-selected={selected === i} key={item.id} onMouseDown={e => e.preventDefault()} onClick={() => navigate(item)}><strong>{item.name}</strong>{item.brand ? <small>{item.brand}</small> : null}</li>)}</ul>

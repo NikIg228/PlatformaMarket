@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient, SupplierImportBatchResponse, SupplierImportDiagnosticsResponse } from "@marketplace/api-client";
 import { importPriceMinor, type SupplierColumnMappingInput, type SupplierImportPreview } from "@marketplace/schemas";
-import { DmButton, DmField, DmInput, DmDropdown, DmTable, ErrorState, LoadingState, StatusTag, WorkflowSteps, useUnsavedChanges, productWorkflowStyles as styles, errorMessage, formatStatus, formatDate, formatMoney } from "@marketplace/ui";
+import { DmButton, DmField, DmInput, DmDropdown, DmTable, ErrorState, LoadingState, StatusTag, useUnsavedChanges, productWorkflowStyles as styles, errorMessage, formatStatus, formatDate, formatMoney } from "@marketplace/ui";
 import type { SupplierDataSource } from "./types";
 import local from "./spreadsheet-import.module.css";
 const fields = [
@@ -13,7 +13,7 @@ const fields = [
   ["brand", "Бренд", "Бренд"], ["manufacturer", "Производитель", "Производитель"],
   ["lotNumber", "Номер партии", "Партия"], ["expirationDate", "Срок годности", "Срок годности"],
 ] as const;
-const template = '\uFEFF' + fields.map(([, , header]) => header).join(',') + '\r\n';
+const template = '\uFEFF' + fields.map(([, , header]) => header).join(',') + '\r\n' + 'EXAMPLE-001,Пример: материал 5 г,MY-001,,1250.50,KZT,25,шт.,,,,\r\n';
 type RowFilter = "all" | "ready" | "attention" | "error";
 export function SpreadsheetImport({ api, supplierId, sources, onChanged, hideHeading = false }: {
   api: MarketplaceApiClient; supplierId: string; sources: SupplierDataSource[]; onChanged: () => Promise<void>; hideHeading?: boolean;
@@ -87,7 +87,6 @@ export function SpreadsheetImport({ api, supplierId, sources, onChanged, hideHea
       {history?.length === 0 ? <div className={styles.empty}><h2>Загрузок пока нет</h2><p>Загрузите первый прайс в формате CSV или Excel.</p><DmButton appearance="primary" onClick={() => setTab("new")}>Загрузить файл</DmButton></div> : history ? <DmTable caption="История импорта" columns={[{ key: "file", label: "Файл" }, { key: "date", label: "Дата" }, { key: "status", label: "Результат" }, { key: "action", label: "Действие" }]}>{history.map(item => <tr key={item.id}><td data-label="Файл"><div><strong>{item.fileName}</strong></div></td><td data-label="Дата"><div>{formatDate(item.createdAt, true)}</div></td><td data-label="Результат"><div><StatusTag>{formatStatus(item.status)}</StatusTag><small>Обработано {item.processedRows}/{item.totalRows} · ошибок {item.errorRows}</small></div></td><td data-label="Действие"><div><DmButton disabled={busy} onClick={() => { if (file && !batch && !window.confirm("Открыть прошлую загрузку и закрыть текущий предпросмотр?")) return; void run(async () => { const [detail, report] = await Promise.all([api.getSupplierImportBatch(supplierId, item.id), api.getSupplierImportDiagnostics(supplierId, item.id)]); setBatch(detail); batchId.current = detail.id; setDiagnostics(report); setReason(""); setTab("new"); setStep(3); }); }}>Открыть результат {item.fileName}</DmButton></div></td></tr>)}</DmTable> : null}
       {historyHasMore ? <DmButton disabled={historyLoading} onClick={() => void loadHistory(history?.at(-1)?.id)}>Показать более ранние загрузки</DmButton> : null}
     </section> : <div className={`${styles.panel} ${styles.form}`}>
-      <WorkflowSteps steps={["Файл", "Столбцы", "Проверка", "Подтверждение"]} current={step} label="Этапы импорта" onSelect={!busy && !batch && !unknownCreation ? setStep : undefined} />
       {error ? <ErrorState description={error} /> : null}
       {batch ? <section className={styles.form}>
         <div className={styles.toolbar}><h2>{batch.fileName}</h2><StatusTag>{batch.status === "MAPPED" ? "Ожидает обработки" : formatStatus(batch.status)}</StatusTag></div>
@@ -101,7 +100,8 @@ export function SpreadsheetImport({ api, supplierId, sources, onChanged, hideHea
         {step === 0 ? <>
           <h2>Загрузите прайс</h2><p className={styles.hint}>CSV с запятыми или первый лист Excel. До 20 МБ и 5 000 строк.</p>
           <div className={local.upload}><strong>{file?.name ?? "Выберите файл с товарами"}</strong><span>Название, цена, остаток и артикул — в отдельных столбцах</span><DmButton disabled={busy} onClick={() => fileInput.current?.click()}>{file ? "Выбрать другой файл" : "Выбрать файл CSV или XLSX"}</DmButton><input ref={fileInput} hidden aria-label="Таблица поставщика" type="file" accept=".csv,.xlsx" disabled={busy} onChange={event => { setFile(event.target.files?.[0] ?? null); setSourceId(""); setPreview(null); setError(null); }} /></div>
-          <a href={`data:text/csv;charset=utf-8,${encodeURIComponent(template)}`} download="Шаблон-прайса.csv">Скачать шаблон CSV · цена в тенге</a>
+          <div className={styles.toolbar}><a href="/templates/supplier-price-template.xlsx" download="Шаблон-прайса.xlsx">Скачать шаблон Excel</a><a href={`data:text/csv;charset=utf-8,${encodeURIComponent(template)}`} download="Шаблон-прайса.csv">Скачать шаблон CSV</a></div>
+          <p className={styles.hint}>В шаблоне Excel есть пример и пояснения к столбцам. Замените пример своими товарами; цена — в тенге. CSV использует запятую как разделитель.</p>
           <DmField label="Источник прайса" hint="Для обновления прежних строк выбирайте тот же источник и сохраняйте их коды."><DmDropdown value={sourceId} disabled={busy} onChange={(_, data) => setSourceId(data.value)}><option value="">Создать новый источник</option>{availableSources.map(source => <option key={source.id} value={source.id}>{source.name}</option>)}</DmDropdown></DmField>
           <div className={styles.footer}><span className={styles.hint}>До подтверждения предложения не изменятся</span><DmButton appearance="primary" disabled={busy || !file} onClick={() => void readFile()}>{busy ? "Читаем файл…" : "Настроить столбцы"}</DmButton></div>
         </> : step === 1 ? <>

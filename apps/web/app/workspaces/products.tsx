@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { WorkspaceOffer } from "@marketplace/schemas";
-import { DmButton, DmDropdown, DmInput, EmptyState, ErrorState, LoadingState, StatusTag, formatMoney, formatStatus } from "@marketplace/ui";
+import { DmButton, DmDropdown, DmSearch, EmptyState, ErrorState, LoadingState, StatusTag, formatMoney, formatStatus } from "@marketplace/ui";
 import { Tab, TabList } from "@fluentui/react-components";
 import { ChevronRight20Regular } from "@fluentui/react-icons/svg/chevron-right";
 import { Filter20Regular } from "@fluentui/react-icons/svg/filter";
@@ -45,10 +45,7 @@ export default function Products() {
     {selectedOfferId && selected.error ? <ErrorState description={selected.error} action={<DmButton onClick={() => void selected.refresh()}>Повторить загрузку предложения</DmButton>} /> : null}
     <section className={styles.listPanel} aria-label="Список товаров">
       <div className={styles.filters}>
-        <form className={styles.search} onSubmit={event => { event.preventDefault(); navigation.reset(); setAppliedQuery(query.trim()); }}>
-          <DmInput aria-label="Поиск по товарам" value={query} onChange={(_, data) => setQuery(data.value)} placeholder="Название или артикул" />
-          <DmButton type="submit">Найти</DmButton>
-        </form>
+        <DmSearch aria-label="Поиск по товарам" placeholder="Найти товар" value={query} onChange={setQuery} onSearch={value => { navigation.reset(); setAppliedQuery(value); }} />
         <div className={styles.statusFilter} data-open={filterOpen}><DmDropdown aria-label="Публикация" value={status} onChange={(_, data) => { navigation.reset(); setStatus(data.value as typeof status); }}><option value="">Все статусы</option><option value="published">В каталоге</option><option value="hidden">Не опубликованы</option></DmDropdown></div>
       </div>
       <div className={styles.listHeader}><TabList selectedValue={attentionOnly ? "attention" : "all"} onTabSelect={(_, data) => { navigation.reset(); setAttentionOnly(data.value === "attention"); }} aria-label="Актуальность товаров"><Tab value="all">Все товары</Tab><Tab value="attention">Требуют внимания</Tab></TabList><DmButton className={styles.statusToggle} icon={<Filter20Regular />} appearance={status ? "primary" : "secondary"} aria-label="Фильтр публикации" aria-expanded={filterOpen} onClick={() => setFilterOpen(value => !value)} /><div className={styles.updateStatus}><ResourceStatus resource={resource} /></div></div>

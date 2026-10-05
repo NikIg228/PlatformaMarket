@@ -6,7 +6,7 @@ import { PageNavigation, usePageNavigation } from "./page-navigation";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
-import { DmButton, DmField, DmInput, EmptyState, ErrorState, LoadingState, formatStatus } from "@marketplace/ui";
+import { DmSearch, DmButton, DmField, DmInput, EmptyState, ErrorState, LoadingState, formatStatus } from "@marketplace/ui";
 import type { ProductCandidateHistoryResponse } from "@marketplace/schemas";
 import { ProductProposals } from "../../../supplier-web/app/features/supplier-workspace/product-proposals";
 import { ProductCorrectionsPanel } from "../../../supplier-web/app/product-corrections-panel";
@@ -22,7 +22,7 @@ import styles from "./workspace.module.css";
 export const supplierProductLinks = [
   ["/supplier/products/proposals", "Заявки на новые товары"],
   ["/supplier/products/corrections", "Исправления карточек"],
-  ["/supplier/products/inventory", "Партии и резервы"],
+  ["/supplier/products/inventory", "Остатки"],
 ] as const;
 
 function Frame({ title, children }: { title: string; children: React.ReactNode }) {
@@ -58,14 +58,13 @@ function Corrections() {
   const resource = useResource(load, { retainDataOnChange: true });
   if (resource.error && !resource.data) return <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} />;
   if (!resource.data) return <LoadingState label="Загружаем карточки" />;
-  const search = () => { navigation.reset(); setQuery(draft.trim()); };
   return <>{resource.error || resource.loading || resource.offline ? <ResourceStatus resource={resource} /> : null}<ProductCorrectionsPanel hideHeading api={api} supplierId={organizationId} offers={resource.data.items} initialOffer={resource.data.selected ?? undefined} createMode={createMode}
     onModeChange={create => router.replace(`/supplier/products/corrections${create ? "?mode=new" : ""}`)}
-    selectionControls={<><div className={styles.actions}><DmInput aria-label="Поиск карточки" placeholder="Название или артикул" value={draft} onChange={(_, data) => setDraft(data.value)} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); search(); } }} /><DmButton onClick={search}>Найти</DmButton></div><PageNavigation navigation={navigation} nextCursor={resource.data.nextCursor} loading={resource.loading} onRefresh={() => { if (navigation.cursor) navigation.reset(); else void resource.refresh(); }} /></>}
+    selectionControls={<><DmSearch aria-label="Поиск карточки" placeholder="Найти товар" value={draft} onChange={setDraft} onSearch={value => { navigation.reset(); setQuery(value); }} /><PageNavigation navigation={navigation} nextCursor={resource.data.nextCursor} loading={resource.loading} onRefresh={() => { if (navigation.cursor) navigation.reset(); else void resource.refresh(); }} /></>}
   /></>;
 }
 export function InventoryPage() {
-  return <Frame title="Партии и резервы"><PermissionBoundary required={["inventory.view"]}><Inventory /></PermissionBoundary></Frame>;
+  return <Frame title="Остатки"><PermissionBoundary required={["inventory.view"]}><Inventory /></PermissionBoundary></Frame>;
 }
 export function SourcesPage() {
   return <div className={styles.stack}><Link href="/supplier/settings">← Настройки организации</Link><PermissionBoundary required={["import.manage"]}><Sources /></PermissionBoundary></div>;

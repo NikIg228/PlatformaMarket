@@ -1,5 +1,60 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 05.10.2026 — PRODUCT-PAGES-REFINEMENT (LOCAL_PASS; delivery pending)
+
+Owner same primary; canonical main@8955f56. Owner supplied8 screenshots and
+explicit UI corrections, plus discussion-only questions about master cards,
+rich product submissions, flexible import/template and inventory business model.
+Implement UI now: remove workflow roadmaps on supplier product forms; shared
+search for clinic/supplier with consistent desktop width/height, no magnifier,
+Find action inside input appearing for nonempty text; compact search/status/action
+rows for corrections/promotions; promotion search/selection aligned with approved
+reference, retain side preview. Inventory renamed Остатки, hide lots/reservations
+tabs/links and footer pagination/freshness/history; retain access to all balances
+through incremental loading. Do not delete backend reservations/lot safeguards.
+Stock editing routing and richer master/import model discussed before expansion.
+Compare original approved imagegen references with new initial/empty/filled
+states, not only successful fixture flows. Annotation1 explicitly criticizes
+reference mismatch; acknowledge in final with its annotation directive.
+Risk shared search callers, Enter/clear/reset, pending/error/races, cursor loading,
+existing write workflows and responsive layout. Focused UI interactions and
+shared component tests, relevant route1440/390 plus wide1920 empty/initial screens;
+scoped types/lint/canonical web build once at completion. API changes only if
+required for real search contract, schema first and immediate focused tests.
+No working DB writes, broad release suites, agents/worktrees or unrelated redesign.
+Reuse current17620 canonical dev/API4012/web3000; verify process before stop/build.
+Foreign governance/history WIP and legacy next-env retained; max3 attempts/gate.
+DoD UI above + grounded discussion answers, focused PASS, scoped review,
+owned commit/push main, remote SHA and CI snapshot only.
+Implemented common DmSearch (440x44 desktop, responsive, inner Find/clear,
+Enter/IME), all reachable clinic/supplier searches incl catalog/documents.
+Removed roadmaps, compact correction/promotion filters, proposal field hints.
+Inventory cursor append/retry/cancellation replaces pagination; removed ERP
+tabs/links and bottom history controls; inspector links point to balances.
+XLSX template added with example and guide; CSV example; same parser tested.
+Template authored via Spreadsheets artifact tool; export namespace normalized
+for existing ExcelJS compatibility, without changing parser/security policy.
+Evidence .tmp/refine-*: parser1 FAIL export prefix; parser2 PASS13/13.
+Browser initial3/4 PASS, search assertion URL encoding fixed then empty-q
+assertion corrected: search3 PASS1/1 (no application defect). Supplier20/20
+PASS1. Shared5/5 PASS1 docs clinic/supplier, order cancellation, calendar.
+Catalog fixture1 FAIL wrong storefront envelope; fixture2 PASS2/2.
+UI types1 FAIL ref type; types2 PASS. Web types1/2, supplier/buyer/e2e types1
+PASS; final affected source/types remain after tiny busy-state adjustment.
+Final browser4: desktop/manual/back3 PASS; mobile FAIL picker grid min-content
+overflow. Fixed grid minmax(0,1fr); final desktop/mobile2/2 PASS2 and inspected.
+Final web/supplier/e2e types PASS; UI/buyer earlier PASS reusable. Scoped ESLint
+PASS; document relation renamed button selectors separately linted PASS.
+Canonical go_live web build PASS1. Docs/contracts updated; scoped code review,
+diff hygiene and remote fast-forward check PASS. API/DB writes unchanged.
+31 unique browser cases PASS across supplier20, refinement4, shared3, catalog2,
+calendar2. Screenshots output/playwright/product-refinement/final-fixed and
+supplier; retained logs .tmp/refine-*.log. Dev restarted after build.
+Only owned source/tests/template/docs and this section may be staged. Preserve
+preexisting governance, next-env and output files. Commit/push/CI snapshot next.
+Business discussion: proposedSku currently copied to variant+offer on approval;
+separate manufacturer/internal SKU needs future model change, not label fiction.
+
 ## 05.10.2026 — SHARED-FOCUS (LOCAL_PASS)
 
 Owner same primary; canonical main@a009886. User explicitly requests central

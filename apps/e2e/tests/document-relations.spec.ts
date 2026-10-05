@@ -28,13 +28,13 @@ for(const key of ['buyer','supplier'])test(`real ${key} selects readable documen
   if(key==='buyer'){await base.focus();await page.keyboard.press('Home');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');}else await base.selectOption(data.baseId);
   await expect(base).toHaveValue(data.baseId);await expect(submit).toBeEnabled();
   if(key==='buyer') {
-    const group=dialog.getByRole('group',{name:'Связанный заказ',exact:true});await group.getByLabel('Поиск заказа',{exact:true}).fill('nothing-found-aud072');await group.getByRole('button',{name:'Найти: Связанный заказ',exact:true}).click();await expect(group).toContainText('Ничего не найдено');await expect(order).toHaveValue(data.orderId);
+    const group=dialog.getByRole('group',{name:'Связанный заказ',exact:true});await group.getByLabel('Поиск заказа',{exact:true}).fill('nothing-found-aud072');await group.getByRole('button',{name:'Найти',exact:true}).click();await expect(group).toContainText('Ничего не найдено');await expect(order).toHaveValue(data.orderId);
     const contracts=dialog.getByRole('group',{name:'Основной договор',exact:true});
-    await contracts.getByLabel('Поиск договора',{exact:true}).fill('nothing-found-aud072');await contracts.getByRole('button',{name:'Найти: Основной договор',exact:true}).click();await expect(contracts).toContainText('Ничего не найдено');await expect(base).toHaveValue(data.baseId);
+    await contracts.getByLabel('Поиск договора',{exact:true}).fill('nothing-found-aud072');await contracts.getByRole('button',{name:'Найти',exact:true}).click();await expect(contracts).toContainText('Ничего не найдено');await expect(base).toHaveValue(data.baseId);
     // Explicit network simulation; not evidence of a real backend failure.
     await page.route('**/documents/archive?*',route=>route.abort('failed'),{times:1});
-    await contracts.getByLabel('Поиск договора',{exact:true}).fill(data.baseNumber);await contracts.getByRole('button',{name:'Найти: Основной договор',exact:true}).click();await expect(contracts.getByRole('alert')).toContainText('Повторите поиск');await expect(base).toHaveValue(data.baseId);
-    await contracts.getByRole('button',{name:'Найти: Основной договор',exact:true}).click();await expect(contracts.getByRole('alert')).toHaveCount(0);await expect(contracts).toContainText('Найдено: 1');
+    await contracts.getByLabel('Поиск договора',{exact:true}).fill(data.baseNumber);await contracts.getByRole('button',{name:'Найти',exact:true}).click();await expect(contracts.getByRole('alert')).toContainText('Повторите поиск');await expect(base).toHaveValue(data.baseId);
+    await contracts.getByRole('button',{name:'Найти',exact:true}).click();await expect(contracts.getByRole('alert')).toHaveCount(0);await expect(contracts).toContainText('Найдено: 1');
   }
   await base.focus();await page.keyboard.press('Escape');await expect(dialog).toBeHidden();await expect(trigger).toBeFocused();await trigger.click();await expect(base).toHaveValue(data.baseId);await expect(order).toHaveValue(key==='buyer'?data.orderId:'');
   await base.scrollIntoViewIfNeeded();await expect(dialog).toHaveCSS('opacity','1');

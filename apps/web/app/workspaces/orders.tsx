@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import {
   DmButton,
   DmField,
-  DmInput,
+  DmSearch,
   DmSelect,
   EmptyState,
   ErrorState,
@@ -48,13 +48,7 @@ export default function Orders() {
       </header>
       <section className={styles.panel}>
         <form className={styles.toolbar} onSubmit={event => { event.preventDefault(); navigation.reset(); setAppliedQuery(query.trim()); }}>
-          <DmField label="Поиск заказа">
-            <DmInput
-              value={query}
-              onChange={(_, value) => setQuery(value.value)}
-              placeholder="Номер или организация"
-            />
-          </DmField>
+          <DmSearch aria-label="Поиск заказа" placeholder="Найти заказ" value={query} onChange={setQuery} onSearch={value => { navigation.reset(); setAppliedQuery(value); }} />
           <DmField label="Статус">
             <DmSelect
               value={status}
@@ -70,7 +64,7 @@ export default function Orders() {
               )}
             </DmSelect>
           </DmField>
-          <DmButton type="submit">Найти</DmButton>
+
         </form>
         <ResourceStatus resource={resource} />
         {resource.error && !resource.data ? (

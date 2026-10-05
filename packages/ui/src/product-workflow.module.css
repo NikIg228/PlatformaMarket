@@ -106,3 +106,8 @@
   .table td .number, .table .number { text-align: left; }
   .footer { gap: 10px; }
 }
+
+.filterToolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.filterToolbar > :global(.dm-dropdown) { width: 200px !important; flex: 0 0 200px; min-width: 0; }
+.filterToolbar > :global(.dm-button) { margin-left: auto; flex-shrink: 0; }
+@media(max-width: 760px) { .filterToolbar > :global(.dm-dropdown) { width: 100% !important; flex-basis: 100%; } .filterToolbar > :global(.dm-button) { margin-left: 0; } }

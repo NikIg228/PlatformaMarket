@@ -3,7 +3,7 @@
 .suggestions,.cityPanel,.accountPanel{max-height:calc(100dvh - var(--marketplace-header-height,140px) - 24px);overflow-y:auto;overscroll-behavior:contain}
 .inner{max-width:1600px;box-sizing:border-box;min-height:64px;margin:auto;padding:8px 24px;display:grid;grid-template-columns:minmax(160px,1fr) auto auto;align-items:center;gap:24px}
 .logo{display:block;line-height:0;width:144px;max-width:100%}.logo img{width:100%;height:auto;display:block}
-.search{display:flex;gap:8px;position:relative;width:100%;min-width:0;max-width:680px}.input{flex:1;min-width:0;min-height:44px!important}.input input{min-width:0;width:100%}
+.search{display:flex;gap:8px;position:relative;width:100%;min-width:0;max-width:440px}.input{flex:1;min-width:0;min-height:44px!important}.input input{min-width:0;width:100%}
 .search .input{background:var(--dm-surface);color:var(--dm-text-primary);border:1px solid var(--dm-border-control);border-radius:8px}.input input::placeholder{color:var(--dm-text-muted)}.search>button{background:var(--dm-brand-primary);color:var(--dm-surface);border-color:var(--dm-brand-primary);border-radius:8px}.search>button:hover{background:var(--dm-brand-primary-hover)}
 .header button,.header summary,.login{min-height:44px}.header :focus-visible{outline:3px solid var(--dm-brand-primary);outline-offset:3px}
 .search .input:hover,.search .input:focus-within{background:var(--dm-surface);border-color:var(--dm-border-control)}.search .input::after{display:none}

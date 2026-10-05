@@ -2,8 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferOption, OfferOptionsResponse, SupplierWarehouseList, SaveOfferCommercialInput, OfferCommercialState } from "@marketplace/schemas";
-import { DmButton, DmDropdown, DmField, DmInput, ErrorState, LoadingState, ProductThumbnail, StatusTag, WorkflowSteps, errorMessage, formatMoney, productWorkflowStyles as s, usePermissions, useUnsavedChanges } from "@marketplace/ui";
-import { Search20Regular } from "@fluentui/react-icons/svg/search";
+import { DmSearch, DmButton, DmDropdown, DmField, DmInput, ErrorState, LoadingState, ProductThumbnail, StatusTag, errorMessage, formatMoney, productWorkflowStyles as s, usePermissions, useUnsavedChanges } from "@marketplace/ui";
 import { offerPriceMinor, offerQuantity } from "./offer-editor-model";
 
 export function AddOfferWizard({ api, supplierId }: { api: MarketplaceApiClient; supplierId: string }) {
@@ -26,8 +25,8 @@ export function AddOfferWizard({ api, supplierId }: { api: MarketplaceApiClient;
     try { await action(); } catch (cause) { if (alive.current) setError(errorMessage(cause)); }
     finally { lock.current = false; if (alive.current) setBusy(false); }
   };
-  const search = (more = false) => run(async () => {
-    const response = await api.searchOfferOptions({ q: q.trim(), ...(more && options?.nextCursor ? { cursor: options.nextCursor } : {}) });
+  const search = (more = false, query = q) => run(async () => {
+    const response = await api.searchOfferOptions({ q: query.trim(), ...(more && options?.nextCursor ? { cursor: options.nextCursor } : {}) });
     if (alive.current) setOptions(current => ({ ...response, items: more ? [...(current?.items ?? []), ...response.items] : response.items }));
   });
   const select = (item: OfferOption) => run(async () => {
@@ -84,16 +83,13 @@ export function AddOfferWizard({ api, supplierId }: { api: MarketplaceApiClient;
   const locked = busy || unknownSave || unknownCreation;
   return <div className={selected ? s.columns : undefined}>
     <section className={`${s.panel} ${s.form}`}>
-      <WorkflowSteps steps={["Товар", "Вариант", "Условия продажи", "Проверка"]} current={step} label="Этапы добавления" onSelect={!busy && !created.current ? setStep : undefined} />
       {error ? <ErrorState description={error} /> : null}
       {unknownCreation ? <div className={s.notice} role="alert">Ответ о создании не получен. Проверьте список товаров, прежде чем создавать предложение повторно. <a href="/supplier/products">Открыть товары</a></div> : null}
       {unknownSave ? <p className={s.hint} role="status">Ответ не получен. Повтор проверит тот же запрос — условия не будут сохранены дважды.</p> : null}
       {step === 0 ? <>
         <h2>Найдите товар в каталоге</h2>
-        <form className={s.search} onSubmit={event => { event.preventDefault(); void search(); }}>
-          <DmInput aria-label="Товар, артикул или штрихкод" placeholder="Название, артикул или штрихкод" value={q} maxLength={160} contentBefore={<Search20Regular />} onChange={(_, data) => setQ(data.value)} />
-          <DmButton type="submit" appearance="primary" disabled={busy}>Найти</DmButton>
-        </form>
+        <DmSearch aria-label="Товар, артикул или штрихкод" placeholder="Найти товар" value={q} maxLength={160} onChange={setQ} disabled={busy} onSearch={value => void search(false, value)} />
+        <p className={s.hint}>Введите название, артикул производителя или цифры под штрихкодом (GTIN).</p>
         {busy ? <LoadingState label="Ищем товары" /> : null}
         {options?.items.length === 0 ? <div className={s.empty}><h3>Товар не найден</h3><p>Попробуйте другой запрос или подайте заявку на новый товар.</p></div> : null}
         <div className={s.results}>{options?.items.map(item => <div className={s.result} key={item.id}>
