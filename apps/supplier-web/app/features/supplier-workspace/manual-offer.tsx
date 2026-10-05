@@ -3,15 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferOption, OfferOptionsResponse, SupplierWarehouseList } from "@marketplace/schemas";
-import { DmButton, DmField, DmInput, DmSelect, ErrorState, Section, errorMessage, usePermissions } from "@marketplace/ui";
+import { DmButton, DmField, DmInput, DmDropdown as DmSelect, ErrorState, Section, errorMessage, usePermissions } from "@marketplace/ui";
 import { offerQuantity } from "./offer-editor-model";
 import type { Offer } from "./types";
 import { OfferDelivery } from "./offer-delivery";
 import { OfferCommercialEditor } from "./offer-commercial-editor";
+import formStyles from "./product-forms.module.css";
 
-export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiallyOpen = false, initialProposal }: {
+export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiallyOpen = false, initialProposal, hideHeading = false }: {
   api: MarketplaceApiClient; supplierId: string; onChanged: () => Promise<void>; initialOffer?: Offer; initiallyOpen?: boolean;
-  initialProposal?: { proposedName: string; proposedSku: string | null; proposedBrand: string | null; proposedGtin: string | null };
+  initialProposal?: { proposedName: string; proposedSku: string | null; proposedBrand: string | null; proposedGtin: string | null; description?: string | null };
+  hideHeading?: boolean;
 }) {
   const has = usePermissions();
   const [open, setOpen] = useState(initiallyOpen);
@@ -28,7 +30,7 @@ export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiall
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [packAssigned, setPackAssigned] = useState(false);
   const [proposal, setProposal] = useState(Boolean(initialProposal));
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(initialProposal?.description ?? "");
   const [brand, setBrand] = useState(initialProposal?.proposedBrand ?? "");
   const [gtin, setGtin] = useState(initialProposal?.proposedGtin ?? "");
   const [busy, setBusy] = useState(false);
@@ -108,7 +110,8 @@ export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiall
     setProposal(false);
     await onChanged();
   });
-  return <Section title={initialOffer ? "Редактировать предложение" : "Добавить товар"} description={initialOffer ? "Изменения цены и выбранного остатка сохраняются вместе." : "Выберите существующую мастер-карточку или отправьте заявку на новый товар."}>
+  return <Section className={formStyles.panel} title={hideHeading ? undefined : initialOffer ? "Редактировать предложение" : "Добавить товар"}>
+    {!initialOffer && !initialProposal ? <ol className={formStyles.steps} aria-label="Этапы добавления"><li aria-current={!selected ? "step" : undefined}>1. Товар</li><li aria-current={selected && !createdId ? "step" : undefined}>2. Упаковка</li><li aria-current={createdId ? "step" : undefined}>3. Условия и публикация</li></ol> : null}
     {!open ? <DmButton appearance="primary" onClick={() => setOpen(true)}>Добавить предложение вручную</DmButton> : <div className="mp-stack">
       {error ? <ErrorState description={error} /> : null}
       {notice ? <p role="status">{notice}</p> : null}
@@ -127,7 +130,8 @@ export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiall
         {result?.nextCursor ? <DmButton disabled={busy} onClick={() => void search(true)}>Показать ещё варианты</DmButton> : null}
         <DmButton disabled={busy} onClick={() => setProposal(!proposal)}>Нет нужного товара — заявка модератору</DmButton>
         {proposal ? <form onSubmit={event => { event.preventDefault(); void submit(); }} className="mp-stack">
-          <p>Название берётся из поля поиска. Модератор проверит дубли и характеристики.</p>
+          <DmField label="Название нового товара" required><DmInput value={query} maxLength={160} disabled={busy} onChange={(_, data) => setQuery(data.value)} /></DmField>
+          <DmField label="Артикул нового товара"><DmInput value={sku} maxLength={120} disabled={busy} onChange={(_, data) => setSku(data.value)} /></DmField>
           <DmField label="Бренд"><DmInput value={brand} maxLength={160} disabled={busy} onChange={(_, data) => setBrand(data.value)} /></DmField>
           <DmField label="Штрихкод нового товара"><DmInput value={gtin} maxLength={14} disabled={busy} onChange={(_, data) => setGtin(data.value)} /></DmField>
           <DmField label="Описание, упаковка и ссылка на материалы"><DmInput value={description} maxLength={2000} disabled={busy} onChange={(_, data) => setDescription(data.value)} /></DmField>

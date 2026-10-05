@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useCallback, useState } from "react";
-import { DmButton, DmField, DmInput, EmptyState, ErrorState, LoadingState, errorMessage, formatDate, formatStatus } from "@marketplace/ui";
+import { DmButton, DmDropdown, DmField, DmInput, DmTable, EmptyState, ErrorState, LoadingState, errorMessage, formatDate, formatStatus, usePermissions } from "@marketplace/ui";
+import { Tab, TabList } from "@fluentui/react-components";
 import type { WorkspaceInventoryPage } from "@marketplace/schemas";
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
@@ -11,33 +12,36 @@ import { PageNavigation, usePageNavigation } from "./page-navigation";
 import styles from "./workspace.module.css";
 
 export function Inventory() {
-  const { api } = useWorkspace();
+  const { api, organizationId } = useWorkspace();
   const navigation = usePageNavigation();
   const [draft, setDraft] = useState(""), [q, setQuery] = useState("");
-  const load = useCallback((signal: AbortSignal) => api.workspaceInventory({ cursor: navigation.cursor, q, limit: 25 }, { signal }), [api, navigation.cursor, q]);
+  const [tab, setTab] = useState("balances"), [warehouseId, setWarehouseId] = useState("");
+  const loadWarehouses = useCallback(() => api.listSupplierWarehouses(organizationId), [api, organizationId]);
+  const warehouses = useResource(loadWarehouses);
+  const load = useCallback((signal: AbortSignal) => api.workspaceInventory({ cursor: navigation.cursor, q, limit: 25, warehouseId: warehouseId || undefined }, { signal }), [api, navigation.cursor, q, warehouseId]);
   const resource = useResource(load);
   return <section className={styles.panel}>
-    <p>Остатки меняются в редакторе предложения с проверкой версии. Активные резервы учитываются автоматически.</p>
-    <form className={styles.actions} onSubmit={event => { event.preventDefault(); navigation.reset(); setQuery(draft.trim()); }}>
-      <DmField label="Товар или склад"><DmInput value={draft} onChange={(_, data) => setDraft(data.value)} /></DmField><DmButton type="submit">Найти</DmButton>
+    <TabList aria-label="Учёт запасов" selectedValue={tab} onTabSelect={(_, data) => setTab(String(data.value))}><Tab value="balances">Остатки</Tab><Tab value="lots">Партии</Tab><Tab value="reservations">Резервы</Tab></TabList>
+    <form className={styles.toolbar} onSubmit={event => { event.preventDefault(); navigation.reset(); setQuery(draft.trim()); }}>
+      <DmField label="Поиск товара"><DmInput value={draft} onChange={(_, data) => setDraft(data.value)} /></DmField>
+      <DmField label="Склад"><DmDropdown value={warehouseId} disabled={warehouses.initialLoading} onChange={(_, data) => { navigation.reset(); setWarehouseId(data.value); }}><option value="">Все склады</option>{warehouses.data?.map(warehouse => <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>)}</DmDropdown></DmField><DmButton type="submit">Найти</DmButton>
     </form>
-    <DmButton disabled={resource.loading} onClick={() => void resource.refresh()}>Обновить остатки</DmButton>
-    <PermissionBoundary required={["inventory.freshness.manage"]}><RecomputeInventory onChanged={resource.refreshAfterWrite} /></PermissionBoundary>
-    <p>Срок первичного резерва может быть продлён заявленной оплатой. Статус оплаты показан в заказе.</p>
+    {warehouses.error ? <ErrorState description={warehouses.error} action={<DmButton onClick={() => void warehouses.refresh()}>Повторить загрузку складов</DmButton>} /> : null}
+    {tab === "reservations" ? <p>Показаны активные резервы. Подробности оплаты — в связанном заказе.</p> : null}
     <ResourceStatus resource={resource} />
     {resource.error && !resource.data ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : !resource.data ? <LoadingState label="Загружаем остатки" /> : !resource.data.items.length ? <EmptyState title="Остатки не найдены" description="Измените поиск или добавьте остаток по складу в предложении." /> :
-      <div className={styles.scroll}><table className={styles.table}><caption>Остатки, партии и активные резервы</caption><thead><tr><th>Товар и склад</th><th>На складе / доступно / резерв</th><th>Партии</th><th>Резервы</th></tr></thead><tbody>{resource.data.items.map(balance => <InventoryRow key={balance.id} balance={balance} />)}</tbody></table></div>}
+      <DmTable caption={tab === "balances" ? "Остатки по складам" : tab === "lots" ? "Партии по складам" : "Активные резервы"} columns={[{ key: "product", label: "Товар и склад" }, { key: "data", label: tab === "balances" ? "Остаток" : tab === "lots" ? "Партии" : "Резервы" }]}>{resource.data.items.map(balance => <InventoryRow key={`${tab}:${balance.id}`} balance={balance} tab={tab} />)}</DmTable>}
     <PageNavigation navigation={navigation} nextCursor={resource.data?.nextCursor} loading={resource.loading} onRefresh={() => { if (navigation.cursor) navigation.reset(); else void resource.refresh(); }} />
-    <Overrides />
+    {tab === "balances" ? <details><summary>Актуальность и история корректировок</summary><PermissionBoundary required={["inventory.freshness.manage"]}><RecomputeInventory onChanged={resource.refreshAfterWrite} /></PermissionBoundary><Overrides /></details> : null}
   </section>;
 }
-function InventoryRow({ balance }: { balance: WorkspaceInventoryPage["items"][number] }) {
+function InventoryRow({ balance, tab }: { balance: WorkspaceInventoryPage["items"][number]; tab: string }) {
   const [lotsOpen, setLotsOpen] = useState(false), [reservationsOpen, setReservationsOpen] = useState(false);
   return <tr>
-    <td>{balance.productVariant.product.canonicalName}<small>{balance.warehouse.name}</small>{balance.offerId ? <Link href={`/supplier/products?offer=${balance.offerId}`}>Редактировать предложение</Link> : null}</td>
-    <td>{balance.quantityOnHand} / {balance.quantityAvailable} / {balance.quantityReserved}<small>Страховой запас: {balance.safetyStock}</small><small>{formatStatus(balance.freshnessStatus)} · обновлено {formatDate(balance.updatedAt, true)}</small></td>
-    <td><DmButton aria-expanded={lotsOpen} onClick={() => setLotsOpen(value => !value)}>{lotsOpen ? "Скрыть партии" : "Показать партии"}</DmButton>{lotsOpen ? <Lots balanceId={balance.id} /> : null}</td>
-    <td><DmButton aria-expanded={reservationsOpen} onClick={() => setReservationsOpen(value => !value)}>{reservationsOpen ? "Скрыть резервы" : "Показать резервы"}</DmButton>{reservationsOpen ? <Reservations balanceId={balance.id} /> : null}</td>
+    <td data-label="Товар и склад"><div><strong>{balance.productVariant.product.canonicalName}</strong><p>{balance.warehouse.name}</p>{balance.offerId ? <Link href={`/supplier/products?offer=${balance.offerId}`}>Открыть предложение</Link> : null}</div></td>
+    {tab === "balances" ? <td data-label="Остаток"><div><strong>Доступно: {balance.quantityAvailable}</strong><p>На складе: {balance.quantityOnHand} · в резерве: {balance.quantityReserved}</p><small>Страховой запас: {balance.safetyStock}<br />{formatStatus(balance.freshnessStatus)} · {formatDate(balance.updatedAt, true)}</small></div></td> : tab === "lots" ?
+    <td data-label="Партии"><div><DmButton aria-expanded={lotsOpen} onClick={() => setLotsOpen(value => !value)}>{lotsOpen ? "Скрыть партии" : "Показать партии"}</DmButton>{lotsOpen ? <Lots balanceId={balance.id} /> : null}</div></td> :
+    <td data-label="Резервы"><div><DmButton aria-expanded={reservationsOpen} onClick={() => setReservationsOpen(value => !value)}>{reservationsOpen ? "Скрыть резервы" : "Показать резервы"}</DmButton>{reservationsOpen ? <Reservations balanceId={balance.id} /> : null}</div></td>}
   </tr>;
 }
 function Lots({ balanceId }: { balanceId: string }) {
@@ -54,12 +58,13 @@ function Lots({ balanceId }: { balanceId: string }) {
 }
 function Reservations({ balanceId }: { balanceId: string }) {
   const { api } = useWorkspace(), navigation = usePageNavigation();
+  const has = usePermissions();
   const load = useCallback((signal: AbortSignal) => api.workspaceReservations(balanceId, { cursor: navigation.cursor, limit: 25 }, { signal }), [api, balanceId, navigation.cursor]);
   const resource = useResource(load);
   return <><ResourceStatus resource={resource} />
     {!resource.data && !resource.error ? <LoadingState label="Загружаем резервы" /> : null}
     {resource.error ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить загрузку резервов</DmButton>} /> : null}
-    {resource.data?.items.map(reservation => <p key={reservation.id}>{reservation.quantity} · срок {formatDate(reservation.expiresAt, true)}</p>)}
+    {resource.data?.items.map(reservation => <div key={reservation.id}><p>Количество: {reservation.quantity} · срок {formatDate(reservation.expiresAt, true)}</p>{reservation.order ? has("order.confirm") ? <Link href={`/supplier/orders/${reservation.order.id}`}>Заказ {reservation.order.orderNumber}</Link> : <p>Заказ {reservation.order.orderNumber}</p> : <p>Без связанного заказа</p>}</div>)}
     {resource.data && !resource.data.items.length ? <p>Активных резервов нет.</p> : null}
     <PageNavigation navigation={navigation} nextCursor={resource.data?.nextCursor} loading={resource.loading} onRefresh={() => { if (navigation.cursor) navigation.reset(); else void resource.refresh(); }} />
   </>;

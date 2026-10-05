@@ -173,10 +173,10 @@ export class ModerationService {
     if (query.cursor && !anchor) throw new NotFoundException("Product proposal cursor not found");
     const rows = await this.prisma.productCandidate.findMany({
       where: { ...where, ...(anchor ? { OR: [{ createdAt: { lt: anchor.createdAt } }, { createdAt: anchor.createdAt, id: { lt: anchor.id } }] } : {}) },
-      select: { id: true, proposedName: true, proposedSku: true, proposedGtin: true, proposedBrand: true, status: true, rejectionReason: true, approvedProductId: true, approvedVariantId: true, createdAt: true, decidedAt: true },
+      select: { id: true, proposedName: true, proposedSku: true, proposedGtin: true, proposedBrand: true, status: true, rejectionReason: true, approvedProductId: true, approvedVariantId: true, createdAt: true, decidedAt: true, externalItem: { select: { rawData: true } } },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: query.limit + 1,
     });
-    const items = rows.slice(0, query.limit);
+    const items = rows.slice(0, query.limit).map(({ externalItem, ...candidate }) => ({ ...candidate, description: stringValue(record(externalItem.rawData)?.description) }));
     return { items, nextCursor: rows.length > query.limit ? items.at(-1)!.id : null };
   }
 

@@ -1,0 +1,12 @@
+.form { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(240px, 1fr); gap: 24px; align-items: start; }
+.section { padding: 20px; }
+.section > header { margin: -20px -20px 20px; }
+.section p { margin: 0; }
+.section :global(.mp-stack) { gap: 12px; }
+.fields { display: grid; gap: 16px; min-width: 0; }
+.preview { padding: 20px; border-radius: 12px; border: 1px solid var(--dm-border); background: var(--dm-surface-subtle); overflow-wrap: anywhere; }
+.preview h3 { margin: 0 0 16px; font-size: 16px; }
+.preview strong { font-size: 22px; }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; }
+@media(max-width: 800px) { .form { grid-template-columns: 1fr; } }
+@media(max-width: 600px) { .section { padding: 16px; } .section > header { margin: -16px -16px 16px; } }

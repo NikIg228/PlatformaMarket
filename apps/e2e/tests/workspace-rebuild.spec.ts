@@ -81,7 +81,7 @@ test("A14 mobile menu closes on immediate Escape after Enter or Space", async ({
   await expect(navigation).toBeHidden(); await expect(toggle).toBeFocused();
 });
 
-for (const width of [1440, 390]) test(`A13 offer information distinguishes expired price, packaging and reserved stock ${width}`, async ({ page }) => {
+for (const width of [1440, 390]) test(`A13 offer information distinguishes expired price, packaging and reserved stock ${width}`, async ({ page }, testInfo) => {
   await fixture(page, "SUPPLIER"); await page.setViewportSize({ width, height: 950 });
   const offer = { id: "offer-a", status: "ACTIVE", sourceType: "MANUAL", supplierSku: "A13", productVariant: { product: { canonicalName: "Упаковка 10 штук" } },
     saleUnit: { nameRu: "упаковка", symbol: "уп." }, packaging: { name: "10 штук", quantityInBaseUnit: "10", unit: { symbol: "шт." } },
@@ -93,16 +93,21 @@ for (const width of [1440, 390]) test(`A13 offer information distinguishes expir
   await page.goto("/supplier/products");
   const row = page.getByRole("row").filter({ hasText: "Упаковка 10 штук" });
   await expect(row).toContainText(/90\s071\s992\s547\s409[,.]93/);
-  await expect(row).toContainText("за уп."); await expect(row).toContainText("10 базовых ед.");
-  await expect(row).toContainText("Минимум: 2; шаг: 2"); await expect(row).toContainText("доступно 0; в резерве 3");
-  await expect(row).toContainText("Основной склад (уп.):");
-  await expect(row.getByText(/Срок подтверждения истёк/)).toHaveCount(2);
-  await expect(row).toContainText("Источник цены: ручной ввод"); await expect(row).toContainText("Источник остатка: импорт");
-  const unknown = page.getByRole("row").filter({ hasText: "Поштучный товар" });
+  await expect(row).toContainText("Подтвердите цену"); await expect(row).toContainText("Обновите остаток");
+  await row.getByRole("button", { name: "Упаковка 10 штук", exact: true }).click();
+  const detail = page.getByRole("dialog");
+  await expect(detail).toContainText("за уп."); await expect(detail).toContainText("10 базовых ед.");
+  await expect(detail).toContainText("Минимум: 2; шаг: 2"); await expect(detail).toContainText("доступно 0; в резерве 3");
+  await expect(detail).toContainText("Основной склад (уп.):");
+  await expect(detail.getByText(/Срок подтверждения истёк/)).toHaveCount(2);
+  await expect(detail).toContainText("Источник цены: ручной ввод"); await expect(detail).toContainText("Источник остатка: импорт");
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Поштучный товар", exact: true }).click();
+  const unknown = page.getByRole("dialog");
   await expect(unknown).toContainText("В единице продажи: 1 базовых ед.");
   await expect(unknown).toContainText("Срок подтверждения не указан"); await expect(unknown).toContainText("Подтверждено: не указано");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.screenshot({ path: `../../outputs/workspace-audit-a13-${width}.png`, fullPage: true });
+  await page.screenshot({ path: testInfo.outputPath(`workspace-audit-a13-${width}.png`), fullPage: true });
 });
 
 test("A15 order PDF boundaries and retry preserve the file and workflow identity", async ({ page }) => {

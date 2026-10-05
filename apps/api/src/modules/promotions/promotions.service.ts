@@ -129,7 +129,16 @@ export class PromotionsService {
   async list(query: PromotionListQuery, context: SupplierActorContext) {
     const operator = await this.operator(context);
     if (!operator && query.supplierOrganizationId && query.supplierOrganizationId !== context.organizationId) throw new NotFoundException("Акции не найдены");
-    const where: Prisma.PromotionWhereInput = { offerId: { not: null }, supplierOrganizationId: operator ? query.supplierOrganizationId : context.organizationId,
+    const now = new Date();
+    const ended: Prisma.PromotionWhereInput = { OR: [{ status: { in: ["ARCHIVED", "EXPIRED"] } }, { endsAt: { lte: now } }, { claimedQuantity: { gte: this.prisma.promotion.fields.quantityLimit } }] };
+    const phase: Prisma.PromotionWhereInput = query.phase === "ENDED" ? ended : query.phase ? {
+      AND: [
+        { status: "ACTIVE", moderationStatus: "APPROVED", approvedRevision: { equals: this.prisma.promotion.fields.termsRevision } },
+        { endsAt: { gt: now }, OR: [{ quantityLimit: null }, { claimedQuantity: { lt: this.prisma.promotion.fields.quantityLimit } }] },
+        { startsAt: query.phase === "SCHEDULED" ? { gt: now } : { lte: now } },
+      ],
+    } : {};
+    const where: Prisma.PromotionWhereInput = { ...phase, offerId: { not: null }, supplierOrganizationId: operator ? query.supplierOrganizationId : context.organizationId,
       ...(query.kind ? { kind: query.kind } : {}), ...(query.moderationStatus ? { moderationStatus: query.moderationStatus } : {}),
       ...(query.q ? { name: { contains: query.q, mode: "insensitive" } } : {}) };
     const [items, total] = await Promise.all([this.prisma.promotion.findMany({ where, orderBy: [{ createdAt: "desc" }, { id: "asc" }], take: query.limit, skip: query.offset }), this.prisma.promotion.count({ where })]);

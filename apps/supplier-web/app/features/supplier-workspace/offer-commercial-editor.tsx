@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferCommercialState, SaveOfferCommercialInput, SupplierWarehouseList } from "@marketplace/schemas";
-import { DmButton, DmField, DmInput, DmSelect, ErrorState, errorMessage, formatMoney, usePermissions } from "@marketplace/ui";
+import { DmButton, DmField, DmInput, DmDropdown as DmSelect, ErrorState, errorMessage, formatMoney, usePermissions } from "@marketplace/ui";
 import { offerPriceMinor, offerPriceText, offerQuantity } from "./offer-editor-model";
 
 type Draft = { stock: string; baseline: OfferCommercialState["balance"] };
@@ -140,7 +140,7 @@ export function OfferCommercialEditor({ api, supplierId, offerId, warehouses, in
     </section> : null}
     {!has("pricing.manage", "inventory.adjust") ? <p role="status">Для сохранения цены и остатка нужны права на обе операции. Ввод сохранён.</p> : null}
     <DmButton type="submit" appearance="primary" disabled={busy || !selectedDraft || Boolean(conflict) || !has("pricing.manage", "inventory.adjust")}>{busy ? "Сохраняем…" : unknownOutcome ? "Повторить сохранение" : "Сохранить условия"}</DmButton>
-    {saved && !publication?.visible ? <><DmButton type="button" disabled={busy || !has("catalog.offer.publish")} onClick={() => void publish()}>Опубликовать предложение</DmButton>{!has("catalog.offer.publish") ? <p>Публикация недоступна вашей роли.</p> : null}</> : null}
+    {saved && !publication?.visible ? <section aria-label="Проверка перед публикацией"><h3>Проверьте перед публикацией</h3><p>{formatMoney(String(offerPriceMinor(price)), "KZT")} за упаковку · остаток {selectedDraft?.stock} · {activeWarehouses.find(item => item.id === warehouseId)?.name}</p><DmButton type="button" disabled={busy || !has("catalog.offer.publish")} onClick={() => void publish()}>Опубликовать предложение</DmButton>{!has("catalog.offer.publish") ? <p>Публикация недоступна вашей роли.</p> : null}</section> : null}
     <p>Цена и остаток сохраняются вместе. Публикация — отдельное действие с проверкой договора и допуска поставщика.</p>
   </form>;
 }

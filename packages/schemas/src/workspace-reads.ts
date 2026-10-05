@@ -8,6 +8,10 @@ export const workspacePageQuerySchema = z.object({
 });
 export const workspaceOrderStatusSchema = z.enum(["DRAFT", "AWAITING_CONFIRMATION", "CONFIRMED", "PARTIALLY_CONFIRMED", "RESERVED", "AWAITING_PAYMENT", "PAID", "ASSEMBLING", "READY_TO_SHIP", "SHIPPED", "IN_TRANSIT", "DELIVERED", "PARTIALLY_FULFILLED", "RETURN_DISPUTE", "REJECTED", "CANCELLED"]);
 export const workspaceOrderQuerySchema = workspacePageQuerySchema.extend({ status: workspaceOrderStatusSchema.optional() });
+export const workspaceOfferQuerySchema = workspacePageQuerySchema.extend({
+  publication: z.enum(["published", "hidden"]).optional(), attention: z.enum(["required"]).optional(),
+});
+export const workspaceInventoryQuerySchema = workspacePageQuerySchema.extend({ warehouseId: z.uuid().optional() });
 const page = <T extends z.ZodType>(item: T) => z.object({ items: z.array(item), nextCursor: z.string().nullable() });
 const decimal = z.string().regex(/^-?\d+(?:\.\d+)?$/);
 const date = z.iso.datetime();
@@ -33,6 +37,8 @@ export const workspaceOfferPageSchema = page(workspaceOfferSchema);
 export const workspaceCartPageSchema = z.object({ current: cartResponseSchema.nullable(), ...page(cartResponseSchema).shape });
 export const workspaceSummarySchema = z.object({ orders: z.number().int().nonnegative(), offers: z.number().int().nonnegative(), publishedOffers: z.number().int().nonnegative() });
 export type WorkspacePageQuery = z.input<typeof workspacePageQuerySchema>;
+export type WorkspaceOfferQuery = z.input<typeof workspaceOfferQuerySchema>;
+export type WorkspaceInventoryQuery = z.input<typeof workspaceInventoryQuerySchema>;
 export type WorkspaceOrderQuery = z.input<typeof workspaceOrderQuerySchema>;
 export type WorkspaceOrderPage = z.infer<typeof workspaceOrderPageSchema>;
 export type WorkspaceOffer = z.infer<typeof workspaceOfferSchema>;
@@ -45,7 +51,7 @@ export const workspaceCorrectionOfferSchema = workspaceOfferSchema.pick({ id: tr
 export const workspaceCorrectionOfferPageSchema = page(workspaceCorrectionOfferSchema);
 export const workspaceInventorySchema = z.object({
   id: z.uuid(), offerId: z.uuid().nullable(), createdAt: date, updatedAt: date,
-  warehouse: z.object({ name: z.string() }),
+  warehouse: z.object({ id: z.uuid(), name: z.string() }),
   productVariant: z.object({ product: z.object({ canonicalName: z.string() }) }),
   quantityOnHand: decimal, quantityAvailable: decimal, quantityReserved: decimal,
   safetyStock: decimal, freshnessStatus: z.string(),
@@ -57,6 +63,7 @@ export const workspaceLotPageSchema = page(z.object({
 }));
 export const workspaceReservationPageSchema = page(z.object({
   id: z.uuid(), createdAt: date, quantity: decimal, expiresAt: date,
+  order: z.object({ id: z.uuid(), orderNumber: z.string() }).nullable(),
 }));
 export const workspaceOverridePageSchema = page(z.object({
   id: z.uuid(), createdAt: date, reason: z.string(), status: z.string(), validUntil: date.nullable(),

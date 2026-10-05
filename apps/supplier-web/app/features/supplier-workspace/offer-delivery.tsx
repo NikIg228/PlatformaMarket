@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferDeliveryOptionResponse, SupplierWarehouseList } from "@marketplace/schemas";
-import { DmButton, DmCheckbox, DmField, DmInput, DmSelect, ErrorState, Section, errorMessage, formatStatus, PermissionFields } from "@marketplace/ui";
+import { DmButton, DmCheckbox, DmField, DmInput, DmDropdown as DmSelect, ErrorState, Section, errorMessage, formatStatus, PermissionFields } from "@marketplace/ui";
 import { offerPriceMinor, offerPriceText } from "./offer-editor-model";
 
 const methods = { PICKUP: "Самовывоз", SUPPLIER_CITY: "Доставка поставщиком по городу", NATIONWIDE: "По Казахстану", CARRIER: "Транспортная компания", SPECIAL: "Специальная доставка" } as const;

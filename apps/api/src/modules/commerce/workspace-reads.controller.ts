@@ -1,7 +1,7 @@
 import { SupplierAuxiliaryReadsService } from "./supplier-auxiliary-reads.service";
 import { BadRequestException, Controller, Get, Headers, Param, ParseUUIDPipe, Query, UseGuards } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { workspaceOrderQuerySchema, workspacePageQuerySchema } from "@marketplace/schemas";
+import { workspaceOrderQuerySchema, workspacePageQuerySchema, workspaceOfferQuerySchema, workspaceInventoryQuerySchema } from "@marketplace/schemas";
 import { z } from "zod";
 import { PermissionsGuard } from "../access-control/permissions.guard";
 import { RequirePermissions } from "../access-control/require-permissions.decorator";
@@ -32,9 +32,9 @@ export class WorkspaceReadsController {
   supplierOrders(@Headers("x-organization-id") id: string, @Query() query: unknown) { return this.reads.orders(id, "supplier", parse(workspaceOrderQuerySchema, query)); }
   @Get("supplier/offers")
   @RequirePermissions("catalog.product.view")
-  @ApiCoreQuery("WorkspacePageQuery")
+  @ApiCoreQuery("WorkspaceOfferQuery")
   @ApiCoreResponse("WorkspaceOfferPage")
-  offers(@Headers("x-organization-id") id: string, @Query() query: unknown) { return this.reads.offers(id, parse(workspacePageQuerySchema, query)); }
+  offers(@Headers("x-organization-id") id: string, @Query() query: unknown) { return this.reads.offers(id, parse(workspaceOfferQuerySchema, query)); }
   @Get("supplier/offers/:offerId")
   @RequirePermissions("catalog.product.view")
   @ApiUuidParam("offerId")
@@ -57,9 +57,9 @@ export class WorkspaceReadsController {
   correctionOffers(@Headers("x-organization-id") id: string, @Query() query: unknown) { return this.auxiliary.correctionOffers(id, parse(workspacePageQuerySchema, query)); }
   @Get("supplier/inventory")
   @RequirePermissions("inventory.view")
-  @ApiCoreQuery("WorkspacePageQuery")
+  @ApiCoreQuery("WorkspaceInventoryQuery")
   @ApiCoreResponse("WorkspaceInventoryPage")
-  inventory(@Headers("x-organization-id") id: string, @Query() query: unknown) { return this.auxiliary.inventory(id, parse(workspacePageQuerySchema, query)); }
+  inventory(@Headers("x-organization-id") id: string, @Query() query: unknown) { return this.auxiliary.inventory(id, parse(workspaceInventoryQuerySchema, query)); }
   @Get("supplier/inventory/:balanceId/lots")
   @RequirePermissions("inventory.view")
   @ApiCoreQuery("WorkspacePageQuery")

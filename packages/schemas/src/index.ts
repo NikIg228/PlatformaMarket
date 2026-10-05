@@ -933,6 +933,7 @@ export const offerDeliveryOptionResponseSchema = z.object({
 export const productCandidateHistoryQuerySchema = z.object({ cursor: z.uuid().optional(), limit: z.coerce.number().int().min(1).max(50).default(20) });
 export const productCandidateSummarySchema = z.object({
   id: z.uuid(), proposedName: z.string(), proposedSku: z.string().nullable(),
+  description: z.string().nullable().optional(),
   proposedGtin: z.string().nullable(), proposedBrand: z.string().nullable(),
   status: z.enum(["PENDING", "APPROVED", "REJECTED"]), rejectionReason: z.string().nullable(),
   approvedProductId: z.uuid().nullable(), approvedVariantId: z.uuid().nullable(),

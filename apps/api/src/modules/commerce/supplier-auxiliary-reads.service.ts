@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
-import { workspacePageQuerySchema } from "@marketplace/schemas";
+import { workspacePageQuerySchema, workspaceInventoryQuerySchema } from "@marketplace/schemas";
 import { z } from "zod";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import { workspaceOrderBy, workspacePage } from "./workspace-page";
@@ -36,17 +36,18 @@ export class SupplierAuxiliaryReadsService {
     });
     return page.finish(rows, query.limit);
   }
-  async inventory(organizationId: string, query: Query) {
+  async inventory(organizationId: string, query: z.output<typeof workspaceInventoryQuerySchema>) {
     await this.authorize(organizationId);
-    const page = workspacePage([organizationId, "inventory", query.q, query.limit], query.cursor);
+    const page = workspacePage([organizationId, "inventory", query.q, query.limit, query.warehouseId], query.cursor);
     const where: Prisma.InventoryBalanceWhereInput = { ...page.where, supplierOrganizationId: organizationId,
+      ...(query.warehouseId ? { warehouseId: query.warehouseId } : {}),
       ...(query.q ? { OR: [
         { warehouse: { name: { contains: query.q, mode: "insensitive" } } },
         { productVariant: { product: { canonicalName: { contains: query.q, mode: "insensitive" } } } },
       ] } : {}) };
     const rows = await this.db.inventoryBalance.findMany({ where,
       select: { id: true, offerId: true, createdAt: true, updatedAt: true,
-        warehouse: { select: { name: true } }, productVariant: { select: { product: { select: { canonicalName: true } } } },
+        warehouse: { select: { id: true, name: true } }, productVariant: { select: { product: { select: { canonicalName: true } } } },
         quantityOnHand: true, quantityAvailable: true, quantityReserved: true, safetyStock: true, freshnessStatus: true },
       orderBy: [...workspaceOrderBy], take: query.limit + 1,
     });
@@ -68,10 +69,15 @@ export class SupplierAuxiliaryReadsService {
     const page = workspacePage([organizationId, balanceId, "reservations", query.q, query.limit], query.cursor);
     const rows = await this.db.inventoryReservation.findMany({
       where: { ...page.where, supplierOrganizationId: organizationId, inventoryBalanceId: balanceId, status: "ACTIVE" },
-      select: { id: true, createdAt: true, quantity: true, expiresAt: true },
+      select: { id: true, createdAt: true, quantity: true, expiresAt: true,
+        supplierOrderItem: { select: { supplierOrder: { select: { id: true, orderNumber: true, supplierOrganizationId: true } } } } },
       orderBy: [...workspaceOrderBy], take: query.limit + 1,
     });
-    return page.finish(rows, query.limit);
+    const result = page.finish(rows, query.limit);
+    return { ...result, items: result.items.map(({ supplierOrderItem, ...row }) => {
+      const order = supplierOrderItem?.supplierOrder;
+      return { ...row, order: order?.supplierOrganizationId === organizationId ? { id: order.id, orderNumber: order.orderNumber } : null };
+    }) };
   }
   async overrides(organizationId: string, query: Query) {
     await this.authorize(organizationId);

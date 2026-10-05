@@ -16,6 +16,23 @@ function fixture() {
   return { db, reads: new SupplierAuxiliaryReadsService(db as unknown as PrismaService) };
 }
 describe("bounded supplier auxiliary reads", () => {
+  it("filters the warehouse before paging and binds the cursor to it", async () => {
+    const { db, reads } = fixture();
+    const result = await reads.inventory("tenant-a", { ...query, warehouseId: "warehouse-a" });
+    expect(db.inventoryBalance.findMany.mock.calls[0][0]).toMatchObject({ where: { supplierOrganizationId: "tenant-a", warehouseId: "warehouse-a" }, select: { warehouse: { select: { id: true, name: true } } } });
+    await expect(reads.inventory("tenant-a", { ...query, warehouseId: "warehouse-b", cursor: result.nextCursor! })).rejects.toThrow("Cursor");
+  });
+  it("returns only the own order reference and keeps unlinked reservations", async () => {
+    const { db, reads } = fixture();
+    db.inventoryReservation.findMany.mockResolvedValue([
+      { ...rows[0], supplierOrderItem: { supplierOrder: { id: "own", orderNumber: "ORD-1", supplierOrganizationId: "tenant-a" } } },
+      { ...rows[1], supplierOrderItem: { supplierOrder: { id: "foreign", orderNumber: "SECRET", supplierOrganizationId: "tenant-b" } } },
+      { ...rows[0], supplierOrderItem: null },
+    ]);
+    const result = await reads.reservations("tenant-a", "balance-a", { q: "", limit: 10 });
+    expect(result.items.map(item => item.order)).toEqual([{ id: "own", orderNumber: "ORD-1" }, null, null]);
+    expect(JSON.stringify(result)).not.toContain("SECRET");
+  });
   it("caps each database read and keeps summary graphs free of nested lists", async () => {
     const { db, reads } = fixture();
     for (const [operation, model] of [["correctionOffers", "supplierOffer"], ["inventory", "inventoryBalance"], ["overrides", "dataOverride"]] as const) {

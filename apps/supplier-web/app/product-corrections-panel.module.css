@@ -1,4 +1,6 @@
 .layout { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(340px, .95fr); gap: 0; padding: 24px; }
+.currentValue { padding: 12px; background: var(--dm-surface-subtle); border: 1px solid var(--dm-border); border-radius: 8px; overflow-wrap: anywhere; }
+.currentValue p { margin: 8px 0 0; white-space: pre-wrap; }
 .form { display: grid; gap: 18px; align-content: start; min-width: 0; padding-right: 28px; }
 .history { display: grid; gap: 12px; align-content: start; min-width: 0; padding-left: 28px; border-left: 1px solid var(--dm-border); }
 .historyHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 2px; }

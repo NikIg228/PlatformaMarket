@@ -43,6 +43,7 @@ export const offerPromotionSchema = z.object({ id: z.uuid(), supplierOrganizatio
 export const promotionListQuerySchema = z.object({ q: z.string().trim().max(160).optional(), supplierOrganizationId: z.uuid().optional(),
   categoryId: z.uuid().optional(), productId: z.uuid().optional(), kind: promotionMechanicSchema.optional(), featured: z.preprocess(value => value === "true" ? true : value === "false" ? false : value, z.boolean().optional()),
   moderationStatus: z.enum(["DRAFT", "PENDING", "CHANGES_REQUESTED", "REJECTED", "APPROVED"]).optional(),
+  phase: z.enum(["ACTIVE", "SCHEDULED", "ENDED"]).optional(),
   sort: z.enum(["ENDING", "NEWEST"]).default("ENDING"), limit: z.coerce.number().int().min(1).max(50).default(24), offset: z.coerce.number().int().min(0).max(10000).default(0),
 });
 export const promotionPageSchema = z.object({ items: z.array(offerPromotionSchema), total: z.number().int().nonnegative(), limit: z.number().int(), offset: z.number().int() });

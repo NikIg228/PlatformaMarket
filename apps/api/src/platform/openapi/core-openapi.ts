@@ -10,10 +10,10 @@ import { operationAssignmentSchema, operationAssignmentResultSchema, operationHi
 import { startConversationSchema, conversationMessageInputSchema, conversationQuerySchema, conversationReadSchema, conversationEscalationSchema, conversationResolveSchema, conversationPageSchema, conversationDetailSchema, conversationMessageQuerySchema, conversationResultSchema, conversationReadResultSchema, conversationEscalationResultSchema } from "@marketplace/schemas";
 import { workspaceCorrectionOfferPageSchema, workspaceInventoryPageSchema, workspaceLotPageSchema, workspaceReservationPageSchema, workspaceOverridePageSchema } from "@marketplace/schemas";
 import { createInvitationSchema, acceptInvitationSchema, invitationProofSchema, invitationDetailsSchema, invitationListSchema, invitationCreatedSchema, invitationDeliveredSchema, invitationAcceptedSchema, identityCommandResultSchema, identitySessionRevokedSchema, identityRolesSchema, identityMembersSchema, identitySessionsSchema } from "@marketplace/schemas";
-import { createOfferPromotionSchema, reviseOfferPromotionSchema, offerPromotionCommandSchema, offerPromotionSchema, promotionPageSchema, publicPromotionPageSchema } from "@marketplace/schemas";
+import { createOfferPromotionSchema, reviseOfferPromotionSchema, offerPromotionCommandSchema, offerPromotionSchema, promotionPageSchema, publicPromotionPageSchema, promotionListQuerySchema } from "@marketplace/schemas";
 import { orderWorkflowCommandSchema, orderWorkflowResponseSchema, orderWorkflowResultSchema } from "@marketplace/schemas";
 import { saveSupplierPaymentPolicySchema, supplierPaymentPolicyResponseSchema } from "@marketplace/schemas";
-import { workspacePageQuerySchema, workspaceOrderQuerySchema, workspaceOrderPageSchema, workspaceOfferSchema, workspaceOfferPageSchema, workspaceCartPageSchema, workspaceSummarySchema } from "@marketplace/schemas";
+import { workspaceOfferQuerySchema, workspaceInventoryQuerySchema, workspacePageQuerySchema, workspaceOrderQuerySchema, workspaceOrderPageSchema, workspaceOfferSchema, workspaceOfferPageSchema, workspaceCartPageSchema, workspaceSummarySchema } from "@marketplace/schemas";
 import { saveOfferCommercialSchema, offerCommercialStateSchema } from "@marketplace/schemas";
 import { updateProductSchema, updatedCatalogProductSchema } from "@marketplace/schemas";
 import { applyDecorators } from "@nestjs/common";
@@ -171,6 +171,7 @@ const coreZodSchemas = {
   OfferPromotionCommand: offerPromotionCommandSchema,
   OfferPromotion: offerPromotionSchema,
   PromotionPage: promotionPageSchema,
+  PromotionListQuery: promotionListQuerySchema,
   PublicPromotionPage: publicPromotionPageSchema,
   CreateInvitationRequest: createInvitationSchema,
   AcceptInvitationRequest: acceptInvitationSchema,
@@ -256,6 +257,8 @@ const coreZodSchemas = {
   OfferComparisonResponse: offerComparisonResponseSchema,
   CartResponse: cartResponseSchema,
   CartListResponse: cartListResponseSchema,
+  WorkspaceOfferQuery: workspaceOfferQuerySchema,
+  WorkspaceInventoryQuery: workspaceInventoryQuerySchema,
   WorkspacePageQuery: workspacePageQuerySchema,
   WorkspaceOrderQuery: workspaceOrderQuerySchema,
   WorkspaceOrderPage: workspaceOrderPageSchema,

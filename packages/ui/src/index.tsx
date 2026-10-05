@@ -1,4 +1,5 @@
 "use client";
+export { DmDropdown } from "./dm-dropdown";
 export { ConversationWorkspace, ConversationCounter } from "./conversation-workspace";
 export { MemberManagement } from "./member-management";
 export { SessionManagement } from "./session-management";

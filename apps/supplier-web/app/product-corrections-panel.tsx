@@ -5,7 +5,7 @@ import {
   DmButton,
   DmField,
   DmInput,
-  DmSelect,
+  DmDropdown as DmSelect,
   DmTextarea,
   EmptyState,
   LoadingState,
@@ -72,6 +72,8 @@ export function ProductCorrectionsPanel({ api, offers, supplierId, hideHeading =
   const [historyLoading, setHistoryLoading] = useState(true);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+  const [historyLimit, setHistoryLimit] = useState(12);
+  const currentValue = selectedProduct ? ({ CANONICAL_NAME: selectedProduct.canonicalName, DESCRIPTION: selectedProduct.description, MANUFACTURER_SKU: selectedProduct.manufacturerSku, GTIN: selectedProduct.gtin, PRODUCT_TYPE: selectedProduct.productType, REGULATORY_CLASS: selectedProduct.regulatoryClass })[field] : null;
 
   useEffect(() => { if (!productId && products[0]) setSelectedProduct(products[0]); }, [productId, products]);
 
@@ -91,6 +93,7 @@ export function ProductCorrectionsPanel({ api, offers, supplierId, hideHeading =
   useEffect(() => { void load(); }, [load]);
 
   const submit = async () => {
+    if (!canSubmitProductCorrection({ busy, productId, proposedValue, reason })) return;
     setBusy(true);
     setFeedback(null);
     try {
@@ -121,23 +124,24 @@ export function ProductCorrectionsPanel({ api, offers, supplierId, hideHeading =
         {!products.length ? <EmptyState title="Нет доступных карточек" description="Здесь появятся товары поставщика, для которых можно предложить исправление." /> : null}
         {products.length ? <>
         <DmField label="Товар" required>
-          <DmSelect value={productId} onChange={(_, data) => setSelectedProduct(products.find(product => product.id === data.value) ?? null)}>
+          <DmSelect disabled={busy} value={productId} onChange={(_, data) => setSelectedProduct(products.find(product => product.id === data.value) ?? null)}>
             {products.map((product) => <option value={product.id} key={product.id}>{product.canonicalName}</option>)}
           </DmSelect>
         </DmField>
         <DmField label="Что исправить" required>
-          <DmSelect value={field} onChange={(_, data) => setField(data.value as typeof field)}>
+          <DmSelect disabled={busy} value={field} onChange={(_, data) => setField(data.value as typeof field)}>
             {fields.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
           </DmSelect>
         </DmField>
+        <div className={styles.currentValue}><strong>Сейчас в карточке</strong><p>{currentValue || "Не заполнено"}</p></div>
         <DmField label="Предлагаемая редакция" required hint="Укажите точный вариант, который нужно внести в карточку.">
-          <DmTextarea rows={4} value={proposedValue} onChange={(_, data) => setProposedValue(data.value)} />
+          <DmTextarea disabled={busy} rows={4} value={proposedValue} onChange={(_, data) => setProposedValue(data.value)} />
         </DmField>
         <DmField label="Почему нужна правка" required hint="Укажите, что именно не совпадает с документом или каталогом производителя.">
-          <DmTextarea rows={3} value={reason} onChange={(_, data) => setReason(data.value)} />
+          <DmTextarea disabled={busy} rows={3} value={reason} onChange={(_, data) => setReason(data.value)} />
         </DmField>
         <DmField label="Ссылка на подтверждение" hint="Необязательно: сайт производителя, регистрационный документ или каталог.">
-          <DmInput type="url" value={evidenceUrl} onChange={(_, data) => setEvidenceUrl(data.value)} />
+          <DmInput disabled={busy} type="url" value={evidenceUrl} onChange={(_, data) => setEvidenceUrl(data.value)} />
         </DmField>
         {feedback ? <div className={`${styles.message} ${feedback.tone === "error" ? styles.messageError : styles.messageSuccess}`} role={feedback.tone === "error" ? "alert" : "status"}>{feedback.text}</div> : null}
         <div className={styles.formFooter}>
@@ -150,12 +154,13 @@ export function ProductCorrectionsPanel({ api, offers, supplierId, hideHeading =
       </form>
       <div className={styles.history}>
         <div className={styles.historyHeading}><div><span className={styles.kicker}>История обращений</span><h3>Мои исправления</h3></div><span className={styles.historyCount}>{items.length}</span></div>
-        {historyLoading ? <LoadingState label="Загружаем историю исправлений" /> : historyError ? <div className={styles.historyError} role="alert"><strong>{historyError}</strong><DmButton appearance="secondary" onClick={() => void load()}>Повторить</DmButton></div> : !items.length ? <EmptyState title="Исправлений пока нет" description="Здесь появятся ваши правки и решения PlatformaMarket." /> : items.slice(0, 12).map((item) => <article className={styles.request} key={item.id}>
+        {historyLoading ? <LoadingState label="Загружаем историю исправлений" /> : historyError ? <div className={styles.historyError} role="alert"><strong>{historyError}</strong><DmButton appearance="secondary" onClick={() => void load()}>Повторить</DmButton></div> : !items.length ? <EmptyState title="Исправлений пока нет" description="Здесь появятся ваши правки и решения PlatformaMarket." /> : items.slice(0, historyLimit).map((item) => <article className={styles.request} key={item.id}>
           <div className={styles.requestHeader}><strong>{item.product.canonicalName}</strong><StatusTag tone={item.status === "REJECTED" ? "danger" : item.status === "PENDING" ? "warning" : "success"}>{statusLabel[item.status]}</StatusTag></div>
           <small>{fieldLabel(item.field)} · {formatDate(item.createdAt, true)}</small>
-          <p>{item.appliedValue ?? item.proposedValue}</p>
+          <p>Было: {item.currentValue || "Не заполнено"}</p><p>Предложено: {item.proposedValue}</p><small>Причина: {item.reason}</small>{item.appliedValue ? <p>Принято: {item.appliedValue}</p> : null}
           {item.moderatorComment ? <span>Комментарий PlatformaMarket: {item.moderatorComment}</span> : null}
         </article>)}
+        {items.length > historyLimit ? <DmButton onClick={() => setHistoryLimit(value => value + 12)}>Показать более ранние исправления</DmButton> : null}
       </div>
     </div>
   </Section>;

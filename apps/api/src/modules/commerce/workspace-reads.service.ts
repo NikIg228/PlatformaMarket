@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
-import { workspaceOrderQuerySchema, workspacePageQuerySchema } from "@marketplace/schemas";
+import { workspaceOrderQuerySchema, workspacePageQuerySchema, workspaceOfferQuerySchema } from "@marketplace/schemas";
 import { z } from "zod";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import { workspacePage, workspaceOrderBy } from "./workspace-page";
@@ -28,10 +28,21 @@ export class WorkspaceReadsService {
     const result = page.finish(rows, query.limit);
     return { ...result, items: result.items.map(({ _count, ...row }) => ({ ...row, itemCount: _count.items })) };
   }
-  async offers(organizationId: string, query: z.output<typeof workspacePageQuerySchema>) {
+  async offers(organizationId: string, query: z.output<typeof workspaceOfferQuerySchema>) {
     await this.authorize(organizationId, "SUPPLIER");
-    const page = workspacePage([organizationId, "offers", query.q, query.limit], query.cursor);
-    const rows = await this.db.supplierOffer.findMany({ where: { ...page.where, supplierOrganizationId: organizationId,
+    const page = workspacePage([organizationId, "offers", query.q, query.limit, query.publication, query.attention], query.cursor);
+    const now = new Date();
+    const filters: Prisma.SupplierOfferWhereInput[] = [...page.where.AND];
+    if (query.publication === "published") filters.push({ publication: { is: { marketplaceVisible: true } } });
+    if (query.publication === "hidden") filters.push({ OR: [{ publication: { is: null } }, { publication: { is: { marketplaceVisible: false } } }] });
+    if (query.attention) filters.push({ OR: [
+      { prices: { none: { status: "ACTIVE" } } },
+      { prices: { some: { status: "ACTIVE", freshnessExpiresAt: { lte: now } } } },
+      { inventoryBalances: { none: {} } },
+      { inventoryBalances: { some: { OR: [{ freshnessStatus: { not: "FRESH" } }, { freshnessExpiresAt: { lte: now } }] } } },
+      { publication: { is: { blockedReason: { not: null } } } },
+    ] });
+    const rows = await this.db.supplierOffer.findMany({ where: { AND: filters, supplierOrganizationId: organizationId,
       ...(query.q ? { OR: [{ supplierSku: { contains: query.q, mode: "insensitive" } }, { productVariant: { product: { canonicalName: { contains: query.q, mode: "insensitive" } } } }] } : {}) },
       select: workspaceOfferSelect, orderBy: [...workspaceOrderBy], take: query.limit + 1 });
     return page.finish(rows, query.limit);

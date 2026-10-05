@@ -1,7 +1,7 @@
 import type { AccessPolicy, CommerceAnalyticsQuery, CommerceAnalyticsResponse, WorkspaceCorrectionOfferPage, WorkspaceInventoryPage, WorkspaceLotPage, WorkspaceReservationPage, WorkspaceOverridePage } from "@marketplace/schemas";
 import type { CreateInvitationInput, AcceptInvitationInput, UpdateMembershipInput, IdentityMember, IdentityRole, IdentitySession, IdentitySessionRevoked, InvitationSummary, InvitationCreated, InvitationDelivered, InvitationAccepted, InvitationDetails } from "@marketplace/schemas";
 import type { CreateOfferPromotion, ReviseOfferPromotion, OfferPromotionCommand, OfferPromotion, PromotionPage, PublicPromotionPage, PromotionListQuery } from "@marketplace/schemas";
-import type { WorkspacePageQuery, WorkspaceOrderQuery, WorkspaceOrderPage, WorkspaceOffer, WorkspaceOfferPage, WorkspaceCartPage, WorkspaceSummary } from "@marketplace/schemas";
+import type { WorkspaceOfferQuery, WorkspaceInventoryQuery, WorkspacePageQuery, WorkspaceOrderQuery, WorkspaceOrderPage, WorkspaceOffer, WorkspaceOfferPage, WorkspaceCartPage, WorkspaceSummary } from "@marketplace/schemas";
 import { deploymentFeatures, isDeploymentApiPathEnabled, type DeploymentProfile } from "@marketplace/schemas/deployment-policy";
 
 // Next replaces this literal at build time. Missing/unrecognised values stay pilot.
@@ -496,7 +496,7 @@ export class MarketplaceApiClient {
   workspaceCorrectionOffers(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
     return this.get<WorkspaceCorrectionOfferPage>(this.withQuery(`/workspaces/supplier/correction-offers`, query), options);
   }
-  workspaceInventory(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
+  workspaceInventory(query: WorkspaceInventoryQuery = {}, options?: Pick<RequestInit, "signal">) {
     return this.get<WorkspaceInventoryPage>(this.withQuery(`/workspaces/supplier/inventory`, query), options);
   }
   workspaceLots(balanceId: string, query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
@@ -511,7 +511,7 @@ export class MarketplaceApiClient {
   workspaceOrders(role: "buyer" | "supplier", query: WorkspaceOrderQuery = {}, options?: Pick<RequestInit, "signal">) {
     return this.get<WorkspaceOrderPage>(this.withQuery(`/workspaces/${role}/orders`, query), options);
   }
-  workspaceOffers(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
+  workspaceOffers(query: WorkspaceOfferQuery = {}, options?: Pick<RequestInit, "signal">) {
     return this.get<WorkspaceOfferPage>(this.withQuery("/workspaces/supplier/offers", query), options);
   }
   workspaceOffer(offerId: string, options?: Pick<RequestInit, "signal">) {

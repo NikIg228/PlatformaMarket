@@ -8,10 +8,13 @@ features apps/supplier-web импортируются новым приложе�
 | URL | Текущий маршрут |
 | --- | --- |
 | /supplier | workspaces/dashboard, сводка |
-| /supplier/products | workspaces/products: bounded offers, editor/import/manual proposal |
+| /supplier/products | Компактный список; карточки на мобильном; детали и редактирование в панели |
+| /supplier/products/new | Поиск в мастер-каталоге → упаковка → цена/склад → проверка и отдельная публикация |
+| /supplier/products/import | CSV/XLSX: шаблон, столбцы, просмотр, явное подтверждение обработки, история |
 | /supplier/products/proposals | История заявки нового товара и повтор после отказа |
 | /supplier/products/corrections | Исправления мастер-карточки; bounded correction-offers с поиском и сохранением draft |
-| /supplier/products/inventory | Bounded summaries; отдельные страницы lots/reservations при раскрытии строки |
+| /supplier/products/inventory | Остатки/партии/резервы, фильтр склада; детали загружаются при раскрытии |
+| /supplier/products/promotions | Все/действующие/запланированные/архив; условия, предпросмотр и согласование |
 | /supplier/orders, /supplier/orders/[id] | Orders/detail, confirmation/invoice/manual payment/shipment |
 | /supplier/documents | Общий document workspace |
 | /supplier/settings, /supplier/settings/sources | Организация и источники товаров |
@@ -21,6 +24,26 @@ Shell использует подтверждённую supplier session и perm
 menu соответствует решению владельца30.09. Новые общие условия принимаются
 отдельно от операторского допуска (ADR013); две ЭЦП не обязательный onboarding.
 Публикация по-прежнему требует допуска и готового offer/цены/fresh stock.
+
+Обновление05.10.2026: шесть отдельных разделов товаров используют существующие
+операции записи. Импорт не публикует предложения; сохранение акции не отправляет
+её на согласование. Отклонённая заявка сохраняется в истории после новой подачи.
+Акционная цена вводится в тенге и переводится в фиксированную скидку в minor units
+без вычислений денег через floating point; оператор проверяет новую версию условий.
+
+`GET /workspaces/supplier/offers` принимает `publication=published|hidden` и
+`attention=required`; фильтры применяются до пагинации и входят в scope cursor.
+`GET /workspaces/supplier/inventory` принимает `warehouseId`; склад другой
+организации не раскрывает остатки. Резервы возвращают nullable `order` с `id` и
+`orderNumber` только для заказа того же поставщика. История собственных заявок
+возвращает сохранённое описание, без произвольного raw payload.
+`GET /promotions` принимает `phase=ACTIVE|SCHEDULED|ENDED`; count и список используют
+одинаковые ограничения. Архив включает истёкшие и исчерпанные акции.
+
+Целевые проверки: `supplier-capabilities.spec.ts` в
+`apps/e2e/playwright.workspaces.config.ts` (mocked API, без записей в рабочую БД);
+`node scripts/verify-supplier-product-reads.mjs` после сборки API проверяет реальные
+PostgreSQL фильтры/tenant/paging в изолированном test profile, откатывая fixtures.
 
 Редактирование цены/остатка versioned/atomic; смена склада не переносит
 количество другого склада. Supplier confirmation фактического банковского

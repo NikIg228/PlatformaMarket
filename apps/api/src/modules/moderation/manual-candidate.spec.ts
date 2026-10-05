@@ -3,6 +3,17 @@ import { ModerationService } from "./moderation.service";
 
 const context = { actorId: "operator", organizationId: "platform" };
 const input = { canonicalName: "New unique material", slug: "new-unique-material", productType: "MATERIAL", industryIds: ["industry"], categoryIds: ["category"], saleUnitId: "unit", packageQuantity: 10 };
+it("returns submitted description without leaking raw payload and scopes history cursors", async () => {
+  const db = { productCandidate: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([
+    { id: "candidate", proposedName: "Material", externalItem: { rawData: { description: "Pack of ten", internal: "private" } } },
+  ]) } };
+  const service = new ModerationService(db as never, {} as never);
+  const result = await service.ownSubmissions({ limit: 20 }, { actorId: "supplier", organizationId: "own" });
+  expect(result.items).toEqual([{ id: "candidate", proposedName: "Material", description: "Pack of ten" }]);
+  expect(db.productCandidate.findMany.mock.calls[0][0].where).toEqual({ supplierOrganizationId: "own", externalItem: { importRowId: null } });
+  await expect(service.ownSubmissions({ limit: 20, cursor: "foreign" }, { actorId: "supplier", organizationId: "own" })).rejects.toThrow("cursor not found");
+  expect(db.productCandidate.findMany).toHaveBeenCalledOnce();
+});
 function fixture(decisionCount = 1, operator = true) {
   const candidate = { id: "candidate", supplierOrganizationId: "supplier", status: "PENDING", proposedName: "New unique material", proposedSku: null, proposedGtin: null, proposedBrand: null, externalItemId: "external", externalItem: { sourceId: "source", importRowId: null } };
   const tx = {

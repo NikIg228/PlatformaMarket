@@ -2,7 +2,7 @@ import { BadRequestException, Body, Controller, Get, Headers, Param, Patch, Post
 import { z } from "zod";
 import { createOfferPromotionSchema, reviseOfferPromotionSchema, offerPromotionCommandSchema, promotionListQuerySchema } from "@marketplace/schemas";
 import { ApiTags } from "@nestjs/swagger";
-import { ApiCoreBody, ApiCoreProtected, ApiCoreResponse } from "../../platform/openapi/core-openapi";
+import { ApiCoreBody, ApiCoreProtected, ApiCoreResponse, ApiCoreQuery } from "../../platform/openapi/core-openapi";
 import { PermissionsGuard } from "../access-control/permissions.guard";
 import { RequirePermissions } from "../access-control/require-permissions.decorator";
 import { PromotionsService } from "./promotions.service";
@@ -17,7 +17,7 @@ export class PromotionsController {
   @Get("storefront") @ApiCoreResponse("PublicPromotionPage")
   storefront(@Query() query: unknown) { return this.promotions.storefront(parsed(promotionListQuerySchema, query)); }
 
-  @Get() @RequirePermissions("promotion.view") @ApiCoreProtected() @ApiCoreResponse("PromotionPage")
+  @Get() @RequirePermissions("promotion.view") @ApiCoreProtected() @ApiCoreQuery("PromotionListQuery") @ApiCoreResponse("PromotionPage")
   list(@Query() query: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { return this.promotions.list(parsed(promotionListQuerySchema, query), { actorId, organizationId }); }
 
   @Post() @RequirePermissions("promotion.manage") @ApiCoreProtected() @ApiCoreBody("CreateOfferPromotion") @ApiCoreResponse("OfferPromotion", 201)
