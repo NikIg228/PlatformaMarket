@@ -386,7 +386,7 @@ async function cleanupFixtures() {
   const ownedCartIds = (await prisma.cart.findMany({ where: { buyerOrganizationId: { in: fixture.buyerIds } }, select: { id: true } })).map(cart => cart.id);
   fixture.cartIds = [...new Set([...fixture.cartIds, ...ownedCartIds])];
   await prisma.outboxEvent.deleteMany({ where: { aggregateType: "Cart", aggregateId: { in: ownedCartIds } } });
-  if (fixture.supplierId) await prisma.idempotencyRecord.deleteMany({ where: { scope: { startsWith: `offer-commercial:${fixture.supplierId}:` } } });
+  if (fixture.supplierId) await prisma.idempotencyRecord.deleteMany({ where: { OR: ["commercial", "stock", "price"].map(mode => ({ scope: { startsWith: `offer-${mode}:${fixture.supplierId}:` } })) } });
   if (fixture.supplierId) await prisma.idempotencyRecord.deleteMany({ where: { scope: `supplier-payment-policy:${fixture.supplierId}` } });
   const paymentTickets = await prisma.supportTicket.findMany({ where: { organizationId: { in: fixture.buyerIds }, category: { in: ["PAYMENT_REVIEW", "CONVERSATION"] } }, select: { id: true } });
   const paymentTicketIds = paymentTickets.map(ticket => ticket.id);
@@ -591,9 +591,12 @@ try {
   );
   runNpm(["run", "db:seed:test"], testEnvironment);
   await prisma.$connect();
-  await verifyManualPaymentUpgrade(prisma, assert);
-  await verifyPromotionUpgrade(prisma, assert);
-  await verifyCommerceMetricUpgrade(prisma, assert);
+  const commercialOnly = process.argv.includes("--commercial-only");
+  if (!commercialOnly) {
+    await verifyManualPaymentUpgrade(prisma, assert);
+    await verifyPromotionUpgrade(prisma, assert);
+    await verifyCommerceMetricUpgrade(prisma, assert);
+  }
   const [rollbackOffer, idempotencyOffer, concurrencyOffer, correctionOffer, snapshotOffer, ...lotOffers] =
     await createFixtureCatalog();
   const [
@@ -614,6 +617,11 @@ try {
   api.stderr.on("data", rememberLog);
   await waitUntilReady();
 
+  if (commercialOnly) {
+    await verifyOfferCommercial({ prisma, offer: lotOffers[4], supplierId: fixture.supplierId, fixture,
+      createBuyer, request, runId, assert });
+    console.log("Focused PostgreSQL commercial verification PASS");
+  } else {
   await verifyCheckoutSnapshot({ prisma, databaseUrl, offerId: snapshotOffer.offerId,
     createBuyer, createCartWithItem, runId, assert });
   await verifyContractLifecycle({ prisma, createBuyer, runId });
@@ -918,6 +926,7 @@ try {
       2,
     ),
   );
+  }
 } catch (error) {
   console.error(error instanceof Error ? error.stack : error);
   if (logLines.length) console.error(`API log tail:\n${logLines.join("\n")}`);

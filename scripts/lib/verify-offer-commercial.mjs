@@ -12,6 +12,8 @@ export async function verifyOfferCommercial({ prisma, offer, supplierId, fixture
   };
   const identity = await grant(actor.userId, ["catalog.product.view", "pricing.manage", "inventory.adjust"], "editor");
   const priceOnly = await grant(limited.userId, ["catalog.product.view", "pricing.manage"], "limited");
+  const stockActor = await createBuyer(84);
+  const stockOnly = await grant(stockActor.userId, ["catalog.product.view", "inventory.adjust"], "stock");
   const foreignRole = await prisma.role.findFirstOrThrow({ where: { organizationId: outsider.organizationId } });
   const foreignPermissions = await prisma.permission.findMany({ where: { code: { in: ["catalog.product.view", "pricing.manage", "inventory.adjust"] } } });
   await prisma.rolePermission.createMany({ data: foreignPermissions.map(permission => ({ roleId: foreignRole.id, permissionId: permission.id })), skipDuplicates: true });
@@ -78,8 +80,41 @@ export async function verifyOfferCommercial({ prisma, offer, supplierId, fixture
     body: { warehouseId: balance.warehouseId, productVariantId: balance.productVariantId, offerId: offer.offerId, quantityOnHand: 4, source: "MANUAL" } });
   assert(legacyStock.status === 200, "Existing inventory writer failed");
   assert((await save(input(stockBefore, "legacy-stock-stale"))).status === 409, "Legacy stock writer did not invalidate the selected balance snapshot");
+  const splitBefore = await get(balance.warehouseId);
+  const stockInput = (state, key, quantity) => ({ warehouseId: state.warehouseId, expectedOfferVersion: state.offerVersion,
+    expectedBalanceVersion: state.balance?.version ?? null, idempotencyKey: `${runId}-${key}`, quantityOnHand: quantity });
+  const stockSave = (body, who = stockOnly) => request(`${route}/stock`, { method: "PUT", identity: who, body });
+  const stockCommand = stockInput(splitBefore, "stock-only", 9);
+  const priceHistoryBefore = await prisma.offerPriceHistory.count({ where: { offerId: offer.offerId } });
+  assert((await stockSave({ ...stockCommand, amountMinor: "1" })).status === 400, "Stock route accepted a price field");
+  assert((await stockSave({ ...stockCommand, quantityOnHand: -1 })).status === 400, "Stock route accepted negative stock");
+  assert((await stockSave(stockCommand, priceOnly)).status === 403, "Pricing permission allowed stock write");
+  assert((await stockSave(stockCommand, outsider)).status === 403, "Foreign tenant changed stock");
+  const stockResult = await stockSave(stockCommand);
+  assert(stockResult.status === 200 && stockResult.body.balance.quantityOnHand === "9", "Stock-only permission could not save stock");
+  assert(isDeepStrictEqual(stockResult.body.price, splitBefore.price) && stockResult.body.offerVersion === splitBefore.offerVersion,
+    "Stock-only command changed price or offer version");
+  assert(stockResult.body.balance.quantityReserved === "2" && stockResult.body.marketplaceVisible === splitBefore.marketplaceVisible,
+    "Stock command changed reservation/publication");
+  assert(await prisma.offerPriceHistory.count({ where: { offerId: offer.offerId } }) === priceHistoryBefore, "Stock command wrote price history");
+  assert(isDeepStrictEqual((await stockSave(stockCommand)).body, stockResult.body), "Stock replay changed result");
+  const belowReserved = await stockSave(stockInput(stockResult.body, "stock-rollback", 1));
+  assert(belowReserved.status === 409 && isDeepStrictEqual(await get(balance.warehouseId), stockResult.body), "Invalid stock was not rolled back");
+  const stockRace = await Promise.all([stockSave(stockInput(stockResult.body, "stock-race-a", 8)), stockSave(stockInput(stockResult.body, "stock-race-b", 7))]);
+  assert(stockRace.filter(item => item.status === 200).length === 1 && stockRace.filter(item => item.status === 409).length === 1, "Stock race lost version protection");
+  const beforePrice = await get(balance.warehouseId);
+  const { quantityOnHand: ignoredQuantity, ...priceCommand } = input(beforePrice, "price-only", { amountMinor: "270000" });
+  const priceSave = (body, who = priceOnly) => request(`${route}/price`, { method: "PUT", identity: who, body });
+  assert((await priceSave({ ...priceCommand, quantityOnHand: ignoredQuantity })).status === 400, "Price route accepted stock field");
+  assert((await priceSave(priceCommand, stockOnly)).status === 403, "Stock permission allowed price write");
+  assert((await priceSave(priceCommand, outsider)).status === 403, "Foreign tenant changed price");
+  const priceResult = await priceSave(priceCommand);
+  assert(priceResult.status === 200 && priceResult.body.price.amountMinor === "270000", "Price-only permission could not save price");
+  assert(isDeepStrictEqual(priceResult.body.balance, beforePrice.balance), "Price command changed balance/version");
+  assert(isDeepStrictEqual((await priceSave(priceCommand)).body, priceResult.body), "Price replay changed result");
+  assert(await prisma.offerPriceHistory.count({ where: { offerId: offer.offerId } }) === priceHistoryBefore + 1, "Price replay duplicated history");
   await prisma.offerPublication.update({ where: { offerId: offer.offerId }, data: { status: "DRAFT", marketplaceVisible: false } });
   const draft = await save(input(await get(balance.warehouseId), "draft", { quantityOnHand: 3 }));
   assert(draft.status === 200 && !draft.body.marketplaceVisible && draft.body.publicationStatus === "DRAFT", "Saving draft silently published it");
-  console.log("Offer commercial: atomic rollback incl. audit/outbox, tenant/permissions, stale/racing editors, replay, warehouse versions and publication PASS");
+  console.log("Offer commercial: separate stock/price HTTP contracts, least privilege, atomic rollback incl. audit/outbox, tenant isolation, stale/racing editors, replay, warehouse versions and publication PASS");
 }

@@ -14,7 +14,7 @@ import { createOfferPromotionSchema, reviseOfferPromotionSchema, offerPromotionC
 import { orderWorkflowCommandSchema, orderWorkflowResponseSchema, orderWorkflowResultSchema } from "@marketplace/schemas";
 import { saveSupplierPaymentPolicySchema, supplierPaymentPolicyResponseSchema } from "@marketplace/schemas";
 import { workspaceOfferQuerySchema, workspaceInventoryQuerySchema, workspacePageQuerySchema, workspaceOrderQuerySchema, workspaceOrderPageSchema, workspaceOfferSchema, workspaceOfferPageSchema, workspaceCartPageSchema, workspaceSummarySchema } from "@marketplace/schemas";
-import { saveOfferCommercialSchema, offerCommercialStateSchema } from "@marketplace/schemas";
+import { saveOfferCommercialSchema, saveOfferStockSchema, saveOfferPriceSchema, offerCommercialStateSchema } from "@marketplace/schemas";
 import { updateProductSchema, updatedCatalogProductSchema } from "@marketplace/schemas";
 import { applyDecorators } from "@nestjs/common";
 import {
@@ -299,6 +299,8 @@ const coreZodSchemas = {
   OfferOptionsQuery: offerOptionsQuerySchema,
   SetInventoryBalanceRequest: setInventoryBalanceSchema,
   SaveOfferCommercialRequest: saveOfferCommercialSchema,
+  SaveOfferStockRequest: saveOfferStockSchema,
+  SaveOfferPriceRequest: saveOfferPriceSchema,
   OfferCommercialState: offerCommercialStateSchema,
   SupplierImportDiagnosticsResponse: supplierImportDiagnosticsResponseSchema,
   SupplierImportRollbackResponse: supplierImportRollbackResponseSchema,

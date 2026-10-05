@@ -30,5 +30,9 @@ export function useInventoryList(load: (cursor: string | undefined, signal: Abor
     observer.observe(sentinel.current);
     return () => observer.disconnect();
   }, [page?.nextCursor, loading, error, fetchPage]);
-  return { page, loading, error, sentinel, retry: () => fetchPage(page?.nextCursor ?? undefined) };
+  const refresh = useCallback(async () => {
+    generation.current++; flight.current?.abort(); flight.current = null;
+    await fetchPage();
+  }, [fetchPage]);
+  return { page, loading, error, sentinel, refresh, retry: () => fetchPage(page?.nextCursor ?? undefined) };
 }

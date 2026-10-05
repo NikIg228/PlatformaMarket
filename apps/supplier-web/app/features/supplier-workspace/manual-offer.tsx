@@ -10,10 +10,11 @@ import { OfferDelivery } from "./offer-delivery";
 import { OfferCommercialEditor } from "./offer-commercial-editor";
 import formStyles from "./product-forms.module.css";
 
-export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiallyOpen = false, initialProposal, hideHeading = false }: {
+export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiallyOpen = false, initialProposal, hideHeading = false, stockEditable = true }: {
   api: MarketplaceApiClient; supplierId: string; onChanged: () => Promise<void>; initialOffer?: Offer; initiallyOpen?: boolean;
   initialProposal?: { proposedName: string; proposedSku: string | null; proposedBrand: string | null; proposedGtin: string | null; description?: string | null };
   hideHeading?: boolean;
+  stockEditable?: boolean;
 }) {
   const has = usePermissions();
   const [open, setOpen] = useState(initiallyOpen);
@@ -97,7 +98,7 @@ export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiall
       });
       id = offer.id; setCreatedId(id);
     }
-    setNotice(initialOffer ? "Упаковка назначена. Проверьте цену и остаток ниже." : "Черновик создан. Укажите цену и остаток, затем опубликуйте предложение.");
+    setNotice(initialOffer ? stockEditable ? "Упаковка назначена. Проверьте цену и остаток ниже." : "Упаковка назначена. Проверьте цену ниже." : "Черновик создан. Укажите цену и остаток, затем опубликуйте предложение.");
     await onChanged();
   });
   const submit = () => run(async () => {
@@ -135,7 +136,7 @@ export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiall
         </form> : null}
       </> : <><form onSubmit={event => { event.preventDefault(); void save(); }} className="mp-stack">
         <h3>{selected.name}</h3>
-        {!createdId ? <DmButton type="button" disabled={busy} onClick={() => setSelected(null)}>Выбрать другой товар</DmButton> : <p>Предложение создано. Цена, остаток и публикация редактируются ниже.</p>}
+        {!createdId ? <DmButton type="button" disabled={busy} onClick={() => setSelected(null)}>Выбрать другой товар</DmButton> : <p>{stockEditable ? "Предложение создано. Цена, остаток и публикация редактируются ниже." : "Цена и публикация редактируются ниже. Остатки — на отдельной странице."}</p>}
         <DmField label="Упаковка предложения"><DmSelect value={packId} disabled={busy || packAssigned || Boolean(createdId && (!initialOffer || initialOffer.packaging?.id))} onChange={(_, data) => setPackId(data.value)}>
           {selected.packagings.map(pack => <option key={pack.id} value={pack.id}>{pack.name} · {pack.quantityInBaseUnit} базовых единиц · {pack.unit}</option>)}
         </DmSelect></DmField>
@@ -145,7 +146,7 @@ export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiall
         {!createdId || Boolean(initialOffer && !initialOffer.packaging?.id && !packAssigned) ? <DmButton type="submit" appearance="primary" disabled={busy || !has("catalog.offer.edit")}>{busy ? "Сохраняем…" : createdId ? "Назначить упаковку" : "Создать черновик предложения"}</DmButton> : null}
       </form>
       {createdId && (!initialOffer || initialOffer.packaging?.id || packAssigned) ? <OfferCommercialEditor key={createdId} api={api} supplierId={supplierId} offerId={createdId}
-        warehouses={warehouses} initialWarehouseId={warehouseId} onWarehouseChange={setWarehouseId} onWarehousesChange={setWarehouses} onChanged={onChanged} /> : null}
+        warehouses={warehouses} initialWarehouseId={warehouseId} onWarehouseChange={setWarehouseId} onWarehousesChange={setWarehouses} onChanged={onChanged} stockEditable={stockEditable} /> : null}
       </>}
       {createdId && selected ? <OfferDelivery key={createdId} api={api} supplierId={supplierId} offerId={createdId} warehouses={warehouses} defaultWarehouseId={warehouseId} /> : null}
     </div>}

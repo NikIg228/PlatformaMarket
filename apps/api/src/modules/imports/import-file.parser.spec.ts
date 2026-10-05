@@ -6,15 +6,19 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 describe("ImportFileParser", () => {
-  it("reads the downloadable XLSX template as one row, preserving price and text identifiers", async () => {
-    const bytes = await readFile(resolve(__dirname, "../../../../supplier-web/public/templates/supplier-price-template.xlsx"));
+  it.each([['xlsx', 'EXCEL'], ['csv', 'CSV']] as const)("reads the downloadable %s template with all twelve example values", async (extension, fileType) => {
+    const bytes = await readFile(resolve(__dirname, `../../../../supplier-web/public/templates/supplier-price-template.${extension}`));
     const result = await new ImportFileParser().parseWithDiagnostics({
-      sourceId: "00000000-0000-4000-8000-000000000022", fileName: "supplier-price-template.xlsx", fileType: "EXCEL",
+      sourceId: "00000000-0000-4000-8000-000000000022", fileName: `supplier-price-template.${extension}`, fileType,
       contentBase64: bytes.toString("base64"), columnMapping: { externalId: "Код", name: "Название", priceMinor: "Цена", priceUnit: "MAJOR", quantityOnHand: "Остаток" },
     });
     expect(result.rows).toHaveLength(1);
-    expect(result.rows[0]).toMatchObject({ Код: "EXAMPLE-001", Артикул: "MY-001", Цена: 1250.5, Валюта: "KZT", Остаток: 25 });
-    expect(result.rowNumbers).toEqual([2]);
+    const row = result.rows[0]!;
+    expect(Object.keys(row)).toHaveLength(12);
+    expect(Object.values(row).every(value => String(value).trim().length > 0)).toBe(true);
+    expect(row).toMatchObject({ Код: "EXAMPLE-001", Артикул: "MY-001", Валюта: "KZT", Бренд: "DemoDent", Производитель: "Demo Dental Manufacturing", Штрихкод: "2000000000015", Партия: "DEMO-2026-01", "Срок годности": "2030-12-31" });
+    expect(Number(row.Цена)).toBe(1250.5); expect(Number(row.Остаток)).toBe(25);
+    if (fileType === "EXCEL") expect(result.rowNumbers).toEqual([2]);
   });
   it("parses CSV content while preserving headers", async () => {
     const parser = new ImportFileParser();

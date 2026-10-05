@@ -1,5 +1,24 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+05.10 INVENTORY-EDITOR-TEMPLATES — LOCAL_PASS (CI отдельно при доставке):
+[контракт](../applications/supplier-web.md),
+[HTTP и проверка](../integrations/runbooks/manual-supplier.md).
+Раздельные команды stock/price, права, strict payloads и отсутствие записи
+другого измерения. Редактор на странице остатков; contextual link открывает
+выбранный баланс с фокусом. Plain XLSX/CSV: один товар, все12 колонок заполнены.
+Service8/schema8/client2 PASS; ImportFileParser14/14 PASS2 (CSV assertion corrected).
+Scoped types и ESLint PASS; API build PASS2 (первый EPERM из-за DLL dev API).
+Isolated PostgreSQL commercial PASS2 (первый не стартовал из-за вызова wrapper
+без npm): HTTP validation/role/tenant, rollback, stock race, replay, publication
+and warehouse versions; fixtures cleaned. Runtime-split и runtime OpenAPI PASS.
+Browser7/7 + affected existing3/3 PASS1; desktop1440/mobile3902/2 PASS2 после
+компактной ширины поля/кнопки, initial и saved снимки просмотрены.
+Canonical go_live web build PASS2 (повтор после scoped CSS).
+Логи `.tmp/inventory-*.log`, снимки `output/playwright/inventory-editor/`.
+Применены Development Toolkit, Agency UI/Code Reviewer и Spreadsheets.
+Full E2E/release не запускались: ограниченная правка, отдельные целевые UI/API/DB
+проверки; рабочая БД не изменялась, миграций и новых интеграций нет.
+
 05.10 PRODUCT-PAGES-REFINEMENT — LOCAL_PASS (CI отдельно при доставке):
 [контракт](../applications/supplier-web.md), [общий поиск](../ui-ux/SHARED_SEMANTIC_THEME.md).
 DmSearch440×44, inner Find/clear/Enter/IME; компактные corrections/promotions,

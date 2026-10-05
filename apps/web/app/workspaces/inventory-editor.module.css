@@ -1,0 +1,4 @@
+.form { gap: 16px; }
+.field { width: min(100%, 440px); }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; }
+@media (max-width: 760px) { .actions > button { width: 100%; } }

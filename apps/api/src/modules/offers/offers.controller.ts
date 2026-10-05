@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Headers, Param, Post, Put, UseGuards } from "@nestjs/common";
-import { assignOfferPackagingSchema, createSupplierOfferSchema, setOfferPriceSchema, setOfferPublicationSchema, saveOfferCommercialSchema } from "@marketplace/schemas";
+import { assignOfferPackagingSchema, createSupplierOfferSchema, setOfferPriceSchema, setOfferPublicationSchema, saveOfferCommercialSchema, saveOfferStockSchema, saveOfferPriceSchema } from "@marketplace/schemas";
 import { OfferCommercialService } from "./offer-commercial.service";
 import { ApiTags } from "@nestjs/swagger";
 import { PermissionsGuard } from "../access-control/permissions.guard";
@@ -62,6 +62,36 @@ export class OffersController {
     const parsed = saveOfferCommercialSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
     return this.commercial.save(supplierId, offerId, parsed.data, this.context(actorId, organizationId));
+  }
+
+  @Put(":offerId/commercial/stock")
+  @RequirePermissions("inventory.adjust")
+  @ApiCoreProtected()
+  @ApiUuidParam("supplierOrganizationId", "Supplier organization")
+  @ApiUuidParam("offerId", "Supplier offer")
+  @ApiCoreBody("SaveOfferStockRequest")
+  @ApiCoreResponse("OfferCommercialState")
+  @ApiCoreErrors()
+  saveStock(@Param("supplierOrganizationId") supplierId: string, @Param("offerId") offerId: string, @Body() body: unknown,
+    @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+    const parsed = saveOfferStockSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.commercial.saveStock(supplierId, offerId, parsed.data, this.context(actorId, organizationId));
+  }
+
+  @Put(":offerId/commercial/price")
+  @RequirePermissions("pricing.manage")
+  @ApiCoreProtected()
+  @ApiUuidParam("supplierOrganizationId", "Supplier organization")
+  @ApiUuidParam("offerId", "Supplier offer")
+  @ApiCoreBody("SaveOfferPriceRequest")
+  @ApiCoreResponse("OfferCommercialState")
+  @ApiCoreErrors()
+  savePriceOnly(@Param("supplierOrganizationId") supplierId: string, @Param("offerId") offerId: string, @Body() body: unknown,
+    @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+    const parsed = saveOfferPriceSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.commercial.savePrice(supplierId, offerId, parsed.data, this.context(actorId, organizationId));
   }
 
   @Put(":offerId/publication")

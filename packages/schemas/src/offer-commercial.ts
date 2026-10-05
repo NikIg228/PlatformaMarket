@@ -12,6 +12,10 @@ export const saveOfferCommercialSchema = z.object({
   quantityOnHand: z.number().finite().nonnegative(),
 });
 
+export const saveOfferStockSchema = saveOfferCommercialSchema.pick({ warehouseId: true, expectedOfferVersion: true,
+  expectedBalanceVersion: true, idempotencyKey: true, quantityOnHand: true }).strict();
+export const saveOfferPriceSchema = saveOfferCommercialSchema.omit({ quantityOnHand: true }).strict();
+
 export const offerCommercialStateSchema = z.object({
   offerId: z.uuid(), offerVersion: z.number().int().positive(), warehouseId: z.uuid(),
   publicationStatus: z.string(), marketplaceVisible: z.boolean(),
@@ -21,4 +25,6 @@ export const offerCommercialStateSchema = z.object({
 });
 
 export type SaveOfferCommercialInput = z.infer<typeof saveOfferCommercialSchema>;
+export type SaveOfferStockInput = z.infer<typeof saveOfferStockSchema>;
+export type SaveOfferPriceInput = z.infer<typeof saveOfferPriceSchema>;
 export type OfferCommercialState = z.infer<typeof offerCommercialStateSchema>;

@@ -13,7 +13,6 @@ const fields = [
   ["brand", "Бренд", "Бренд"], ["manufacturer", "Производитель", "Производитель"],
   ["lotNumber", "Номер партии", "Партия"], ["expirationDate", "Срок годности", "Срок годности"],
 ] as const;
-const template = '\uFEFF' + fields.map(([, , header]) => header).join(',') + '\r\n' + 'EXAMPLE-001,Пример: материал 5 г,MY-001,,1250.50,KZT,25,шт.,,,,\r\n';
 type RowFilter = "all" | "ready" | "attention" | "error";
 export function SpreadsheetImport({ api, supplierId, sources, onChanged, hideHeading = false }: {
   api: MarketplaceApiClient; supplierId: string; sources: SupplierDataSource[]; onChanged: () => Promise<void>; hideHeading?: boolean;
@@ -100,7 +99,7 @@ export function SpreadsheetImport({ api, supplierId, sources, onChanged, hideHea
         {step === 0 ? <>
           <h2>Загрузите прайс</h2><p className={styles.hint}>CSV с запятыми или первый лист Excel. До 20 МБ и 5 000 строк.</p>
           <div className={local.upload}><strong>{file?.name ?? "Выберите файл с товарами"}</strong><span>Название, цена, остаток и артикул — в отдельных столбцах</span><DmButton disabled={busy} onClick={() => fileInput.current?.click()}>{file ? "Выбрать другой файл" : "Выбрать файл CSV или XLSX"}</DmButton><input ref={fileInput} hidden aria-label="Таблица поставщика" type="file" accept=".csv,.xlsx" disabled={busy} onChange={event => { setFile(event.target.files?.[0] ?? null); setSourceId(""); setPreview(null); setError(null); }} /></div>
-          <div className={styles.toolbar}><a href="/templates/supplier-price-template.xlsx" download="Шаблон-прайса.xlsx">Скачать шаблон Excel</a><a href={`data:text/csv;charset=utf-8,${encodeURIComponent(template)}`} download="Шаблон-прайса.csv">Скачать шаблон CSV</a></div>
+          <div className={styles.toolbar}><a href="/templates/supplier-price-template.xlsx" download="Шаблон-прайса.xlsx">Скачать шаблон Excel</a><a href="/templates/supplier-price-template.csv" download="Шаблон-прайса.csv">Скачать шаблон CSV</a></div>
           <p className={styles.hint}>В шаблоне Excel есть пример и пояснения к столбцам. Замените пример своими товарами; цена — в тенге. CSV использует запятую как разделитель.</p>
           <DmField label="Источник прайса" hint="Для обновления прежних строк выбирайте тот же источник и сохраняйте их коды."><DmDropdown value={sourceId} disabled={busy} onChange={(_, data) => setSourceId(data.value)}><option value="">Создать новый источник</option>{availableSources.map(source => <option key={source.id} value={source.id}>{source.name}</option>)}</DmDropdown></DmField>
           <div className={styles.footer}><span className={styles.hint}>До подтверждения предложения не изменятся</span><DmButton appearance="primary" disabled={busy || !file} onClick={() => void readFile()}>{busy ? "Читаем файл…" : "Настроить столбцы"}</DmButton></div>

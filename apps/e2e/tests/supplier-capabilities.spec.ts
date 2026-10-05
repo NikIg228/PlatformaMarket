@@ -355,7 +355,7 @@ test("product context links and list filters survive a round trip", async ({ pag
   await expect(page.getByRole("textbox", { name: "Поиск по товарам" })).toHaveValue("Композит");
   await expect(page.getByRole("button", { name: "Адгезив универсальный", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Композит для реставрации", exact: true }).click();
-  await page.getByRole("dialog").getByRole("link", { name: "Остатки", exact: true }).click();
+  await page.getByRole("dialog").getByRole("link", { name: "Обновить остатки", exact: true }).click();
   await expect(page.getByRole("table", { name: "Остатки по складам" })).toContainText("25 уп.");
   expect(state.reads.some(path => path.includes(`offerId=${offerId}`) && path.includes(`balanceId=${id(8)}`))).toBe(true);
   await noOverflow(page); await page.screenshot({ path: testInfo.outputPath("linked-inventory-mobile.png"), fullPage: true });

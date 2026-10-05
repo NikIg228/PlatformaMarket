@@ -1,5 +1,48 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 05.10.2026 — INVENTORY-EDITOR-TEMPLATES (LOCAL_PASS; delivery pending)
+
+Owner same primary; canonical main@94d4de9, sole writer. User requests fully
+populated one-product XLSX/CSV examples without decorative fills/fonts; move
+stock editing from product inspector to Inventory, contextual quick link opens
+the selected offer/balance ready to edit. Preserve price editing in inspector.
+Risk: existing editor saves price+stock atomically. Add separate typed price/stock
+commands using existing commercial service transaction/version/idempotency rules;
+stock must not write price or require pricing.manage, price must not write stock.
+Keep combined create flow, tenant/role/source restrictions, reservations/safety,
+publication and audit/outbox unchanged. No integrations/schema migrations.
+UI: existing Fluent controls, table action + compact selected stock form,
+loading/empty/error/forbidden/success/conflict/retry, unsaved input protection,
+desktop/mobile/keyboard and deep-link/reload. Template12 columns same sample,
+plain grid and normal font, usable import file; preserve separate instructions.
+Gates: immediate focused service/schema/client tests before dependent UI;
+parser actual XLSX+CSV, scoped types/lint, targeted browser edit/deep-link/retry/
+permissions/integration source/conflicts, canonical web/API builds, focused
+isolated PostgreSQL commercial transaction/stock rollback/concurrency evidence.
+No full unrelated E2E, no working DB writes. Max3 attempts/gate, 20min check/
+15min diagnosis budget. Preserve existing governance/legacy next-env/output WIP.
+DoD implemented + review/gates + owned commit/push main, SHA and CI snapshot.
+Implemented typed stock/price-only operations, inventory editor/deep links,
+inspector price-only mode, plain XLSX/CSV with all12 example columns populated.
+Evidence .tmp/inventory-*: service8/schema8/client2 PASS; parser2 PASS14
+(parser1 failed CSV-only rowNumbers expectation, corrected assertion).
+Scoped API/web/supplier/client/e2e types PASS; web types1 failed input ref,
+fixed slot ref then web types2 PASS. API build1 EPERM live Prisma DLL;
+verified/stopped canonical dev14492 tree, API build2 PASS. PostgreSQL1 did
+not start because wrapper needs npm; corrected db:test command PostgreSQL2
+PASS including HTTP strict shapes, separate rights, no price/stock crossover,
+rollback, concurrent writes, tenant isolation, replay and cleanup.
+Runtime split PASS1; runtime OpenAPI route/schema presence PASS stock+price.
+Web build1/scoped lint1 PASS. Browser7/7 PASS1; existing manual-create,
+inventory filters and contextual roundtrip3/3 PASS1. Desktop field/button
+compacted after visual inspection; affected desktop1440/mobile3902/2 PASS2,
+initial+saved screenshots inspected. ESLint2 PASS; e2e types2 PASS.
+Web build2 after compact styles PASS; no repeated backend suites.
+Dev14440 stopped for final web build; canonical launcher restoration started.
+Applied Development Toolkit, Agency UI/Code Reviewer and Spreadsheets practices:
+existing Fluent tokens, real template parsing, state transitions/least privilege,
+targeted isolated tests and explicit diff scope. Pending commit/push/CI snapshot.
+
 ## 05.10.2026 — PRODUCT-PAGES-REFINEMENT (LOCAL_PASS; delivery pending)
 
 Owner same primary; canonical main@8955f56. Owner supplied8 screenshots and

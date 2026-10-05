@@ -576,6 +576,14 @@ export class MarketplaceApiClient {
     return this.put<import("@marketplace/schemas").OfferCommercialState>(`/suppliers/${supplierId}/offers/${offerId}/commercial`, input);
   }
 
+  saveSupplierOfferStock(supplierId: string, offerId: string, input: import("@marketplace/schemas").SaveOfferStockInput) {
+    return this.put<import("@marketplace/schemas").OfferCommercialState>(`/suppliers/${supplierId}/offers/${offerId}/commercial/stock`, input);
+  }
+
+  saveSupplierOfferPrice(supplierId: string, offerId: string, input: import("@marketplace/schemas").SaveOfferPriceInput) {
+    return this.put<import("@marketplace/schemas").OfferCommercialState>(`/suppliers/${supplierId}/offers/${offerId}/commercial/price`, input);
+  }
+
   assignSupplierOfferPackaging(supplierId: string, offerId: string, input: import("@marketplace/schemas").AssignOfferPackagingInput) {
     return this.put<unknown>(`/suppliers/${supplierId}/offers/${offerId}/packaging`, input);
   }

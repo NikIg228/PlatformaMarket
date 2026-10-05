@@ -1,7 +1,7 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { createHash } from "node:crypto";
-import type { OfferCommercialState, SaveOfferCommercialInput } from "@marketplace/schemas";
+import type { OfferCommercialState, SaveOfferCommercialInput, SaveOfferStockInput, SaveOfferPriceInput } from "@marketplace/schemas";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import { AccessControlService } from "../access-control/access-control.service";
 import { SupplierAccessService, type SupplierActorContext } from "../suppliers/supplier-access.service";
@@ -38,10 +38,24 @@ export class OfferCommercialService {
   }
 
   async save(supplierId: string, offerId: string, input: SaveOfferCommercialInput, context: SupplierActorContext): Promise<OfferCommercialState> {
+    return this.write(supplierId, offerId, input, context, "commercial");
+  }
+
+  async saveStock(supplierId: string, offerId: string, input: SaveOfferStockInput, context: SupplierActorContext): Promise<OfferCommercialState> {
+    return this.write(supplierId, offerId, input, context, "stock");
+  }
+
+  async savePrice(supplierId: string, offerId: string, input: SaveOfferPriceInput, context: SupplierActorContext): Promise<OfferCommercialState> {
+    return this.write(supplierId, offerId, input, context, "price");
+  }
+
+  private async write(supplierId: string, offerId: string, input: SaveOfferCommercialInput | SaveOfferStockInput | SaveOfferPriceInput,
+    context: SupplierActorContext, mode: "commercial" | "stock" | "price"): Promise<OfferCommercialState> {
     await this.access.assertCanManage(supplierId, context);
-    if (!await this.permissions.hasAll(context.actorId, context.organizationId, ["pricing.manage", "inventory.adjust"]))
-      throw new ForbiddenException("Для сохранения условий нужны права на цену и остаток");
-    const scope = `offer-commercial:${supplierId}:${offerId}:${context.actorId}`;
+    const required = mode === "stock" ? ["inventory.adjust"] : mode === "price" ? ["pricing.manage"] : ["pricing.manage", "inventory.adjust"];
+    if (!await this.permissions.hasAll(context.actorId, context.organizationId, required))
+      throw new ForbiddenException("Недостаточно прав для сохранения выбранных условий");
+    const scope = `offer-${mode}:${supplierId}:${offerId}:${context.actorId}`;
     const requestHash = createHash("sha256").update(JSON.stringify(input)).digest("hex");
     const replay = (record: { requestHash: string | null; responseBody: Prisma.JsonValue | null }) => {
       if (record.requestHash !== requestHash) throw new ConflictException("Ключ повтора уже использован для других условий");
@@ -59,11 +73,13 @@ export class OfferCommercialService {
           throw new ConflictException("Это предложение недоступно для ручного изменения условий");
         if (current.offerVersion !== input.expectedOfferVersion || (current.balance?.version ?? null) !== input.expectedBalanceVersion)
           throw new ConflictException({ code: "OFFER_COMMERCIAL_CHANGED", message: "Условия изменились после открытия формы. Сравните текущие значения с введёнными.", current });
+        if (mode !== "stock" && "amountMinor" in input) {
         const samePrice = current.price && new Prisma.Decimal(current.price.amountMinor).eq(input.amountMinor) && current.price.currency === input.currency &&
           current.price.includesVat === input.includesVat && (current.price.vatRate === null ? input.vatRate === null : input.vatRate !== null && new Prisma.Decimal(current.price.vatRate).eq(input.vatRate));
         if (!samePrice) await this.offers.setPrice(supplierId, offerId, { amountMinor: input.amountMinor, currency: input.currency,
           includesVat: input.includesVat, vatRate: input.vatRate, source: "MANUAL" }, context, tx);
-        await this.inventory.setBalance(supplierId, { warehouseId: input.warehouseId, productVariantId: offer.productVariantId, offerId,
+        }
+        if (mode !== "price" && "quantityOnHand" in input) await this.inventory.setBalance(supplierId, { warehouseId: input.warehouseId, productVariantId: offer.productVariantId, offerId,
           quantityOnHand: input.quantityOnHand, quantityReserved: 0, safetyStock: 0, initialForOffer: true, source: "MANUAL" }, context, tx, input.expectedBalanceVersion);
         const result = await this.state(tx, supplierId, offerId, input.warehouseId);
         await tx.idempotencyRecord.create({ data: { scope, key: input.idempotencyKey, requestHash, responseCode: 200,
