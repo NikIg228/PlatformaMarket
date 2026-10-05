@@ -1,5 +1,49 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 05.10.2026 — PRODUCTS-UX-V2 (LOCAL_PASS)
+
+Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40; canonical main, base29c57b0.
+Owner approved all7 generated concepts and later import stock preservation fix.
+Implemented: add4steps, import4steps/history, proposals master/detail, corrections
+comparison/history, inventory contextual lots/reservations, promotion4steps,
+inspector. Desktop header breadcrumbs; mobile only title + parent back icon.
+No duplicate content back links; proposals filters aligned to list, primary New.
+Server preview before batch creation; exact MAJOR/MINOR prices; READY media only.
+Import preserves reserved/safety stock, rejects below commitments, version-CAS
+prevents concurrent overwrite; failed row rolls back price/history/inventory.
+Per-organization list filters/page restored, unsaved link/unload guard, retry
+keys preserved. Existing publication/moderation and tenant permissions retained.
+
+Verification plan: functional frontend + scoped read/write API changes; risks
+input loss/replay/tenant/publication/shared header and exact inventory concurrency.
+Focused checks first after each coherent API change, browser at1440/390, then
+scoped lint/types/build/runtime and isolated PostgreSQL. No release/full E2E.
+Evidence .tmp/products-ux-*.log; final images output/playwright/products-ux-v2/.
+- API reads17/17, import preview/history/parser17/17, stock units4/4 PASS.
+- Schemas51/51, client9/9, Swagger3/3, web navigation/summary6/6 PASS.
+- Browser20 unique cases PASS; affected7/7 after polish; visual all7 at1440/390,
+  inventory900 and live inspector→reserve link PASS. Writes use mock fixtures.
+- Scoped ESLint and web/supplier/UI/client/e2e types PASS; go_live web build2
+  PASS after final UI changes. API build/runtime-stock1 PASS after stock fix.
+- PG workflows original PASS3 (first2 launcher/preflight rejects, no DB writes);
+  changed stock/savepoint/two-connection fixtures PASS1. Existing PG reads PASS1.
+- Required verify:postgres equivalent PASS1: reused unchanged schema/API builds,
+  npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs.
+  Rollback/money/tenant/reservation races and dependent commerce paths PASS.
+- git diff --check PASS; scoped review found no remaining blockers.
+Earlier browser failures corrected: proposal locator (PASS3), correction panel
+remount (PASS2), Fluent modal exit before navigation (PASS2). e2e type option
+corrected (PASS2); no attempts reset. Unchanged successful checks reused.
+
+No schema migration, dependencies, working-data mutation or production deploy.
+Live catalog lacks READY images/approved packs for sampled products: honest
+placeholders; complete wizard verified with controlled fixtures, no reseeding.
+Applied Development Toolkit, UI/UX and Playwright practices, Code Reviewer,
+Git Workflow Master. No agents, worktrees or successor tasks created.
+Foreign governance/history WIP, legacy next-env and output preserved unstaged.
+Dev final launcher4168 from canonical root, npm run dev (JWT/go_live); API4012
+and web3000 startup/readiness PASS. Commit/push main authorized; CI snapshot only.
+
 02.10 MESSAGES-CONTROLS LOCAL_PASS main@bca9c17, same primary/foreign7.
 Remove previous/next and visible filter label; Fluent dropdown, center detail empty.
 Clinic/supplier compactList only; preserve default operator controls. Infinite

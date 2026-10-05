@@ -7,6 +7,7 @@ import {
 } from "@nestjs/common";
 import {
   supplierColumnMappingSchema,
+  importPriceMinor, supplierImportPreviewSchema, type SupplierImportPreviewInput,
   IMPORT_UPLOAD_MAX_BYTES,
   supplierImportRollbackResponseSchema,
   type ConfirmSupplierItemMatchInput,
@@ -23,6 +24,7 @@ import {
   type SupplierActorContext,
 } from "../suppliers/supplier-access.service";
 import { ImportFileParser } from "./import-file.parser";
+import { applyImportedInventory } from "./import-inventory";
 import {
   isConfidentAutomaticMatch,
   normalizeCatalogText,
@@ -49,7 +51,7 @@ function normalizeRow(row: RawRow, mapping: SupplierColumnMappingInput) {
     brand: value(row, mapping.brand) || null,
     manufacturer: value(row, mapping.manufacturer) || null,
     unit: value(row, mapping.unit) || null,
-    priceMinor: value(row, mapping.priceMinor) || null,
+    priceMinor: value(row, mapping.priceMinor) ? importPriceMinor(value(row, mapping.priceMinor), mapping.priceUnit) ?? "INVALID_PRICE" : null,
     currency: value(row, mapping.currency).toUpperCase() || null,
     quantityOnHand: value(row, mapping.quantityOnHand) || null,
     lotNumber: value(row, mapping.lotNumber) || null,
@@ -542,6 +544,21 @@ export class ImportsService implements OnModuleInit {
     }
   }
 
+  async previewFile(supplierOrganizationId: string, input: SupplierImportPreviewInput, context: SupplierActorContext) {
+    await this.access.assertCanManage(supplierOrganizationId, context);
+    await this.access.requireProfile(supplierOrganizationId);
+    const body = this.uploads.decodeBase64(input.contentBase64, IMPORT_UPLOAD_MAX_BYTES);
+    const asset = await this.uploads.quarantine({ organizationId: supplierOrganizationId, actorId: context.actorId,
+      purpose: "supplier-import", fileName: input.fileName, body, allowedKinds: [input.fileType === "EXCEL" ? "XLSX" : "CSV"], maxBytes: IMPORT_UPLOAD_MAX_BYTES });
+    try {
+      const parsed = await this.fileParser.parseWithDiagnostics({ ...input, sourceId: supplierOrganizationId, columnMapping: { externalId: "Код", name: "Название" } });
+      if (!parsed.rows.length) throw new BadRequestException("В файле нет строк с товарами.");
+      const result = supplierImportPreviewSchema.safeParse({ headers: Object.keys(parsed.rows[0]!), rows: parsed.rows.map((rawData, index) => ({ rowNumber: parsed.rowNumbers?.[index] ?? index + 2, rawData })) });
+      if (!result.success) throw new BadRequestException("Слишком длинные значения или слишком много столбцов в файле.");
+      return result.data;
+    } finally { await this.uploads.release(asset.id, "Import preview complete"); }
+  }
+
   async enqueueBatch(
     supplierOrganizationId: string,
     batchId: string,
@@ -871,52 +888,7 @@ export class ImportsService implements OnModuleInit {
                 quantity !== null &&
                 /^\d+(?:\.\d{1,6})?$/.test(quantity)
               ) {
-                const inStock = !/^0(?:\.0+)?$/.test(quantity);
-                await tx.inventoryBalance.upsert({
-                  where: {
-                    supplierOrganizationId_warehouseId_productVariantId: {
-                      supplierOrganizationId,
-                      warehouseId: defaultWarehouse.id,
-                      productVariantId: best.variant.id,
-                    },
-                  },
-                  update: {
-                    offerId: offer.id,
-                    quantityOnHand: quantity,
-                    quantityReserved: 0,
-                    safetyStock: 0,
-                    quantityAvailable: quantity,
-                    availabilityStatus:
-                      inStock ? "IN_STOCK" : "OUT_OF_STOCK",
-                    freshnessStatus: "FRESH",
-                    source: "IMPORT",
-                    externalUpdatedAt: new Date(),
-                    lastSuccessfulSyncAt: new Date(),
-                    freshnessExpiresAt: new Date(
-                      Date.now() + 24 * 60 * 60 * 1000,
-                    ),
-                    version: { increment: 1 },
-                  },
-                  create: {
-                    supplierOrganizationId,
-                    warehouseId: defaultWarehouse.id,
-                    productVariantId: best.variant.id,
-                    offerId: offer.id,
-                    quantityOnHand: quantity,
-                    quantityReserved: 0,
-                    safetyStock: 0,
-                    quantityAvailable: quantity,
-                    availabilityStatus:
-                      inStock ? "IN_STOCK" : "OUT_OF_STOCK",
-                    freshnessStatus: "FRESH",
-                    source: "IMPORT",
-                    externalUpdatedAt: new Date(),
-                    lastSuccessfulSyncAt: new Date(),
-                    freshnessExpiresAt: new Date(
-                      Date.now() + 24 * 60 * 60 * 1000,
-                    ),
-                  },
-                });
+                await applyImportedInventory(tx, { supplierOrganizationId, warehouseId: defaultWarehouse.id, productVariantId: best.variant.id, offerId: offer.id, quantity });
               }
               await tx.importRow.update({
                 where: { id: row.id },

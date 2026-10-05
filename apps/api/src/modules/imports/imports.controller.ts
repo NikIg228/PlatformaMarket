@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Headers, Param, Post, Query, UseGuards } from "@nestjs/common";
-import { confirmSupplierItemMatchSchema, createImportBatchSchema, rollbackImportBatchSchema } from "@marketplace/schemas";
+import { confirmSupplierItemMatchSchema, createImportBatchSchema, rollbackImportBatchSchema, supplierImportPreviewInputSchema } from "@marketplace/schemas";
 import { ApiTags } from "@nestjs/swagger";
 import { PermissionsGuard } from "../access-control/permissions.guard";
 import { RequirePermissions } from "../access-control/require-permissions.decorator";
@@ -22,6 +22,17 @@ import { ApiCoreQuery } from "../../platform/openapi/core-openapi";
 export class ImportsController {
   constructor(private readonly imports: ImportsService) {}
   private context(actorId: string, organizationId: string) { return { actorId, organizationId }; }
+
+  @Post("import-preview")
+  @ApiUuidParam("supplierOrganizationId", "Supplier organization identifier")
+  @RequirePermissions("import.manage")
+  @ApiCoreBody("SupplierImportPreviewInput")
+  @ApiCoreResponse("SupplierImportPreview", 201)
+  preview(@Param("supplierOrganizationId") supplierOrganizationId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+    const parsed = supplierImportPreviewInputSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.imports.previewFile(supplierOrganizationId, parsed.data, this.context(actorId, organizationId));
+  }
 
   @Get("import-batches")
   @RequirePermissions("import.manage")

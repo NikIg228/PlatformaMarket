@@ -1,4 +1,4 @@
-import { commerceAnalyticsQuerySchema, commerceAnalyticsResponseSchema } from "@marketplace/schemas";
+import { commerceAnalyticsQuerySchema, commerceAnalyticsResponseSchema, supplierImportPreviewInputSchema, supplierImportPreviewSchema } from "@marketplace/schemas";
 import { accessPolicySchema } from "@marketplace/schemas";
 import { internalNotificationSchema, internalNotificationListSchema, notificationQuerySchema } from "@marketplace/schemas";
 import { operationObjectSchema, operationWorkQueueQuerySchema } from "@marketplace/schemas";
@@ -286,6 +286,8 @@ const coreZodSchemas = {
   SubmitProductCandidateRequest: submitProductCandidateSchema,
   ProductCandidateSubmittedResponse: productCandidateSubmittedSchema,
   ProductCandidateHistoryQuery: productCandidateHistoryQuerySchema,
+  SupplierImportPreviewInput: supplierImportPreviewInputSchema,
+  SupplierImportPreview: supplierImportPreviewSchema,
   ProductCandidateHistoryResponse: productCandidateHistoryResponseSchema,
   ApproveProductCandidateRequest: approveProductCandidateSchema,
   ApproveProductCandidateResponse: approveProductCandidateResponseSchema,

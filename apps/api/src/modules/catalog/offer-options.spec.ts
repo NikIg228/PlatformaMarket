@@ -14,6 +14,7 @@ it("searches approved master variants with bounded pagination and no supplier da
   const query = findMany.mock.calls[0][0];
   expect(query.where).toMatchObject({ status: "ACTIVE", product: { status: "ACTIVE" } });
   expect(query.take).toBe(3); expect(query.select.supplierOffers).toBeUndefined();
+  expect(query.select.product.select.media).toMatchObject({ where: { status: "READY" }, take: 1, select: { sourceUrl: true } });
   await service.offerOptions({ q: "", cursor: "b", limit: 2 });
   expect(findMany.mock.calls[1][0].where.id).toEqual({ gt: "b" });
 });

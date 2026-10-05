@@ -9,6 +9,7 @@ export const offerOptionsQuerySchema = z.object({
 export const offerOptionSchema = z.object({
   id: z.uuid(), productId: z.uuid(), name: z.string(), sku: z.string().nullable(),
   gtin: z.string().nullable(),
+  imageUrl: z.string().nullable().optional(),
   packagings: z.array(z.object({
     id: z.uuid(), name: z.string(), unitId: z.uuid(), unit: z.string(), quantityInBaseUnit: z.string(),
   })),

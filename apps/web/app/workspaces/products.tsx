@@ -12,20 +12,21 @@ import { offerAttention, totalAvailable } from "./offer-summary";
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
 import { ResourceStatus } from "./resource-status";
-import { PageNavigation, usePageNavigation } from "./page-navigation";
+import { PageNavigation } from "./page-navigation";
+import { useProductListState } from "./product-list-state";
 import styles from "./products.module.css";
 
 export default function Products() {
   const { api, organizationId } = useWorkspace();
-  const navigation = usePageNavigation();
-  const [query, setQuery] = useState(""), [appliedQuery, setAppliedQuery] = useState("");
-  const [attentionOnly, setAttentionOnly] = useState(false), [status, setStatus] = useState<"" | "published" | "hidden">("");
+  const { navigation, query, appliedQuery, attentionOnly, status, change } = useProductListState(organizationId);
+  const setQuery = (value: string) => change("query", value), setAppliedQuery = (value: string) => change("appliedQuery", value);
+  const setAttentionOnly = (value: boolean) => change("attentionOnly", value), setStatus = (value: typeof status) => change("status", value);
   const [filterOpen, setFilterOpen] = useState(false);
   const [offer, setOffer] = useState<WorkspaceOffer | null>(null);
   const trigger = useRef<HTMLElement | null>(null);
   const load = useCallback((signal: AbortSignal) => api.workspaceOffers({ q: appliedQuery, cursor: navigation.cursor, publication: status || undefined, attention: attentionOnly ? "required" : undefined }, { signal }), [api, organizationId, appliedQuery, navigation.cursor, status, attentionOnly]);
   const resource = useResource(load);
-  const selectedOfferId = useSearchParams().get("offer");
+  const searchParams = useSearchParams(), selectedOfferId = searchParams.get("offer");
   const loadSelected = useCallback((signal: AbortSignal) => selectedOfferId ? api.workspaceOffer(selectedOfferId, { signal }) : Promise.resolve(null), [api, organizationId, selectedOfferId]);
   const selected = useResource(loadSelected, { automatic: false });
   const appliedSelection = useRef<string | null>(null);
@@ -69,6 +70,6 @@ export default function Products() {
       </table>}
       <PageNavigation navigation={navigation} nextCursor={resource.data?.nextCursor} loading={resource.loading} onRefresh={refresh} />
     </section>
-    <OfferPanel offer={offer} onClose={() => { setOffer(null); requestAnimationFrame(() => trigger.current?.focus()); }} onChanged={resource.refreshAfterWrite} />
+    <OfferPanel offer={offer} initiallyEditing={Boolean(selectedOfferId && offer?.id === selectedOfferId && searchParams.get("edit") === "1")} onClose={() => { setOffer(null); requestAnimationFrame(() => trigger.current?.focus()); }} onChanged={async () => { await resource.refreshAfterWrite(); if (offer) setOffer(await api.workspaceOffer(offer.id)); }} />
   </div>;
 }

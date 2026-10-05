@@ -1,0 +1,35 @@
+.identity { display:flex; gap:16px; align-items:flex-start; }
+.identity > :first-child { width:92px; height:92px; flex-basis:92px; }
+.identity > div:last-child { min-width:0; }
+.identity p { color:var(--dm-text-secondary); font-size:13px; margin:0 0 10px; }
+.metrics { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.metrics > div { display:grid; gap:8px; border:1px solid var(--dm-border); border-radius:8px; padding:16px; }
+.metrics span, .orderTerms span { color:var(--dm-text-secondary); font-size:13px; }
+.metrics strong { font-size:24px; font-weight:650; }
+.metrics em { font-size:14px; font-style:normal; font-weight:400; }
+.metrics small { margin:0; }
+.orderTerms { display:grid; gap:0; }
+.orderTerms > div { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:12px 0; border-top:1px solid var(--dm-border); }
+.warehouses { display:grid; gap:16px; }
+.warehouses article { border:1px solid var(--dm-border); border-radius:8px; padding:16px; }
+.warehouseTitle { display:flex; gap:10px; justify-content:space-between; align-items:center; }
+.warehouses dl { display:flex; flex-wrap:wrap; margin:10px 0; gap:8px 18px; }
+.warehouses dl > div { display:flex; gap:6px; align-items:baseline; }
+.warehouses dt { color:var(--dm-text-secondary); font-size:12px; margin:0; }
+.warehouses dd { margin:0; font-size:13px; font-weight:600; }
+.publicLink { display:block; margin-top:10px; color:var(--dm-brand-deep); font-size:13px; text-underline-offset:3px; }
+.footer > button { width:100%; }
+.links { display:flex; gap:16px; font-size:13px; align-items:center; flex-wrap:wrap; }
+.links small { margin:0; margin-left:auto; }
+.links a { color:var(--dm-brand-deep); text-underline-offset:3px; }
+.related { display:grid; gap:8px; }
+.related a { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--dm-border); border-radius:8px; text-decoration:none; color:var(--dm-brand-deep); }
+.related a > div { flex:1; min-width:0; }
+.related a > svg { box-sizing:content-box; width:24px; height:24px; padding:10px; flex-shrink:0; background:var(--dm-brand-surface); border-radius:6px; }
+.related a strong { color:var(--dm-text-primary); font-weight:600; }
+.related a small { font-size:12px; font-weight:400; }
+.related a:hover { border-color:var(--dm-brand-primary); background:var(--dm-brand-surface); }
+.disclosure { border:1px solid var(--dm-border); border-radius:8px; padding:14px; }
+.disclosure > summary { cursor:pointer; color:var(--dm-text-primary); font-weight:500; }
+.disclosure[open] > summary { margin-bottom:20px; }
+@media(max-width:500px) { .identity > :first-child { width:64px; height:64px; flex-basis:64px; } .metrics { gap:12px; } .metrics > div { padding:12px; } .metrics strong { font-size:21px; } .related a > svg { padding:6px; } }

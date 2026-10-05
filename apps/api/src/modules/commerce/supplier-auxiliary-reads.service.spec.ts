@@ -16,6 +16,13 @@ function fixture() {
   return { db, reads: new SupplierAuxiliaryReadsService(db as unknown as PrismaService) };
 }
 describe("bounded supplier auxiliary reads", () => {
+  it("scopes linked inventory and freshness before paging, and rejects reuse across links", async () => {
+    const { db, reads } = fixture();
+    const selected = { ...query, offerId: "offer-a", balanceId: "balance-a", attention: "required" as const };
+    const result = await reads.inventory("tenant-a", selected);
+    expect(db.inventoryBalance.findMany.mock.calls[0][0].where).toMatchObject({ supplierOrganizationId: "tenant-a", offerId: "offer-a", id: "balance-a", AND: expect.arrayContaining([expect.objectContaining({ OR: expect.arrayContaining([{ freshnessStatus: { not: "FRESH" } }]) })]) });
+    await expect(reads.inventory("tenant-a", { ...selected, offerId: "offer-b", cursor: result.nextCursor! })).rejects.toThrow("Cursor");
+  });
   it("filters the warehouse before paging and binds the cursor to it", async () => {
     const { db, reads } = fixture();
     const result = await reads.inventory("tenant-a", { ...query, warehouseId: "warehouse-a" });

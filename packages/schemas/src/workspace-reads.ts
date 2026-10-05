@@ -11,7 +11,7 @@ export const workspaceOrderQuerySchema = workspacePageQuerySchema.extend({ statu
 export const workspaceOfferQuerySchema = workspacePageQuerySchema.extend({
   publication: z.enum(["published", "hidden"]).optional(), attention: z.enum(["required"]).optional(),
 });
-export const workspaceInventoryQuerySchema = workspacePageQuerySchema.extend({ warehouseId: z.uuid().optional() });
+export const workspaceInventoryQuerySchema = workspacePageQuerySchema.extend({ warehouseId: z.uuid().optional(), offerId: z.uuid().optional(), balanceId: z.uuid().optional(), attention: z.enum(["required"]).optional() });
 const page = <T extends z.ZodType>(item: T) => z.object({ items: z.array(item), nextCursor: z.string().nullable() });
 const decimal = z.string().regex(/^-?\d+(?:\.\d+)?$/);
 const date = z.iso.datetime();
@@ -26,7 +26,7 @@ export const workspaceOfferSchema = z.object({
   id: z.uuid(), version: z.number().int(), productVariantId: z.uuid(), supplierSku: z.string().nullable(),
   status: z.string(), sourceType: z.string(), confirmationMode: z.string(),
   minimumOrderQuantity: decimal, orderIncrement: decimal, baseUnitsPerSaleUnit: decimal, createdAt: date,
-  productVariant: z.object({ product: z.object({ id: z.uuid(), canonicalName: z.string(), description: z.string().nullable(), manufacturerSku: z.string().nullable(), gtin: z.string().nullable(), productType: z.string(), regulatoryClass: z.string().nullable() }) }),
+  productVariant: z.object({ product: z.object({ id: z.uuid(), canonicalName: z.string(), description: z.string().nullable(), manufacturerSku: z.string().nullable(), gtin: z.string().nullable(), productType: z.string(), regulatoryClass: z.string().nullable(), media: z.array(z.object({ sourceUrl: z.string().nullable() })).optional() }) }),
   saleUnit: z.object({ nameRu: z.string(), symbol: z.string() }).nullable(),
   packaging: z.object({ id: z.uuid(), name: z.string(), quantityInBaseUnit: decimal, unit: z.object({ symbol: z.string() }) }).nullable(),
   publication: z.object({ status: z.string(), marketplaceVisible: z.boolean(), blockedReason: z.string().nullable() }).nullable(),
@@ -55,6 +55,8 @@ export const workspaceInventorySchema = z.object({
   productVariant: z.object({ product: z.object({ canonicalName: z.string() }) }),
   quantityOnHand: decimal, quantityAvailable: decimal, quantityReserved: decimal,
   safetyStock: decimal, freshnessStatus: z.string(),
+  freshnessExpiresAt: date.nullable().optional(),
+  offer: z.object({ saleUnit: z.object({ symbol: z.string() }).nullable(), packaging: z.object({ name: z.string() }).nullable() }).nullable().optional(),
 });
 export const workspaceInventoryPageSchema = page(workspaceInventorySchema);
 export const workspaceLotPageSchema = page(z.object({

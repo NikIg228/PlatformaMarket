@@ -6,6 +6,7 @@ import { DmButton, DmField, DmInput, DmDropdown as DmSelect, EmptyState, ErrorSt
 import { PromotionEditor } from "./promotion-editor";
 import { promotionLabels as labels, promotionLocalDate, type PromotionWorkspaceApi } from "./promotion-workspace-types";
 import styles from "./promotion-editor.module.css";
+import { productWorkflowStyles as workflow } from "./product-workflow";
 
 function PromotionCard({ item, api, operator, reload, edit }: { item: OfferPromotion; api: PromotionWorkspaceApi; operator: boolean; reload: () => Promise<void>; edit: (template: boolean) => void }) {
   const [reason, setReason] = useState(""), [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
@@ -58,11 +59,13 @@ function PromotionCard({ item, api, operator, reload, edit }: { item: OfferPromo
   </Section>;
 }
 
-export function PromotionWorkspace({ api, operator = false, hideHeading = false }: { api: PromotionWorkspaceApi; operator?: boolean; hideHeading?: boolean }) {
+export function PromotionWorkspace({ api, operator = false, hideHeading = false, createMode = false, initialOfferId, onModeChange }: { api: PromotionWorkspaceApi; operator?: boolean; hideHeading?: boolean; createMode?: boolean; initialOfferId?: string; onModeChange?: (create: boolean) => void }) {
   const [page, setPage] = useState<PromotionPage | null>(null), [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true), [error, setError] = useState<string | null>(null), [notice, setNotice] = useState("");
-  const [status, setStatus] = useState(""), [editor, setEditor] = useState<{ selected?: OfferPromotion; template?: OfferPromotion } | null>(null);
+  const [status, setStatus] = useState(""), [editor, setEditor] = useState<{ selected?: OfferPromotion; template?: OfferPromotion } | null>(createMode ? {} : null);
+  const [detailId, setDetailId] = useState<string | null>(null);
   const [phase, setPhase] = useState<PromotionListQuery["phase"]>();
+  useEffect(() => { if (onModeChange) setEditor(current => createMode ? current ?? {} : null); }, [createMode, onModeChange]);
   const generation = useRef(0);
   const load = useCallback(async () => {
     const current = ++generation.current; setLoading(true); setError(null);
@@ -72,16 +75,22 @@ export function PromotionWorkspace({ api, operator = false, hideHeading = false 
   }, [api, offset, status, phase]);
   useEffect(() => { void load(); return () => { generation.current++; }; }, [load]);
   const saved = async () => { setNotice("Изменения сохранены. История обновлена."); await load(); };
+  const openEditor = (value: { selected?: OfferPromotion; template?: OfferPromotion }) => { setEditor(value); onModeChange?.(true); };
+  const closeEditor = () => { setEditor(null); onModeChange?.(false); };
+  if (editor && !operator) return <PromotionEditor key={editor.selected?.id ?? editor.template?.id ?? initialOfferId ?? "new"} api={api} {...editor} initialOfferId={initialOfferId} onSaved={saved} onClose={closeEditor} />;
   return <div className="mp-stack">
     {!hideHeading ? <h2>{operator ? "Согласование акций" : "Акции поставщика"}</h2> : null}
     {notice ? <p role="status">{notice}</p> : null}
-    {!operator && !editor ? <DmButton appearance="primary" onClick={() => setEditor({})}>Новая акция</DmButton> : null}
+    {!operator && !editor ? <div className={workflow.toolbar}><span /><DmButton appearance="primary" onClick={() => openEditor({})}>Новая акция</DmButton></div> : null}
     {editor ? <PromotionEditor key={editor.selected?.id ?? editor.template?.id ?? "new"} api={api} {...editor} onSaved={saved} onClose={() => setEditor(null)} /> : null}
     {!operator ? <TabList aria-label="Срок акций" selectedValue={phase ?? "ALL"} onTabSelect={(_, data) => { setOffset(0); setPhase(data.value === "ALL" ? undefined : data.value as PromotionListQuery["phase"]); }}><Tab value="ALL">Все</Tab><Tab value="ACTIVE">Действующие</Tab><Tab value="SCHEDULED">Запланированные</Tab><Tab value="ENDED">Архив</Tab></TabList> : null}
     <DmField label="Статус согласования"><DmSelect value={status} onChange={(_, data) => { setStatus(data.value); setOffset(0); }}><option value="">Все статусы и история</option>{["DRAFT", "PENDING", "CHANGES_REQUESTED", "REJECTED", "APPROVED"].map(value => <option key={value} value={value}>{labels[value]}</option>)}</DmSelect></DmField>
     <DmButton disabled={loading} onClick={() => void load()}>Обновить акции</DmButton>
     {error ? <ErrorState description={error} /> : null}
-    {loading ? <LoadingState label="Загружаем акции" /> : page?.items.length ? page.items.map(item => <PromotionCard key={`${item.id}:${item.version}`} item={item} api={api} operator={operator} reload={saved} edit={template => setEditor(template ? { template: item } : { selected: item })} />) : !error ? <EmptyState title="Акций пока нет" description={operator ? "Здесь появятся условия, отправленные поставщиками." : "Создайте черновик для одного предложения."} /> : null}
-    <div><DmButton disabled={loading || offset === 0} onClick={() => setOffset(Math.max(0, offset - 10))}>Назад</DmButton> <DmButton disabled={loading || !page || offset + page.items.length >= page.total} onClick={() => setOffset(offset + 10)}>Далее</DmButton></div>
+    {loading ? <LoadingState label="Загружаем акции" /> : page?.items.length ? operator ? page.items.map(item => <PromotionCard key={`${item.id}:${item.version}`} item={item} api={api} operator reload={saved} edit={template => openEditor(template ? { template: item } : { selected: item })} />) : <>
+      <div className={workflow.panel}><table className={workflow.table}><caption className="dm-sr-only">Акции поставщика</caption><thead><tr><th>Акция и товар</th><th>Условия</th><th>Период</th><th>Статус</th><th>Действие</th></tr></thead><tbody>{page.items.map(item => <tr key={item.id} data-selected={detailId === item.id}><td data-label="Акция"><div><strong>{item.terms.name}</strong><small>{item.offerName}</small></div></td><td data-label="Условия"><div>{item.terms.kind === "BUY_X_GET_Y" ? `${item.terms.buyQuantity} + ${item.terms.giftQuantity} в подарок` : formatMoney(item.unitPriceMinor, item.currency)}<small>Оформлено {item.claimedQuantity} из {item.terms.quantityLimit}</small></div></td><td data-label="Период"><div>{formatDate(item.terms.startsAt)} — {formatDate(item.terms.endsAt)}</div></td><td data-label="Статус"><div><StatusTag>{labels[item.moderationStatus === "APPROVED" ? item.temporalStatus : item.moderationStatus]}</StatusTag></div></td><td data-label="Действие"><DmButton onClick={() => setDetailId(detailId === item.id ? null : item.id)}>Подробнее</DmButton></td></tr>)}</tbody></table></div>
+      {page.items.filter(item => item.id === detailId).map(item => <PromotionCard key={`${item.id}:${item.version}`} item={item} api={api} operator={false} reload={saved} edit={template => openEditor(template ? { template: item } : { selected: item })} />)}
+    </> : !error ? <EmptyState title="Акций пока нет" description={operator ? "Здесь появятся условия, отправленные поставщиками." : "Создайте черновик для одного предложения."} /> : null}
+    {page && page.total > 10 ? <div><DmButton disabled={loading || offset === 0} onClick={() => setOffset(Math.max(0, offset - 10))}>Назад</DmButton> <DmButton disabled={loading || offset + page.items.length >= page.total} onClick={() => setOffset(offset + 10)}>Далее</DmButton></div> : null}
   </div>;
 }

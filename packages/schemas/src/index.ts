@@ -243,6 +243,7 @@ export const supplierColumnMappingSchema = z.object({
   manufacturer: z.string().trim().min(1).max(120).optional(),
   unit: z.string().trim().min(1).max(120).optional(),
   priceMinor: z.string().trim().min(1).max(120).optional(),
+  priceUnit: z.enum(["MAJOR", "MINOR"]).optional(),
   currency: z.string().trim().min(1).max(120).optional(),
   quantityOnHand: z.string().trim().min(1).max(120).optional(),
   lotNumber: z.string().trim().min(1).max(120).optional(),
@@ -251,6 +252,12 @@ export const supplierColumnMappingSchema = z.object({
 
 const rawImportCellSchema = z.union([z.string().max(4_000), z.number(), z.boolean(), z.null()]);
 const rawImportRowSchema = z.record(z.string().max(200), rawImportCellSchema).refine((row) => Object.keys(row).length <= 100, "Import rows cannot contain more than 100 columns");
+
+export const supplierImportPreviewInputSchema = z.object({ fileName: z.string().trim().min(1).max(240), fileType: z.enum(["CSV", "EXCEL"]), contentBase64: z.string().min(4).max(IMPORT_UPLOAD_MAX_BASE64_CHARACTERS) });
+export const supplierImportPreviewSchema = z.object({ headers: z.array(z.string()).max(100), rows: z.array(z.object({ rowNumber: z.number().int().positive(), rawData: rawImportRowSchema })).max(5000) });
+export type SupplierImportPreviewInput = z.infer<typeof supplierImportPreviewInputSchema>;
+export type SupplierImportPreview = z.infer<typeof supplierImportPreviewSchema>;
+export { importPriceMinor } from "./import-price";
 
 export const createImportBatchSchema = z.object({
   sourceId: z.uuid(),
@@ -930,13 +937,14 @@ export const offerDeliveryOptionResponseSchema = z.object({
   installationRequired: z.boolean(), status: z.string(),
 });
 
-export const productCandidateHistoryQuerySchema = z.object({ cursor: z.uuid().optional(), limit: z.coerce.number().int().min(1).max(50).default(20) });
+export const productCandidateHistoryQuerySchema = z.object({ cursor: z.uuid().optional(), limit: z.coerce.number().int().min(1).max(50).default(20), q: z.string().trim().max(160).optional(), status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional() });
 export const productCandidateSummarySchema = z.object({
   id: z.uuid(), proposedName: z.string(), proposedSku: z.string().nullable(),
   description: z.string().nullable().optional(),
   proposedGtin: z.string().nullable(), proposedBrand: z.string().nullable(),
   status: z.enum(["PENDING", "APPROVED", "REJECTED"]), rejectionReason: z.string().nullable(),
   approvedProductId: z.uuid().nullable(), approvedVariantId: z.uuid().nullable(),
+  offerId: z.uuid().nullable().optional(),
   createdAt: z.iso.datetime(), decidedAt: z.iso.datetime().nullable(),
 });
 export const productCandidateHistoryResponseSchema = z.object({ items: z.array(productCandidateSummarySchema), nextCursor: z.uuid().nullable() });

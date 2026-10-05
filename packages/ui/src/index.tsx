@@ -1,4 +1,5 @@
 "use client";
+export { WorkflowSteps, ProductThumbnail, useUnsavedChanges, productWorkflowStyles } from "./product-workflow";
 export { DmDropdown } from "./dm-dropdown";
 export { ConversationWorkspace, ConversationCounter } from "./conversation-workspace";
 export { MemberManagement } from "./member-management";

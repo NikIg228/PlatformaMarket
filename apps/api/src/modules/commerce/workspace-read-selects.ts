@@ -3,7 +3,9 @@ import { Prisma } from "@prisma/client";
 export const workspaceOfferSelect = {
   id: true, version: true, productVariantId: true, supplierSku: true, status: true, sourceType: true, confirmationMode: true,
   minimumOrderQuantity: true, orderIncrement: true, baseUnitsPerSaleUnit: true, createdAt: true,
-  productVariant: { select: { product: { select: { id: true, canonicalName: true, description: true, manufacturerSku: true, gtin: true, productType: true, regulatoryClass: true } } } },
+  productVariant: { select: { product: { select: { id: true, canonicalName: true, description: true, manufacturerSku: true, gtin: true, productType: true, regulatoryClass: true,
+    media: { where: { status: "READY" }, orderBy: [{ sortOrder: "asc" }, { id: "asc" }], take: 1, select: { sourceUrl: true } },
+  } } } },
   saleUnit: { select: { nameRu: true, symbol: true } },
   packaging: { select: { id: true, name: true, quantityInBaseUnit: true, unit: { select: { symbol: true } } } },
   publication: { select: { status: true, marketplaceVisible: true, blockedReason: true } },

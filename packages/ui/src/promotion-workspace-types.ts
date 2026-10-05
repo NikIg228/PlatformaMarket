@@ -1,4 +1,4 @@
-import type { CreateOfferPromotion, OfferPromotion, OfferPromotionCommand, PromotionListQuery, PromotionPage, ReviseOfferPromotion, WorkspaceOfferPage } from "@marketplace/schemas";
+import type { CreateOfferPromotion, OfferPromotion, OfferPromotionCommand, PromotionListQuery, PromotionPage, ReviseOfferPromotion, WorkspaceOfferPage, WorkspaceOffer } from "@marketplace/schemas";
 
 export interface PromotionWorkspaceApi {
   listPromotions(query?: Partial<PromotionListQuery>): Promise<PromotionPage>;
@@ -6,6 +6,7 @@ export interface PromotionWorkspaceApi {
   reviseOfferPromotion(id: string, input: ReviseOfferPromotion): Promise<OfferPromotion>;
   commandOfferPromotion(id: string, input: OfferPromotionCommand): Promise<OfferPromotion>;
   workspaceOffers(query?: { q?: string; limit?: number; cursor?: string }): Promise<WorkspaceOfferPage>;
+  workspaceOffer?(id: string): Promise<WorkspaceOffer>;
 }
 export const promotionLabels: Record<string, string> = {
   DRAFT: "Черновик", PENDING: "На проверке", CHANGES_REQUESTED: "Нужны изменения", REJECTED: "Отклонена", APPROVED: "Согласована",

@@ -38,15 +38,19 @@ export class SupplierAuxiliaryReadsService {
   }
   async inventory(organizationId: string, query: z.output<typeof workspaceInventoryQuerySchema>) {
     await this.authorize(organizationId);
-    const page = workspacePage([organizationId, "inventory", query.q, query.limit, query.warehouseId], query.cursor);
+    const page = workspacePage([organizationId, "inventory", query.q, query.limit, query.warehouseId, query.offerId, query.balanceId, query.attention], query.cursor);
     const where: Prisma.InventoryBalanceWhereInput = { ...page.where, supplierOrganizationId: organizationId,
       ...(query.warehouseId ? { warehouseId: query.warehouseId } : {}),
+      ...(query.offerId ? { offerId: query.offerId } : {}),
+      ...(query.balanceId ? { id: query.balanceId } : {}),
+      ...(query.attention ? { AND: [...page.where.AND, { OR: [{ freshnessStatus: { not: "FRESH" } }, { freshnessExpiresAt: { lte: new Date() } }] }] } : {}),
       ...(query.q ? { OR: [
         { warehouse: { name: { contains: query.q, mode: "insensitive" } } },
         { productVariant: { product: { canonicalName: { contains: query.q, mode: "insensitive" } } } },
       ] } : {}) };
     const rows = await this.db.inventoryBalance.findMany({ where,
-      select: { id: true, offerId: true, createdAt: true, updatedAt: true,
+      select: { id: true, offerId: true, createdAt: true, updatedAt: true, freshnessExpiresAt: true,
+        offer: { select: { saleUnit: { select: { symbol: true } }, packaging: { select: { name: true } } } },
         warehouse: { select: { id: true, name: true } }, productVariant: { select: { product: { select: { canonicalName: true } } } },
         quantityOnHand: true, quantityAvailable: true, quantityReserved: true, safetyStock: true, freshnessStatus: true },
       orderBy: [...workspaceOrderBy], take: query.limit + 1,

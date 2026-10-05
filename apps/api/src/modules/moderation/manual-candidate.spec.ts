@@ -9,10 +9,17 @@ it("returns submitted description without leaking raw payload and scopes history
   ]) } };
   const service = new ModerationService(db as never, {} as never);
   const result = await service.ownSubmissions({ limit: 20 }, { actorId: "supplier", organizationId: "own" });
-  expect(result.items).toEqual([{ id: "candidate", proposedName: "Material", description: "Pack of ten" }]);
+  expect(result.items).toEqual([{ id: "candidate", proposedName: "Material", description: "Pack of ten", offerId: null }]);
   expect(db.productCandidate.findMany.mock.calls[0][0].where).toEqual({ supplierOrganizationId: "own", externalItem: { importRowId: null } });
   await expect(service.ownSubmissions({ limit: 20, cursor: "foreign" }, { actorId: "supplier", organizationId: "own" })).rejects.toThrow("cursor not found");
   expect(db.productCandidate.findMany).toHaveBeenCalledOnce();
+});
+it("filters submissions before pagination and links only the supplier's approved offer", async () => {
+  const db = { productCandidate: { findMany: vi.fn().mockResolvedValue([{ id: "c", status: "APPROVED", approvedVariantId: "v", externalItem: { rawData: {} } }]) }, supplierOffer: { findMany: vi.fn().mockResolvedValue([{ id: "offer", productVariantId: "v" }]) } };
+  const result = await new ModerationService(db as never, {} as never).ownSubmissions({ limit: 20, q: "Material", status: "APPROVED" }, { actorId: "u", organizationId: "own" });
+  expect(db.productCandidate.findMany.mock.calls[0][0].where).toMatchObject({ supplierOrganizationId: "own", status: "APPROVED", proposedName: { contains: "Material", mode: "insensitive" } });
+  expect(db.supplierOffer.findMany.mock.calls[0][0].where).toEqual({ supplierOrganizationId: "own", productVariantId: { in: ["v"] } });
+  expect(result.items[0].offerId).toBe("offer");
 });
 function fixture(decisionCount = 1, operator = true) {
   const candidate = { id: "candidate", supplierOrganizationId: "supplier", status: "PENDING", proposedName: "New unique material", proposedSku: null, proposedGtin: null, proposedBrand: null, externalItemId: "external", externalItem: { sourceId: "source", importRowId: null } };

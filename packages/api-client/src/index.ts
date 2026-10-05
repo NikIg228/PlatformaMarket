@@ -608,6 +608,10 @@ export class MarketplaceApiClient {
     return this.get<SupplierImportBatchResponse[]>(this.withQuery(`/suppliers/${supplierId}/import-batches`, query));
   }
 
+  previewSupplierImport(supplierId: string, input: import("@marketplace/schemas").SupplierImportPreviewInput) {
+    return this.post<import("@marketplace/schemas").SupplierImportPreview>(`/suppliers/${supplierId}/import-preview`, input);
+  }
+
   listOfferDeliveryOptions(supplierId: string, offerId: string) {
     return this.get<import("@marketplace/schemas").OfferDeliveryOptionResponse[]>(`/suppliers/${supplierId}/offers/${offerId}/delivery-options`);
   }

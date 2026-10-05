@@ -1,5 +1,23 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+05.10 PRODUCTS-UX-V2 — LOCAL_PASS (CI проверяется отдельно при доставке):
+[контракт](../applications/supplier-web.md), [checkpoint](task-state/PRIMARY-SESSION.md).
+Семь согласованных поверхностей: добавление, импорт, заявки, исправления,
+остатки, акции и инспектор. Desktop breadcrumbs; mobile title/back icon.
+Серверный preview импорта, точная конверсия цены; резервы/страховой запас
+сохраняются, недостаточный остаток и конфликт версии откатывают строку.
+Focused API34/34 + stock4/4, schemas51/51, client9/9, Swagger3/3, web6/6;
+20 уникальных browser cases PASS, affected7/7 после visual polish.
+Scoped lint/types, canonical go_live web build, API build/runtime-split PASS.
+PostgreSQL product reads и workflows PASS; stock rollback и two-connection
+reservation race PASS. `verify:postgres` equivalent: reused schemas/API builds +
+`npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs` PASS.
+Visual1440/390 всех7, inventory900 и live read-only links PASS; отсутствующие
+READY фотографии показаны заглушками. Логи `.tmp/products-ux-*.log`, снимки
+`output/playwright/products-ux-v2/`. Рабочая БД/production не менялись;
+полные frontend/E2E/release suites не запускались вне затронутого scope.
+Применены Development Toolkit, UI/UX практики, Code Reviewer и Git Workflow Master.
+
 02.10 ROLES — CLOSED / CI_PASS: [checkpoint](task-state/CABINET-UX-2026-10-02.md),
 [ADR017](../architecture/adr/017-temporary-local-full-access.md). FULL_ACCESS для clinic/supplier/admin;
 роли сохранены, tenant/identity/capabilities действуют. Root и contract/PG/runtime/config PASS;

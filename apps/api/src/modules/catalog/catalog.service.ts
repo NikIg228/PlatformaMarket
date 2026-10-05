@@ -267,7 +267,7 @@ export class CatalogService {
         ] } : {}),
       },
       select: { id: true, productId: true, sku: true, gtin: true,
-        product: { select: { canonicalName: true } },
+        product: { select: { canonicalName: true, media: { where: { status: "READY" }, orderBy: [{ sortOrder: "asc" }, { id: "asc" }], take: 1, select: { sourceUrl: true } } } },
         packagings: { where: { status: "ACTIVE" }, orderBy: { quantityInBaseUnit: "asc" },
           select: { id: true, name: true, unitId: true, quantityInBaseUnit: true, unit: { select: { symbol: true } } } },
       },
@@ -275,6 +275,7 @@ export class CatalogService {
     });
     const items = rows.slice(0, input.limit).map(row => ({
       id: row.id, productId: row.productId, name: row.product.canonicalName, sku: row.sku, gtin: row.gtin,
+      imageUrl: row.product.media?.[0]?.sourceUrl ?? null,
       packagings: row.packagings.map(pack => ({ ...pack, unit: pack.unit.symbol, quantityInBaseUnit: pack.quantityInBaseUnit.toString() })),
     }));
     return { items, nextCursor: rows.length > input.limit ? items.at(-1)!.id : null };

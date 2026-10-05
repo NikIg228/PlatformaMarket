@@ -96,6 +96,7 @@ for (const width of [1440, 390]) test(`A13 offer information distinguishes expir
   await expect(row).toContainText("Подтвердите цену"); await expect(row).toContainText("Обновите остаток");
   await row.getByRole("button", { name: "Упаковка 10 штук", exact: true }).click();
   const detail = page.getByRole("dialog");
+  await detail.getByText("Источники и актуальность данных", { exact: true }).click();
   await expect(detail).toContainText("за уп."); await expect(detail).toContainText("10 базовых ед.");
   await expect(detail).toContainText("Минимум: 2; шаг: 2"); await expect(detail).toContainText("доступно 0; в резерве 3");
   await expect(detail).toContainText("Основной склад (уп.):");
@@ -104,6 +105,7 @@ for (const width of [1440, 390]) test(`A13 offer information distinguishes expir
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Поштучный товар", exact: true }).click();
   const unknown = page.getByRole("dialog");
+  await unknown.getByText("Источники и актуальность данных", { exact: true }).click();
   await expect(unknown).toContainText("В единице продажи: 1 базовых ед.");
   await expect(unknown).toContainText("Срок подтверждения не указан"); await expect(unknown).toContainText("Подтверждено: не указано");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

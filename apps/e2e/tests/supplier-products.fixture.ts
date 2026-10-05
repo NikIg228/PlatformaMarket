@@ -25,7 +25,7 @@ export async function choose(page: Page, label: string, option: string) {
 }
 export async function productFixture(page: Page, allowed = permissions) {
   const state = { unexpected: [] as string[], writes: [] as Array<{ path: string; body: Record<string, unknown> }>, reads: [] as string[],
-    failCommercial: false, failCorrections: false, failImport: false, failOffers: false, failProposals: false, failPromotions: false,
+    failCommercial: false, failCorrections: false, failImport: false, failOffers: false, failProposals: false, failPromotions: false, failPromotionSubmit: false,
     offers: [sampleOffer, { ...sampleOffer, id: id(9), supplierSku: "STALE-1", productVariant: { product: { ...sampleOffer.productVariant.product, canonicalName: "Адгезив универсальный" } }, prices: [{ ...sampleOffer.prices[0]!, freshnessExpiresAt: at }], inventoryBalances: [{ ...sampleOffer.inventoryBalances[0]!, freshnessStatus: "STALE" }] }],
     promotions: [samplePromotion], corrections: [] as unknown[], submissions: [{ id: id(20), proposedName: "Новый материал", proposedSku: "NEW-1", proposedGtin: null, proposedBrand: "Бренд", description: "Исходные сведения и упаковка", status: "REJECTED", rejectionReason: "Уточните упаковку", createdAt: at, decidedAt: at, approvedProductId: null, approvedVariantId: null }],
     batch: null as Record<string, unknown> | null,
@@ -51,7 +51,7 @@ export async function productFixture(page: Page, allowed = permissions) {
       if (query) items = items.filter(item => item.productVariant.product.canonicalName.toLowerCase().includes(query.toLowerCase()) || item.supplierSku?.includes(query));
       body = { items, nextCursor: null };
     } else if (path === `/workspaces/supplier/offers/${offerId}`) body = sampleOffer;
-    else if (path === "/catalog/offer-options") body = { items: [{ id: variantId, name: sampleOffer.productVariant.product.canonicalName, sku: "COMP", gtin: null, packagings: [{ id: id(6), name: "10 штук", quantityInBaseUnit: "10", unit: "шт.", unitId: id(10) }] }], nextCursor: null };
+    else if (path === "/catalog/offer-options") body = { items: [{ id: variantId, productId, name: sampleOffer.productVariant.product.canonicalName, sku: "COMP", gtin: null, packagings: [{ id: id(6), name: "10 штук", quantityInBaseUnit: "10", unit: "шт.", unitId: id(10) }] }], nextCursor: null };
     else if (path === `/suppliers/${organizationId}/warehouses`) body = [{ id: warehouseId, name: "Основной склад", status: "ACTIVE" }, { id: id(11), name: "Второй склад", status: "ACTIVE" }];
     else if (path === `/suppliers/${organizationId}/offers` && write) body = { id: offerId, version: 1 };
     else if (path.includes(`/offers/${offerId}/commercial`)) {
@@ -61,6 +61,10 @@ export async function productFixture(page: Page, allowed = permissions) {
         balance: { id: id(8), version: write ? 2 : 1, quantityOnHand: write ? String(input.quantityOnHand) : "0", quantityReserved: "0", safetyStock: "0", quantityAvailable: write ? String(input.quantityOnHand) : "0", availabilityStatus: "AVAILABLE" } };
     } else if (path === `/suppliers/${organizationId}/offers/${offerId}/publication`) body = { offerVersion: 3, status: "PUBLISHED", marketplaceVisible: true };
     else if (path === `/suppliers/${organizationId}/data-sources`) body = write ? { id: id(12), name: "Прайс CSV", type: "CSV", status: "ACTIVE" } : [{ id: id(12), name: "Основной прайс", type: "CSV", status: "ACTIVE" }];
+    else if (path === `/suppliers/${organizationId}/import-preview`) {
+      if (state.failImport) return fail("Не удалось прочитать прайс");
+      body = { headers: ["Код", "Название", "Цена", "Валюта", "Остаток"], rows: [{ rowNumber: 2, rawData: { Код: "PRICE-1", Название: "Композит", Цена: "1234,56", Валюта: "KZT", Остаток: "5" } }] };
+    }
     else if (path === `/suppliers/${organizationId}/import-batches`) {
       if (write) {
         if (state.failImport) return fail("Не удалось прочитать прайс");
@@ -73,7 +77,7 @@ export async function productFixture(page: Page, allowed = permissions) {
     else if (path === "/moderation/product-candidates/submissions") {
       if (write) {
         if (state.failProposals) return fail("Не удалось отправить заявку");
-        body = { candidate: { id: id(21) }, duplicateSuggestions: [] };
+        body = { candidate: { id: id(21), status: "PENDING" }, duplicateSuggestions: [] };
       } else body = { items: state.submissions, nextCursor: null };
     } else if (path === "/workspaces/supplier/correction-offers") body = { items: [sampleOffer], nextCursor: null };
     else if (path === "/moderation/product-corrections") {
@@ -82,7 +86,7 @@ export async function productFixture(page: Page, allowed = permissions) {
         const correction = { id: id(22), ...input, supplierOrganizationId: organizationId, currentValue: sampleOffer.productVariant.product.description, status: "PENDING", createdAt: at, product: sampleOffer.productVariant.product, appliedValue: null, moderatorComment: null };
         state.corrections.push(correction); body = correction;
       } else body = state.corrections;
-    } else if (path === "/workspaces/supplier/inventory") body = { items: url.searchParams.get("warehouseId") === id(11) ? [] : [{ ...sampleOffer.inventoryBalances[0], id: id(8), offerId, createdAt: at, warehouse: { id: warehouseId, name: "Основной склад" }, productVariant: sampleOffer.productVariant, safetyStock: "0" }], nextCursor: null };
+    } else if (path === "/workspaces/supplier/inventory") body = { items: url.searchParams.get("warehouseId") === id(11) ? [] : [{ ...sampleOffer.inventoryBalances[0], id: id(8), offerId, offer: { saleUnit: sampleOffer.saleUnit, packaging: sampleOffer.packaging }, createdAt: at, warehouse: { id: warehouseId, name: "Основной склад" }, productVariant: sampleOffer.productVariant, safetyStock: "0" }], nextCursor: null };
     else if (path === `/workspaces/supplier/inventory/${id(8)}/lots`) body = { items: [{ id: id(23), lotNumber: "LOT-2026", status: "ACTIVE", quantityAvailable: "25", expirationDate: "2030-01-01T00:00:00Z" }], nextCursor: null };
     else if (path === `/workspaces/supplier/inventory/${id(8)}/reservations`) body = { items: [{ id: id(24), quantity: "3", expiresAt: "2030-01-01T00:00:00Z", order: { id: id(25), orderNumber: "ORD-100" } }], nextCursor: null };
     else if (path === "/workspaces/supplier/inventory-overrides") body = { items: [], nextCursor: null };
@@ -92,7 +96,7 @@ export async function productFixture(page: Page, allowed = permissions) {
         const promotion = { ...samplePromotion, id: id(31), terms: input.terms as OfferPromotion["terms"], moderationStatus: "DRAFT" as const, temporalStatus: "DRAFT" as const, status: "DRAFT" };
         state.promotions.push(promotion); body = promotion;
       } else { const items = state.promotions.filter(item => (!url.searchParams.get("phase") || item.temporalStatus === url.searchParams.get("phase")) && (!url.searchParams.get("moderationStatus") || item.moderationStatus === url.searchParams.get("moderationStatus"))); body = { items, total: items.length, offset: 0, limit: 10 }; }
-    } else if (path.endsWith("/commands") && path.startsWith("/promotions/")) { state.promotions = state.promotions.map(item => item.id === path.split("/")[2] ? { ...item, moderationStatus: "PENDING", version: 2 } : item); body = state.promotions.at(-1); }
+    } else if (path.endsWith("/commands") && path.startsWith("/promotions/")) { if (state.failPromotionSubmit) return fail("Не удалось отправить акцию"); state.promotions = state.promotions.map(item => item.id === path.split("/")[2] ? { ...item, moderationStatus: "PENDING", version: 2 } : item); body = state.promotions.at(-1); }
     else { state.unexpected.push(path); return fail(`Unexpected fixture path ${path}`); }
     return route.fulfill({ json: body });
   });

@@ -167,8 +167,9 @@ export class ModerationService {
     });
   }
 
-  async ownSubmissions(query: { cursor?: string; limit: number }, context: SupplierActorContext) {
-    const where = { supplierOrganizationId: context.organizationId, externalItem: { importRowId: null } };
+  async ownSubmissions(query: { cursor?: string; limit: number; q?: string; status?: "PENDING" | "APPROVED" | "REJECTED" }, context: SupplierActorContext) {
+    const where: Prisma.ProductCandidateWhereInput = { supplierOrganizationId: context.organizationId, externalItem: { importRowId: null },
+      ...(query.status ? { status: query.status } : {}), ...(query.q ? { proposedName: { contains: query.q, mode: "insensitive" } } : {}) };
     const anchor = query.cursor ? await this.prisma.productCandidate.findFirst({ where: { ...where, id: query.cursor }, select: { id: true, createdAt: true } }) : null;
     if (query.cursor && !anchor) throw new NotFoundException("Product proposal cursor not found");
     const rows = await this.prisma.productCandidate.findMany({
@@ -176,7 +177,9 @@ export class ModerationService {
       select: { id: true, proposedName: true, proposedSku: true, proposedGtin: true, proposedBrand: true, status: true, rejectionReason: true, approvedProductId: true, approvedVariantId: true, createdAt: true, decidedAt: true, externalItem: { select: { rawData: true } } },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: query.limit + 1,
     });
-    const items = rows.slice(0, query.limit).map(({ externalItem, ...candidate }) => ({ ...candidate, description: stringValue(record(externalItem.rawData)?.description) }));
+    const approved = rows.slice(0, query.limit).filter(item => item.status === "APPROVED" && item.approvedVariantId).map(item => item.approvedVariantId!);
+    const offers = approved.length ? await this.prisma.supplierOffer.findMany({ where: { supplierOrganizationId: context.organizationId, productVariantId: { in: approved } }, select: { id: true, productVariantId: true }, orderBy: [{ createdAt: "asc" }, { id: "asc" }] }) : [];
+    const items = rows.slice(0, query.limit).map(({ externalItem, ...candidate }) => ({ ...candidate, description: stringValue(record(externalItem.rawData)?.description), offerId: offers.find(offer => offer.productVariantId === candidate.approvedVariantId)?.id ?? null }));
     return { items, nextCursor: rows.length > query.limit ? items.at(-1)!.id : null };
   }
 

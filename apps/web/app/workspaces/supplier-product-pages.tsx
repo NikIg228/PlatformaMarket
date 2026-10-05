@@ -4,12 +4,14 @@ import { Inventory } from "./supplier-inventory";
 import { PageNavigation, usePageNavigation } from "./page-navigation";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { DmButton, DmField, DmInput, EmptyState, ErrorState, LoadingState, formatStatus } from "@marketplace/ui";
 import type { ProductCandidateHistoryResponse } from "@marketplace/schemas";
 import { ProductProposals } from "../../../supplier-web/app/features/supplier-workspace/product-proposals";
 import { ProductCorrectionsPanel } from "../../../supplier-web/app/product-corrections-panel";
-import { ManualOffer } from "../../../supplier-web/app/features/supplier-workspace/manual-offer";
+import { AddOfferWizard } from "../../../supplier-web/app/features/supplier-workspace/add-offer-wizard";
+import { ProductProposalForm } from "../../../supplier-web/app/features/supplier-workspace/product-proposal-form";
 import type { SupplierDataSource } from "../../../supplier-web/app/features/supplier-workspace/types";
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
@@ -24,37 +26,43 @@ export const supplierProductLinks = [
 ] as const;
 
 function Frame({ title, children }: { title: string; children: React.ReactNode }) {
-  return <div className={styles.stack} aria-label={title}><Link href="/supplier/products">← Все товары</Link>{children}</div>;
+  return <div className={styles.stack} aria-label={title}>{children}</div>;
 }
 export function ProposalsPage() {
   return <Frame title="Заявки на новые товары"><PermissionBoundary required={["catalog.offer.edit"]}><Proposals /></PermissionBoundary></Frame>;
 }
 function Proposals() {
-  const { api, organizationId } = useWorkspace();
+  const { api } = useWorkspace();
+  const selectedId = useSearchParams().get("request") ?? undefined;
   const [retry, setRetry] = useState<ProductCandidateHistoryResponse["items"][number] | null>(null);
   const [generation, setGeneration] = useState(0);
-  const changed = useCallback(async () => { setGeneration(value => value + 1); }, []);
   const noop = useCallback(async () => {}, []);
-  return <>
-    <ProductProposals hideHeading key={generation} api={api} onChanged={noop} onRetry={setRetry} />
-    {retry ? <section className={styles.panel}><h2>Новая заявка после отказа</h2><p>Проверьте сведения и исправьте причину отказа: {retry.rejectionReason}. Прежнее решение сохранится в истории.</p><DmButton onClick={() => setRetry(null)}>Закрыть форму</DmButton><ManualOffer key={retry.id} api={api} supplierId={organizationId} initiallyOpen initialProposal={retry} onChanged={changed} /></section> : <Link href="/supplier/products/new">Добавить товар или отправить новую заявку</Link>}
-  </>;
+  return retry ? <ProductProposalForm key={retry.id} api={api} initial={retry} onCancel={() => { if (window.confirm("Закрыть форму без отправки?")) setRetry(null); }} onDone={() => setGeneration(value => value + 1)} /> : <ProductProposals hideHeading key={generation} api={api} initialSelected={selectedId} onChanged={noop} onRetry={setRetry} />;
 }
 export function CorrectionsPage() {
   return <Frame title="Исправления карточек"><PermissionBoundary required={["catalog.product.view", "catalog.offer.edit"]}><Corrections /></PermissionBoundary></Frame>;
 }
 function Corrections() {
   const { api, organizationId } = useWorkspace();
+  const query = useSearchParams(), router = useRouter();
+  const offerId = query.get("offer"), createMode = query.get("mode") === "new";
   const navigation = usePageNavigation();
   const [draft, setDraft] = useState(""), [q, setQuery] = useState("");
-  const load = useCallback((signal: AbortSignal) => api.workspaceCorrectionOffers({ cursor: navigation.cursor, q, limit: 25 }, { signal }), [api, navigation.cursor, q]);
+  const load = useCallback(async (signal: AbortSignal) => {
+    const [page, selected] = await Promise.all([
+      api.workspaceCorrectionOffers({ cursor: navigation.cursor, q, limit: 25 }, { signal }),
+      offerId ? api.workspaceOffer(offerId, { signal }) : Promise.resolve(null),
+    ]);
+    return { ...page, selected };
+  }, [api, navigation.cursor, q, offerId]);
   const resource = useResource(load, { retainDataOnChange: true });
   if (resource.error && !resource.data) return <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} />;
   if (!resource.data) return <LoadingState label="Загружаем карточки" />;
-  return <><form className={styles.actions} onSubmit={event => { event.preventDefault(); navigation.reset(); setQuery(draft.trim()); }}>
-    <DmField label="Поиск карточки"><DmInput value={draft} onChange={(_, data) => setDraft(data.value)} /></DmField><DmButton type="submit">Найти</DmButton>
-    <DmButton disabled={resource.loading} onClick={() => void resource.refresh()}>Обновить карточки</DmButton>
-  </form><ResourceStatus resource={resource} /><ProductCorrectionsPanel hideHeading api={api} supplierId={organizationId} offers={resource.data.items} /><PageNavigation navigation={navigation} nextCursor={resource.data.nextCursor} loading={resource.loading} onRefresh={() => { if (navigation.cursor) navigation.reset(); else void resource.refresh(); }} /></>;
+  const search = () => { navigation.reset(); setQuery(draft.trim()); };
+  return <>{resource.error || resource.loading || resource.offline ? <ResourceStatus resource={resource} /> : null}<ProductCorrectionsPanel hideHeading api={api} supplierId={organizationId} offers={resource.data.items} initialOffer={resource.data.selected ?? undefined} createMode={createMode}
+    onModeChange={create => router.replace(`/supplier/products/corrections${create ? "?mode=new" : ""}`)}
+    selectionControls={<><div className={styles.actions}><DmInput aria-label="Поиск карточки" placeholder="Название или артикул" value={draft} onChange={(_, data) => setDraft(data.value)} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); search(); } }} /><DmButton onClick={search}>Найти</DmButton></div><PageNavigation navigation={navigation} nextCursor={resource.data.nextCursor} loading={resource.loading} onRefresh={() => { if (navigation.cursor) navigation.reset(); else void resource.refresh(); }} /></>}
+  /></>;
 }
 export function InventoryPage() {
   return <Frame title="Партии и резервы"><PermissionBoundary required={["inventory.view"]}><Inventory /></PermissionBoundary></Frame>;
@@ -77,8 +85,8 @@ export function AddProductPage() {
 }
 function AddProduct() {
   const { api, organizationId } = useWorkspace();
-  const changed = useCallback(async () => {}, []);
-  return <ManualOffer api={api} supplierId={organizationId} initiallyOpen hideHeading onChanged={changed} />;
+  const request = useSearchParams().get("request") === "1";
+  return request ? <ProductProposalForm api={api} /> : <AddOfferWizard api={api} supplierId={organizationId} />;
 }
 export function ImportProductsPage() {
   return <Frame title="Загрузить из файла"><PermissionBoundary required={["import.manage"]}><ImportProducts /></PermissionBoundary></Frame>;
@@ -87,5 +95,5 @@ function ImportProducts() {
   const { api, organizationId } = useWorkspace();
   const load = useCallback((signal: AbortSignal) => api.get<SupplierDataSource[]>(`/suppliers/${organizationId}/data-sources`, { signal }), [api, organizationId]);
   const sources = useResource(load);
-  return <><ResourceStatus resource={sources} />{sources.error && !sources.data ? <ErrorState description={sources.error} action={<DmButton onClick={() => void sources.refresh()}>Повторить</DmButton>} /> : !sources.data ? <LoadingState label="Загружаем настройки импорта" /> : <SpreadsheetImport hideHeading api={api} supplierId={organizationId} sources={sources.data} onChanged={sources.refreshAfterWrite} />}</>;
+  return <>{sources.error && !sources.data ? <ErrorState description={sources.error} action={<DmButton onClick={() => void sources.refresh()}>Повторить</DmButton>} /> : !sources.data ? <LoadingState label="Загружаем настройки импорта" /> : <SpreadsheetImport hideHeading api={api} supplierId={organizationId} sources={sources.data} onChanged={sources.refreshAfterWrite} />}</>;
 }
