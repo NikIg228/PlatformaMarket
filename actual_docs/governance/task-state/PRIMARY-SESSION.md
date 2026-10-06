@@ -1,5 +1,47 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 06.10.2026 — OFFER-INSPECTOR-REFERENCE (LOCAL_PASS; publication pending)
+
+Owner primary 01a0fd63-0ae1-71e2-a4d4-271515cf0d40; main@0a384e8.
+User approved reference implementation and 640px desktop drawer; explicitly
+confirmed other writer stopped. Preserve Orders/Notifications and governance WIP.
+Scope: inspector identity, price, warehouse cards, sale terms, compact actions,
+catalog preview overflow menu; existing price/delivery forms and inventory links.
+No API/domain changes, working data writes, agents or additional worktrees.
+Risk: modal focus/navigation, permission/source restrictions, unsaved forms.
+Checks: targeted fixture browser desktop1440/mobile390, menu keyboard, price save,
+stock link, delivery and forbidden/recovery states; scoped types/lint, web build,
+diff review. No full E2E or backend gates for unchanged domain operations.
+Max3 attempts/gate; check20min/diagnosis15min. Then owned commit/push main,
+remote SHA and CI snapshot (no waiting per standing owner preference).
+Reference: output/inspector-reference-2026-10-06/full-page-inspector-reference.png.
+Implemented 640px inspector, responsive full width, separate existing price editor,
+warehouse counts/deep links, inline source/expiry, sale terms, compact actions,
+catalog new-tab menu and delivery entry with load/retry/save. No domain changes.
+Evidence .tmp/inspector-*: browser1 PASS7 (desktop/mobile menu/dirty navigation,
+price-only write, contextual stock keyboard/deep link, delivery save/recovery,
+empty/role denial); consumers1 PASS2 (ERP authority/manual-create publication).
+Screenshots output/playwright/offer-inspector inspected against reference.
+Web types1 FAIL Fluent MenuItem cannot be anchor; corrected MenuItemLink,
+web types2 PASS. Supplier/e2e types1 PASS, scoped lint1 PASS. Common product
+fixture tolerates the foreign notification header read; e2e types2 pending.
+Canonical dev launcher664 verified (web4592/API9908), stopped whole owned
+canonical tree for final go_live web build1; restore after build. No DB writes.
+Applied Development Toolkit frontend/verification and Agency UI Designer/Code
+Reviewer checklists: existing tokens, reference hierarchy, native links, modal
+keyboard, permission/source preservation and scoped review.
+Final e2e types2, fixture lint1 and go_live web build1 PASS. Commands:
+`npm run typecheck --workspace @marketplace/{web,supplier-web,e2e}` (each scoped),
+`npx --no-install eslint <owned TS paths> --max-warnings=0`,
+`npx --no-install playwright test --config apps/e2e/playwright.workspaces.config.ts`
+with offer-inspector/inventory inspector grep, then supplier ERP/manual-create grep;
+`DEPLOYMENT_PROFILE=go_live npm run build --workspace @marketplace/web` (PowerShell env).
+Diff hygiene/review PASS; origin/main==HEAD before publication. Shared working
+snapshot includes preserved foreign WIP, none needed by this source slice or staged.
+Backend/DB/full E2E NOT_RUN: API and domain rules unchanged. Dev restore npm run dev
+launcher7484 started; readiness pending. Owned commit/push + CI snapshot next.
+
+
 ## 05.10.2026 — INVENTORY-EDITOR-TEMPLATES (LOCAL_PASS; delivery pending)
 
 Owner same primary; canonical main@94d4de9, sole writer. User requests fully

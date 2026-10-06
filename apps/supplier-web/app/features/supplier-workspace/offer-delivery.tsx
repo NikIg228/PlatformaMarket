@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferDeliveryOptionResponse, SupplierWarehouseList } from "@marketplace/schemas";
 import { DmButton, DmCheckbox, DmField, DmInput, DmDropdown as DmSelect, ErrorState, Section, errorMessage, formatStatus, PermissionFields } from "@marketplace/ui";
@@ -8,8 +8,9 @@ import { offerPriceMinor, offerPriceText } from "./offer-editor-model";
 
 const methods = { PICKUP: "Самовывоз", SUPPLIER_CITY: "Доставка поставщиком по городу", NATIONWIDE: "По Казахстану", CARRIER: "Транспортная компания", SPECIAL: "Специальная доставка" } as const;
 type Method = keyof typeof methods;
-export function OfferDelivery({ api, supplierId, offerId, warehouses, defaultWarehouseId }: {
+export function OfferDelivery({ api, supplierId, offerId, warehouses, defaultWarehouseId, initiallyOpen = false, onSaved }: {
   api: MarketplaceApiClient; supplierId: string; offerId: string; warehouses: SupplierWarehouseList; defaultWarehouseId: string;
+  initiallyOpen?: boolean; onSaved?: () => void;
 }) {
   const [options, setOptions] = useState<OfferDeliveryOptionResponse[] | null>(null);
   const [warehouseId, setWarehouseId] = useState(defaultWarehouseId);
@@ -26,6 +27,16 @@ export function OfferDelivery({ api, supplierId, offerId, warehouses, defaultWar
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const inFlight = useRef(false);
+  useEffect(() => {
+    if (!initiallyOpen) return;
+    let cancelled = false;
+    setBusy(true); inFlight.current = true;
+    void api.listOfferDeliveryOptions(supplierId, offerId)
+      .then(items => { if (!cancelled) setOptions(items); })
+      .catch(cause => { if (!cancelled) setError(errorMessage(cause)); })
+      .finally(() => { if (!cancelled) { setBusy(false); inFlight.current = false; } });
+    return () => { cancelled = true; };
+  }, [api, supplierId, offerId, initiallyOpen]);
   const run = async (action: () => Promise<void>) => {
     if (inFlight.current) return;
     inFlight.current = true; setBusy(true); setError(null); setNotice(null);
@@ -54,6 +65,7 @@ export function OfferDelivery({ api, supplierId, offerId, warehouses, defaultWar
     const saved = await api.saveOfferDeliveryOption(supplierId, offerId, parsed.data);
     setOptions(current => [...(current ?? []).filter(item => item.id !== saved.id), saved]);
     setNotice("Условия доставки сохранены и доступны клинике при сравнении предложений.");
+    onSaved?.();
   });
   return <PermissionFields required={["delivery.view", "delivery.manage"]}><Section title="Условия доставки предложения" description="Укажите сроки подготовки и доставки. Выбор транспортной компании здесь не создаёт отправление.">
     {error ? <ErrorState description={error} /> : null}

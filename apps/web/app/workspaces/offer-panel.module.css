@@ -1,35 +1,63 @@
-.identity { display:flex; gap:16px; align-items:flex-start; }
-.identity > :first-child { width:92px; height:92px; flex-basis:92px; }
+.drawer { width:min(640px, 100%) !important; max-width:100%; }
+.header { padding:24px 32px !important; }
+.headerActions { display:flex; gap:12px; }
+.body { padding:0 32px 24px !important; }
+.detail { min-width:0; overflow-wrap:anywhere; }
+.detail h2 { margin:0 0 8px; font-size:20px; line-height:1.35; }
+.detail h3 { margin:0 0 14px; font-size:18px; line-height:1.35; }
+.detail > section { padding:20px 0; border-bottom:1px solid var(--dm-border); }
+.identity { display:flex; gap:20px; align-items:center; padding:0 0 20px; border-bottom:1px solid var(--dm-border); }
+.identity > :first-child { width:100px; height:100px; flex-basis:100px; }
 .identity > div:last-child { min-width:0; }
-.identity p { color:var(--dm-text-secondary); font-size:13px; margin:0 0 10px; }
-.metrics { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-.metrics > div { display:grid; gap:8px; border:1px solid var(--dm-border); border-radius:8px; padding:16px; }
-.metrics span, .orderTerms span { color:var(--dm-text-secondary); font-size:13px; }
-.metrics strong { font-size:24px; font-weight:650; }
-.metrics em { font-size:14px; font-style:normal; font-weight:400; }
-.metrics small { margin:0; }
-.orderTerms { display:grid; gap:0; }
-.orderTerms > div { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:12px 0; border-top:1px solid var(--dm-border); }
-.warehouses { display:grid; gap:16px; }
-.warehouses article { border:1px solid var(--dm-border); border-radius:8px; padding:16px; }
+.identity p { color:var(--dm-text-secondary); font-size:14px; margin:0 0 10px; }
+.priceRow { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.priceRow strong { font-size:28px; line-height:1.3; font-weight:650; }
+.priceRow strong span { font-size:22px; font-weight:400; }
+.priceRow p, .freshness { margin:6px 0 0; color:var(--dm-text-secondary); font-size:14px; }
+.price .freshness { margin-top:14px; }
+.warning { color:var(--dm-text-primary); background:var(--dm-warning-surface); padding:8px 12px; border-radius:6px; margin:12px 0 0; }
+.outlined, .actionLink { border:1px solid var(--dm-brand-primary) !important; color:var(--dm-brand-deep) !important; border-radius:4px; font-size:14px; font-weight:600; background:var(--dm-surface); }
+.actionLink { display:inline-flex; justify-content:center; align-items:center; padding:10px 16px; min-height:40px; box-sizing:border-box; text-decoration:none; }
+.actionLink:hover { background:var(--dm-brand-surface); }
+.warehouses { display:grid; gap:12px; }
+.warehouses article { border:1px solid var(--dm-border); border-radius:8px; padding:16px 20px; }
 .warehouseTitle { display:flex; gap:10px; justify-content:space-between; align-items:center; }
-.warehouses dl { display:flex; flex-wrap:wrap; margin:10px 0; gap:8px 18px; }
-.warehouses dl > div { display:flex; gap:6px; align-items:baseline; }
-.warehouses dt { color:var(--dm-text-secondary); font-size:12px; margin:0; }
-.warehouses dd { margin:0; font-size:13px; font-weight:600; }
-.publicLink { display:block; margin-top:10px; color:var(--dm-brand-deep); font-size:13px; text-underline-offset:3px; }
-.footer > button { width:100%; }
-.links { display:flex; gap:16px; font-size:13px; align-items:center; flex-wrap:wrap; }
-.links small { margin:0; margin-left:auto; }
-.links a { color:var(--dm-brand-deep); text-underline-offset:3px; }
-.related { display:grid; gap:8px; }
-.related a { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--dm-border); border-radius:8px; text-decoration:none; color:var(--dm-brand-deep); }
-.related a > div { flex:1; min-width:0; }
-.related a > svg { box-sizing:content-box; width:24px; height:24px; padding:10px; flex-shrink:0; background:var(--dm-brand-surface); border-radius:6px; }
-.related a strong { color:var(--dm-text-primary); font-weight:600; }
-.related a small { font-size:12px; font-weight:400; }
-.related a:hover { border-color:var(--dm-brand-primary); background:var(--dm-brand-surface); }
-.disclosure { border:1px solid var(--dm-border); border-radius:8px; padding:14px; }
-.disclosure > summary { cursor:pointer; color:var(--dm-text-primary); font-weight:500; }
-.disclosure[open] > summary { margin-bottom:20px; }
-@media(max-width:500px) { .identity > :first-child { width:64px; height:64px; flex-basis:64px; } .metrics { gap:12px; } .metrics > div { padding:12px; } .metrics strong { font-size:21px; } .related a > svg { padding:6px; } }
+.warehouseTitle > strong { font-size:17px; }
+.warehouses dl { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin:14px 0 18px; padding-top:14px; border-top:1px solid var(--dm-border); }
+.warehouses dl > div { min-width:0; padding:0 14px; border-left:1px solid var(--dm-border); }
+.warehouses dl > div:first-child { padding-left:0; border:0; }
+.warehouses dl > div:last-child { padding-right:0; }
+.warehouses dt { color:var(--dm-text-secondary); font-size:13px; margin:0 0 6px; }
+.warehouses dd { margin:0; font-size:20px; line-height:1.25; }
+.stockActions { display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+.stockActions small { color:var(--dm-text-secondary); font-size:12px; }
+.stockActions small span { display:block; margin-top:4px; }
+.orderTerms { margin:0; }
+.orderTerms > div { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; padding:10px 0; border-bottom:1px solid var(--dm-border); font-size:14px; }
+.orderTerms > div:last-child { border:0; padding-bottom:0; }
+.orderTerms dt { color:var(--dm-text-secondary); }
+.orderTerms dd { margin:0; text-align:right; font-weight:600; }
+.related { display:grid; }
+.related > a, .related > button { display:flex; width:100%; box-sizing:border-box; align-items:center; gap:18px; min-height:54px; padding:12px 0; border:0; border-bottom:1px solid var(--dm-border); background:transparent; text-decoration:none; color:var(--dm-text-secondary); font:inherit; font-size:14px; text-align:left; cursor:pointer; }
+.related > :last-child { border-bottom:0; }
+.related > :hover { color:var(--dm-brand-deep); background:var(--dm-brand-surface); }
+.related svg { width:24px; height:24px; flex-shrink:0; color:var(--dm-brand-deep); }
+.related span:first-of-type { flex:1; }
+.related span:last-child { font-size:24px; color:var(--dm-text-primary); }
+.editor { padding-top:16px; }
+.editor > button { margin-bottom:16px; }
+.editor :global(.mp-section) { border:0; padding:0; }
+.empty { color:var(--dm-text-secondary); }
+@media(max-width:500px) {
+  .header { padding:16px 20px !important; }
+  .body { padding:0 20px 20px !important; }
+  .identity { gap:12px; }
+  .identity > :first-child { width:64px; height:64px; flex-basis:64px; }
+  .detail h2 { font-size:18px; }
+  .priceRow { flex-wrap:wrap; }
+  .priceRow strong { font-size:24px; }
+  .warehouses article { padding:14px; }
+  .warehouses dl > div { padding:0 8px; }
+  .warehouses dd { font-size:18px; }
+  .warehouseTitle { flex-wrap:wrap; }
+}

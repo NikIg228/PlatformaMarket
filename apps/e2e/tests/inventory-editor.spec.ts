@@ -5,6 +5,7 @@ import { productFixture, noOverflow, sampleOffer, id, offerId, organizationId, w
 const deepLink = `/supplier/products/inventory?offer=${offerId}&warehouse=${warehouseId}&balance=${id(8)}&edit=1`;
 async function stockFixture(page: Page, allowed = permissions) {
   const base = await productFixture(page, allowed);
+  await page.route("**/api/notifications/**", route => route.fulfill({ json: { items: [], nextCursor: null, unreadCount: 0, asOf: "2026-10-06T00:00:00Z" } }));
   const state = { failures: [] as number[], writes: [] as Array<Record<string, unknown>>, failRead: false, source: "MANUAL",
     commercial: { offerId, offerVersion: 1, warehouseId, publicationStatus: "PUBLISHED", marketplaceVisible: true,
       price: { amountMinor: "100000", currency: "KZT", includesVat: true, vatRate: null },
@@ -87,7 +88,7 @@ test("connected source cannot change stock", async ({ page }) => {
 
 test("inspector edits price without stock input or stock write", async ({ page }) => {
   const { state } = await stockFixture(page, permissions.filter(value => value !== "inventory.adjust")); await page.goto("/supplier/products");
-  await page.getByRole("button", { name: "Композит для реставрации", exact: true }).click(); await page.getByRole("button", { name: "Изменить условия" }).click();
+  await page.getByRole("button", { name: "Композит для реставрации", exact: true }).click(); await page.getByRole("button", { name: "Изменить цену" }).click();
   const price = page.getByRole("textbox", { name: "Цена за упаковку, ₸", exact: true }); await expect(price).toHaveValue("1000.00");
   await expect(page.getByRole("textbox", { name: "Остаток, упаковок" })).toHaveCount(0);
   await price.fill("1250"); await page.getByRole("button", { name: "Сохранить цену" }).click();

@@ -193,8 +193,8 @@ test("ERP offer keeps its source authority in the editor", async ({ page }) => {
   const state = await productFixture(page); state.offers[0] = { ...state.offers[0]!, sourceType: "ERP" };
   await page.goto("/supplier/products");
   await page.getByRole("button", { name: "Композит для реставрации", exact: true }).click();
-  await page.getByRole("button", { name: "Изменить условия", exact: true }).click();
-  await expect(page.getByText(/Предложение управляется интеграцией/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Изменить цену", exact: true })).toHaveCount(0);
+  await expect(page.getByText("Цена обновляется в подключённом источнике.")).toBeVisible();
   expect(state.writes).toEqual([]); expect(state.unexpected).toEqual([]);
 });
 

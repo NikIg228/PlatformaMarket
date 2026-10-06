@@ -40,6 +40,7 @@ export async function productFixture(page: Page, allowed = permissions) {
     if (path === "/auth/workspace-context") body = { organizationId, organizationDisplayName: "Тестовый поставщик", capabilities: ["SUPPLIER"] };
     else if (path === "/auth/current") body = null;
     else if (path === "/conversations") body = { items: [], hasMore: false, unreadCount: 0 };
+    else if (path === `/notifications/organizations/${organizationId}/inbox` && !write) body = { items: [], nextCursor: null, unreadCount: 0, asOf: "2026-10-06T00:00:00Z" };
     else if (path === "/access-control/permissions") body = allowed;
     else if (path === "/access-control/policy") body = { mode: "ROLE_BASED", permissions: allowed };
     else if (path === "/workspaces/supplier/offers") {
