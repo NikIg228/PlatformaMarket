@@ -1,5 +1,21 @@
 # PlatformaMarket — текущий контекст
 
+## Рабочий вход с 6 октября 2026
+
+Описание продукта — [PROJECT_OVERVIEW](PROJECT_OVERVIEW.md); очередь —
+[Main Roadmap to Production](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
+Перед выполнением сверить последний запрос, реестр сессии и checkpoint выбранной
+задачи. Пересборка документации не меняет primary, generation или владельцев
+продуктового WIP. Её scope/evidence —
+[DOCS-REFRESH](governance/task-state/DOCS-REFRESH-2026-10-06.md).
+
+Ниже сохранены датированные записи прежней передачи. Их SHA, «следующий шаг»,
+WAIT/PENDING и запреты относятся к указанному событию, а не заменяют текущую
+задачу. Не читать весь журнал для новой реализации; архив использовать последним
+для конкретного вопроса согласно AGENTS.
+
+## История передачи
+
 SIDEBAR receipt02.10: код57d75f569593f31aaa610cd344399c9dcf786d89 в origin/main,
 remote SHA совпал; CI37021253380 / Security37021253329 completed/success attempt1.
 Финальная запись только docs [skip ci], runtime evidence REUSED_PASS, новый CI NOT_RUN.

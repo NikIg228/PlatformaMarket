@@ -1,185 +1,130 @@
-# Полный реестр документации — 30.09.2026
+# Реестр документации PlatformaMarket
 
-Срез кода: main@2a816c337bae15f6684318cf26d21bf6f71cb3c5.
-Инвентаризация всех115 tracked текстовых материалов:110 Markdown/Mermaid и
-5 TXT (4 image prompts + font license). Включены root AGENTS/README,
-все actual_docs и font provenance. HTML/images галереи архивированы с ними
-как связанные240 assets/страниц; их не выдаём за просмотренные runtime screens.
+Актуализировано 6 октября 2026. Начать с [описания](PROJECT_OVERVIEW.md)
+и выбранного пункта [roadmap](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
+Этот реестр классифицирует материалы; его не нужно читать целиком перед задачей.
 
-Сверка включала назначение/статус, пути и команды, актуальные контрактные
-расхождения и соответствующий кодовый маршрут. Сохранение нормативного
-документа не означает доказательство всех его утверждений runtime-тестом.
-Внешние SDK/API/юридические нормы и текущие данные БД не перепроверялись;
-внешние спецификации остаются EXT reference.
+## Классы документов
 
-## Рабочий маршрут
+- **CURRENT** — рабочие требования, очередь, правила или evidence с границей версии.
+- **REFERENCE** — действующий профильный справочник; открывать по затронутой области.
+- **EXECUTION** — состояние выбранной задачи/передачи; старые записи не поручения.
+- **WIP** — материал другого незавершённого или неопубликованного change set;
+  наличие файла не означает приёмку. Путь сверять с карточкой владельца.
+- **COMPAT** — старый адрес с переходом в архив; не источник новой реализации.
+- **ARCHIVE** — прошлые планы/снимки, только адресная историческая справка последней очереди.
 
-02.10: временный полный доступ в локальных кабинетах —
-[ADR017](architecture/adr/017-temporary-local-full-access.md),
-[текущая карточка и evidence](governance/task-state/CABINET-UX-2026-10-02.md).
-Редизайн отложен отдельным решением владельца.
+## Текущий набор
 
-Итог02.10: [CORE-09-INTERNAL](governance/task-state/CORE-09-INTERNAL-2026-10-02.md)
-LOCAL_CORE_PASS на64591bc: CORE01–08 сведены к одной ревизии с CI/Security PASS,
-backend/API/canonical frontend проверками. CORE05–09 завершены во внутреннем scope;
-POST-BE/POST-FULL/EXT не становятся новой разрешённой очередью.
-Решение по метрикам и комиссии: [ADR016](architecture/adr/016-commerce-metric-facts.md).
-Карточка содержит отдельный список
-вопросов и реестр проверок; прошлые записи ниже сохраняют свои даты.
-
-Текущая реализация01.10: [CORE-01-INTERNAL](governance/task-state/CORE-01-INTERNAL-2026-10-01.md),
-первый внутренний этап списка Foundation6.2 по новому разрешению владельца.
-
-[README](README.md), [Product](product/DENTMARKET_PRODUCT_V2.md),
-[Foundation](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md),
-[Matrix](governance/PROJECT_ACCEPTANCE_MATRIX.md), [архитектурный аудит](architecture/CODEBASE-AUDIT-2026-09-30.md).
-Архив открывать только для истории/восстановления evidence, не для реализации.
-
-Дополнение01.10: [Foundation §6](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md#6-разделение-остатка-внутренний-контур-и-техдолг-внешней-готовности)
-разделяет существующий остаток на внутренние slices, mixed scope, внешний
-техдолг и решения владельца. Нового дублирующего backlog не создаётся;
-статусы implementation/live этим анализом не повышаются.
-
-## Каждый исходный документ
-
-| Исходный путь | Классификация и текущий адрес | Сверка / основание |
+| Документ | Класс | Назначение |
 | --- | --- | --- |
-| AGENTS.md | [CURRENT · entry/contract/status](../AGENTS.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](governance/DEVELOPMENT_WORKFLOW.md) |
-| README.md | [CURRENT · entry/contract/status](../README.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](../package.json) |
-| actual_docs/PROJECT_HANDOFF.md | [CURRENT · entry/contract/status](PROJECT_HANDOFF.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/README.md | [CURRENT · entry/contract/status](README.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/applications/admin-web.md | [CURRENT · implementation map](applications/admin-web.md) | Сверено с apps/web adapters/workspaces и импортами legacy features [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/applications/buyer-web.md | [CURRENT · implementation map](applications/buyer-web.md) | Сверено с apps/web adapters/workspaces и импортами legacy features [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/applications/supplier-web.md | [CURRENT · implementation map](applications/supplier-web.md) | Сверено с apps/web adapters/workspaces и импортами legacy features [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/architecture/UNIFIED-APPLICATION-PLAN.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/architecture/UNIFIED-APPLICATION-PLAN.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/architecture/adr/001-modular-monolith.md | [CURRENT · decision](architecture/adr/001-modular-monolith.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/api/src/app.module.ts) |
-| actual_docs/architecture/adr/002-hybrid-catalog.md | [CURRENT · decision](architecture/adr/002-hybrid-catalog.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/api/prisma/schema.prisma) |
-| actual_docs/architecture/adr/003-access-model.md | [CURRENT · decision](architecture/adr/003-access-model.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/api/src/modules/access-control/) |
-| actual_docs/architecture/adr/004-provider-independent-integrations.md | [CURRENT · decision](architecture/adr/004-provider-independent-integrations.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/api/src/modules/integrations/) |
-| actual_docs/architecture/adr/005-transactional-outbox-delivery.md | [CURRENT · decision](architecture/adr/005-transactional-outbox-delivery.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/api/src/platform/outbox/) |
-| actual_docs/architecture/adr/006-platform-authority-policy.md | [CURRENT · decision](architecture/adr/006-platform-authority-policy.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/api/src/modules/access-control/platform-authority.policy.ts) |
-| actual_docs/architecture/adr/007-outbound-request-gateway.md | [CURRENT · decision](architecture/adr/007-outbound-request-gateway.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/api/src/platform/security/outbound-request.gateway.ts) |
-| actual_docs/architecture/adr/008-production-outbound-transport-policy.md | [CURRENT · decision](architecture/adr/008-production-outbound-transport-policy.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/api/src/platform/config/environment.ts) |
-| actual_docs/architecture/adr/009-deployment-profile-composition.md | [CURRENT · decision](architecture/adr/009-deployment-profile-composition.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/api/src/platform/runtime/deployment-profile.modules.ts) |
-| actual_docs/architecture/adr/010-frontend-deployment-profile.md | [CURRENT · decision](architecture/adr/010-frontend-deployment-profile.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/web/next.config.ts) |
-| actual_docs/architecture/adr/011-local-full-feature-demonstration.md | [CURRENT · decision](architecture/adr/011-local-full-feature-demonstration.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../scripts/dev-local.mjs) |
-| actual_docs/architecture/adr/012-offer-data-authority.md | [CURRENT · decision](architecture/adr/012-offer-data-authority.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/api/src/modules/inventory/data-freshness.service.ts) |
-| actual_docs/architecture/adr/013-supplier-common-terms-and-admission.md | [CURRENT · decision](architecture/adr/013-supplier-common-terms-and-admission.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/api/src/modules/agreements/) |
-| actual_docs/architecture/adr/014-local-workspace-sessions.md | [CURRENT · decision](architecture/adr/014-local-workspace-sessions.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/api/src/modules/identity/auth-sessions.service.ts) |
-| actual_docs/architecture/adr/015-unified-frontend.md | [CURRENT · decision](architecture/adr/015-unified-frontend.md) | Нормативное решение; ADR010/014 частично заменены015, присутствие кода не full acceptance [Адрес сверки](../apps/web/app/) |
-| actual_docs/architecture/architecture.md | [CURRENT · entry/contract/status](architecture/architecture.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/architecture/er.mmd | [CURRENT · entry/contract/status](architecture/er.mmd) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](../apps/api/prisma/schema.prisma) |
-| actual_docs/backend/AUDIT_ACCESS_REMEDIATION_2026-09-15.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/backend/AUDIT_ACCESS_REMEDIATION_2026-09-15.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/backend/AUDIT_PURCHASING_DOCUMENTS_REMEDIATION_2026-09-15.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/backend/AUDIT_PURCHASING_DOCUMENTS_REMEDIATION_2026-09-15.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/backend/DENTMARKET_BACKEND_AUDIT_2026-09-08.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/backend/DENTMARKET_BACKEND_AUDIT_2026-09-08.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/backend/DENTMARKET_BACKEND_FOUNDATION_V2.md | [CURRENT · entry/contract/status](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/governance/DEVELOPMENT_WORKFLOW.md | [CURRENT · entry/contract/status](governance/DEVELOPMENT_WORKFLOW.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/governance/PROJECT_ACCEPTANCE_MATRIX.md | [CURRENT · entry/contract/status](governance/PROJECT_ACCEPTANCE_MATRIX.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/governance/PROJECT_STATE_SNAPSHOT_2026-09-08.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/PROJECT_STATE_SNAPSHOT_2026-09-08.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/governance/SECURITY_AUDIT_B4_5_2026-08-19.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/SECURITY_AUDIT_B4_5_2026-08-19.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/governance/SECURITY_R2E_2026-08-20.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/SECURITY_R2E_2026-08-20.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/governance/SESSION_ROLLOVER.md | [CURRENT · entry/contract/status](governance/SESSION_ROLLOVER.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/governance/task-state/CATALOG-FILTERS-2026-09-28.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/CATALOG-FILTERS-2026-09-28.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/CATALOG-LAYOUT-2026-09-28.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/CATALOG-LAYOUT-2026-09-28.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/CATALOG-NAVIGATION-2026-09-28.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/CATALOG-NAVIGATION-2026-09-28.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/CLINIC-LOGOUT-2026-09-29.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/CLINIC-LOGOUT-2026-09-29.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/CLINIC-SHARED-CATALOG-2026-09-29.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/CLINIC-SHARED-CATALOG-2026-09-29.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/CONSOLIDATION-2026-09-21.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/CONSOLIDATION-2026-09-21.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/CORE-04-2026-09-25.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/CORE-04-2026-09-25.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/DEMO-CATALOG-RESTORE-2026-09-29.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/DEMO-CATALOG-RESTORE-2026-09-29.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/DEV-RECOVERY-2026-09-30.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/DEV-RECOVERY-2026-09-30.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/FRONTEND-DEMO-2026-09-28.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/FRONTEND-DEMO-2026-09-28.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/INTERNAL-PILOT-2026-09-28.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/INTERNAL-PILOT-2026-09-28.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/MARKET-CI-REMEDIATION-2026-09-21.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/MARKET-CI-REMEDIATION-2026-09-21.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/PILOT-DOCS-2026-09-28.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/PILOT-DOCS-2026-09-28.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/PRIMARY-SESSION.md | [CURRENT · entry/contract/status](governance/task-state/PRIMARY-SESSION.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/REBRAND-2026-09-28.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/REBRAND-2026-09-28.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/UNIFIED-APPLICATION-2026-09-28.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/UNIFIED-APPLICATION-2026-09-28.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/WORKSPACE-AUDIT-REMEDIATION-2026-09-30.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/WORKSPACE-AUDIT-REMEDIATION-2026-09-30.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/governance/task-state/WORKSPACE-REBUILD-2026-09-30.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/governance/task-state/WORKSPACE-REBUILD-2026-09-30.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/archive/2026-09-14/README.md | [ARCHIVE · existing](history/archive/2026-09-14/README.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/archive/2026-09-14/backend/DENTMARKET_BACKEND_AUDIT_2026-09-08.md | [ARCHIVE · existing](history/archive/2026-09-14/backend/DENTMARKET_BACKEND_AUDIT_2026-09-08.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/archive/2026-09-14/backend/DENTMARKET_BACKEND_FOUNDATION_V2.md | [ARCHIVE · existing](history/archive/2026-09-14/backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/archive/2026-09-14/governance/PROJECT_ACCEPTANCE_MATRIX.md | [ARCHIVE · existing](history/archive/2026-09-14/governance/PROJECT_ACCEPTANCE_MATRIX.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/archive/2026-09-14/governance/PROJECT_STATE_SNAPSHOT_2026-09-08.md | [ARCHIVE · existing](history/archive/2026-09-14/governance/PROJECT_STATE_SNAPSHOT_2026-09-08.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/archive/2026-09-14/governance/SECURITY_AUDIT_B4_5_2026-08-19.md | [ARCHIVE · existing](history/archive/2026-09-14/governance/SECURITY_AUDIT_B4_5_2026-08-19.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/archive/2026-09-14/governance/SECURITY_R2E_2026-08-20.md | [ARCHIVE · existing](history/archive/2026-09-14/governance/SECURITY_R2E_2026-08-20.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/archive/2026-09-14/product/DENTMARKET_PRODUCT_V2.md | [ARCHIVE · existing](history/archive/2026-09-14/product/DENTMARKET_PRODUCT_V2.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/commercial-readiness-gap.md | [ARCHIVE · existing](history/commercial-readiness-gap.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/traceability.md | [ARCHIVE · existing](history/traceability.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/trust-geo-ai.md | [ARCHIVE · existing](history/trust-geo-ai.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/v4-implementation-status.md | [ARCHIVE · existing](history/v4-implementation-status.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/history/verification.md | [ARCHIVE · existing](history/verification.md) | Ранее архивирован; не текущий status/backlog, без нового повышения приёмки [Адрес сверки](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| actual_docs/integrations/connector-readiness.md | [CURRENT · bounded procedure/reference](integrations/connector-readiness.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../apps/api/src/modules/integrations/connector-readiness.controller.ts) |
-| actual_docs/integrations/eds-and-1c-integration-technical-spec.md | [CURRENT · bounded procedure/reference](integrations/eds-and-1c-integration-technical-spec.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../packages/one-c-agent/src/index.ts) |
-| actual_docs/integrations/runbooks/custom-api.md | [CURRENT · bounded procedure/reference](integrations/runbooks/custom-api.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../apps/api/src/modules/integrations/adapters/custom-api.adapter.ts) |
-| actual_docs/integrations/runbooks/external-adapters.md | [CURRENT · bounded procedure/reference](integrations/runbooks/external-adapters.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../apps/api/src/modules/integrations/adapters/) |
-| actual_docs/integrations/runbooks/file-import.md | [CURRENT · bounded procedure/reference](integrations/runbooks/file-import.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../apps/api/src/modules/imports/imports.service.ts) |
-| actual_docs/integrations/runbooks/manual-supplier.md | [CURRENT · bounded procedure/reference](integrations/runbooks/manual-supplier.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../apps/api/src/modules/agreements/) |
-| actual_docs/integrations/runbooks/moysklad.md | [CURRENT · bounded procedure/reference](integrations/runbooks/moysklad.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../apps/api/src/modules/integrations/adapters/moysklad.adapter.ts) |
-| actual_docs/integrations/runbooks/one-c-agent.md | [CURRENT · bounded procedure/reference](integrations/runbooks/one-c-agent.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../packages/one-c-agent/src/index.ts) |
-| actual_docs/integrations/supabase.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/integrations/supabase.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/operations/b4-6-load-profile.md | [CURRENT · bounded procedure/reference](operations/b4-6-load-profile.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../scripts/verify-load-profile.mjs) |
-| actual_docs/operations/backup-restore-runbook.md | [CURRENT · bounded procedure/reference](operations/backup-restore-runbook.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../scripts/verify-backup-restore.mjs) |
-| actual_docs/operations/deployment-profiles.md | [CURRENT · bounded procedure/reference](operations/deployment-profiles.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../scripts/dev-local.mjs) |
-| actual_docs/operations/live-provider-readiness.md | [CURRENT · bounded procedure/reference](operations/live-provider-readiness.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../scripts/lib/production-readiness.mjs) |
-| actual_docs/operations/observability-runbook.md | [CURRENT · bounded procedure/reference](operations/observability-runbook.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../apps/api/src/platform/observability/) |
-| actual_docs/operations/operations.md | [CURRENT · bounded procedure/reference](operations/operations.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../apps/api/src/platform/outbox/) |
-| actual_docs/operations/production-auth-runbook.md | [CURRENT · bounded procedure/reference](operations/production-auth-runbook.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../scripts/verify-production-auth-contract.mjs) |
-| actual_docs/operations/production-deployment.md | [CURRENT · bounded procedure/reference](operations/production-deployment.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../.github/workflows/release.yml) |
-| actual_docs/operations/production-go-live-checklist.md | [CURRENT · bounded procedure/reference](operations/production-go-live-checklist.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../scripts/verify-production-config.mjs) |
-| actual_docs/operations/sla-incident-response.md | [CURRENT · bounded procedure/reference](operations/sla-incident-response.md) | Процедура только выбранного scope; EXT/production/live не выполнены этой сверкой [Адрес сверки](../infra/observability/dentmarket-alert-rules.json) |
-| actual_docs/product-cards/CATALOG_MEDIA_PIPELINE_AUDIT.md | [DEFERRED · proposal](product-cards/CATALOG_MEDIA_PIPELINE_AUDIT.md) | M01–M08 и DoD сохранены; старые DB counts не актуальный факт [Адрес сверки](../apps/api/src/modules/catalog/catalog-media.controller.ts) |
-| actual_docs/product-cards/pilot-catalog.md | [CURRENT · entry/contract/status](product-cards/pilot-catalog.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](../scripts/build-pilot-catalog.mjs) |
-| actual_docs/product/DENTMARKET_OUT_OF_PILOT_FEATURES.md | [CURRENT · entry/contract/status](product/DENTMARKET_OUT_OF_PILOT_FEATURES.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](../packages/schemas/src/deployment-policy.ts) |
-| actual_docs/product/DENTMARKET_PRODUCT_V2.md | [CURRENT · requirements](product/DENTMARKET_PRODUCT_V2.md) | Целевой продукт; §23.6 уточняет старые вопросы, текущая полнота отдельно [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/product/PILOT-OPEN-QUESTIONS.md | [CURRENT · entry/contract/status](product/PILOT-OPEN-QUESTIONS.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/runbooks/LOCAL-DEV-DATABASE.md | [CURRENT · entry/contract/status](runbooks/LOCAL-DEV-DATABASE.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](../scripts/lib/local-database-profile.mjs) |
-| actual_docs/runbooks/UNIFIED-FRONTEND.md | [CURRENT · entry/contract/status](runbooks/UNIFIED-FRONTEND.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](../scripts/dev-local.mjs) |
-| actual_docs/security/security.md | [CURRENT · entry/contract/status](security/security.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](../apps/api/src/platform/security/) |
-| actual_docs/supplier-flows/pdf-supplier-cycle.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/supplier-flows/pdf-supplier-cycle.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/AUDIT_UX_POLISH_2026-09-15.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/ui-ux/AUDIT_UX_POLISH_2026-09-15.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/DENTMARKET_UI_UX_CONSOLIDATION_STANDARD.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/ui-ux/DENTMARKET_UI_UX_CONSOLIDATION_STANDARD.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/TEST-PRODUCT-DESCRIPTIONS-2026-09-29.md | [ARCHIVE · superseded task/evidence](history/archive/2026-09-30/ui-ux/TEST-PRODUCT-DESCRIPTIONS-2026-09-29.md) | Выполненная часть историческая; незакрытое перенесено в Foundation/Matrix, не объявлено PASS [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md | [CURRENT · entry/contract/status](ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md) | Актуализирован или сохранён по роли; code/local/CI/live не смешиваются [Адрес сверки](../apps/web/app/workspaces/workspace.tsx) |
-| actual_docs/ui-ux/SHARED_SEMANTIC_THEME.md | [CURRENT · semantic light contract v1](ui-ux/SHARED_SEMANTIC_THEME.md) | Утверждённые значения CRM/Market, adapters, состояния и границы аудита |
-| actual_docs/ui-ux/references/2026-09-14/generation-prompts.txt | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/2026-09-14/generation-prompts.txt) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/2026-09-14/top-header/generation-prompts.txt | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/2026-09-14/top-header/generation-prompts.txt) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/CHECKPOINT.md | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/CHECKPOINT.md) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/COMPONENT_ATLAS.md | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/COMPONENT_ATLAS.md) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/COVERAGE_MATRIX.md | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/COVERAGE_MATRIX.md) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/DESIGN_SYSTEM.md | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/DESIGN_SYSTEM.md) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/PAGE_INVENTORY.md | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/PAGE_INVENTORY.md) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/README.md | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/README.md) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/REFERENCE_ANALYSIS.md | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/REFERENCE_ANALYSIS.md) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/REVIEW_REPORT.md | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/REVIEW_REPORT.md) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/STANDARD_AMENDMENT_PROPOSAL.md | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/STANDARD_AMENDMENT_PROPOSAL.md) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/concepts/ATLAS_PROMPT.txt | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/concepts/ATLAS_PROMPT.txt) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/concepts/PROMPT.txt | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/concepts/PROMPT.txt) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/concepts/README.md | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/concepts/README.md) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| actual_docs/ui-ux/references/production-preview-2026-09-16/review/CHECKLIST.md | [ARCHIVE · visual reference](history/archive/2026-09-30/ui-ux/references/production-preview-2026-09-16/review/CHECKLIST.md) | Исторический прототип/assets; не runtime и не требование новой реализации [Адрес сверки](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) |
-| apps/api/src/modules/documents/fonts/OFL.txt | [KEEP · asset/license](../apps/api/src/modules/documents/fonts/OFL.txt) | Лицензия/provenance действующего embedded PDF font, не задача реализации [Адрес сверки](../apps/api/src/modules/documents/fonts/NotoSans.ttf) |
-| apps/api/src/modules/documents/fonts/README.md | [KEEP · asset/license](../apps/api/src/modules/documents/fonts/README.md) | Лицензия/provenance действующего embedded PDF font, не задача реализации [Адрес сверки](../apps/api/src/modules/documents/fonts/coverage.json) |
+| [Корневой README](../README.md) | CURRENT | Краткий вход |
+| [AGENTS](../AGENTS.md) | CURRENT | Границы и порядок работы |
+| [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) | CURRENT | Рабочий источник по назначению |
+| [MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md) | CURRENT | Рабочий источник по назначению |
+| [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) | EXECUTION | Читать только для выбранного scope/владения |
+| [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) | CURRENT | Рабочий источник по назначению |
+| [README.md](README.md) | CURRENT | Рабочий источник по назначению |
+| [applications/admin-web.md](applications/admin-web.md) | REFERENCE | Карта кода; маршруты и статус сверять с текущим кодом |
+| [applications/buyer-web.md](applications/buyer-web.md) | REFERENCE | Карта кода; маршруты и статус сверять с текущим кодом |
+| [applications/supplier-web.md](applications/supplier-web.md) | REFERENCE | Карта кода; маршруты и статус сверять с текущим кодом |
+| [architecture/adr/001-modular-monolith.md](architecture/adr/001-modular-monolith.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/002-hybrid-catalog.md](architecture/adr/002-hybrid-catalog.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/003-access-model.md](architecture/adr/003-access-model.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/004-provider-independent-integrations.md](architecture/adr/004-provider-independent-integrations.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/005-transactional-outbox-delivery.md](architecture/adr/005-transactional-outbox-delivery.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/006-platform-authority-policy.md](architecture/adr/006-platform-authority-policy.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/007-outbound-request-gateway.md](architecture/adr/007-outbound-request-gateway.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/008-production-outbound-transport-policy.md](architecture/adr/008-production-outbound-transport-policy.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/009-deployment-profile-composition.md](architecture/adr/009-deployment-profile-composition.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/010-frontend-deployment-profile.md](architecture/adr/010-frontend-deployment-profile.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/011-local-full-feature-demonstration.md](architecture/adr/011-local-full-feature-demonstration.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/012-offer-data-authority.md](architecture/adr/012-offer-data-authority.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/013-supplier-common-terms-and-admission.md](architecture/adr/013-supplier-common-terms-and-admission.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/014-local-workspace-sessions.md](architecture/adr/014-local-workspace-sessions.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/015-unified-frontend.md](architecture/adr/015-unified-frontend.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/016-commerce-metric-facts.md](architecture/adr/016-commerce-metric-facts.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/adr/017-temporary-local-full-access.md](architecture/adr/017-temporary-local-full-access.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
+| [architecture/er.mmd](architecture/er.mmd) | REFERENCE | Профильная справка |
+| [governance/DEVELOPMENT_WORKFLOW.md](governance/DEVELOPMENT_WORKFLOW.md) | CURRENT | Рабочий источник по назначению |
+| [governance/PROJECT_ACCEPTANCE_MATRIX.md](governance/PROJECT_ACCEPTANCE_MATRIX.md) | CURRENT | Рабочий источник по назначению |
+| [governance/SESSION_ROLLOVER.md](governance/SESSION_ROLLOVER.md) | EXECUTION | Читать только для выбранного scope/владения |
+| [governance/task-state/DOCS-REFRESH-2026-10-06.md](governance/task-state/DOCS-REFRESH-2026-10-06.md) | EXECUTION | Читать только для выбранного scope/владения |
+| [governance/task-state/PRIMARY-SESSION.md](governance/task-state/PRIMARY-SESSION.md) | EXECUTION | Читать только для выбранного scope/владения |
+| [integrations/connector-readiness.md](integrations/connector-readiness.md) | REFERENCE | Контракт/процедура выбранного канала |
+| [integrations/runbooks/custom-api.md](integrations/runbooks/custom-api.md) | REFERENCE | Контракт/процедура выбранного канала |
+| [integrations/runbooks/external-adapters.md](integrations/runbooks/external-adapters.md) | REFERENCE | Контракт/процедура выбранного канала |
+| [integrations/runbooks/file-import.md](integrations/runbooks/file-import.md) | REFERENCE | Контракт/процедура выбранного канала |
+| [integrations/runbooks/manual-supplier.md](integrations/runbooks/manual-supplier.md) | REFERENCE | Контракт/процедура выбранного канала |
+| [integrations/runbooks/moysklad.md](integrations/runbooks/moysklad.md) | REFERENCE | Контракт/процедура выбранного канала |
+| [integrations/runbooks/one-c-agent.md](integrations/runbooks/one-c-agent.md) | REFERENCE | Контракт/процедура выбранного канала |
+| [operations/b4-6-load-profile.md](operations/b4-6-load-profile.md) | REFERENCE | Процедура/условия эксплуатации; не live PASS |
+| [operations/backup-restore-runbook.md](operations/backup-restore-runbook.md) | REFERENCE | Процедура/условия эксплуатации; не live PASS |
+| [operations/deployment-profiles.md](operations/deployment-profiles.md) | REFERENCE | Процедура/условия эксплуатации; не live PASS |
+| [operations/live-provider-readiness.md](operations/live-provider-readiness.md) | REFERENCE | Процедура/условия эксплуатации; не live PASS |
+| [operations/observability-runbook.md](operations/observability-runbook.md) | REFERENCE | Процедура/условия эксплуатации; не live PASS |
+| [operations/operations.md](operations/operations.md) | REFERENCE | Процедура/условия эксплуатации; не live PASS |
+| [operations/production-auth-runbook.md](operations/production-auth-runbook.md) | REFERENCE | Процедура/условия эксплуатации; не live PASS |
+| [operations/production-deployment.md](operations/production-deployment.md) | REFERENCE | Процедура/условия эксплуатации; не live PASS |
+| [operations/production-go-live-checklist.md](operations/production-go-live-checklist.md) | REFERENCE | Процедура/условия эксплуатации; не live PASS |
+| [operations/sla-incident-response.md](operations/sla-incident-response.md) | REFERENCE | Процедура/условия эксплуатации; не live PASS |
+| [runbooks/LOCAL-DEV-DATABASE.md](runbooks/LOCAL-DEV-DATABASE.md) | REFERENCE | Профильная справка |
+| [runbooks/UNIFIED-FRONTEND.md](runbooks/UNIFIED-FRONTEND.md) | REFERENCE | Профильная справка |
+| [security/security.md](security/security.md) | REFERENCE | Профильная справка |
+| [ui-ux/SHARED_SEMANTIC_THEME.md](ui-ux/SHARED_SEMANTIC_THEME.md) | REFERENCE | UI-инварианты и общая тема |
+| [ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md](ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md) | REFERENCE | UI-инварианты и общая тема |
 
-## Перенос незавершённого
+## Материалы текущего WIP
 
-- INTERNAL-PILOT, старые Foundation/Matrix и AUD-FIX briefs → Foundation §2–5:
-  CORE01–09/AUD07–09/B5/POST-BE/POST-FULL/DEMO/EXT и post-pilot сохранены.
-- WORKSPACE-AUDIT A01–A18 → Matrix LOCAL_PASS и фактический CI FAIL; не повторять fixes.
-- UNIFIED plan/checkpoint → архитектура/runbook; release/ingress/operator origin/rollback остаются открыты.
-- FRONTEND-DEMO/CATALOG-LAYOUT/FILTERS/SHARED-CATALOG → Foundation: неполная browser matrix,
-  поздние UI slices и отсутствие payment-method details; A18 unit PASS их не закрывает целиком.
-- REBRAND → Foundation: local rename отложен, Windows3/3; другое имя папки не разрешено.
-- Media snapshot → текущий M01–M08 proposal; внешние права/данные не подтверждены.
-- Supabase/PDF supplier cycle → исторические окружение/legacy EDS; новый запуск и допуск
-  определяются Local DB/ADR013, старые prod URLs и команды не используются.
+Публикация этих материалов и связанного продукта не входит в docs-пересборку.
+Записи ниже не назначают исполнителя и не закрывают чужой DoD.
 
-## Архив и контроль сохранности
+| Адрес | Класс | Ограничение |
+| --- | --- | --- |
+| `actual_docs/applications/support-workspace.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
+| `actual_docs/governance/task-state/ORDERS-NOTIFICATIONS-UX-2026-10-06.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
+| `actual_docs/governance/task-state/SUPPORT-UX-2026-10-06.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
+| `actual_docs/governance/task-state/UI-CONTRACT-2026-10-06.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
+| `actual_docs/ui-ux/COMPONENT_CONTRACT.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
+| `actual_docs/ui-ux/COMPONENT_CONTRACT_AUDIT.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
 
-[Архив30.09](history/archive/2026-09-30/README.md) хранит полные перенесённые
-карточки и предыдущие версии заменённых документов. [Manifest](history/archive/2026-09-30/ARCHIVE_MANIFEST.json)
-содержит исходные/архивные SHA256 и карту путей. В Markdown механически изменены
-только адреса ссылок; семантические hashes без link destinations сохраняют историю.
-Старый архив14.09 сохранён. Новые индекс/audit/checkpoint не считаются исходными115.
+Ссылки этого раздела описывают материалы рабочего дерева. Название прежней
+ссылки не является доказательством публикации или полной приёмки.
 
-Текущий внутренний этап: [CORE-03-INTERNAL](governance/task-state/CORE-03-INTERNAL-2026-10-01.md) — проверки возврата, исполнения и повторной закупки.
+## Архив и совместимые адреса
+
+[Карта архива06.10](history/archive/2026-10-06/README.md) содержит26 источников:
+23 прежних документа/плана и3 снимка навигации из committed baseline.
+Исходные адреса23 документов оставлены как COMPAT-переходы. Весь прежний архив
+и датированные визуальные references остаются ARCHIVE, не очередью задач.
+Контрольные суммы — [manifest](history/archive/2026-10-06/MANIFEST.json).
+
+| Старый адрес | Класс |
+| --- | --- |
+| [architecture/CODEBASE-AUDIT-2026-09-30.md](architecture/CODEBASE-AUDIT-2026-09-30.md) | COMPAT |
+| [architecture/architecture.md](architecture/architecture.md) | COMPAT |
+| [backend/DENTMARKET_BACKEND_FOUNDATION_V2.md](backend/DENTMARKET_BACKEND_FOUNDATION_V2.md) | COMPAT |
+| [governance/task-state/CABINET-UX-2026-10-02.md](governance/task-state/CABINET-UX-2026-10-02.md) | COMPAT |
+| [governance/task-state/CI-DATABASE-2026-09-30.md](governance/task-state/CI-DATABASE-2026-09-30.md) | COMPAT |
+| [governance/task-state/CORE-01-INTERNAL-2026-10-01.md](governance/task-state/CORE-01-INTERNAL-2026-10-01.md) | COMPAT |
+| [governance/task-state/CORE-02-INTERNAL-2026-10-01.md](governance/task-state/CORE-02-INTERNAL-2026-10-01.md) | COMPAT |
+| [governance/task-state/CORE-03-INTERNAL-2026-10-01.md](governance/task-state/CORE-03-INTERNAL-2026-10-01.md) | COMPAT |
+| [governance/task-state/CORE-04-INTERNAL-2026-10-01.md](governance/task-state/CORE-04-INTERNAL-2026-10-01.md) | COMPAT |
+| [governance/task-state/CORE-05-INTERNAL-2026-10-02.md](governance/task-state/CORE-05-INTERNAL-2026-10-02.md) | COMPAT |
+| [governance/task-state/CORE-06-INTERNAL-2026-10-02.md](governance/task-state/CORE-06-INTERNAL-2026-10-02.md) | COMPAT |
+| [governance/task-state/CORE-07-INTERNAL-2026-10-02.md](governance/task-state/CORE-07-INTERNAL-2026-10-02.md) | COMPAT |
+| [governance/task-state/CORE-08-INTERNAL-2026-10-02.md](governance/task-state/CORE-08-INTERNAL-2026-10-02.md) | COMPAT |
+| [governance/task-state/CORE-09-INTERNAL-2026-10-02.md](governance/task-state/CORE-09-INTERNAL-2026-10-02.md) | COMPAT |
+| [governance/task-state/DOCS-ARCHITECTURE-AUDIT-2026-09-30.md](governance/task-state/DOCS-ARCHITECTURE-AUDIT-2026-09-30.md) | COMPAT |
+| [governance/task-state/PERFORMANCE-CI-DELIVERY-2026-09-30.md](governance/task-state/PERFORMANCE-CI-DELIVERY-2026-09-30.md) | COMPAT |
+| [governance/task-state/SHARED-THEME-2026-10-02.md](governance/task-state/SHARED-THEME-2026-10-02.md) | COMPAT |
+| [integrations/eds-and-1c-integration-technical-spec.md](integrations/eds-and-1c-integration-technical-spec.md) | COMPAT |
+| [product-cards/CATALOG_MEDIA_PIPELINE_AUDIT.md](product-cards/CATALOG_MEDIA_PIPELINE_AUDIT.md) | COMPAT |
+| [product-cards/pilot-catalog.md](product-cards/pilot-catalog.md) | COMPAT |
+| [product/DENTMARKET_OUT_OF_PILOT_FEATURES.md](product/DENTMARKET_OUT_OF_PILOT_FEATURES.md) | COMPAT |
+| [product/DENTMARKET_PRODUCT_V2.md](product/DENTMARKET_PRODUCT_V2.md) | COMPAT |
+| [product/PILOT-OPEN-QUESTIONS.md](product/PILOT-OPEN-QUESTIONS.md) | COMPAT |
+
+Открытый остаток перенесён по исходным ID в roadmap. Лицензии, font provenance,
+машинные JSON/evidence templates и контрактные исходники не архивированы как
+«устаревшая текстовая документация» и сохраняют прежнее назначение.

@@ -1,58 +1,61 @@
 # PlatformaMarket
 
-B2B-маркетплейс закупок стоматологических клиник Казахстана. Текущий локальный
-frontend — единое Next.js приложение; backend — NestJS modular monolith.
-Актуализировано01.10.2026 для согласованного выпуска PERFORMANCE-CI-DELIVERY.
-Название DentMarket сохраняется в исторических и стабильных технических ID.
+B2B-маркетплейс стоматологических материалов для клиник и поставщиков Казахстана.
+Клиника сравнивает предложения, оформляет закупку у нескольких поставщиков,
+следит за исполнением и получает документы. Поставщик ведёт предложения,
+подтверждает заказы и передаёт данные вручную, файлом или через учётную систему.
+Оператор площадки управляет допуском, качеством каталога и исключениями.
 
-## Запуск
+## Начать здесь
 
-После установки зависимостей через `npm ci` и настройки локального окружения:
+- [Описание проекта](actual_docs/PROJECT_OVERVIEW.md) — аудитория, назначение,
+  бизнес-правила, функциональность, архитектура и интеграции.
+- [Main Roadmap to Production — 6 октября 2026](actual_docs/MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md)
+  — текущая стадия, реализованная основа, оставшиеся результаты и критерии приёмки.
+- [AGENTS.md](AGENTS.md) — порядок работы агента и чтения документов.
+- [Навигация](actual_docs/README.md) — профильные справочники без исторической очереди задач.
 
-`npm run dev` — API4012 и единый web3000, вход через http://127.0.0.1:3000.
-По умолчанию локально используется go_live/JWT; `npm run dev:pilot` включает
-ограниченный профиль. Это не production-допуск и не включение внешних провайдеров.
+Внутреннее ядро CORE-01–09 имеет историческую приёмку. Текущее развитие включает
+интерфейсы, консолидацию изменений и подготовку выбранных внешних процессов.
+Production с реальными участниками, оплатой, доставкой, ERP и рефералами — цель;
+его готовность ещё не подтверждена. Локальный go_live не равен боевому запуску.
 
-API сначала собирается и работает без watcher; для backend-разработки есть
-`npm run dev:watch-api`. Launcher не создаёт/не мигрирует/не reseed базу.
-Подготовка данных — отдельная явно выбранная процедура:
-[локальная БД](actual_docs/runbooks/LOCAL-DEV-DATABASE.md).
-Пароли и environment берутся из локальной конфигурации, не из документации.
-Перед запуском проверить владельца процессов и свободные порты.
+## Устройство
 
-[Единый frontend](actual_docs/runbooks/UNIFIED-FRONTEND.md) описывает rewrites,
-сборку, origins и откат. `npm run build` собирает API/shared и apps/web;
-четыре прежних frontend исключены. `dev:legacy` / `build:legacy` сохранены.
-Основной CI, browser, release matrix и production compose используют api/web;
-прежние Docker targets/compose сохранены для явно выбранного legacy rollback.
-Конфигурация не означает принятого production rollout.
-
-## Код
-
-| Путь | Фактическая роль |
+| Путь | Назначение |
 | --- | --- |
-| apps/api | API, domain services, Prisma/migrations и worker entry point |
-| apps/web | Единственный основной web: public, clinic, supplier, admin |
-| apps/buyer-web, supplier-web, admin-web, landing-web | Импортируемые компоненты и отдельные legacy entry points; удалять пока нельзя |
-| apps/e2e | Unified и legacy Playwright configurations; их покрытие различается |
-| packages/schemas | Общие Zod request/response contracts |
-| packages/api-client | Типизированный API client и frontend profile |
-| packages/ui | Общие Fluent UI v9 примитивы и workflow UI |
-| packages/eds-client, one-c-agent | Клиентские границы внешних интеграций, не live acceptance |
+| `apps/api` | NestJS modular monolith, Prisma/PostgreSQL, доменные сервисы, API и worker |
+| `apps/web` | Основной Next.js frontend: public, clinic, supplier, admin |
+| `apps/buyer-web`, `supplier-web`, `admin-web`, `landing-web` | Импортируемые features и legacy entry points; не удалять как неиспользуемые |
+| `packages/schemas`, `packages/api-client` | Общие Zod-контракты и типизированный клиент |
+| `packages/ui` | Общие компоненты Fluent UI v9 и UI-инварианты |
+| `apps/e2e`, `scripts` | Целевые проверки и обслуживающие процедуры |
 
-## Документация и проверки
+Очереди используют Redis/BullMQ и transactional outbox, файлы — отдельный storage
+и проверку безопасности. Наличие адаптера внешнего сервиса не доказывает его
+подключение или бизнес-приёмку.
 
-Начать с [актуальной документации](actual_docs/README.md),
-[AGENTS.md](AGENTS.md) и [Workflow](actual_docs/governance/DEVELOPMENT_WORKFLOW.md).
-Требования — Product V2, незакрытые обязательства — Foundation,
-фактическая приёмка — Acceptance Matrix. Архив не является очередью реализации.
+## Локальная работа
 
-Для TypeScript-изменений минимум: `npm run typecheck`, `npm test`,
-`git diff --check`; остальные gates выбираются по затронутому риску.
-Docs-only не требует запуска runtime suites.
+Версии Node/npm и команды заданы в [package.json](package.json); package manager — npm.
+Начальная установка в чистом окружении — `npm ci`. Повторная установка не нужна,
+если проверенные зависимости и lock inputs не изменились.
 
-Выпуск01.10 имеет локальные проверки canonical web/API/worker и dependency audit
-с нулём advisories; подробные команды, попытки и публикация/CI — в
-[карточке выпуска](actual_docs/governance/task-state/PERFORMANCE-CI-DELIVERY-2026-09-30.md).
-Отдельный legacy buyer bundle budget остаётся FAIL.
-Это не production-ready release; [статусы и ограничения](actual_docs/governance/PROJECT_ACCEPTANCE_MATRIX.md).
+Перед запуском проверить текущего исполнителя, процессы, профиль и конфигурацию.
+`npm run dev` запускает canonical API/web; `npm run dev:pilot` выбирает ограниченный
+профиль. Launcher не является разрешением мигрировать или reseed рабочую БД.
+`npm run build` собирает canonical приложения; legacy-команды сохраняются для
+отдельно выбранного сценария. Точные условия:
+[frontend](actual_docs/runbooks/UNIFIED-FRONTEND.md) и
+[локальная БД](actual_docs/runbooks/LOCAL-DEV-DATABASE.md).
+
+## Проверка результата
+
+Команды выбираются по риску и области изменения в
+[Workflow](actual_docs/governance/DEVELOPMENT_WORKFLOW.md).
+Docs-only требует проверки ссылок, согласованности и diff hygiene, а не сборки
+или runtime suites. Фактические результаты и ограничения версий —
+[Acceptance Matrix](actual_docs/governance/PROJECT_ACCEPTANCE_MATRIX.md).
+
+Архив хранит историю, не поручения. Агент открывает его последним, только для
+конкретного сравнения/восстановления, если актуальных документов недостаточно.

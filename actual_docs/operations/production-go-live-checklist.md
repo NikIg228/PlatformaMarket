@@ -1,12 +1,11 @@
 # Production go-live checklist
 
-## Очередь выполнения — 2026-09-14
+## Место в production roadmap — 2026-10-06
 
-Этот runbook остаётся действующим, но сейчас не исполняется: владелец выбрал
-завершение локального backend core без новых внешних интеграций.
-Приёмка окружения/данных/release — POST-BE после CORE-09; финальная web-приёмка
-требует также завершённого frontend и POST-FULL. Provider/legal проверки — EXT
-по отдельному разрешению. См. [Foundation](../backend/DENTMARKET_BACKEND_FOUNDATION_V2.md).
+Рабочая очередь — [Main Roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md):
+R1 определяет состав, R7–R8 пользовательскую и эксплуатационную приёмку,
+R9 — выпуск и запуск. Этот runbook применяется к выбранному release candidate;
+он не запускает внешние подключения или deploy без соответствующей задачи.
 
 Отложенное не закрыто и не отменено. Локальный demo/manual результат не является
 production payment/signature/delivery evidence. Все обязательные safety guards

@@ -1,14 +1,14 @@
 # Клиника и публичный каталог
 
-Актуально30.09.2026 для apps/web на2a816c3. apps/buyer-web содержит
+Карта маршрутов сверена06.10.2026; это справочник, не очередь задач. apps/buyer-web содержит
 переиспользуемые components и legacy entry point, а не отдельный обязательный
 процесс основного dev. Нельзя удалять каталог исходников как «неиспользуемый».
 
 | URL | Реализация / поведение |
 | --- | --- |
-| / и /catalog | Marketplace route adapters → buyer-workspace publicCatalog; общая шапка, фильтры/URL, карточки/сравнение |
+| / и /catalog | Marketplace route adapters → отдельный public catalog; общая шапка, фильтры/URL, карточки/сравнение |
 | /products/[id] | Переиспользуемая product page buyer-web; вход сохраняет контекст |
-| /clinic | Redirect на /clinic/cart; обычный вход и public catalog имеют свои return rules |
+| /clinic | Страница быстрых ссылок на /catalog, /clinic/cart и /clinic/orders; обычный вход имеет отдельные return rules |
 | /clinic/catalog | Redirect на общий /catalog с нормализованными query params |
 | /clinic/cart | workspaces/cart, validation/reprice/checkout и recovery |
 | /clinic/orders, /clinic/orders/[id] | workspaces/orders/order-detail, manual workflow и receipt |
@@ -23,7 +23,7 @@
 Публичная цена за единицу продажи не гарантирует наличие при checkout:
 revalidation и явное принятие diff обязательны. Квитанция не означает PAID.
 
-Основные lists ограничены сервером; полный public buyer-workspace остаётся
-кандидатом на разделение, см. [аудит](../architecture/CODEBASE-AUDIT-2026-09-30.md).
+Основные lists ограничены сервером; public catalog уже имеет отдельный entry.
+Не повторять старое предложение разделить его по архивному аудиту.
 [Статусы](../governance/PROJECT_ACCEPTANCE_MATRIX.md),
-[остаток продукта](../backend/DENTMARKET_BACKEND_FOUNDATION_V2.md).
+[остаток продукта](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).

@@ -1,15 +1,13 @@
 # Live provider and infrastructure readiness
 
-## Планирование — 2026-09-14
+## Место в production roadmap — 2026-10-06
 
-Внешние провайдеры отложены в EXT; текущая реализация ограничена внутренним
-ядром. Приёмка окружения и релиза начинается после backend completion
-(POST-BE), объединённый пользовательский прогон — после backend и frontend
-(POST-FULL). Очередь: [Foundation](../backend/DENTMARKET_BACKEND_FOUNDATION_V2.md).
-Ни один live checkbox не закрыт этой актуализацией. Требования production
-не ослабляются, конфигурационные контракты продолжают проверяться локально
-без вызова внешнего провайдера. Документ не разрешает включить расширенный
-runtime ради обхода условий демонстрации.
+Цель и состав запуска определяются [описанием проекта](../PROJECT_OVERVIEW.md)
+и [roadmap R1/R9](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
+Этот runbook сохраняет критерии выбранного runtime и внешние evidence contracts;
+он не является очередью реализации и не разрешает подключение сервисов сам по себе.
+Ни один live checkbox не закрыт редакцией документации. Состав optional modules
+и необходимые внешние сценарии согласуются в R1 без обхода production guards.
 
 ## Назначение
 
@@ -27,7 +25,7 @@ runtime ради обхода условий демонстрации.
 восстановлению данных. Скрипты не повышают connector до `LIVE_VERIFIED`
 автоматически и не изменяют БД.
 
-## Текущий статус
+## Зафиксированный baseline и незакрытые live-критерии
 
 - [x] Production + go_live environment fail-closed требует PSP webhook secret,
       аутентифицированный ЭЦП gateway, email/SMS и TLS для PostgreSQL/Redis.

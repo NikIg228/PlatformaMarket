@@ -1,5 +1,12 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+Маршрут с06.10: требования — [PROJECT_OVERVIEW](../PROJECT_OVERVIEW.md),
+очередь — [Main Roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
+Ниже evidence отдельных задач, с датами и границами версий. Это не общий PASS
+текущего dirty checkout и не доказательство production. Старые карточки доступны
+по совместимым адресам как архив; читать их только для нужного evidence.
+Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
+
 05.10 INVENTORY-EDITOR-TEMPLATES — LOCAL_PASS (CI отдельно при доставке):
 [контракт](../applications/supplier-web.md),
 [HTTP и проверка](../integrations/runbooks/manual-supplier.md).
@@ -90,7 +97,12 @@ DEFERRED_DECISION. Это классификация существующих о
 функций и не разрешение внедрять интеграции. Смешанные POST/DEMO/media этапы
 не считаются принятыми по локальным тестам их частей.
 
-## Текущее состояние
+## Датированные результаты и ограничения
+
+Строки относятся к указанным в них версиям. Итог CORE09 от02.10 заменяет
+прежний NOT_ACCEPTED внутреннего CORE на30.09, но не закрывает production.
+Фразы «CORE08 начат», «CORE09 впереди» и DEV_PENDING в ранних receipts — история;
+фактическое состояние миграций/позднего WIP сверяется в R0, не выводится из них.
 
 | Область | Статус | Доказательство / ограничение |
 | --- | --- | --- |
@@ -107,7 +119,7 @@ DEFERRED_DECISION. Это классификация существующих о
 | CORE-04.6–04.7 внутренний контур | CI_PASS / DEV_PENDING_APPROVAL | [CORE-04-INTERNAL](task-state/CORE-04-INTERNAL-2026-10-01.md): согласованные immutable версии discount/N+M, history/min30/price-lock, nonstack, atomic gift reserve/compensation, bilateral reduction, split shipment promise/reorder; supplier/operator/public/order UI. PG upgrade+transactions, core/runtime/config, typecheck/unit/build/budget, pilot46/46 и real go_live2/2 desktop/390 PASS. f14cbe1 опубликован, CI36874461180 и Security36874461153 SUCCESS. Миграция140000 только в audit DB; рабочий dev остановлен. Реальные акции/цены и production не приняты |
 | A01–A18, canonical web/API/worker | LOCAL_PASS | Опубликованы в2a816c3; исправления цены/партии/offer/order/UI/TTL/read models и проверки ниже |
 | Unified frontend | CI_PASS / live rollout NOT_ACCEPTED | apps/web, canonical build/browser/budget, release api/web и ingress; оба Docker targets PASS на75e0e21 |
-| Полный CORE01–09 | NOT_ACCEPTED | Наличие agreement/manual order/auth/operations кода не закрывает Product §23.6 и полный цикл |
+| Полный CORE01–09 — исторический срез30.09 | NOT_ACCEPTED на30.09; заменён LOCAL_CORE_PASS02.10 | Сохранён прежний отрицательный статус; актуальная граница внутренней приёмки — строка CORE09 выше. POST-FULL/production отдельно |
 | POST-BE / POST-FULL | NOT_ACCEPTED | Отдельные приёмки одной revision/data/environment; не закрываются этим аудитом |
 | Optional go_live blocks | COMPOSED / PARTIAL | Локальная видимость не означает полноту продукта, LIVE_VERIFIED или production |
 | Production / внешние providers | NO-GO / NOT_ACCEPTED | Требуются выбранные реальные provider/legal/infrastructure receipts |

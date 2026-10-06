@@ -7,8 +7,8 @@
 кода»: до реализации известны граница, риск и критерий готовности.
 
 Версия правил: 2026-09-14. Этот документ — единственное место для матрицы
-проверок, лимитов повторов и execution evidence. Product/Foundation определяют
-результат и очередь; UI standards — свойства интерфейса; ADR/runbooks —
+проверок, лимитов повторов и execution evidence. PROJECT_OVERVIEW и Main Roadmap
+to Production определяют результат и очередь; UI standards — свойства интерфейса; ADR/runbooks —
 архитектуру и конкретные процедуры. Их списки команд не суммируются механически.
 Обязательные safety-инварианты не ослабляются ради экономии запусков.
 
@@ -30,7 +30,7 @@ ID существующего пункта или явный запрос пол
 
 ## Контекст и scope
 
-Кто использует; какой Product V2 сценарий затрагивается; что сознательно не
+Кто использует; какой сценарий PROJECT_OVERVIEW и ID roadmap затрагивается; что сознательно не
 делаем.
 Существующий code path/test/evidence; конкретный пробел; разрешённые файлы/области.
 
@@ -220,7 +220,7 @@ error, permission profile, stale fixture и занятый порт не явл�
 
 ## 5. Review перед коммитом
 
-- [ ] Изменение соответствует Product V2 и не включает скрытый scope creep.
+- [ ] Изменение соответствует PROJECT_OVERVIEW и выбранному scope roadmap, без скрытого расширения.
 - [ ] Нет нарушения tenant isolation, authorization или денежной точности.
 - [ ] У write-операций определены validation, conflict и idempotency semantics.
 - [ ] У интерфейса есть loading, empty, error и disabled/submitting state.
@@ -261,17 +261,17 @@ error, permission profile, stale fixture и занятый порт не явл�
 
 ## 6. Правило документации
 
-Актуализация30.09.2026: вход — actual_docs/README.md, полный реестр —
+Актуализация06.10.2026: вход — actual_docs/README.md, полный реестр —
 DOCUMENTATION_INDEX.md. history/archive и датированные ui-ux/references
 исключены из повседневной реализации: их задачи, команды и старые blockers
 не возобновляются автоматически. Использовать только для явно выбранной
 истории/evidence. Завершённые карточки перенесены в архив; открытый остаток
-с ID/ограничениями ведётся в Foundation. Нормативные ADR сохраняются, даже
+с ID/ограничениями ведётся в Main Roadmap to Production. Нормативные ADR сохраняются, даже
 если реализация ещё частичная. Кодовое наличие, scoped PASS и live acceptance
 фиксируются отдельно.
 
-Актуальная последовательность и чекбоксы ведутся в Backend Foundation;
-Acceptance Matrix хранит evidence, Product V2 — требования. Не создавать
+Актуальная последовательность и чекбоксы ведутся в Main Roadmap to Production;
+Acceptance Matrix хранит evidence, PROJECT_OVERVIEW — требования. Не создавать
 параллельное ТЗ для повторения тех же задач. Завершённая фаза переносится в
 историю с датой, revision, командами и ограничениями; её regression tests
 остаются в risk-based gates; это не требование запускать их при любой правке docs.
@@ -413,8 +413,10 @@ Dirty paths: <свои / чужие / происхождение не устан
 - Автоматическое напоминание не является блокировкой конкурентной записи,
   доказательством выполнения правил или автоматическим сохранением сводки.
 
-Для DentMarket / Platforma.Market требования остаются в Product V2,
-очередь — в Backend Foundation, evidence — в Acceptance Matrix (§1 AGENTS.md).
+Для PlatformaMarket требования — в [PROJECT_OVERVIEW](../PROJECT_OVERVIEW.md),
+очередь — в [Main Roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md),
+evidence — в Acceptance Matrix (§1 AGENTS.md). Архив читается последним и
+адресно для конкретного вопроса; его планы не возобновляются автоматически.
 Сохранять checkpoint в существующей карточке; при её отсутствии —
 `actual_docs/governance/task-state/<task-id>.md`. Это состояние исполнения,
 не второй backlog. Матрица проверок и лимиты §4 остаются без изменений.

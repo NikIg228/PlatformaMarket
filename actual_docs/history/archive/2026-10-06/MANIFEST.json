@@ -1,0 +1,249 @@
+{
+  "date": "2026-10-06",
+  "baseline": "2fe8c1fdb91496c1fa32293e81f71a0dcc14f59e",
+  "policy": "Historical references, not tasks. Prose preserved; relative Markdown links relocated; line endings and trailing whitespace normalized.",
+  "entries": [
+    {
+      "source": "actual_docs/product/DENTMARKET_PRODUCT_V2.md",
+      "archive": "actual_docs/history/archive/2026-10-06/product/DENTMARKET_PRODUCT_V2.md",
+      "sourceSha256": "311c8bd532c7b1987075c3919eeb3238eaf595e9ce05b0f385b32b3c64456daf",
+      "rewrittenBodySha256": "eada575b2339173dafaef6508b6636066ace353fa60ead4135311d86582460cd",
+      "bannerLength": 315,
+      "compatibilityFragments": [
+        "22-утверждённый-состав-b2b-и-правила-кабинетов--2026-09-21",
+        "221-состав-и-навигация",
+        "2212-внутренние-диалоги-покупателя-и-поставщика--решение-владельца-22092026",
+        "23-внутренний-пилот-уточнение-владельца-28092026",
+        "236-согласованные-правила-реализация-отложена--28092026"
+      ],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/backend/DENTMARKET_BACKEND_FOUNDATION_V2.md",
+      "archive": "actual_docs/history/archive/2026-10-06/backend/DENTMARKET_BACKEND_FOUNDATION_V2.md",
+      "sourceSha256": "0ff21c4c152a72e9fe48aa8f2f545b2d5056852a4e70a0436e9b6d9b7fa0e550",
+      "rewrittenBodySha256": "bfd05657983cc0ca2ca4f533aeb96bf3cfec2cbccf66a2b513207ae610c72573",
+      "bannerLength": 315,
+      "compatibilityFragments": [
+        "6-разделение-остатка-внутренний-контур-и-техдолг-внешней-готовности"
+      ],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/product/PILOT-OPEN-QUESTIONS.md",
+      "archive": "actual_docs/history/archive/2026-10-06/product/PILOT-OPEN-QUESTIONS.md",
+      "sourceSha256": "0e898072622a6dae3e32e7546c97fc68737a428fdfc4b27a220211d454e46ede",
+      "rewrittenBodySha256": "2f61c66e16679cff7739b6e4f875e6b8ac48126c9f421eea85bd50c18f1d2c53",
+      "bannerLength": 315,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/product/DENTMARKET_OUT_OF_PILOT_FEATURES.md",
+      "archive": "actual_docs/history/archive/2026-10-06/product/DENTMARKET_OUT_OF_PILOT_FEATURES.md",
+      "sourceSha256": "2bda163f8ee3d846287be8c64fc02cda70730696c4ab7f0ba34f2d2c8c5742b8",
+      "rewrittenBodySha256": "387af7904a2cd66bcbe0341e1ff8f842ff84c33b40071038a032917f882078a5",
+      "bannerLength": 315,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/architecture/architecture.md",
+      "archive": "actual_docs/history/archive/2026-10-06/architecture/architecture.md",
+      "sourceSha256": "1a114da3f7f71da5854148c8f2c501e6862e24dc44cfbe7b8ca6342dce67b801",
+      "rewrittenBodySha256": "049f46f0be06c164850a4e1b275e335c6fa679cd2bb5493725927403d640ec8e",
+      "bannerLength": 315,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/architecture/CODEBASE-AUDIT-2026-09-30.md",
+      "archive": "actual_docs/history/archive/2026-10-06/architecture/CODEBASE-AUDIT-2026-09-30.md",
+      "sourceSha256": "bdb05394837fd62fcce5ee12f1a43549f4b183f530f4712e1cfc40aabe00dd1b",
+      "rewrittenBodySha256": "7a2b15956d6ca2fc04b1e5c594d44a8da013de2273ab19f63af89bfb6ae9df44",
+      "bannerLength": 315,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/product-cards/pilot-catalog.md",
+      "archive": "actual_docs/history/archive/2026-10-06/product-cards/pilot-catalog.md",
+      "sourceSha256": "95f0bf18d070c3063941b83769601819dbcd36c10629699a443dec97853998d9",
+      "rewrittenBodySha256": "06b25d6d532ea52fb2129cd58107159aa7726ed9cbf33f8cc5e91564d85fb9e4",
+      "bannerLength": 315,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/product-cards/CATALOG_MEDIA_PIPELINE_AUDIT.md",
+      "archive": "actual_docs/history/archive/2026-10-06/product-cards/CATALOG_MEDIA_PIPELINE_AUDIT.md",
+      "sourceSha256": "bd9e9979fe14f7c29e8ff40d931a701bd3a05f8e8d249894aceba19e9c55fee1",
+      "rewrittenBodySha256": "f5a55a999704d55b5f332046ba3d7b716b8630654094e3cfa48b0840605bce4a",
+      "bannerLength": 315,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/integrations/eds-and-1c-integration-technical-spec.md",
+      "archive": "actual_docs/history/archive/2026-10-06/integrations/eds-and-1c-integration-technical-spec.md",
+      "sourceSha256": "cc1c34226c2f74f6cb9294128e8dd030468ca9e83ee60dbb37d5861a2d92303c",
+      "rewrittenBodySha256": "a9467cbfa033e6238b201e703dc60b7cb184176b23194c04ddede192d040a041",
+      "bannerLength": 315,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/CORE-01-INTERNAL-2026-10-01.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/CORE-01-INTERNAL-2026-10-01.md",
+      "sourceSha256": "fe0c4b10072c3438ab87c4c6fb8ee13c70c2402f1d1ee0ab033a11a0d7b19f80",
+      "rewrittenBodySha256": "6644d76eaee7030bd1087654eee64596b62bcd31b848a47598e7d353b8f3913f",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/CORE-02-INTERNAL-2026-10-01.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/CORE-02-INTERNAL-2026-10-01.md",
+      "sourceSha256": "b541da8fb443c6a29bd03aa3d0bead0a071beb8f96ff0789d1747588da1f1507",
+      "rewrittenBodySha256": "b541da8fb443c6a29bd03aa3d0bead0a071beb8f96ff0789d1747588da1f1507",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/CORE-03-INTERNAL-2026-10-01.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/CORE-03-INTERNAL-2026-10-01.md",
+      "sourceSha256": "2213121bcf0e594ec2437331c5ae1d2034b6744f4406c275bf4adfebf3e1b566",
+      "rewrittenBodySha256": "2213121bcf0e594ec2437331c5ae1d2034b6744f4406c275bf4adfebf3e1b566",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/CORE-04-INTERNAL-2026-10-01.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/CORE-04-INTERNAL-2026-10-01.md",
+      "sourceSha256": "45bbf235e66169f4b7cbf1f66dc6c127d50162d43ff18908fb5863620ee987c9",
+      "rewrittenBodySha256": "49b8210ce15796d1e6693e1befb271441cc2920c1947f9f8d8412eaf6d466aa7",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/CORE-05-INTERNAL-2026-10-02.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/CORE-05-INTERNAL-2026-10-02.md",
+      "sourceSha256": "ecea7e8db34a65ba0494d31b5d07342ac6c10cf69cead7fa19cb560f1808e7aa",
+      "rewrittenBodySha256": "dcea5b736e65caeeae6fec695d923af1ec55bd7c9e1d300a896399a188da58f6",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/CORE-06-INTERNAL-2026-10-02.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/CORE-06-INTERNAL-2026-10-02.md",
+      "sourceSha256": "ec2a72b66365e3e680787f1965de43ec69c5f8b4cb9e9717fd803ea3a5470b2c",
+      "rewrittenBodySha256": "487a9fb61a02fed5721ecf784961c0a881608b67c56c1ae18cf53f7e73c6e5af",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/CORE-07-INTERNAL-2026-10-02.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/CORE-07-INTERNAL-2026-10-02.md",
+      "sourceSha256": "2c6e60edb90aac6ae06d2195c1c9ec1ae32461d2ec47c313b06e0fc652a395ae",
+      "rewrittenBodySha256": "2c6e60edb90aac6ae06d2195c1c9ec1ae32461d2ec47c313b06e0fc652a395ae",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/CORE-08-INTERNAL-2026-10-02.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/CORE-08-INTERNAL-2026-10-02.md",
+      "sourceSha256": "12e66ce49fe63dfd076d6c8985779a98523cd53bc26465d3c87893c15f474fa4",
+      "rewrittenBodySha256": "12e66ce49fe63dfd076d6c8985779a98523cd53bc26465d3c87893c15f474fa4",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/CORE-09-INTERNAL-2026-10-02.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/CORE-09-INTERNAL-2026-10-02.md",
+      "sourceSha256": "8241e2887c28499d2efc294c866eb9c603854aa771243e49d703271b8d468eb3",
+      "rewrittenBodySha256": "8241e2887c28499d2efc294c866eb9c603854aa771243e49d703271b8d468eb3",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/CI-DATABASE-2026-09-30.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/CI-DATABASE-2026-09-30.md",
+      "sourceSha256": "c3c73b5ff8ba673f614a4e203f2038f4f901b490612757e92d06519370a00466",
+      "rewrittenBodySha256": "c3c73b5ff8ba673f614a4e203f2038f4f901b490612757e92d06519370a00466",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/DOCS-ARCHITECTURE-AUDIT-2026-09-30.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/DOCS-ARCHITECTURE-AUDIT-2026-09-30.md",
+      "sourceSha256": "29d265420b1ac3882472501048395cc158a0583b6ecc0024a713532e6a074769",
+      "rewrittenBodySha256": "19e3a4d2c54ea801b6ac35f4076b28d45d6c6e2d75cbf18756c9b546fc2e147c",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/PERFORMANCE-CI-DELIVERY-2026-09-30.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/PERFORMANCE-CI-DELIVERY-2026-09-30.md",
+      "sourceSha256": "465140a960c71254b6dd210f2650a75825cc0ad41e617a69c2899a0bad0e400b",
+      "rewrittenBodySha256": "465140a960c71254b6dd210f2650a75825cc0ad41e617a69c2899a0bad0e400b",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/SHARED-THEME-2026-10-02.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/SHARED-THEME-2026-10-02.md",
+      "sourceSha256": "167e237e695875ee592403dc93af9dd0ed7f4b8b601d81567dcf09f75c835e2d",
+      "rewrittenBodySha256": "75c3805a377ad8157b154673bdd8a52c6e58f3f924d612761380507f70c9d1f2",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "actual_docs/governance/task-state/CABINET-UX-2026-10-02.md",
+      "archive": "actual_docs/history/archive/2026-10-06/governance/task-state/CABINET-UX-2026-10-02.md",
+      "sourceSha256": "2d5cd305713bca94f4cf68ba5cc306cc5159d58e2d36fdd378f8a5898a0629fc",
+      "rewrittenBodySha256": "2d5cd305713bca94f4cf68ba5cc306cc5159d58e2d36fdd378f8a5898a0629fc",
+      "bannerLength": 321,
+      "compatibilityFragments": [],
+      "status": "ARCHIVED_REFERENCE_NOT_TASK"
+    },
+    {
+      "source": "README.md",
+      "archive": "actual_docs/history/archive/2026-10-06/navigation/README.md",
+      "sourceCommit": "2fe8c1fdb91496c1fa32293e81f71a0dcc14f59e",
+      "sourceSha256": "9aeb553aeaba799987f23b8e51e4f134489e9b4b6b826477ddd5790e06c0699b",
+      "rewrittenBodySha256": "bd339e3ded2e82677b4f96bd68684a62fac5066ba4e44d2a07493cc55b28a1d8",
+      "bannerLength": 161,
+      "status": "ARCHIVED_NAVIGATION"
+    },
+    {
+      "source": "actual_docs/README.md",
+      "archive": "actual_docs/history/archive/2026-10-06/navigation/actual_docs__README.md",
+      "sourceCommit": "2fe8c1fdb91496c1fa32293e81f71a0dcc14f59e",
+      "sourceSha256": "eff64c17b95473c038b012aa95756a752b7d89973a84fe0a52aacaff9b2611e2",
+      "rewrittenBodySha256": "ab8e2eff642b323f99a236a9ac5111e0bf7f0344897207ba5829412750dcce90",
+      "bannerLength": 161,
+      "status": "ARCHIVED_NAVIGATION"
+    },
+    {
+      "source": "actual_docs/DOCUMENTATION_INDEX.md",
+      "archive": "actual_docs/history/archive/2026-10-06/navigation/actual_docs__DOCUMENTATION_INDEX.md",
+      "sourceCommit": "2fe8c1fdb91496c1fa32293e81f71a0dcc14f59e",
+      "sourceSha256": "e482479040d89189b90ca867ec8a80a885bcb40f8f9364edb8f711956e042f55",
+      "rewrittenBodySha256": "6d42ab821858b3963a41a2a4be915f7a7cf0b6466bbb0c877104975668ef21b9",
+      "bannerLength": 161,
+      "status": "ARCHIVED_NAVIGATION"
+    }
+  ]
+}

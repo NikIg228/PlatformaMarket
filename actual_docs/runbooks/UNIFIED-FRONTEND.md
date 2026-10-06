@@ -73,5 +73,8 @@ public catalog entries: максимум24 файлов,1,500,000raw/450,000gzip
 До production: согласовать origin оператора/домены, принять Docker/ingress в живой
 среде, ограничения uploads и
 streaming, полную матрицу прав/отзыва/многовкладочности, миграцию внешних ссылок
-и пробный rollout/rollback. Код опубликован30.09 в2a816c3; CI и dependency
-audit завершились FAIL, CodeQL PASS. Release/deployment не запускались. Новые внешние интеграции и отложенные оплаты не входят в переход.
+и пробный rollout/rollback. Исторический выпуск30.09 в2a816c3 имел CI/dependency
+FAIL и CodeQL PASS; последующие исправления8045225/75e0e21 имеют записанный
+CI/Security PASS в [реестре](../governance/PROJECT_ACCEPTANCE_MATRIX.md).
+Это разные снимки, не текущий CI-статус рабочего дерева. Живой rollout/rollback
+остаётся в R9 [roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).

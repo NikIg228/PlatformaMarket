@@ -12,7 +12,7 @@ SupplierOperations разделён на setup/import/offers/inventory пане�
 hook внутри прежнего lazy section. Устранён измеренный двойной GET при выборе
 первого поставщика; устаревшие GET отменяются. Остальные крупные sections сами
 по себе не доказывают загрузку всех панелей на первом экране. Канонические
-требования панели — Product §23.4; полнота продукта не следует из этого refactor.
+требования панели — [PROJECT_OVERVIEW](../PROJECT_OVERVIEW.md); полнота продукта не следует из этого refactor.
 
 Операторский UI не является SQL-console, не подтверждает деньги на чужом
 банковском счёте по квитанции и не акцептует договор за клиента. Действия
@@ -20,6 +20,6 @@ hook внутри прежнего lazy section. Устранён измерен
 
 Полнота всех панелей, аналитики/обращений и product metrics ещё не принята.
 Старые AUD-FIX08/09 не закрыты одним наличие UI.
-[Foundation](../backend/DENTMARKET_BACKEND_FOUNDATION_V2.md),
+[Main Roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md),
 [Matrix](../governance/PROJECT_ACCEPTANCE_MATRIX.md),
 [аудит](../architecture/CODEBASE-AUDIT-2026-09-30.md).
