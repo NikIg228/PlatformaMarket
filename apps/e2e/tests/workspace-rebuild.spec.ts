@@ -268,6 +268,7 @@ for (const width of [1440, 390]) test(`CORE03 refund receipt requires consent an
     return route.fulfill({ json: { orderId: id, version: 2 } });
   });
   await page.goto(`/clinic/orders/${id}`);
+  await page.getByRole("tab", { name: /Возвраты/ }).click();
   const receive = page.getByRole("button", { name: "Подтвердить получение возврата", exact: true });
   await expect(receive).toBeDisabled();
   const consent = page.getByRole("checkbox", { name: "Деньги в указанной сумме поступили на счёт клиники" });
@@ -294,6 +295,7 @@ test("CORE03 supplier agrees exact return conditions before money stage", async 
     saved = route.request().postDataJSON(); value.status = "AGREED"; return route.fulfill({ json: {} });
   });
   await page.goto(`/supplier/orders/${id}`);
+  await page.getByRole("tab", { name: /Возвраты/ }).click();
   const agree = page.getByRole("button", { name: "Согласовать указанные условия и сумму" });
   await expect(agree).toBeDisabled(); await expect(page.getByText(/Упаковка не вскрыта/)).toBeVisible();
   await page.getByLabel("Комментарий к решению о возврате").fill("Принимаем одну упаковку в указанном состоянии");
@@ -823,7 +825,7 @@ test("supplier confirms an order and returns to its own order list", async ({
   });
   await page.goto(`/supplier/orders/${id}`);
   await expect(
-    page.getByRole("heading", { name: "Заказ TEST-001" }),
+    page.getByRole("heading", { name: "Заказ № TEST-001" }),
   ).toBeVisible();
   await page
     .getByRole("button", { name: "Проверить и подтвердить", exact: true })
@@ -844,4 +846,127 @@ test("supplier confirms an order and returns to its own order list", async ({
     path: "../../outputs/workspace-rebuild-order.png",
     fullPage: true,
   });
+});
+
+async function ordersNotificationFixture(page: Page, role: "clinic" | "supplier") {
+  await fixture(page, role === "clinic" ? "BUYER" : "SUPPLIER");
+  const permissions = ["order.confirm", "order.approve", "order.create", "payment.transfer.confirm", "document.upload", "document.view", "notification.view", "support.ticket.view", "shipment.manage"];
+  await page.route("**/api/access-control/policy", route => route.fulfill({ json: { mode: "ROLE_BASED", permissions } }));
+  await page.route("**/api/access-control/permissions", route => route.fulfill({ json: permissions }));
+  const rows = Array.from({ length: 9 }, (_, index) => ({ id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`, category: index === 1 ? "documents" : "orders", title: index === 0 ? "Клиника сообщила о переводе" : `Событие заказа ${index + 1}`, description: "Проверьте актуальные условия заказа.", context: "SO-1048 · Демо-клиника", createdAt: `2026-10-05T${String(15 - index).padStart(2, "0")}:00:00.000Z`, readAt: null as string | null, readScope: "organization", target: { type: "order", id: "55555555-5555-4555-8555-555555555555", label: "Открыть заказ" } }));
+  const writes: unknown[] = [];
+  let failure = false;
+  await page.route("**/api/notifications/**", async route => {
+    const url = new URL(route.request().url());
+    if (failure) return route.fulfill({ status: 503, json: { message: "Сервис временно недоступен" } });
+    if (route.request().method() === "POST") {
+      writes.push(route.request().postDataJSON());
+      const id = url.pathname.split("/").at(-2);
+      for (const row of rows) if (url.pathname.endsWith("/inbox/read") || row.id === id) row.readAt = "2026-10-05T18:00:00.000Z";
+      return route.fulfill({ json: { count: rows.length } });
+    }
+    const filtered = rows.filter(row => (!url.searchParams.get("category") || row.category === url.searchParams.get("category")) && (url.searchParams.get("unreadOnly") !== "true" || !row.readAt));
+    const limit = Number(url.searchParams.get("limit") ?? 20), start = url.searchParams.get("cursor") ? limit : 0;
+    return route.fulfill({ json: { items: filtered.slice(start, start + limit), nextCursor: filtered.length > start + limit ? "next" : null, unreadCount: rows.filter(row => !row.readAt).length, asOf: "2026-10-05T18:00:00.000Z" } });
+  });
+  return { rows, writes, setFailure: (value: boolean) => { failure = value; } };
+}
+
+for (const role of ["supplier", "clinic"] as const) for (const width of [1440, 390]) test(`orders-ux notification popover and history ${role} ${width}`, async ({ page }) => {
+  await page.setViewportSize({ width, height: 950 });
+  const state = await ordersNotificationFixture(page, role);
+  await page.goto(`/${role}/orders`);
+  const bell = page.getByRole("button", { name: "Уведомления: 9 непрочитанных", exact: true });
+  await bell.focus(); await page.keyboard.press("Enter");
+  const popover = page.getByRole("group", { name: "Последние уведомления" });
+  await expect(popover).toBeVisible(); expect(state.writes).toHaveLength(0);
+  await expect(popover.getByRole("article")).toHaveCount(7);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ animations: "disabled", path: `../../output/playwright/orders-ux/bell-${role}-${width}.png`, fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.keyboard.press("Escape"); await expect(popover).toBeHidden(); await expect(bell).toBeFocused();
+  await bell.click(); await page.getByRole("heading", { name: "Заказы", exact: true }).click(); await expect(popover).toBeHidden();
+  await bell.click();
+  await popover.getByRole("button", { name: "Прочитано: Клиника сообщила о переводе", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Уведомления: 8 непрочитанных", exact: true })).toBeVisible();
+  await popover.getByRole("link", { name: "Все уведомления →" }).click();
+  await expect(page).toHaveURL(new RegExp(`/${role}/notifications$`));
+  await expect(page.getByRole("region", { name: "История уведомлений" }).getByRole("article")).toHaveCount(9);
+  await page.getByRole("tab", { name: "Непрочитанные (8)", exact: true }).click();
+  await expect(page.getByRole("region", { name: "История уведомлений" }).getByRole("article")).toHaveCount(8);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ animations: "disabled", path: `../../output/playwright/orders-ux/history-${role}-${width}.png`, fullPage: true });
+  await page.getByRole("button", { name: "Прочитать все", exact: true }).click();
+  await expect(page.getByText("Непрочитанных уведомлений нет", { exact: true })).toBeVisible();
+  expect(state.writes.at(-1)).toEqual({ before: "2026-10-05T18:00:00.000Z" });
+});
+
+for (const width of [1440, 390]) test(`orders-ux list and terminal detail ${width}`, async ({ page }) => {
+  await page.setViewportSize({ width, height: 950 }); await ordersNotificationFixture(page, "supplier");
+  const id = "55555555-5555-4555-8555-555555555555";
+  const item = { id: sessionId, quantity: "10", acceptedQuantity: "10", totalPriceMinor: "3500000", currency: "KZT", offer: { productVariant: { product: { canonicalName: "Нитриловые перчатки M" } } } };
+  const order = { id, orderNumber: "SO-1048", version: 1, supplierOrganizationId: organizationId, buyerOrganizationId: cityId, buyer: { displayName: "Демо-клиника" }, status: "AWAITING_PAYMENT", paymentStatus: "UNPAID", currency: "KZT", subtotalAmountMinor: "3500000", createdAt: "2026-10-05T10:00:00Z", items: [item], shipments: [] };
+  const queries: string[] = [];
+  await page.route("**/api/workspaces/supplier/orders*", route => { queries.push(new URL(route.request().url()).searchParams.get("group") ?? ""); return route.fulfill({ json: { items: [{ ...order, itemCount: 1, paymentReviewPending: true, partiallyPaid: true, nextAction: "Проверить перевод" }], nextCursor: null } }); });
+  const workflow = { order, version: 1, status: "AWAITING_PAYMENT", paymentStatus: "UNPAID", invoiceDocumentId: sessionId, claims: [{ id: cityId, documentId: cityId, status: "PENDING", amountMinor: "3500000", currency: "KZT", paidAt: "2026-10-05T12:00:00Z" }], events: [], paymentSummary: { confirmedAmountMinor: "0", remainingAmountMinor: "3500000", overpaidAmountMinor: "0" }, paymentReviewConfigured: true };
+  await page.route(`**/api/supplier-orders/${id}/workflow`, route => route.fulfill({ json: workflow }));
+  await page.goto("/supplier/orders"); await page.getByRole("button", { name: "Требуют действия", exact: true }).click();
+  await expect.poll(() => queries.at(-1)).toBe("attention"); await expect(page).toHaveURL(/group=attention/);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ animations: "disabled", path: `../../output/playwright/orders-ux/orders-${width}.png`, fullPage: true });
+  await page.getByRole("link", { name: "SO-1048", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Проверьте поступление оплаты", exact: true })).toBeVisible();
+  await page.getByRole("textbox", { name: "Комментарий к проверке или спору по переводу 1", exact: true }).fill("Проверяем банк");
+  await page.getByRole("tab", { name: "История", exact: true }).click(); await page.getByRole("tab", { name: "Оплата", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "Комментарий к проверке или спору по переводу 1", exact: true })).toHaveValue("Проверяем банк");
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ animations: "disabled", path: `../../output/playwright/orders-ux/detail-${width}.png`, fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  workflow.status = "CANCELLED"; order.status = "CANCELLED"; workflow.claims = []; await page.reload();
+  await expect(page.getByRole("heading", { name: "Заказ отменён", exact: true })).toBeVisible();
+  await expect(page.getByText("Оплата не требуется", { exact: true })).toBeVisible();
+  await expect(page.getByRole("list", { name: "Этапы заказа" })).toHaveCount(0);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ animations: "disabled", path: `../../output/playwright/orders-ux/cancelled-${width}.png`, fullPage: true });
+});
+
+test("orders-ux notification recovery, filters and arrivals preserve reading position", async ({ page }) => {
+  const state = await ordersNotificationFixture(page, "supplier");
+  await page.goto("/supplier/notifications");
+  const history = page.getByRole("region", { name: "История уведомлений" });
+  await expect(history.getByRole("article")).toHaveCount(9);
+  const newer = { ...state.rows[0], id: "99999999-9999-4999-8999-999999999999", title: "Новое событие во время чтения", createdAt: "2026-10-05T19:00:00.000Z" };
+  state.rows.unshift(newer);
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await expect(history.getByRole("button", { name: "Есть новые уведомления — показать" })).toBeVisible();
+  await expect(history.getByRole("heading", { name: newer.title })).toHaveCount(0);
+  await history.getByRole("button", { name: "Есть новые уведомления — показать" }).click();
+  await expect(history.getByRole("heading", { name: newer.title })).toBeVisible();
+  state.setFailure(true); await history.getByRole("button", { name: "Обновить", exact: true }).click();
+  await expect(history.getByRole("alert")).toContainText("Сервис временно недоступен");
+  await expect(history.getByRole("article")).toHaveCount(10);
+  state.setFailure(false); await history.getByRole("button", { name: "Повторить", exact: true }).click();
+  await expect(history.getByRole("alert")).toHaveCount(0);
+  await history.getByRole("combobox", { name: "Категория уведомлений" }).click();
+  await page.getByRole("option", { name: "Документы", exact: true }).click();
+  await expect(history.getByRole("article")).toHaveCount(1);
+  expect(state.writes).toHaveLength(0);
+});
+
+test("orders-ux document deep link recovers from denied read without losing the archive", async ({ page }) => {
+  const state = await ordersNotificationFixture(page, "clinic");
+  state.rows[0].target = { type: "document", id: sessionId, label: "Открыть документ" };
+  let denied = true;
+  await page.route(`**/api/documents/archive/${sessionId}`, route => denied ? route.fulfill({ status: 403, json: { message: "Нет доступа" } }) : route.fulfill({ json: { id: sessionId, title: "Счёт из уведомления", documentNumber: "INVOICE-UX", kind: "INVOICE", status: "GENERATED", accountingStatus: "NOT_APPLICABLE", documentDate: "2026-10-05T10:00:00.000Z", amountMinor: "3500000", currency: "KZT", version: 1, participants: [], signatures: [], versions: [] } }));
+  await page.goto("/clinic/orders");
+  await page.getByRole("button", { name: "Уведомления: 9 непрочитанных", exact: true }).click();
+  await page.getByRole("group", { name: "Последние уведомления" }).getByRole("link", { name: "Открыть документ", exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`/clinic/documents\\?documentId=${sessionId}$`));
+  await expect.poll(() => state.writes.length).toBe(1);
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("alert")).toContainText("Не удалось открыть документ");
+  denied = false; await dialog.getByRole("button", { name: "Повторить загрузку документа" }).click();
+  await expect(dialog.getByRole("heading", { name: "Счёт из уведомления" })).toBeVisible();
+  await page.keyboard.press("Escape"); await expect(dialog).toBeHidden();
+  await expect(page.getByRole("heading", { name: "Документы", exact: true })).toBeVisible();
 });

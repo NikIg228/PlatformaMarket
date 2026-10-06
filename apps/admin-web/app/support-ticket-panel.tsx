@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OperationHistory, SupportTicketDetail, UpdateSupportTicketInput } from "@marketplace/schemas";
-import { DmButton, DmCheckbox, DmDialog, DmField, DmInput, DmSelect, DmTextarea, LoadingState, errorMessage } from "@marketplace/ui";
+import { DmButton, DmCheckbox, DmDialog, DmField, DmInput, DmSelect, DmTextarea, LoadingState, SupportAttachmentList, errorMessage } from "@marketplace/ui";
 import { ticketStatuses } from "./support-operations";
 import { localDate } from "./operation-assignment";
 
@@ -43,7 +43,7 @@ export function SupportTicketPanel({ id, api, assignees, canManage, canWrite, on
           <DmField label="Причина изменения"><DmTextarea value={reason} maxLength={1_000} onChange={event => setReason(event.target.value)} /></DmField><DmButton type="submit" disabled={reason.trim().length < 10}>Сохранить решение</DmButton>
         </fieldset></form> : null}
       <h3>Сообщения обращения</h3>{ticket.hasOlder ? <DmButton disabled={busy} onClick={() => void run(async () => { const older = await api.supportTicket(id, ticket.messages[0].id); setTicket(value => value ? { ...value, hasOlder: older.hasOlder, messages: [...older.messages, ...value.messages] } : value); }, false)}>Ранние сообщения</DmButton> : null}
-      <ol>{ticket.messages.map(message => <li key={message.id}><strong>{assignees.find(member => member.id === message.authorId)?.displayName ?? "Участник"}{message.isInternal ? " · Внутренняя заметка" : ""}</strong><p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{message.body}</p><small>{new Date(message.createdAt).toLocaleString("ru-KZ")}</small></li>)}</ol>
+      <ol>{ticket.messages.map(message => <li key={message.id}><strong>{assignees.find(member => member.id === message.authorId)?.displayName ?? "Участник"}{message.isInternal ? " · Внутренняя заметка" : ""}</strong><p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{message.body}</p><SupportAttachmentList api={api} ticketId={id} messageId={message.id} files={message.attachments} /><small>{new Date(message.createdAt).toLocaleString("ru-KZ")}</small></li>)}</ol>
       {canWrite ? <form onSubmit={event => { event.preventDefault(); void run(async () => { const input = { body: body.trim(), isInternal: internal, attachments: [] }; await api.addSupportMessage(id, { ...input, idempotencyKey: key("message", input) }); setBody(""); pending.current.delete("message"); setFeedback("Ответ сохранён."); }); }}><DmField label="Ответ"><DmTextarea value={body} disabled={busy} maxLength={20_000} onChange={event => setBody(event.target.value)} /></DmField><DmCheckbox label="Внутренняя заметка оператора" checked={internal} disabled={busy} onChange={(_, data) => setInternal(data.checked === true)} /><DmButton type="submit" disabled={busy || !body.trim()}>Отправить ответ</DmButton></form> : null}
       {canManage ? <><h3>История решений (последние 30)</h3><ol>{history.map(event => <li key={event.id}>{new Date(event.createdAt).toLocaleString("ru-KZ")} · {assignees.find(member => member.id === event.actorId)?.displayName ?? "Участник"}<p>{(event.after as { reason?: string } | null)?.reason ?? event.action}</p></li>)}</ol></> : null}
     </>}

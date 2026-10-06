@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Field, Input, Select, Spinner, Textarea } from "@fluentui/react-components";
+import { Spinner } from "@fluentui/react-components";
+import { DmButton as Button, DmField as Field, DmInput as Input, DmSelect as Select, DmTextarea as Textarea } from "@marketplace/ui/controls";
 import { MarketplaceApiClient, frontendFeatures, type ApiContext } from "@marketplace/api-client";
 import { EmptyState, ErrorState, PageHeader, Section, StatusTag, errorMessage, formatDate, formatMoney, formatStatus } from "@marketplace/ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";

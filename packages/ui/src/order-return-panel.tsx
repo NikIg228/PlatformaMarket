@@ -1,4 +1,5 @@
 "use client";
+import { DmSelect, DmFileInput, DmCheckbox } from "./controls";
 import { useId, useRef, useState } from "react";
 import type { OrderReturn, OrderWorkflowResponse, UploadDocumentInput } from "@marketplace/schemas";
 import type { WorkflowAction } from "./order-workflow-command";
@@ -25,8 +26,8 @@ export function OrderReturnPanel(props: Props) {
   return <Section title="Отмена и возвраты">
     <p>Согласование, отправка и получение денег фиксируются отдельно. Перевод выполняется поставщиком в банке; площадка не отправляет деньги.</p>
     {data.returns?.length ? data.returns.map(value => <ReturnCard key={value.id} {...props} value={value} />) : <p>Обращений по возврату пока нет.</p>}
-    {buyer && !open && data.paymentSummary && data.paymentSummary.confirmedAmountMinor !== "0" && data.paymentStatus !== "REFUNDED" ? <div style={{ display: "grid", gap: 12 }}>
-      <DmField label={{ htmlFor: kindId, children: "Причина обращения" }}><select id={kindId} disabled={busy} value={kind} onChange={event => setKind(event.target.value as OrderReturn["kind"])}>{Object.entries(kindLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></DmField>
+    {buyer && !open && data.paymentSummary && data.paymentSummary.confirmedAmountMinor !== "0" && data.paymentStatus !== "REFUNDED" ? <div style={{ display: "grid", gap: "var(--dm-space-3)" }}>
+      <DmField label={{ htmlFor: kindId, children: "Причина обращения" }}><DmSelect id={kindId} disabled={busy} value={kind} onChange={event => setKind(event.target.value as OrderReturn["kind"])}>{Object.entries(kindLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</DmSelect></DmField>
       <p>{kind === "CANCELLATION" ? "До отправки поставщик должен подтвердить остановку всего заказа. После отправки выберите возврат товара." : kind === "GOODS" ? "Укажите количество и состояние возвращаемых позиций. Поставщик согласует эти сведения и сумму по ценам заказа." : "Сумма определяется остатком подтверждённой переплаты с учётом предыдущих возвратов."}</p>
       {kind === "GOODS" ? data.order.items.map((item, index) => <div key={item.id}><p>{item.offer?.productVariant.product.canonicalName ?? `Позиция ${index + 1}`} · согласовано {item.acceptedQuantity}</p>
         <DmField label={`Количество возврата, позиция ${index + 1}`}><DmInput disabled={busy} inputMode="decimal" value={quantities[item.id] ?? ""} onChange={(_, value) => setQuantities(current => ({ ...current, [item.id]: value.value }))} /></DmField>
@@ -67,7 +68,7 @@ function ReturnCard(props: Props & { value: OrderReturn }) {
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось загрузить квитанцию. Повторите отправку."); }
     finally { lock.current = false; setUploading(false); }
   };
-  return <article style={{ borderBottom: "1px solid var(--colorNeutralStroke2)", paddingBottom: 16, marginBottom: 16 }}>
+  return <article style={{ borderBottom: "1px solid var(--colorNeutralStroke2)", paddingBottom: "var(--dm-space-4)", marginBottom: "var(--dm-space-4)" }}>
     <h3>{kindLabels[value.kind]} · {formatMoney(value.amountMinor, value.currency)}</h3><p>{statusLabels[value.status]}</p><p>{value.reason}</p>
     {value.items.map(line => <p key={line.orderItemId}>{data.order.items.find(item => item.id === line.orderItemId)?.offer?.productVariant.product.canonicalName ?? "Товар"}: {line.quantity} · {line.condition}</p>)}
     {value.decisionReason ? <p>Решение поставщика: {value.decisionReason}</p> : null}
@@ -78,7 +79,7 @@ function ReturnCard(props: Props & { value: OrderReturn }) {
       <DmButton disabled={busy || !canAct("DECIDE_RETURN") || reason.trim().length < 3} onClick={() => void perform({ action: "DECIDE_RETURN", returnId: value.id, accepted: false, reason })}>Отклонить заявку</DmButton></> : null}
     {buyer && value.kind === "GOODS" && value.status === "AGREED" ? <DmButton disabled={busy || !canAct("SEND_RETURN_GOODS")} onClick={() => void perform({ action: "SEND_RETURN_GOODS", returnId: value.id })}>Подтвердить отправку товара обратно</DmButton> : null}
     {supplier && value.status === "GOODS_SENT" ? <><p>Подтверждайте получение только при совпадении количества и состояния с согласованным. При расхождении обратитесь в поддержку. Товар не возвращается в продажу автоматически.</p><DmButton disabled={busy || !canAct("RECEIVE_RETURN_GOODS")} onClick={() => void perform({ action: "RECEIVE_RETURN_GOODS", returnId: value.id })}>Подтвердить получение согласованного товара</DmButton></> : null}
-    {hasRefundAction ? <><DmField label={{ htmlFor: fileId, children: "Квитанция возврата, PDF до 10 МБ" }}><input id={fileId} type="file" accept=".pdf,application/pdf" disabled={busy || uploading} onChange={event => { setFile(event.target.files?.[0] ?? null); upload.current = null; }} /></DmField><DmButton disabled={busy || uploading || !file || !canAct("SEND_MANUAL_REFUND")} onClick={() => void send()}>Приложить квитанцию отправленного возврата</DmButton></> : null}
-    {buyer && value.status === "REFUND_SENT" ? <><label><input type="checkbox" checked={confirmed} disabled={busy} onChange={event => setConfirmed(event.target.checked)} /> Деньги в указанной сумме поступили на счёт клиники</label><DmButton disabled={busy || !confirmed || !canAct("RECEIVE_MANUAL_REFUND")} onClick={() => void perform({ action: "RECEIVE_MANUAL_REFUND", returnId: value.id })}>Подтвердить получение возврата</DmButton></> : null}
+    {hasRefundAction ? <><DmField label={{ htmlFor: fileId, children: "Квитанция возврата, PDF до 10 МБ" }}><DmFileInput id={fileId}  accept=".pdf,application/pdf" disabled={busy || uploading} onChange={event => { setFile(event.target.files?.[0] ?? null); upload.current = null; }} /></DmField><DmButton disabled={busy || uploading || !file || !canAct("SEND_MANUAL_REFUND")} onClick={() => void send()}>Приложить квитанцию отправленного возврата</DmButton></> : null}
+    {buyer && value.status === "REFUND_SENT" ? <><DmCheckbox checked={confirmed} disabled={busy} onChange={event => setConfirmed(event.target.checked)} label="Деньги в указанной сумме поступили на счёт клиники" /><DmButton disabled={busy || !confirmed || !canAct("RECEIVE_MANUAL_REFUND")} onClick={() => void perform({ action: "RECEIVE_MANUAL_REFUND", returnId: value.id })}>Подтвердить получение возврата</DmButton></> : null}
   </article>;
 }

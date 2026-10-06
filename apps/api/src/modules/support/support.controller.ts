@@ -24,7 +24,7 @@ export class SupportController {
 
   @Get("tickets") @RequirePermissions("support.ticket.view")
   @ApiCoreQuery("SupportTicketQuery") @ApiCoreResponse("SupportTicketList")
-  list(@Query() query: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { const parsed = supportTicketQuerySchema.safeParse(query); if (!parsed.success) throw new BadRequestException(parsed.error.flatten()); return this.support.list(this.context(actorId, organizationId), parsed.data.status, parsed.data.offset); }
+  list(@Query() query: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { const parsed = supportTicketQuerySchema.safeParse(query); if (!parsed.success) throw new BadRequestException(parsed.error.flatten()); return this.support.list(this.context(actorId, organizationId), parsed.data.status, parsed.data.offset, parsed.data); }
 
   @Get("tickets/:ticketId") @RequirePermissions("support.ticket.view")
   @ApiUuidParam("ticketId", "Support ticket") @ApiCoreQuery("SupportMessageQuery") @ApiCoreResponse("SupportTicketDetail")

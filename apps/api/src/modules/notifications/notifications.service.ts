@@ -19,6 +19,9 @@ import { BackgroundQueueService } from "../../platform/jobs/background-queue.ser
 import type { OutboxEvent } from "@prisma/client";
 import { OutboxHandlerRegistry } from "../../platform/outbox/outbox-handler.registry";
 import { createHash } from "node:crypto";
+import { NotificationInboxReader } from "./notification-inbox";
+import type { notificationInboxQuerySchema } from "@marketplace/schemas";
+import type { z } from "zod";
 
 @Injectable()
 export class NotificationsService implements OnModuleInit {
@@ -221,6 +224,15 @@ export class NotificationsService implements OnModuleInit {
 
   capabilities() {
     return this.registry.capabilities();
+  }
+
+  async inbox(organizationId: string, query: z.output<typeof notificationInboxQuerySchema>, context: SupplierActorContext) {
+    await this.assertOrganizationAccess(organizationId, context);
+    return new NotificationInboxReader(this.prisma).read({ ...context, organizationId }, query);
+  }
+  async readInbox(organizationId: string, before: string, context: SupplierActorContext) {
+    await this.assertOrganizationAccess(organizationId, context);
+    return new NotificationInboxReader(this.prisma).readAll({ ...context, organizationId }, before);
   }
 
   async processForOperator(context: SupplierActorContext) {
@@ -457,7 +469,7 @@ export class NotificationsService implements OnModuleInit {
   private bodyFor(eventType: string, payload: Record<string, unknown>) {
     if (eventType === "ConversationMessageSaved") return "В диалоге по предложению или заказу появилось новое сообщение.";
     if (eventType === "SupportTicketCreated") return "Обращение зарегистрировано. Его статус и ответы доступны в поддержке.";
-    if (eventType === "SupportTicketUpdated") return "Оператор обновил обращение. Откройте его для просмотра решения.";
+    if (eventType === "SupportTicketUpdated") return payload.action === "MESSAGE" ? "В обращении появилось новое сообщение. Откройте переписку." : payload.action === "REOPEN" ? "Обращение снова открыто. Посмотрите уточнение в переписке." : "Оператор обновил обращение. Откройте его для просмотра решения.";
     if (eventType === "OrderWorkflowChanged") {
       const actions: Record<string, string> = { ACCEPT_COMPOSITION: "Клиника согласовала состав заказа.", ISSUE_INVOICE: "Поставщик выставил счёт.", REPORT_TRANSFER: "Клиника сообщила о переводе оплаты.", REQUEST_PAYMENT_DETAILS: "Поставщик запросил уточнение оплаты.", CONFIRM_TRANSFER: "Поставщик подтвердил поступление оплаты.", CANCEL: "Заказ отменён.", REQUEST_RETURN: "Клиника запросила возврат.", DECIDE_RETURN: "Поставщик рассмотрел возврат.", RECEIVE_MANUAL_REFUND: "Клиника подтвердила получение возврата денег.", REORDER: "Создана корзина для повторной закупки." };
       return actions[String(payload.action)] ?? "Условия или исполнение заказа обновлены. Проверьте состояние заказа.";

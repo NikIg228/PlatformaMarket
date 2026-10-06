@@ -1,7 +1,8 @@
 "use client";
+import { DmCheckbox } from "@marketplace/ui/controls";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { Button } from "@fluentui/react-components";
+import { DmButton as Button } from "@marketplace/ui/controls";
 import { ChevronDown20Regular } from "@fluentui/react-icons/svg/chevron-down";
 import { useDeliveryContext } from "./delivery-context";
 import styles from "./header.module.css";
@@ -26,7 +27,7 @@ export function HeaderCity({ toolbar = false }: { toolbar?: boolean }) {
       {!delivery.ready ? <p role="status">Загружаем города…</p> : <>
         {delivery.message ? <p role="alert">{delivery.message}</p> : null}
         {open ? <CityPicker /> : null}
-        <label className={styles.check}><input type="checkbox" checked={delivery.inCity} disabled={!delivery.city} onChange={e => delivery.choose(delivery.city?.id ?? "", e.target.checked)} />Доступно в выбранном городе</label>
+        <DmCheckbox checked={delivery.inCity} disabled={!delivery.city} onChange={e => delivery.choose(delivery.city?.id ?? "", e.target.checked)} label="Доступно в выбранном городе" className={styles.check} />
         {!delivery.cities.length ? <Button onClick={delivery.retry}>Повторить загрузку городов</Button> : null}
       </>}
     </div>

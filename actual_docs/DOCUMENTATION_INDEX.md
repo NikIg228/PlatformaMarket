@@ -87,6 +87,7 @@
 | `actual_docs/governance/task-state/UI-CONTRACT-2026-10-06.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
 | `actual_docs/ui-ux/COMPONENT_CONTRACT.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
 | `actual_docs/ui-ux/COMPONENT_CONTRACT_AUDIT.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
+| actual_docs/applications/support-workspace.md | [CURRENT · поддержка](applications/support-workspace.md) | Общий экран обращений, черновики, поиск, уведомления и повторное открытие; scope/evidence SUPPORT-UX |
 
 Ссылки этого раздела описывают материалы рабочего дерева. Название прежней
 ссылки не является доказательством публикации или полной приёмки.

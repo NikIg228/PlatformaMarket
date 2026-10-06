@@ -1,20 +1,8 @@
 "use client";
+import { DmFileInput, DmAction } from "./controls";
 
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogBody,
-  DialogContent,
-  DialogSurface,
-  DialogTitle,
-  Field,
-  Input,
-  Select,
-  Spinner,
-  Tag,
-  Textarea,
-} from "@fluentui/react-components";
+import { Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Spinner, Tag } from "@fluentui/react-components";
+import { DmButton as Button, DmField as Field, DmInput as Input, DmSelect as Select, DmTextarea as Textarea, DmSurface } from "./controls";
 import { ArrowDownload24Regular } from "@fluentui/react-icons/svg/arrow-download";
 import { ArrowSync24Regular } from "@fluentui/react-icons/svg/arrow-sync";
 import { Dismiss24Regular } from "@fluentui/react-icons/svg/dismiss";
@@ -294,7 +282,7 @@ export function DocumentArchiveUpload({
             <div className="dm-document-upload-row"><Field label={`Сумма (${currency || "валюта"})`} hint="В основных единицах: для KZT — тенге. Например, 1 250,50. Не более двух знаков после запятой." validationState={parsedAmount.error ? "error" : "none"} validationMessage={parsedAmount.error}><Input inputMode="decimal" value={amount} onChange={(_, data) => setAmount(data.value)} /></Field><Field label="Валюта"><Input maxLength={3} value={currency} onChange={(_, data) => setCurrency(data.value.toUpperCase())} /></Field></div>
             <Field label="Требуемые подписи"><Select value={requiredSignatureCount} onChange={(_, data) => setRequiredSignatureCount(data.value)}><option value="0">Не требуются</option><option value="1">Одна</option><option value="2">Две</option></Select></Field>
             <Field label={{children:"Файл PDF или DOCX",htmlFor:fileId}} required hint="PDF или DOCX, непустой файл до 10 МБ (10 000 000 байт). Сервер дополнительно проверит содержимое." validationState={fileError ? "error" : "none"} validationMessage={fileError}>
-              <input ref={attachFileInput} id={fileId} aria-label="Файл PDF или DOCX" className="dm-document-file-input" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
+              <DmFileInput ref={attachFileInput} id={fileId} aria-label="Файл PDF или DOCX" className="dm-document-file-input"  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
               {file ? <span>Выбран: {file.name}</span> : null}
             </Field>
             </fieldset>
@@ -309,6 +297,7 @@ export function DocumentArchiveUpload({
 }
 
 export function DocumentArchiveWorkspace({
+  initialDocumentId,
   hideHeading = false,
   roleLabel,
   organizationId,
@@ -331,6 +320,7 @@ export function DocumentArchiveWorkspace({
   calendarTimeZone,
   filterError,
 }: {
+  initialDocumentId?: string | null;
   hideHeading?: boolean;
   roleLabel: string;
   organizationId: string;
@@ -357,11 +347,25 @@ export function DocumentArchiveWorkspace({
   const [searchDraft, setSearchDraft] = useState(filters.q);
   useEffect(() => setSearchDraft(filters.q), [filters.q]);
   const showDate = (value: string) => formatDate(value, calendarTimeZone);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialDocumentId ?? null);
+  const documentDialog = useRef<HTMLDivElement>(null);
+  const openDocumentRef = useRef(onOpenDocument);
+  openDocumentRef.current = onOpenDocument;
   const [selectedDetail, setSelectedDetail] = useState<DocumentArchiveItemView | null>(null);
   const [detailFailed, setDetailFailed] = useState(false);
   const [accountingStatus, setAccountingStatus] = useState<"REVIEWED" | "RECONCILED" | "DISPUTED">("REVIEWED");
   const [accountingReason, setAccountingReason] = useState("");
+  useEffect(() => {
+    // A retry replaces its button with loading/content. Keep keyboard events in the open dialog.
+    if (selectedId && documentDialog.current && !documentDialog.current.contains(document.activeElement)) documentDialog.current.focus();
+  }, [selectedId, selectedDetail, detailFailed]);
+  useEffect(() => {
+    if (!initialDocumentId) return;
+    let active = true;
+    setSelectedId(initialDocumentId); setSelectedDetail(null); setDetailFailed(false);
+    void openDocumentRef.current(initialDocumentId).then(value => { if (active) setSelectedDetail(value); }).catch(() => { if (active) setDetailFailed(true); });
+    return () => { active = false; };
+  }, [initialDocumentId, organizationId]);
   const selected = useMemo(() => selectedDetail?.id === selectedId ? selectedDetail : items.find(({ id }) => id === selectedId) ?? null, [items, selectedDetail, selectedId]);
   const counterparties = selected?.participants.filter(({ organizationId: participantId }) => participantId !== organizationId) ?? [];
   const openDocument = (documentId: string) => {
@@ -391,7 +395,7 @@ export function DocumentArchiveWorkspace({
           ["Ожидают подписи", summary?.awaitingSignature ?? 0],
           ["Требуют внимания", summary?.attention ?? 0],
           ["За этот месяц", summary?.thisMonth ?? 0],
-        ].map(([label, value]) => <div className="dm-document-summary-card" key={String(label)}><span>{label}</span><strong>{value}</strong></div>)}
+        ].map(([label, value]) => <DmSurface className="dm-document-summary-card" key={String(label)}><span>{label}</span><strong>{value}</strong></DmSurface>)}
       </div>
 
       {calendarTimeZone ? <p>Даты в часовом поясе: {calendarTimeZone}.</p> : null}
@@ -435,7 +439,7 @@ export function DocumentArchiveWorkspace({
             <tbody>{items.map((document) => {
               const counterparty = document.participants.find(({ organizationId: participantId }) => participantId !== organizationId)?.organization;
               return <tr key={document.id} tabIndex={0} onDoubleClick={() => openDocument(document.id)} onKeyDown={(event) => { if (event.key === "Enter") openDocument(document.id); }}>
-                <td data-label="Документ"><button className="dm-document-link" onClick={() => openDocument(document.id)}><strong>{document.title}</strong><span>{kindLabels[document.kind] ?? document.kind} · № {document.documentNumber} · v{document.version}</span></button></td>
+                <td data-label="Документ"><DmAction variant="text" className="dm-document-link" onClick={() => openDocument(document.id)}><strong>{document.title}</strong><span>{kindLabels[document.kind] ?? document.kind} · № {document.documentNumber} · v{document.version}</span></DmAction></td>
                 <td data-label="Контрагент">{counterparty ? <><strong>{counterparty.displayName}</strong><span className="dm-document-muted">БИН {counterparty.bin}</span></> : "—"}</td>
                 <td data-label="Дата">{showDate(document.documentDate)}</td>
                 <td data-label="Сумма">{formatMoney(document.amountMinor, document.currency)}</td>
@@ -448,10 +452,10 @@ export function DocumentArchiveWorkspace({
       ) : null}
       {nextCursor ? <div className="dm-document-load-more"><Button onClick={onLoadMore} disabled={loading}>{loading ? "Загружаем…" : "Показать ещё"}</Button></div> : null}
 
-      <Dialog open={Boolean(selected)} onOpenChange={(_, data) => { if (!data.open) setSelectedId(null); }}>
-        <DialogSurface className="dm-document-dialog">
+      <Dialog open={Boolean(selectedId)} onOpenChange={(_, data) => { if (!data.open) setSelectedId(null); }}>
+        <DialogSurface ref={documentDialog} className="dm-document-dialog">
           <DialogBody>
-            <DialogTitle action={<Button appearance="subtle" icon={<Dismiss24Regular />} aria-label="Закрыть" onClick={() => setSelectedId(null)} />}>{selected?.title}</DialogTitle>
+            <DialogTitle action={<Button appearance="subtle" icon={<Dismiss24Regular />} aria-label="Закрыть" onClick={() => setSelectedId(null)} />}>{selected?.title ?? "Документ"}</DialogTitle>
             {selected ? <DialogContent className="dm-document-detail">
               <dl>
                 <div><dt>Номер</dt><dd>{selected.documentNumber}</dd></div>
@@ -465,7 +469,7 @@ export function DocumentArchiveWorkspace({
               <section><h3>Подписи</h3>{selected.signatures.length ? selected.signatures.map((signature) => <p key={signature.id}><strong>{signature.signerName ?? "Подписант"}</strong><span>{signature.method} · {statusLabels[signature.status] ?? signature.status}{signature.signedAt ? ` · ${showDate(signature.signedAt)}` : ""}</span></p>) : <p>Подписи для документа не зарегистрированы.</p>}</section>
               <section><h3>История версий</h3>{selected.versions.length ? selected.versions.map((version) => <p key={version.id}><strong>Версия {version.version}</strong><span>{statusLabels[version.status] ?? version.status} · {showDate(version.documentDate)}</span></p>) : <p>{detailFailed ? "Историю версий загрузить не удалось." : "Загружаем цепочку версий…"}</p>}</section>
               {onAccountingStatus && selected.accountingStatus !== "NOT_APPLICABLE" ? <section className="dm-document-accounting"><h3>Бухгалтерская обработка</h3><Select aria-label="Новый бухгалтерский статус" value={accountingStatus} onChange={(_, data) => setAccountingStatus(data.value as typeof accountingStatus)}><option value="REVIEWED">Проверен</option><option value="RECONCILED">Сверен</option><option value="DISPUTED">Есть расхождение</option></Select><Textarea aria-label="Комментарий к бухгалтерской отметке" placeholder="Основание изменения" value={accountingReason} onChange={(_, data) => setAccountingReason(data.value)} /><Button appearance="primary" disabled={!has("document.accounting.review") || accountingReason.trim().length < 2 || busyDocumentId === selected.id} onClick={() => void onAccountingStatus(selected, accountingStatus, accountingReason).then(() => setAccountingReason(""))}>Сохранить отметку</Button></section> : null}
-            </DialogContent> : null}
+            </DialogContent> : <DialogContent>{detailFailed ? <div role="alert"><p>Не удалось открыть документ. Проверьте доступ и повторите попытку.</p><Button onClick={() => selectedId && openDocument(selectedId)}>Повторить загрузку документа</Button></div> : <p role="status">Загружаем документ…</p>}</DialogContent>}
             <DialogActions><Button appearance="primary" icon={<ArrowDownload24Regular />} disabled={!selected || busyDocumentId === selected?.id} onClick={() => selected && onDownload(selected)}>Скачать</Button><Button onClick={() => setSelectedId(null)}>Закрыть</Button></DialogActions>
           </DialogBody>
         </DialogSurface>

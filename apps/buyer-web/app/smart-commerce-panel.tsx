@@ -1,6 +1,8 @@
 "use client";
+import { DmAction } from "@marketplace/ui/controls";
 
-import { Button, Select, Spinner } from "@fluentui/react-components";
+import { Spinner } from "@fluentui/react-components";
+import { DmButton as Button, DmSelect as Select } from "@marketplace/ui/controls";
 import { MarketplaceApiClient, type ApiContext } from "@marketplace/api-client";
 import { EmptyState, ErrorState, PageHeader, Section, StatusTag, errorMessage, formatMoney } from "@marketplace/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -75,7 +77,7 @@ export function SmartCommercePanel({ buyerId = BUYER_ID, apiContext }: { buyerId
         <div className={styles.locationState}><StatusTag tone={addresses.find(({ id }) => id === addressId)?.geoStatus === "VERIFIED" ? "success" : "warning"}>{addresses.find(({ id }) => id === addressId)?.geoStatus === "VERIFIED" ? "Адрес подтверждён" : "Адрес требует проверки"}</StatusTag><small>Неподтверждённый адрес не даёт локального приоритета.</small></div>
       </div>
     </Section>
-    <div className={styles.modeGrid} role="group" aria-label="Режим рекомендации">{modes.map((item) => <button className={item.id === mode ? styles.modeActive : styles.mode} type="button" key={item.id} onClick={() => { setMode(item.id); void recommend(item.id); }}><strong>{item.label}</strong><span>{item.hint}</span></button>)}</div>
+    <div className={styles.modeGrid} role="group" aria-label="Режим рекомендации">{modes.map((item) => <DmAction variant="choice" className={item.id === mode ? styles.modeActive : styles.mode} type="button" key={item.id} onClick={() => { setMode(item.id); void recommend(item.id); }}><strong>{item.label}</strong><span>{item.hint}</span></DmAction>)}</div>
     <Section title={result ? `${result.product.name}: ${result.scenarios.length} варианта` : "Варианты поставки"} description="Сначала показываем лучший вариант по цене, сроку и надёжности. Реклама отмечена отдельно.">
       {busy ? <div className={styles.loading}><Spinner label="Пересчитываем цену и срок" /></div> : result?.scenarios.length ? <div className={styles.scenarios}>{result.scenarios.map((scenario, index) => { const rating = ratings[scenario.supplier.id]; return <article className={index === 0 ? styles.scenarioBest : styles.scenario} key={scenario.offerId}><header><div><small>{index === 0 ? "Рекомендуемый вариант" : `Вариант ${index + 1}`}</small><h3>{scenario.supplier.name}</h3></div><StatusTag tone={scenario.warehouse.verified ? "success" : "warning"}>{scenario.warehouse.verified ? "Склад подтверждён" : "Склад не подтверждён"}</StatusTag></header><div className={styles.scenarioFacts}><div><span>Итого</span><strong>{formatMoney(scenario.landedCostMinor, scenario.currency)}</strong></div><div><span>Ожидаемый срок</span><strong>{scenario.etaHours < 24 ? `${scenario.etaHours} ч` : `${Math.ceil(scenario.etaHours / 24)} дн`}</strong></div><div><span>Расстояние</span><strong>{scenario.distanceKm == null ? "Уточняется" : `${scenario.distanceKm} км`}</strong></div><div><span>Надёжность</span><strong>{rating?.status === "CALCULATED" ? `${Number(rating.score).toFixed(1)} из 100` : "Недостаточно данных"}</strong></div></div><p>{scenario.explanation}</p><footer><span>{scenario.warehouse.name}</span><span>Цена: {scenario.priceSource === "CONTRACT" ? "по договору" : "базовая"}</span></footer></article>; })}</div> : <EmptyState title="Подходящих вариантов нет" description="Поставщики ещё не подтвердили доставку по выбранному адресу." />}
     </Section>

@@ -1,6 +1,8 @@
 "use client";
-import { Button, Input, type InputProps } from "@fluentui/react-components";
+import { type InputProps } from "@fluentui/react-components";
+import { DmButton as Button, DmInput as Input } from "./controls";
 import { useRef } from "react";
+import { Dismiss16Regular } from "@fluentui/react-icons/svg/dismiss";
 import styles from "./dm-search.module.css";
 
 type Props = Omit<InputProps, "value" | "defaultValue" | "onChange" | "contentBefore" | "contentAfter"> & {
@@ -24,9 +26,9 @@ export function DmSearch({ value, onChange, onSearch, onClear, pending = false, 
       if (event.key === "Enter" && !event.defaultPrevented && onSearch) { event.preventDefault(); search(); }
     }}
     contentAfter={value ? <span className={styles.actions}>
-      <Button type="button" appearance="transparent" className={styles.clear} disabled={disabled} aria-label="Очистить поиск" onClick={() => {
+      <Button density="compact" type="button" appearance="transparent" icon={<Dismiss16Regular />} disabled={disabled} aria-label="Очистить поиск" onClick={() => {
         onChange(""); if (onClear) onClear(); else onSearch?.(""); root.current?.focus();
-      }}>×</Button>
-      <Button type={onSearch ? "button" : "submit"} appearance="transparent" className={styles.submit} disabled={disabled || pending || !value.trim()} onClick={onSearch ? search : undefined}>Найти</Button>
+      }} />
+      <Button density="compact" type={onSearch ? "button" : "submit"} appearance="transparent" disabled={disabled || pending || !value.trim()} onClick={onSearch ? search : undefined}>Найти</Button>
     </span> : undefined} />;
 }

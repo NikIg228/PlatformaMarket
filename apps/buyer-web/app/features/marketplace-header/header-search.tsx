@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
-import { Button } from "@fluentui/react-components";
+import { DmButton as Button } from "@marketplace/ui/controls";
 import { DmSearch } from "@marketplace/ui";
 import { catalogContext, searchDestination } from "./navigation";
 import styles from "./header.module.css";

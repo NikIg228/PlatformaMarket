@@ -92,12 +92,11 @@ for (const width of [390, 1440]) test(`shared theme auth audit ${width}`, async 
   }
 });
 
-test("existing persisted dark mode still uses the Fluent dark theme", async ({ page }) => {
+test("persisted dark preference keeps the approved light contract", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("marketplace-theme", "dark"));
   await page.goto("/catalog");
-  const { webDarkTheme } = createRequire(__filename)("@fluentui/react-components");
   await expect.poll(() => page.locator(".mp-provider").first().evaluate(element =>
-    getComputedStyle(element).getPropertyValue("--colorNeutralBackground1").trim())).toBe(webDarkTheme.colorNeutralBackground1);
+    getComputedStyle(element).getPropertyValue("--colorNeutralBackground1").trim())).toBe("#FFFFFF");
   expect(await page.evaluate(() => localStorage.getItem("marketplace-theme"))).toBe("dark");
 });
 

@@ -7,7 +7,8 @@ export const workspacePageQuerySchema = z.object({
   q: z.string().trim().max(160).default(""),
 });
 export const workspaceOrderStatusSchema = z.enum(["DRAFT", "AWAITING_CONFIRMATION", "CONFIRMED", "PARTIALLY_CONFIRMED", "RESERVED", "AWAITING_PAYMENT", "PAID", "ASSEMBLING", "READY_TO_SHIP", "SHIPPED", "IN_TRANSIT", "DELIVERED", "PARTIALLY_FULFILLED", "RETURN_DISPUTE", "REJECTED", "CANCELLED"]);
-export const workspaceOrderQuerySchema = workspacePageQuerySchema.extend({ status: workspaceOrderStatusSchema.optional() });
+export const workspaceOrderGroupSchema = z.enum(["attention", "active", "completed", "cancelled"]);
+export const workspaceOrderQuerySchema = workspacePageQuerySchema.extend({ status: workspaceOrderStatusSchema.optional(), group: workspaceOrderGroupSchema.optional() });
 export const workspaceOfferQuerySchema = workspacePageQuerySchema.extend({
   publication: z.enum(["published", "hidden"]).optional(), attention: z.enum(["required"]).optional(),
 });
@@ -20,6 +21,8 @@ export const workspaceOrderSchema = z.object({
   id: z.uuid(), orderNumber: z.string(), status: workspaceOrderStatusSchema, paymentStatus: z.string(),
   subtotalAmountMinor: decimal, currency: z.string(), createdAt: date,
   supplier: party, buyer: party, itemCount: z.number().int().nonnegative(),
+  paymentReviewPending: z.boolean().optional(), partiallyPaid: z.boolean().optional(),
+  hasOpenReturn: z.boolean().optional(), nextAction: z.string().nullable().optional(),
 });
 export const workspaceOrderPageSchema = page(workspaceOrderSchema);
 export const workspaceOfferSchema = z.object({

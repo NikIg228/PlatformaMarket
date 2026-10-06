@@ -14,33 +14,33 @@
 .reviewForm {
   display: grid;
   grid-template-columns: minmax(180px, 0.7fr) minmax(360px, 1.3fr);
-  gap: 18px;
+  gap: var(--dm-space-4);
   align-items: center;
-  padding: 16px;
+  padding: var(--dm-space-4);
   border: 1px solid var(--colorNeutralStroke2);
-  border-radius: var(--dm-radius-control, 12px);
+  border-radius: var(--dm-radius-field);
   background: var(--colorNeutralBackground1);
 }
 
 .reviewForm > div:first-child {
   display: grid;
-  gap: 4px;
+  gap: var(--dm-space-1);
 }
 
 .reviewForm strong {
-  font-size: 13px;
+  font-size: var(--dm-font-size-body);
 }
 
 .reviewForm span {
   color: var(--colorNeutralForeground3);
-  font-size: 11px;
-  line-height: 1.45;
+  font-size: var(--dm-font-size-caption);
+  line-height: var(--dm-line-body);
 }
 
 .reviewControls {
   display: grid;
   grid-template-columns: minmax(132px, 0.45fr) minmax(220px, 1fr) auto;
-  gap: 8px;
+  gap: var(--dm-space-2);
   align-items: center;
 }
 

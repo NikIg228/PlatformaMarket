@@ -1,5 +1,5 @@
 .section {
-  margin-top: 28px;
+  margin-top: var(--dm-space-8);
   overflow: hidden;
   border: 1px solid var(--dm-border);
   border-radius: var(--dm-radius-card);
@@ -11,41 +11,41 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 22px 24px;
+  gap: var(--dm-space-6);
+  padding: var(--dm-space-6) var(--dm-space-6);
   border-bottom: 1px solid var(--dm-border);
 }
 
 .eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  margin-bottom: 7px;
+  gap: var(--dm-space-2);
+  margin-bottom: var(--dm-space-2);
   color: var(--dm-brand-primary);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-size: var(--dm-font-size-micro);
+  font-weight: var(--dm-font-weight-heavy);
+  letter-spacing: var(--dm-tracking-label);
   text-transform: uppercase;
 }
 
 .header h2 {
   margin: 0;
   color: var(--dm-text-primary);
-  font-size: 22px;
-  letter-spacing: -0.03em;
+  font-size: var(--dm-font-size-heading);
+  letter-spacing: var(--dm-tracking-heading);
 }
 
 .header p,
 .paneHeading p {
-  margin: 5px 0 0;
+  margin: var(--dm-space-1) 0 0;
   color: var(--dm-text-muted);
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: var(--dm-font-size-caption);
+  line-height: var(--dm-line-body);
 }
 
 .section > :global(.dm-feedback),
 .section > :global(.dm-state) {
-  margin: 16px 24px 0;
+  margin: var(--dm-space-4) var(--dm-space-6) 0;
 }
 
 .metrics {
@@ -58,8 +58,8 @@
   min-height: 112px;
   display: grid;
   align-content: center;
-  gap: 5px;
-  padding: 18px 20px;
+  gap: var(--dm-space-1);
+  padding: var(--dm-space-4) var(--dm-space-6);
   border-right: 1px solid var(--dm-border);
 }
 
@@ -70,13 +70,13 @@
 .metrics span,
 .metrics small {
   color: var(--dm-text-muted);
-  font-size: 10px;
+  font-size: var(--dm-font-size-micro);
 }
 
 .metrics strong {
   color: var(--dm-text-primary);
-  font-size: 25px;
-  letter-spacing: -0.04em;
+  font-size: var(--dm-font-size-heading);
+  letter-spacing: var(--dm-tracking-heading);
 }
 
 .layout {
@@ -87,7 +87,7 @@
 .queuePane,
 .ratingPane {
   min-width: 0;
-  padding: 22px 24px 24px;
+  padding: var(--dm-space-6) var(--dm-space-6) var(--dm-space-6);
 }
 
 .ratingPane {
@@ -99,26 +99,26 @@
   display: flex;
   align-items: start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 15px;
+  gap: var(--dm-space-4);
+  margin-bottom: var(--dm-space-4);
 }
 
 .paneHeading h3 {
   margin: 0;
   color: var(--dm-text-primary);
-  font-size: 14px;
+  font-size: var(--dm-font-size-body);
 }
 
 .queue,
 .ratings {
   display: grid;
-  gap: 10px;
+  gap: var(--dm-space-3);
 }
 
 .queue article {
   display: grid;
-  gap: 13px;
-  padding: 16px;
+  gap: var(--dm-space-3);
+  padding: var(--dm-space-4);
   border: 1px solid var(--dm-border);
   border-radius: var(--dm-radius-field);
   background: var(--dm-surface);
@@ -129,19 +129,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: var(--dm-space-4);
 }
 
 .queue header > div {
   display: grid;
-  gap: 4px;
+  gap: var(--dm-space-1);
   min-width: 0;
 }
 
 .queue header strong {
   overflow: hidden;
   color: var(--dm-text-primary);
-  font-size: 13px;
+  font-size: var(--dm-font-size-body);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -149,55 +149,55 @@
 .queue header span,
 .queue footer > span {
   color: var(--dm-text-muted);
-  font-size: 10px;
+  font-size: var(--dm-font-size-micro);
 }
 
 .queue article > p {
   margin: 0;
   color: var(--dm-text-secondary);
-  font-size: 11px;
-  line-height: 1.55;
+  font-size: var(--dm-font-size-caption);
+  line-height: var(--dm-line-body);
 }
 
 .queue dl {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px;
+  gap: var(--dm-space-2);
   margin: 0;
 }
 
 .queue dl > div {
   display: grid;
   align-content: start;
-  gap: 4px;
+  gap: var(--dm-space-1);
   min-width: 0;
-  padding: 10px;
+  padding: var(--dm-space-3);
   border-radius: var(--dm-radius-field);
   background: var(--dm-surface-subtle);
 }
 
 .queue dt {
   color: var(--dm-text-muted);
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-size: var(--dm-font-size-micro);
+  font-weight: var(--dm-font-weight-bold);
+  letter-spacing: var(--dm-tracking-label);
   text-transform: uppercase;
 }
 
 .queue dd {
   margin: 0;
   color: var(--dm-text-secondary);
-  font-size: 10px;
-  line-height: 1.45;
+  font-size: var(--dm-font-size-micro);
+  line-height: var(--dm-line-body);
   overflow-wrap: anywhere;
 }
 
 .ratings > div {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px 12px;
+  gap: var(--dm-space-1) var(--dm-space-3);
   align-items: center;
-  padding: 12px;
+  padding: var(--dm-space-3);
   border: 1px solid var(--dm-border);
   border-radius: var(--dm-radius-field);
   background: var(--dm-surface);
@@ -206,40 +206,40 @@
 .ratings span {
   overflow: hidden;
   color: var(--dm-text-secondary);
-  font-size: 11px;
+  font-size: var(--dm-font-size-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .ratings strong {
   color: var(--dm-brand-primary);
-  font-size: 16px;
+  font-size: var(--dm-font-size-body-lg);
 }
 
 .ratings small {
   grid-column: 1 / -1;
   color: var(--dm-text-muted);
-  font-size: 9px;
+  font-size: var(--dm-font-size-micro);
 }
 
 .ratingPane aside {
-  margin-top: 14px;
-  padding: 14px;
-  border: 1px solid var(--dm-brand-border);
+  margin-top: var(--dm-space-4);
+  padding: var(--dm-space-4);
+  border: 1px solid var(--dm-brand-surface-strong);
   border-radius: var(--dm-radius-field);
   color: var(--dm-brand-primary);
   background: var(--dm-brand-surface);
 }
 
 .ratingPane aside strong {
-  font-size: 11px;
+  font-size: var(--dm-font-size-caption);
 }
 
 .ratingPane aside p {
-  margin: 6px 0 0;
+  margin: var(--dm-space-2) 0 0;
   color: var(--dm-text-secondary);
-  font-size: 10px;
-  line-height: 1.55;
+  font-size: var(--dm-font-size-micro);
+  line-height: var(--dm-line-body);
 }
 
 @media (max-width: 1050px) {
@@ -275,20 +275,20 @@
   }
 
   .header h2 {
-    font-size: 20px;
+    font-size: var(--dm-font-size-title);
   }
 
   .header,
   .queuePane,
   .ratingPane {
-    padding-right: 16px;
-    padding-left: 16px;
+    padding-right: var(--dm-space-4);
+    padding-left: var(--dm-space-4);
   }
 
   .section > :global(.dm-feedback),
   .section > :global(.dm-state) {
-    margin-right: 16px;
-    margin-left: 16px;
+    margin-right: var(--dm-space-4);
+    margin-left: var(--dm-space-4);
   }
 
   .metrics,

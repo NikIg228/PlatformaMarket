@@ -1,4 +1,5 @@
 "use client";
+import { DmAction } from "@marketplace/ui/controls";
 
 import { useEffect, useState } from "react";
 import styles from "../auth-split.module.css";
@@ -46,11 +47,11 @@ export function LoginHeading() {
         ))}
       </h1>
       {!reducedMotion && (
-        <button type="button" className={styles.headingPause} aria-label="Пауза смены фраз" aria-pressed={paused} onClick={() => setPaused(value => !value)}>
+        <DmAction variant="text" type="button" className={styles.headingPause} aria-label="Пауза смены фраз" aria-pressed={paused} onClick={() => setPaused(value => !value)}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             {paused ? <path d="M8 5v14l11-7z" /> : <path d="M6 5h4v14H6zm8 0h4v14h-4z" />}
           </svg>
-        </button>
+        </DmAction>
       )}
     </>
   );

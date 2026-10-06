@@ -1,4 +1,5 @@
 "use client";
+import { DmInput } from "@marketplace/ui/controls";
 import { useRef, useState } from "react";
 import { MarketplaceApiClient, workspacePath } from "@marketplace/api-client";
 import { DmButton, StatusTag, errorMessage } from "@marketplace/ui";
@@ -87,7 +88,7 @@ export function SupplierOffers({ offers, loginHref, compact = false }: {
         </div>
         <div className={styles.action}>
           {session?.organizationId ? <DmButton as="a" href={`/clinic/messages?contextType=OFFER&contextId=${offer.id}`}>Задать вопрос поставщику</DmButton> : null}
-          <label>Количество<input type="number" min={min} step={step} max="1000000" value={quantity} disabled={busy !== null || !offer.available}
+          <label>Количество<DmInput className={styles.quantity} type="number" min={min} step={step} max="1000000" value={quantity} disabled={busy !== null || !offer.available}
             aria-label={`Количество у ${offer.supplier.name}`} aria-invalid={!valid}
             onChange={e => setQuantities(current => ({ ...current, [offer.id]: e.target.value }))} /></label>
           {!valid ? <small role="alert">От {min}, кратно {step}, не более 1 000 000</small> : null}

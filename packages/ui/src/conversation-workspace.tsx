@@ -1,6 +1,9 @@
 "use client";
+import { DmAction } from "./controls";
+
 import { useCallback, useEffect, useRef, useState, type ReactElement } from "react";
-import { Dropdown, Option } from "@fluentui/react-components";
+import { Option } from "@fluentui/react-components";
+import { DmFluentDropdown as Dropdown } from "./controls";
 import { conversationPages, conversationPageSize } from "./conversation-pages";
 import type { ConversationDetail, ConversationEscalation, ConversationMessageInput, ConversationPage, ConversationQuery, StartConversation } from "@marketplace/schemas";
 import { DmButton, DmField, DmSelect, DmTextarea, EmptyState, LoadingState, errorMessage, dmDropdownPositioning } from "./index";
@@ -43,7 +46,7 @@ export function ConversationCounter({ api, href, icon, showLabel = false, onClic
     {icon ? <span aria-hidden="true">{icon}</span> : null}Сообщения{failed ? " · !" : count ? ` · ${count}` : ""}
   </a>;
   return <DmButton as="a" href={href} icon={icon} onClick={onClick} aria-current={current ? "page" : undefined} appearance={icon ? "subtle" : undefined} style={icon ? { position: "relative" } : undefined} aria-label={label}>
-    {icon && !showLabel ? failed || count ? <span aria-hidden="true" style={{ position: "absolute", top: 0, right: 0, minWidth: 16, borderRadius: 10, padding: "0 3px", fontSize: 11, lineHeight: "16px", background: "var(--dm-brand-primary)", color: "var(--dm-surface)" }}>{failed ? "!" : count! > 99 ? "99+" : count}</span> : null : <>Сообщения{failed ? " · !" : count ? ` · ${count}` : ""}</>}
+    {icon && !showLabel ? failed || count ? <span aria-hidden="true" style={{ position: "absolute", top: 0, right: 0, minWidth: 16, borderRadius: "var(--dm-radius-pill)", padding: "0 var(--dm-space-micro)", fontSize: "var(--dm-font-size-caption)", lineHeight: "var(--dm-line-compact)", background: "var(--dm-brand-primary)", color: "var(--dm-surface)" }}>{failed ? "!" : count! > 99 ? "99+" : count}</span> : null : <>Сообщения{failed ? " · !" : count ? ` · ${count}` : ""}</>}
   </DmButton>;
 }
 
@@ -152,7 +155,7 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
           <Option value="ALL">Все</Option><Option value="UNREAD">Непрочитанные</Option><Option value="ORDERS">По заказам</Option>
         </Dropdown> : <DmField label="Показать"><DmSelect value={filter} disabled={busy} onChange={event => { setFilter(event.target.value as ConversationQuery["filter"]); setOffset(0); }}><option value="ALL">Все</option><option value="UNREAD">Непрочитанные</option><option value="ORDERS">По заказам</option></DmSelect></DmField>}
         {loading && !page ? <LoadingState label="Загружаем диалоги" /> : page?.items.length === 0 ? <EmptyState title="Диалогов пока нет" description="Начните переписку из предложения поставщика или заказа." /> : null}
-        {page?.items.map(item => <DmButton className="dm-conversations-item" key={item.id} disabled={busy} aria-pressed={selected === item.id} onClick={() => choose(item.id)}><span><strong>{item.counterpartyName}{item.unread ? " · Новое" : ""}</strong><span>{item.title}{item.resolved ? " · Решён" : ""}</span><span className="dm-conversations-preview">{item.lastMessage}</span><small>{time(item.updatedAt)}</small></span></DmButton>)}
+        {page?.items.map(item => <DmAction variant="row" className="dm-conversations-item" key={item.id} disabled={busy} aria-pressed={selected === item.id} onClick={() => choose(item.id)}><span><strong>{item.counterpartyName}{item.unread ? " · Новое" : ""}</strong><span>{item.title}{item.resolved ? " · Решён" : ""}</span><span className="dm-conversations-preview">{item.lastMessage}</span><small>{time(item.updatedAt)}</small></span></DmAction>)}
         {compactList ? <div ref={listEnd} className="dm-conversations-list-end">{loading && page ? <LoadingState label="Загружаем диалоги" /> : null}</div> : <div className="dm-conversations-toolbar"><DmButton disabled={!offset || busy} onClick={() => setOffset(value => Math.max(0, value - 30))}>Назад</DmButton><DmButton disabled={!page?.hasMore || busy} onClick={() => setOffset(value => value + 30)}>Далее</DmButton></div>}
       </aside>
       <div className="dm-conversations-detail">

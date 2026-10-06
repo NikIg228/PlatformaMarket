@@ -1,6 +1,8 @@
 "use client";
+import { DmAction } from "@marketplace/ui/controls";
 import { useEffect, useRef, useState } from "react";
-import { Menu, MenuTrigger, MenuPopover, MenuList, MenuItem, Button } from "@fluentui/react-components";
+import { Menu, MenuTrigger, MenuPopover, MenuList, MenuItem } from "@fluentui/react-components";
+import { DmButton as Button } from "@marketplace/ui/controls";
 import styles from "./compact-catalog.module.css";
 
 type Category = { id: string; name: string };
@@ -13,12 +15,13 @@ export function CatalogCategories({ categories, selected, onSelect }: { categori
     const update = () => {
       const widths = Array.from(measure.current!.children).map(el => el.getBoundingClientRect().width);
       const available = root.current!.clientWidth;
-      let used = widths[0] + 8;
-      const allFit = widths.reduce((sum, width) => sum + width + 8, -8) <= available;
+      const gap = parseFloat(getComputedStyle(measure.current!).columnGap) || 0;
+      let used = widths[0] + gap;
+      const allFit = widths.reduce((sum, width) => sum + width + gap, -gap) <= available;
       let count = 0;
       for (const width of widths.slice(1)) {
         if (used + width > available - (allFit ? 0 : 100)) break;
-        used += width + 8; count++;
+        used += width + gap; count++;
       }
       setVisible(count);
     };
@@ -30,8 +33,8 @@ export function CatalogCategories({ categories, selected, onSelect }: { categori
   return <nav ref={root} className={styles.categories} aria-label="Крупные категории">
     <div ref={measure} className={styles.categoryMeasure} aria-hidden="true"><span>Все товары</span>{categories.map(c => <span key={c.id}>{c.name}</span>)}</div>
     <div className={styles.categoryRow}>
-      <button type="button" aria-pressed={!selected} onClick={() => choose("")}>Все товары</button>
-      {categories.map((c, index) => <button key={c.id} type="button" className={index >= visible ? styles.overflowCategory : undefined} aria-pressed={selected === c.id} onClick={() => choose(c.id)}>{c.name}</button>)}
+      <DmAction variant="choice" type="button" aria-pressed={!selected} onClick={() => choose("")}>Все товары</DmAction>
+      {categories.map((c, index) => <DmAction variant="choice" key={c.id} type="button" className={index >= visible ? styles.overflowCategory : undefined} aria-pressed={selected === c.id} onClick={() => choose(c.id)}>{c.name}</DmAction>)}
       {visible < categories.length ? <div className={styles.categoryMore}><Menu><MenuTrigger disableButtonEnhancement><Button aria-label="Ещё категории">Ещё{categories.slice(visible).some(c => c.id === selected) ? " · 1" : ""}</Button></MenuTrigger><MenuPopover><MenuList>{categories.slice(visible).map(c => <MenuItem key={c.id} onClick={() => choose(c.id)}>{c.name}{selected === c.id ? " ✓" : ""}</MenuItem>)}</MenuList></MenuPopover></Menu></div> : null}
     </div>
   </nav>;

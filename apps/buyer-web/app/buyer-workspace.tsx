@@ -1,4 +1,5 @@
 "use client";
+import { DmSelect } from "@marketplace/ui/controls";
 import { workspacePath } from "@marketplace/api-client";
 import { catalogMediaSource as mediaSource } from "./catalog/catalog-media-source";
 import { catalogPriceToMinor } from "./catalog/catalog-view-model";
@@ -10,14 +11,8 @@ import Link from "next/link";
 import { appendCatalogPage, fetchLiveCatalog, loadCatalogWindow } from "./catalog/live-search";
 import { readMarketplaceCatalog, marketplaceCatalogUrl } from "./catalog/marketplace-url";
 
-import {
-  Button,
-  Checkbox,
-  Field,
-  Input,
-  Select,
-  Spinner,
-} from "@fluentui/react-components";
+import { Spinner } from "@fluentui/react-components";
+import { DmButton as Button, DmCheckbox as Checkbox, DmField as Field, DmInput as Input, DmSelect as Select } from "@marketplace/ui/controls";
 import { Alert24Regular } from "@fluentui/react-icons/svg/alert";
 import { ArrowSync24Regular } from "@fluentui/react-icons/svg/arrow-sync";
 import { Cart24Regular } from "@fluentui/react-icons/svg/cart";
@@ -939,7 +934,7 @@ export default function BuyerWorkspace({
                       <span className={styles.category}>Вариант товара</span>
                       <strong>Выберите точную фасовку или REF</strong>
                     </div>
-                    <select
+                    <DmSelect
                       value={selectedVariantId ?? ""}
                       onChange={(event) => {
                         const variantId = event.target.value;
@@ -954,7 +949,7 @@ export default function BuyerWorkspace({
                           {variant.label}
                         </option>
                       ))}
-                    </select>
+                    </DmSelect>
                   </div>
                 ) : null}
                 <div className={styles.productModalCopy}>

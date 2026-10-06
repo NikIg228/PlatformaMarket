@@ -1,25 +1,29 @@
 "use client";
-import { useCallback, useState } from "react";
-import { DmButton, EmptyState, LoadingState, errorMessage } from "@marketplace/ui";
+import { useState } from "react";
+import { DmButton, DmDropdown, EmptyState, LoadingState } from "@marketplace/ui";
+import { Tab, TabList } from "@fluentui/react-components";
+import type { NotificationInboxItem } from "@marketplace/schemas";
 import { useWorkspace } from "./workspace";
-import { useResource } from "./use-resource";
 import { PermissionBoundary } from "./permission-boundary";
+import { useNotificationInbox } from "./use-notification-inbox";
+import { NotificationItems, notificationCategories } from "./notification-items";
+import styles from "./notifications.module.css";
 
 export default function Notifications() { return <PermissionBoundary required={["notification.view"]}><NotificationList /></PermissionBoundary>; }
 function NotificationList() {
-  const { api, organizationId, role } = useWorkspace();
-  const [offset, setOffset] = useState(0);
-  const [busy, setBusy] = useState<string>();
-  const [error, setError] = useState("");
-  const load = useCallback(() => api.internalNotifications(organizationId, offset), [api, organizationId, offset]);
-  const resource = useResource(load, { intervalMs: 30_000 });
-  return <section className="mp-stack">
-    {error || resource.error ? <p role="alert">{error || resource.error}<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton></p> : null}
-    {resource.initialLoading ? <LoadingState label="Загружаем уведомления" /> : resource.data?.length === 0 ? <EmptyState title="Уведомлений пока нет" description="Здесь появятся изменения заказов, документов и обращения." /> : null}
-    {resource.data?.map(item => {
-      const href = item.aggregateId && /^[a-f0-9-]{36}$/i.test(item.aggregateId) ? item.aggregateType === "BusinessConversation" ? `/${role}/messages?conversationId=${item.aggregateId}` : item.aggregateType === "SupplierOrder" ? `/${role}/orders/${item.aggregateId}` : item.aggregateType === "SupportTicket" ? `/${role}/support?ticketId=${item.aggregateId}` : undefined : undefined;
-      return <article key={item.id} style={{ padding: 16, border: "1px solid var(--dm-border)", borderRadius: 8 }}><h2>{item.subject}{!item.readAt ? " · Новое" : ""}</h2><p>{item.body}</p><small>{new Date(item.createdAt).toLocaleString("ru-KZ")}</small><div className="dm-conversations-toolbar">{href ? <DmButton as="a" href={href}>Открыть</DmButton> : null}{!item.readAt ? <DmButton disabled={Boolean(busy)} onClick={() => { setBusy(item.id); setError(""); void api.readNotification(item.id).then(() => resource.refreshAfterWrite()).catch(cause => setError(errorMessage(cause))).finally(() => setBusy(undefined)); }}>Отметить прочитанным</DmButton> : null}</div></article>;
-    })}
-    <div className="dm-conversations-toolbar"><DmButton disabled={!offset || resource.loading} onClick={() => setOffset(value => Math.max(0, value - 50))}>Назад</DmButton><DmButton disabled={resource.loading} onClick={() => void resource.refresh()}>Обновить</DmButton><DmButton disabled={resource.loading || resource.data?.length !== 50} onClick={() => setOffset(value => value + 50)}>Далее</DmButton></div>
+  const { role } = useWorkspace();
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const [category, setCategory] = useState<NotificationInboxItem["category"]>();
+  const inbox = useNotificationInbox({ unreadOnly, category });
+  return <section className={styles.history} aria-label="История уведомлений">
+    <div className={styles.toolbar}><TabList selectedValue={unreadOnly ? "unread" : "all"} onTabSelect={(_, value) => setUnreadOnly(value.value === "unread")} aria-label="Показать уведомления"><Tab value="all">Все</Tab><Tab value="unread">Непрочитанные{inbox.data?.unreadCount ? ` (${inbox.data.unreadCount})` : ""}</Tab></TabList>
+      <div className={styles.category}><DmDropdown aria-label="Категория уведомлений" value={category ?? ""} onChange={(_, data) => setCategory(data.value ? data.value as NotificationInboxItem["category"] : undefined)}><option value="">Все категории</option>{Object.entries(notificationCategories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</DmDropdown></div>
+      <div className={styles.toolbarActions}><DmButton disabled={inbox.busy || !inbox.data?.unreadCount} onClick={() => void inbox.markRead()}>Прочитать все</DmButton><DmButton disabled={inbox.loading} onClick={() => void inbox.refresh()}>Обновить</DmButton></div>
+    </div>
+    <p className={styles.scope}>Общие уведомления отмечаются прочитанными для организации. Личные — только для вас. «Прочитать все» включает все категории и ранее загруженные события за пределами списка.</p>
+    {inbox.error ? <div className={styles.feedback} role="alert">{inbox.error}<DmButton onClick={() => void inbox.refresh()}>Повторить</DmButton></div> : null}
+    {inbox.newEvents ? <DmButton className={styles.newEvents} onClick={() => void inbox.refresh()}>Есть новые уведомления — показать</DmButton> : null}
+    {inbox.loading && !inbox.data ? <LoadingState label="Загружаем уведомления" /> : inbox.data?.items.length ? <NotificationItems items={inbox.data.items} role={role} busy={inbox.busy} onRead={item => void inbox.markRead(item)} /> : !inbox.error ? <EmptyState title={unreadOnly ? "Непрочитанных уведомлений нет" : "Уведомлений пока нет"} description={category ? "Попробуйте другую категорию." : "Здесь появятся изменения заказов, документов и переписки."} /> : null}
+    {inbox.data?.nextCursor ? <div className={styles.loadMore}><DmButton disabled={inbox.loading} onClick={() => void inbox.more()}>{inbox.loading ? "Загружаем…" : "Показать ещё"}</DmButton></div> : null}
   </section>;
 }

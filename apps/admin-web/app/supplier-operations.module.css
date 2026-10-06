@@ -1,8 +1,8 @@
 .section {
   display: grid;
-  gap: 18px;
-  margin-top: 32px;
-  padding-top: 28px;
+  gap: var(--dm-space-4);
+  margin-top: var(--dm-space-8);
+  padding-top: var(--dm-space-8);
   border-top: 1px solid var(--dm-border);
 }
 
@@ -10,33 +10,33 @@
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 24px;
+  gap: var(--dm-space-6);
 }
 
 .heading h2 {
-  margin: 5px 0 0;
+  margin: var(--dm-space-1) 0 0;
   color: var(--dm-text-primary);
-  font-size: 25px;
-  letter-spacing: -0.035em;
+  font-size: var(--dm-font-size-heading);
+  letter-spacing: var(--dm-tracking-heading);
 }
 
 .heading p {
-  margin: 7px 0 0;
+  margin: var(--dm-space-2) 0 0;
   color: var(--dm-text-muted);
-  font-size: 14px;
+  font-size: var(--dm-font-size-body);
 }
 
 .eyebrow {
   color: var(--dm-brand-primary);
-  font-size: 10px;
-  font-weight: 850;
-  letter-spacing: 0.14em;
+  font-size: var(--dm-font-size-micro);
+  font-weight: var(--dm-font-weight-heavy);
+  letter-spacing: var(--dm-tracking-label);
 }
 
 .actions {
   display: flex;
   align-items: end;
-  gap: 8px;
+  gap: var(--dm-space-2);
 }
 
 .actions :global(.dm-select) {
@@ -46,12 +46,12 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--dm-space-4);
 }
 
 .panel {
   min-width: 0;
-  padding: 22px;
+  padding: var(--dm-space-6);
   border: 1px solid var(--dm-border);
   border-radius: var(--dm-radius-card);
   background: var(--dm-surface);
@@ -60,8 +60,8 @@
 .panel > header {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
-  gap: 12px;
-  margin-bottom: 17px;
+  gap: var(--dm-space-3);
+  margin-bottom: var(--dm-space-4);
 }
 
 .panel > header > span {
@@ -70,30 +70,30 @@
   width: 30px;
   height: 30px;
   border: 1px solid var(--dm-brand-surface-strong);
-  border-radius: 50%;
+  border-radius: var(--dm-radius-circle);
   color: var(--dm-brand-deep);
   background: var(--dm-brand-surface);
-  font-size: 10px;
-  font-weight: 850;
+  font-size: var(--dm-font-size-micro);
+  font-weight: var(--dm-font-weight-heavy);
 }
 
 .panel h3 {
   margin: 0;
   color: var(--dm-text-primary);
-  font-size: 17px;
+  font-size: var(--dm-font-size-subtitle);
 }
 
 .panel header p {
-  margin: 4px 0 0;
+  margin: var(--dm-space-1) 0 0;
   color: var(--dm-text-muted);
-  font-size: 11px;
+  font-size: var(--dm-font-size-caption);
 }
 
 .stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
-  margin-bottom: 14px;
+  margin-bottom: var(--dm-space-4);
   overflow: hidden;
   border: 1px solid var(--dm-border);
   border-radius: var(--dm-radius-field);
@@ -102,26 +102,26 @@
 
 .stats b {
   display: grid;
-  gap: 3px;
-  padding: 12px;
+  gap: var(--dm-space-micro);
+  padding: var(--dm-space-3);
   color: var(--dm-text-primary);
   background: var(--dm-surface-subtle);
-  font-size: 19px;
+  font-size: var(--dm-font-size-title);
 }
 
 .stats small {
   color: var(--dm-text-muted);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: var(--dm-font-size-micro);
+  font-weight: var(--dm-font-weight-bold);
+  letter-spacing: var(--dm-tracking-label);
   text-transform: uppercase;
 }
 
 .form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding: 16px 0;
+  gap: var(--dm-space-3);
+  padding: var(--dm-space-4) 0;
   border-top: 1px solid var(--dm-border);
 }
 
@@ -142,16 +142,16 @@
 .match {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 13px;
+  gap: var(--dm-space-3);
   align-items: center;
-  padding: 11px 0;
+  padding: var(--dm-space-3) 0;
   border-top: 1px solid var(--dm-border);
 }
 
 .record > div,
 .match > div {
   display: grid;
-  gap: 3px;
+  gap: var(--dm-space-micro);
   min-width: 0;
 }
 
@@ -161,15 +161,15 @@
   color: var(--dm-text-primary);
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: var(--dm-font-size-caption);
 }
 
 .record small,
 .match small,
 .record time {
   color: var(--dm-text-muted);
-  font-size: 10px;
-  line-height: 1.45;
+  font-size: var(--dm-font-size-micro);
+  line-height: var(--dm-line-body);
 }
 
 @media (max-width: 1050px) {

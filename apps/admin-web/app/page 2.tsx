@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Input } from "@fluentui/react-components";
+import { DmButton as Button, DmInput as Input } from "@marketplace/ui/controls";
 import { BuildingShop24Regular } from "@fluentui/react-icons/svg/building-shop";
 import { Cart24Regular } from "@fluentui/react-icons/svg/cart";
 import { Cube24Regular } from "@fluentui/react-icons/svg/cube";

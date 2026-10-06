@@ -550,7 +550,7 @@ export function SupplierControls() {
               <DmField className={styles.wide} label="Причина" required>
                 <DmInput name="reason" required />
               </DmField>
-              <DmButton type="submit" appearance="primary" className={styles.dangerAction}>Отозвать партию</DmButton>
+              <DmButton type="submit" intent="danger">Отозвать партию</DmButton>
             </form>
             <div className={styles.records}>
               {recalls.map((recall) => (

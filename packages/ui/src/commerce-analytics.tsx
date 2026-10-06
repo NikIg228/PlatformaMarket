@@ -9,7 +9,7 @@ const kinds: Record<string, string> = { CREATED: "Оформлен", CONFIRMED: 
 const datasets = { BUSINESS: "Рабочие", DEMO: "Демонстрационные", TEST: "Тестовые", UNCLASSIFIED: "Не классифицированы" } as const;
 function today() { return new Date(Date.now() + 5 * 3600000).toISOString().slice(0, 10); }
 function Summary({ value }: { value: CommerceMetricTotals }) {
-  return <dl style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 210px), 1fr))", gap: 16, margin: 0 }}>
+  return <dl style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 210px), 1fr))", gap: "var(--dm-space-4)", margin: 0 }}>
     {[["Создано заказов", value.createdOrders], ["Оборот созданных заказов", formatMoney(value.createdGoodsMinor, "KZT")],
       ["Подтверждено заказов", value.confirmedOrders], ["Подтверждено товаров", formatMoney(value.confirmedGoodsMinor, "KZT")],
       ["Заказов с получением", value.receivedOrders], ["Исполнено заказов", value.fulfilledOrders], ["Отменено заказов", value.cancelledOrders],
@@ -17,7 +17,7 @@ function Summary({ value }: { value: CommerceMetricTotals }) {
       ["Получение минус возвраты за период", formatMoney(value.netReceivedGoodsMinor, "KZT")],
       ["Предварительная комиссия", formatMoney(value.preliminaryCommissionMinor, "KZT")], ["Начисление / корректировка комиссии", formatMoney(value.accruedCommissionMinor, "KZT")],
       ["Полученная комиссия", "Не учитывается"], ["Задолженность по комиссии", "Не учитывается"],
-      ["Отказы: цена / остаток / другое", `${value.refusedPriceOrders} / ${value.refusedStockOrders} / ${value.refusedOtherOrders}`]].map(([label, amount]) => <div key={label}><dt>{label}</dt><dd style={{ margin: "6px 0 0", fontSize: 20, fontWeight: 600, overflowWrap: "anywhere" }}>{amount}</dd></div>)}
+      ["Отказы: цена / остаток / другое", `${value.refusedPriceOrders} / ${value.refusedStockOrders} / ${value.refusedOtherOrders}`]].map(([label, amount]) => <div key={label}><dt>{label}</dt><dd style={{ margin: "var(--dm-space-2) 0 0", fontSize: "var(--dm-font-size-title)", fontWeight: "var(--dm-font-weight-semibold)", overflowWrap: "anywhere" }}>{amount}</dd></div>)}
   </dl>;
 }
 export function CommerceAnalytics({ load, orderHref, operator = false }: Props) {
@@ -37,8 +37,8 @@ export function CommerceAnalytics({ load, orderHref, operator = false }: Props) 
     return () => controller.abort();
   }, [load, parsed, revision]);
   const filter = (change: () => void) => { change(); setPage(1); };
-  return <section aria-label="Аналитика заказов и комиссии" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 24, minWidth: 0 }}>
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "end" }}>
+  return <section aria-label="Аналитика заказов и комиссии" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: "var(--dm-space-6)", minWidth: 0 }}>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--dm-space-3)", alignItems: "end" }}>
       <DmField label="С даты"><DmInput type="date" value={from} onChange={(_, value) => filter(() => setFrom(value.value))} /></DmField>
       <DmField label="По дату включительно"><DmInput type="date" value={through} onChange={(_, value) => filter(() => setThrough(value.value))} /></DmField>
       <DmField label="Часовой пояс"><DmSelect value={timezone} onChange={event => filter(() => setTimezone(event.target.value as typeof timezone))}><option value="Asia/Qyzylorda">Кызылорда (UTC+5)</option><option value="UTC">UTC</option></DmSelect></DmField>
@@ -61,7 +61,7 @@ export function CommerceAnalytics({ load, orderHref, operator = false }: Props) 
       </div>
       <div><h3>События заказов</h3>{data.totalEvents === 0 ? <EmptyState title="Нет событий за этот период" description="Измените даты или набор данных. Старые заказы могут не иметь истории аналитики." /> : <>
         <div style={{ overflowX: "auto" }} tabIndex={0} role="region" aria-label="События заказов"><table style={{ width: "100%", borderSpacing: "12px 10px" }}><thead><tr><th scope="col">Дата</th><th scope="col">Заказ</th><th scope="col">Событие</th><th scope="col">Товары</th><th scope="col">Комиссия</th></tr></thead><tbody>{data.events.map(event => <tr key={event.id}><td>{new Intl.DateTimeFormat("ru-KZ", { dateStyle: "short", timeStyle: "short", timeZone: data.period.timezone }).format(new Date(event.occurredAt))}</td><td><a href={orderHref(event.orderId)}>{event.orderNumber}</a></td><td>{kinds[event.kind]}</td><td>{formatMoney(event.goodsAmountMinor, "KZT")}</td><td>{formatMoney(event.commissionAmountMinor, "KZT")}</td></tr>)}</tbody></table></div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}><DmButton disabled={page <= 1} onClick={() => setPage(value => value - 1)}>Предыдущие события</DmButton><span>Страница {page} · событий {data.totalEvents}</span><DmButton disabled={page * data.pageSize >= data.totalEvents} onClick={() => setPage(value => value + 1)}>Следующие события</DmButton></div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--dm-space-3)", alignItems: "center" }}><DmButton disabled={page <= 1} onClick={() => setPage(value => value - 1)}>Предыдущие события</DmButton><span>Страница {page} · событий {data.totalEvents}</span><DmButton disabled={page * data.pageSize >= data.totalEvents} onClick={() => setPage(value => value + 1)}>Следующие события</DmButton></div>
       </>}</div>
     </> : null}
   </section>;

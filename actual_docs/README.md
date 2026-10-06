@@ -28,6 +28,7 @@
 | API и данные | [Schemas](../packages/schemas/src), [API client](../packages/api-client/src), [Prisma](../apps/api/prisma), [OpenAPI](../apps/api/src/platform/openapi/core-openapi.ts) |
 | UI | [Стандарт](ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md), [общая тема](ui-ux/SHARED_SEMANTIC_THEME.md); конкретный новый UI-контракт — по карточке его владельца |
 | Ролевой code map | [Клиника](applications/buyer-web.md), [поставщик](applications/supplier-web.md), [оператор](applications/admin-web.md); маршруты сверять с кодом |
+| Обращения в поддержку | [Общий экран и контракты](applications/support-workspace.md) |
 | Запуск | [Unified frontend](runbooks/UNIFIED-FRONTEND.md), [local database](runbooks/LOCAL-DEV-DATABASE.md) |
 | Интеграции | [Readiness registry](integrations/connector-readiness.md), [канальные runbooks](integrations/runbooks) |
 | Production и эксплуатация | [Deployment](operations/production-deployment.md), [live readiness](operations/live-provider-readiness.md), [наблюдаемость](operations/observability-runbook.md), [восстановление](operations/backup-restore-runbook.md) |

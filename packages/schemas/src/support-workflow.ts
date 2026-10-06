@@ -1,8 +1,10 @@
 import { z } from "zod";
+import { supportAttachmentSchema } from "./support-files.js";
+export * from "./support-files.js";
 export const supportTicketSummarySchema = z.object({ id: z.uuid(), version: z.number().int().positive(), number: z.string(), organizationId: z.uuid(), requesterId: z.uuid(), assigneeId: z.uuid().nullable(), subject: z.string(), description: z.string(), status: z.enum(["OPEN", "IN_PROGRESS", "WAITING_CUSTOMER", "RESOLVED", "CLOSED"]), priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]), category: z.string(), slaDueAt: z.string().nullable(), firstResponseAt: z.string().nullable(), resolvedAt: z.string().nullable(), closedAt: z.string().nullable(), tags: z.array(z.string()), createdAt: z.string(), updatedAt: z.string() });
 export const supportTicketListSchema = z.array(supportTicketSummarySchema);
-export const supportTicketQuerySchema = z.object({ status: supportTicketSummarySchema.shape.status.optional(), offset: z.coerce.number().int().min(0).max(100_000).default(0) });
-export const supportMessageResponseSchema = z.object({ id: z.uuid(), ticketId: z.uuid(), authorId: z.uuid(), body: z.string(), isInternal: z.boolean(), attachments: z.unknown(), createdAt: z.string() });
+export const supportTicketQuerySchema = z.object({ status: supportTicketSummarySchema.shape.status.optional(), offset: z.coerce.number().int().min(0).max(100_000).default(0), q: z.string().trim().max(200).optional(), sort: z.enum(["queue", "recent"]).optional() });
+export const supportMessageResponseSchema = z.object({ id: z.uuid(), ticketId: z.uuid(), authorId: z.uuid(), authorLabel: z.string().optional(), body: z.string(), isInternal: z.boolean(), attachments: z.array(supportAttachmentSchema).nullable(), createdAt: z.string() });
 export const supportTicketDetailSchema = supportTicketSummarySchema.extend({ messages: z.array(supportMessageResponseSchema), hasOlder: z.boolean(), links: z.array(z.object({ id: z.uuid(), ticketId: z.uuid(), entityType: z.string(), entityId: z.string(), label: z.string().nullable(), createdAt: z.string() })) });
 export const supportMessageQuerySchema = z.object({ beforeMessageId: z.uuid().optional() });
 export type SupportTicketSummary = z.infer<typeof supportTicketSummarySchema>;

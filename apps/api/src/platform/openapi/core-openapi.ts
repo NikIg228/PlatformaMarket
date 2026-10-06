@@ -1,10 +1,11 @@
+import { notificationInboxQuerySchema, notificationInboxSchema, notificationReadAllSchema, notificationReadAllResultSchema } from "@marketplace/schemas";
 import { commerceAnalyticsQuerySchema, commerceAnalyticsResponseSchema, supplierImportPreviewInputSchema, supplierImportPreviewSchema } from "@marketplace/schemas";
 import { accessPolicySchema } from "@marketplace/schemas";
 import { internalNotificationSchema, internalNotificationListSchema, notificationQuerySchema } from "@marketplace/schemas";
 import { operationObjectSchema, operationWorkQueueQuerySchema } from "@marketplace/schemas";
 import { uploadedDocumentSchema } from "@marketplace/schemas";
 import { emailLoginSchema, emailTokenSchema, emailResetPasswordSchema, authEmailSessionSchema, authEmailVerifiedSchema, authPasswordResetResultSchema, mfaCodeSchema, mfaStatusSchema, mfaEnrollmentSchema, mfaVerificationResultSchema, mfaChallengeResultSchema, mfaDisabledSchema, uploadDocumentSchema } from "@marketplace/schemas";
-import { createSupportTicketSchema, addSupportMessageSchema, updateSupportTicketSchema, supportTicketSummarySchema, supportTicketListSchema, supportTicketQuerySchema, supportTicketDetailSchema, supportMessageQuerySchema, supportMessageResponseSchema } from "@marketplace/schemas";
+import { createSupportTicketSchema, addSupportMessageSchema, updateSupportTicketSchema, supportTicketSummarySchema, supportTicketListSchema, supportTicketQuerySchema, supportTicketDetailSchema, supportMessageQuerySchema, supportMessageResponseSchema, uploadSupportAttachmentSchema, uploadedSupportAttachmentSchema } from "@marketplace/schemas";
 import { conversationContextSchema, conversationLookupSchema } from "@marketplace/schemas";
 import { operationAssignmentSchema, operationAssignmentResultSchema, operationHistorySchema, operationAssigneesSchema, operationWorkQueueSchema } from "@marketplace/schemas";
 import { startConversationSchema, conversationMessageInputSchema, conversationQuerySchema, conversationReadSchema, conversationEscalationSchema, conversationResolveSchema, conversationPageSchema, conversationDetailSchema, conversationMessageQuerySchema, conversationResultSchema, conversationReadResultSchema, conversationEscalationResultSchema } from "@marketplace/schemas";
@@ -122,6 +123,10 @@ const coreZodSchemas = {
   InternalNotification: internalNotificationSchema,
   InternalNotificationList: internalNotificationListSchema,
   NotificationQuery: notificationQuerySchema,
+  NotificationInboxQuery: notificationInboxQuerySchema,
+  NotificationInbox: notificationInboxSchema,
+  NotificationReadAll: notificationReadAllSchema,
+  NotificationReadAllResult: notificationReadAllResultSchema,
   CreateSupportTicket: createSupportTicketSchema,
   AddSupportMessage: addSupportMessageSchema,
   UpdateSupportTicket: updateSupportTicketSchema,
@@ -131,6 +136,8 @@ const coreZodSchemas = {
   SupportTicketDetail: supportTicketDetailSchema,
   SupportMessageQuery: supportMessageQuerySchema,
   SupportMessage: supportMessageResponseSchema,
+  UploadSupportAttachment: uploadSupportAttachmentSchema,
+  UploadedSupportAttachment: uploadedSupportAttachmentSchema,
   ConversationContext: conversationContextSchema,
   ConversationLookup: conversationLookupSchema,
   OperationAssignment: operationAssignmentSchema,

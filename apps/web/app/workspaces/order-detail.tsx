@@ -14,8 +14,8 @@ export default function OrderDetail() {
   const { api, role, organizationId } = useWorkspace();
   return (
     <div id={`supplier-order-${id}`} tabIndex={-1} className={`${styles.stack} ${styles.order}`}>
-      <PermissionFields required={["support.ticket.view"]}><DmButton as="a" href={`/${role}/messages?contextType=ORDER&contextId=${id}`}>Переписка по заказу</DmButton></PermissionFields>
       <OrderWorkflowWorkspace hideHeading
+        conversation={<PermissionFields required={["support.ticket.view"]}><DmButton as="a" href={`/${role}/messages?contextType=ORDER&contextId=${id}`}>Переписка по заказу</DmButton></PermissionFields>}
         backHref={`/${role}/orders`}
         backLabel="← Все заказы"
         cartHref="/clinic/cart"
@@ -32,11 +32,7 @@ export default function OrderDetail() {
           anchor.click();
           URL.revokeObjectURL(url);
         }}
-        renderFulfillment={
-          role === "supplier"
-            ? (data, refresh) => (
-                <>
-                    <OrderConfirmationPanel
+        renderConfirmation={role === "supplier" ? (data, refresh) => (<OrderConfirmationPanel
                       available={data.order.status === "AWAITING_CONFIRMATION"}
                       order={{
                         ...data.order,
@@ -62,7 +58,11 @@ export default function OrderDetail() {
                             : "Не удалось подтвердить заказ";
                         }
                       }}
-                    />
+                    />) : undefined}
+        renderFulfillment={
+          role === "supplier"
+            ? (data, refresh) => (
+                <>
                   <PermissionFields required={["shipment.manage"]}><ShipmentPanel
                     order={
                       {

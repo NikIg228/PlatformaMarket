@@ -7,5 +7,5 @@ const font = Manrope({ subsets: ["cyrillic", "latin"], variable: "--font-sans" }
 export const metadata = { title: "PlatformaMarket", description: "Закупки для клиник и поставщиков" };
 export default async function Layout({ children }: { children: ReactNode }) {
   await connection();
-  return <html lang="ru"><body className={font.variable}><MarketplaceProvider>{children}</MarketplaceProvider></body></html>;
+  return <html lang="ru" className={font.variable}><body><MarketplaceProvider>{children}</MarketplaceProvider></body></html>;
 }

@@ -22,7 +22,7 @@ for (const width of [1440, 390]) test(`shared focus keeps proposal search typing
   expect(await search.evaluate(el => getComputedStyle(el, "::after").borderTopWidth)).toBe("0px");
   await search.press("Shift+Tab"); await page.keyboard.press("Shift+Tab"); await expect(input).toBeFocused();
   await expect(input).toHaveCSS("outline-style", "none"); await expect(field).toHaveCSS("outline-width", "1px");
-  await expect(field).toHaveCSS("outline-offset", "-1px");
+  await expect(field).toHaveCSS("outline-offset", "2px");
   await input.pressSequentially(" текст"); await expect(field).toHaveCSS("outline-width", "1px");
   await page.screenshot({ path: testInfo.outputPath(`focus-search-tab-${width}.png`) });
   await input.click(); await expect(field).toHaveCSS("outline-style", "none");

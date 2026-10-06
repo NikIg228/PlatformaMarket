@@ -1,0 +1,4 @@
+.page { max-width: 1000px; margin: auto; padding: var(--dm-space-6); display: grid; gap: var(--dm-space-4); }
+.page h1, .page h2, .page p { margin: 0; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--dm-space-3); }
+.stack { display: grid; gap: var(--dm-space-4); }

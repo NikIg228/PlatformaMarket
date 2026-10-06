@@ -16,13 +16,3 @@ body {
   background: var(--dm-page-surface);
   font-family: var(--dm-font-ui), sans-serif;
 }
-button,
-input {
-  font: inherit;
-}
-a:focus-visible,
-button:focus-visible,
-input:focus-visible {
-  outline: 3px solid var(--dm-brand-accent);
-  outline-offset: 2px;
-}

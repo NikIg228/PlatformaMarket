@@ -1,6 +1,6 @@
 "use client";
 
-import { Checkbox } from "@fluentui/react-components";
+import { DmCheckbox as Checkbox } from "./controls";
 import type { OrganizationProfileFields, OrganizationProfileResponse, SaveOrganizationProfileInput } from "@marketplace/schemas";
 import { useRef, useState, type FormEvent } from "react";
 import { DmButton, DmField, DmInput, DmSelect, DmFeedback, errorMessage } from "./index";

@@ -1,5 +1,6 @@
 import { createLightTheme, type BrandVariants, type Theme } from "@fluentui/react-components";
 import contract from "./semantic-light.json";
+import components from "./component-contract.json";
 
 const t = contract.tokens;
 // Fluent ramps run dark → light. Explicit semantic overrides below define
@@ -13,6 +14,11 @@ const brand: BrandVariants = {
 
 export const dentMarketLightTheme: Theme = {
   ...createLightTheme(brand),
+  fontFamilyBase: 'var(--font-sans, "Segoe UI"), ui-sans-serif, sans-serif',
+  fontFamilyNumeric: 'var(--font-sans, "Segoe UI"), ui-sans-serif, sans-serif',
+  fontFamilyMonospace: 'var(--dm-font-mono), monospace',
+  borderRadiusMedium: components.tokens["--dm-radius-field"],
+  borderRadiusLarge: components.tokens["--dm-radius-card"],
   colorNeutralForeground1: t["text.primary"],
   colorNeutralForeground2: t["text.secondary"],
   colorNeutralForeground3: t["text.muted"],

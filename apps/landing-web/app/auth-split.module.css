@@ -16,21 +16,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  margin-top: 20px;
-  padding: 6px 0;
+  width: var(--dm-control-default);
+  height: var(--dm-control-default);
+  margin-top: var(--dm-space-6);
+  padding: var(--dm-space-2) 0;
   border: 0;
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--dm-font-size-body);
   cursor: pointer;
-}
-
-.headingPause:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 4px;
 }
 
 .foldLine {
@@ -76,21 +71,21 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 4px 16px;
+  gap: var(--dm-space-1) var(--dm-space-4);
 }
 
 .loginLinks .signup {
   display: inline-flex;
   align-items: center;
-  line-height: 1.2;
+  line-height: var(--dm-line-heading);
   margin: 0;
 }
 
 .loginLinks .signup a {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
-  padding: 0 4px;
+  min-height: var(--dm-control-default);
+  padding: 0 var(--dm-space-1);
   border-radius: var(--dm-radius-button);
   text-decoration: none;
   transition: background-color 120ms ease;
@@ -108,7 +103,7 @@
   .loginIntro.loginIntro {
     display: grid;
     grid-template-rows: 124px 1fr auto;
-    padding-top: 64px;
+    padding-top: var(--dm-space-16);
   }
 
   .loginIntro > a {
@@ -117,18 +112,18 @@
 
   .loginIntro > div {
     margin: 0;
-    padding-bottom: 40px;
+    padding-bottom: var(--dm-space-10);
   }
 
   .loginPanel.loginPanel {
     align-items: start;
-    padding-top: calc(64px + 124px);
+    padding-top: calc(var(--dm-space-16) + var(--dm-space-32));
   }
 
   .registerAside.registerAside {
     display: grid;
     grid-template-rows: 124px 1fr auto;
-    padding-top: 64px;
+    padding-top: var(--dm-space-16);
   }
 
   .registerAside > a {
@@ -138,7 +133,7 @@
   .registerAside > .registerHeading {
     min-width: 0;
     margin: 0;
-    padding-bottom: 40px;
+    padding-bottom: var(--dm-space-10);
   }
 
   .registerHeading h1 {

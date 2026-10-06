@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Delivery Logics and Interface — Platforma Market</title>
+<style>
+:root{font-family:"Segoe UI",Arial,sans-serif;color:#17201e;background:#f6f8f7;--green:#007a59}
+*{box-sizing:border-box}body{margin:0}main{max-width:1560px;margin:auto;padding:32px 24px 64px}
+header{max-width:1000px;margin-bottom:30px}.eyebrow{font-size:13px;color:var(--green);font-weight:700}
+h1{font-size:clamp(28px,4vw,44px);letter-spacing:-.03em;margin:12px 0}p{line-height:1.65;color:#4f5e58}
+.links{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}a{color:var(--green)}
+.button{display:inline-block;text-decoration:none;background:var(--green);color:white;padding:12px 18px;border-radius:8px}
+.button.secondary{background:white;color:var(--green);border:1px solid #d7e1dc}
+a:focus-visible{outline:3px solid #00543e;outline-offset:4px}nav{display:flex;gap:18px;flex-wrap:wrap}
+section{margin-top:32px;scroll-margin-top:20px}h2{font-size:24px;margin:0 0 8px}
+figure{margin:16px 0;border:1px solid #d7e1dc;background:white;border-radius:12px;overflow:hidden}
+img{display:block;width:100%;height:auto}figcaption{padding:14px 18px;line-height:1.5;font-size:14px;color:#4f5e58}
+.note{border-left:4px solid var(--green);background:#e4f3ed;padding:16px 20px;border-radius:0 8px 8px 0;max-width:1100px}
+footer{margin-top:32px;color:#607169;font-size:13px}
+@media(max-width:600px){main{padding:20px 12px 40px}.links a{width:100%;text-align:center}h2{font-size:21px}}
+</style>
+</head>
+<body><main>
+<header><div class="eyebrow">PLATFORMA MARKET · КОНЦЕПТ · 05.10.2026</div>
+<h1>Delivery Logics and Interface</h1>
+<p>Собственная доставка поставщика: получение в существующем заказе клиники и отдельный минимальный интерфейс курьера. Три листа, восемь состояний. Данные демонстрационные.</p>
+<div class="links"><a class="button" href="Delivery-Logics-and-Interface.md">Технический документ · Markdown</a><a class="button secondary" href="generation-prompts.json">Промпты генерации · JSON</a></div>
+<nav aria-label="Экраны"><a href="#desktop">Desktop клиники</a><a href="#clinic">Мобильная клиника</a><a href="#courier">Мобильный курьер</a></nav>
+</header>
+<aside class="note">Это изображения для обсуждения, а не действующая интеграция. QR открывает заказ с проверкой сессии и клиники. Курьер получает только назначенные доставки; скрытого доступа к кабинету поставщика нет в предлагаемой модели.</aside>
+<section id="desktop"><h2>01 · Заказ клиники на desktop</h2><p>Этапы, история, состав отправления и действие получения в одном заказе.</p>
+<figure><a href="01-clinic-desktop.png" target="_blank" rel="noopener"><img src="01-clinic-desktop.png" alt="Desktop: заказ клиники с этапами собственной доставки и подтверждением получения"></a><figcaption>Ожидается вручение. Следующий этап «Получено» остаётся незавершённым до серверного подтверждения.</figcaption></figure></section>
+<section id="clinic"><h2>02 · Получение на телефоне клиники</h2><p>Заказ → подтверждение → получено. У сотрудника используется существующая авторизация; отдельный кабинет получателя не создаётся.</p>
+<figure><a href="02-clinic-mobile.png" target="_blank" rel="noopener"><img src="02-clinic-mobile.png" alt="Три мобильных состояния клиники: доставка, диалог подтверждения, успешное получение" loading="lazy"></a><figcaption>Открытие по QR ведёт к этому же заказу. Подтверждение фиксирует передачу посылок и не отменяет возможность обращения.</figcaption></figure></section>
+<section id="courier"><h2>03 · Отдельный интерфейс курьера</h2><p>Текущая доставка, код получателя, собственная история и минимальные настройки. Без каталога, финансов и управления поставщиком.</p>
+<figure><a href="03-courier-mobile.png" target="_blank" rel="noopener"><img src="03-courier-mobile.png" alt="Четыре мобильных экрана курьера: доставка, проверка кода, история, настройки" loading="lazy"></a><figcaption>«Обновить статус» только перечитывает результат. В реализации кнопка проверки пустого кода будет недоступна; показанный домен — иллюстрация, а не выбранный адрес сервиса.</figcaption></figure></section>
+<aside class="note">Точные правила важнее деталей растрового макета: в реализации используются плоские Fluent-токены, текущий header проекта и серверные ограничения. Различающиеся даты на листах — демонстрационные данные. Ошибки, права, partial receipt и приёмка описаны в техническом документе.</aside>
+<footer>Создано встроенным image_gen по текущим токенам и screenshot-референсу Platforma Market. Изображения открываются в полном размере по клику. Проверка реальных API, доступности и поведения приложения не выполнялась.</footer>
+</main></body></html>

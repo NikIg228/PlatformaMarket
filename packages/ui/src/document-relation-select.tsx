@@ -1,6 +1,7 @@
 "use client";
 import { DmSearch } from "./dm-search";
-import {Button, Field, Select, Spinner} from '@fluentui/react-components';
+import { Spinner } from "@fluentui/react-components";
+import { DmButton as Button, DmField as Field, DmSelect as Select } from "./controls";
 import {useEffect, useRef, useState} from 'react';
 import {createRelationRequestSequence, documentRelationError, type DocumentRelationLoader, type DocumentRelationOption, type DocumentRelationPage} from './document-relations';
 
@@ -21,7 +22,7 @@ export function DocumentRelationSelect({label,searchLabel,hint,required=false,di
   };
   useEffect(()=>{void fetchOptions('');return()=>sequence.current.cancel();},[load]);
   const options=selected&&!page.items.some(option=>option.id===selected.id)?[selected,...page.items]:page.items;
-  return <div role="group" aria-label={label} style={{display:'grid',gridTemplateColumns:'minmax(0, 1fr)',minWidth:0,gap:8,overflowWrap:'anywhere'}}>
+  return <div role="group" aria-label={label} style={{display:'grid',gridTemplateColumns:'minmax(0, 1fr)',minWidth:0,gap:"var(--dm-space-2)",overflowWrap:'anywhere'}}>
     <Field label={searchLabel} hint="По номеру или контрагенту. Введите текст и нажмите «Найти»." >
       <DmSearch value={query} placeholder={label === "Связанный заказ" ? "Найти заказ" : "Найти договор"} maxLength={120} disabled={disabled} pending={loading} onChange={setQuery} onSearch={value=>void fetchOptions(value)} />
     </Field>

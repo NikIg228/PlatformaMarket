@@ -1,7 +1,7 @@
 "use client";
 import { workspacePath } from "@marketplace/api-client";
 
-import { Checkbox } from "@fluentui/react-components";
+import { DmCheckbox as Checkbox } from "@marketplace/ui/controls";
 import { MarketplaceApiClient, type ApiContext } from "@marketplace/api-client";
 import type { SupplierTermsState } from "@marketplace/schemas";
 import { DmButton, DmField, DmInput, DmFeedback, ErrorState, LoadingState, Section, StatusTag, errorMessage, formatDate, usePermissions } from "@marketplace/ui";

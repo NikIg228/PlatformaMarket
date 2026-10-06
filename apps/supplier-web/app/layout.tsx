@@ -22,8 +22,8 @@ export default async function RootLayout({
   // its bootstrap and hydration scripts.
   await connection();
   return (
-    <html lang="ru">
-      <body className={manrope.variable}>
+    <html lang="ru" className={manrope.variable}>
+      <body>
         <MarketplaceProvider>{children}</MarketplaceProvider>
       </body>
     </html>

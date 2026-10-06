@@ -2,6 +2,21 @@ import tseslint from "typescript-eslint";
 
 // Correctness checks complement tsc. Formatting/unused-code cleanup is separate.
 export default [
+  {
+    files: ["apps/**/*.{ts,tsx}", "packages/ui/src/**/*.{ts,tsx}"],
+    ignores: ["packages/ui/src/controls.tsx"],
+    rules: {
+      "no-restricted-syntax": ["error", {
+        selector: ":matches(JSXOpeningElement, JSXSelfClosingElement)[name.name=/^(button|input|select|textarea)$/]",
+        message: "Use shared controls, DmAction or DmFileInput. Native widget implementations belong in controls.tsx.",
+      }],
+      "no-restricted-imports": ["error", { paths: [{
+        name: "@fluentui/react-components",
+        importNames: ["Button", "Input", "Textarea", "Select", "Field", "Checkbox", "Dropdown", "Combobox"],
+        message: "Use the shared adapters from @marketplace/ui/controls (./controls inside packages/ui).",
+      }] }],
+    },
+  },
   { ignores: ["**/node_modules/**", "**/.next*/**", "**/dist/**", "**/coverage/**", "**/.turbo/**", "**/test-results/**", "**/playwright-report/**", "**/blob-report/**", "**/generated/**", "outputs/**", "output/**", ".tmp/**", "tmp/**", "actual_docs/**", "**/next-env.d.ts"] },
   {
     files: ["**/*.{js,mjs,cjs,ts,tsx}"],

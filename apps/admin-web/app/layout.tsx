@@ -22,8 +22,8 @@ export default async function RootLayout({
   // by middleware to its bootstrap scripts.
   await headers();
   return (
-    <html lang="ru">
-      <body className={manrope.variable}>
+    <html lang="ru" className={manrope.variable}>
+      <body>
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -1,4 +1,6 @@
 "use client";
+import { DmAction } from "@marketplace/ui/controls";
+
 
 import { Add20Regular } from "@fluentui/react-icons/svg/add";
 import { ArrowClockwise20Regular } from "@fluentui/react-icons/svg/arrow-clockwise";
@@ -636,8 +638,8 @@ export function IntegrationOperations() {
                   </div>
                 ) : (
                   connections.map((connection) => (
-                    <DmButton
-                      appearance="subtle"
+                    <DmAction variant="row"
+
                       key={connection.id}
                       className={
                         connection.id === connectionId
@@ -659,7 +661,7 @@ export function IntegrationOperations() {
                       <StatusTag tone={connection.status === "ACTIVE" ? "success" : connection.status === "ERROR" ? "danger" : "neutral"}>
                         {formatAdminStatus(connection.status)}
                       </StatusTag>
-                    </DmButton>
+                    </DmAction>
                   ))
                 )}
               </div>

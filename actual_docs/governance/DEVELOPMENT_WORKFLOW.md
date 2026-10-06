@@ -93,14 +93,16 @@ Given / When / Then для happy path, ошибки и границы досту
 | ---------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------ |
 | Docs-only / аудит правил           | Локальные ссылки, согласованность, сохранность чужих изменений/истории, `git diff --check` | Проверка упомянутых npm scripts без их запуска; runtime suites не требуются |
 | Read-only анализ                  | Целевая сверка исходников/evidence, без изменений | Воспроизведение конкретной гипотезы, если безопасно и необходимо; не все gates |
-| Любой TS-код                       | `npm run typecheck`, `npm test`, `git diff --check` | `npm run build` для изменённого приложения                            |
+| Локальные стили/текст UI | Типы/build затронутого приложения при завершении, diff hygiene, визуальная проверка компонента/страницы с существующими tokens/типографикой/отступами | Релевантные viewport/locale/keyboard; без общего npm test и полного E2E |
+| Функциональный TS/frontend | Типы, целевые regression-тесты и build затронутого приложения, изменённый reachable flow | Browser-тесты критичного сценария и затронутых consumers |
+| Backend service/API | После каждого законченного поведения: целевые автоматические тесты; при завершении: затронутые/зависимые suites, типы/build API и применимые schema/migration checks | Happy path, invalid input, permissions/tenant, rollback, money/stock, concurrency/replay/recovery по риску |
 | Core API contract                  | `npm run verify:core-contract`                       | `npm run verify:pilot-backend` для полного purchase flow              |
 | Prisma/checkout/tenant/idempotency | `npm run verify:postgres`                            | migration на чистой локальной БД                                   |
 | API/worker composition             | `npm run verify:runtime-split`                       | Config gate, если затронуты environment rules |
 | Production environment rules       | `npm run verify:production-config`                   | Runtime/transport/storage gate по конкретной границе |
 | Общий deployment profile / frontend composition | `npm run verify:frontend-profile`, `npm run verify:pilot-composition`, четыре web build, `npm run verify:web` в pilot | Для активации полного профиля также go_live smoke изменённых поверхностей; pilot E2E не заменяет его |
 | Local launcher / full-feature demo | `npm run verify:local-profile`, затронутые profile gates и smoke целевого запуска | Общий профиль затронут — строка выше; отдельный launcher не требует нового бизнес-функционала |
-| Buyer/Supplier/Admin critical UI   | TS минимум, regression, build затронутых приложений, `npm run verify:web`, keyboard/mobile smoke изменённого flow | Более широкая visual/accessibility matrix при изменении shared tokens/shell, не для каждого текста |
+| Buyer/Supplier/Admin critical UI   | Типы, целевой regression, build затронутых приложений, targeted browser и keyboard/mobile smoke изменённого flow | Более широкая visual/accessibility matrix при изменении shared tokens/shell, не для каждого текста |
 | Landing/public UI                  | typecheck + build приложения                      | Lighthouse/visual review, если меняется performance-critical экран |
 | Security/file/integration          | целевой `verify:*` сценарий                       | `npm audit --omit=dev --audit-level=high`                             |
 | Release candidate                  | `npm run verify:release`                             | `docker compose config --quiet`                                    |
@@ -116,6 +118,50 @@ regressions; purchase contract дополнительно verify:core-contract. 
 CORE-09 и release сохраняют свои обязательные наборы, но не выполняются на
 каждом подпункте. Новый риск может добавить gate в карточку до запуска;
 удалять/ослаблять упавшую проверку для получения pass запрещено.
+
+### Proportional verification — owner decision 2026-10-02
+
+Choose checks by behavior, blast radius and failure impact, not file count. Before
+implementation record a short plan: changed behavior, risk, focused checks and
+completion checks. These are verification levels, not extra approval phases.
+
+- Docs/rules: diff hygiene, links, examples and consistency only; no app installs,
+  builds, database or browser suites just for Markdown.
+- Local visual/copy change: inspect existing tokens, typography, spacing, sizes
+  and layout; verify the affected component/page at relevant viewport/locale and
+  keyboard states. Do not audit/redesign unrelated pages or create E2E tests that
+  merely mirror CSS. Run frontend build/types once at completion where required.
+- Functional frontend: targeted component/interaction tests and the changed
+  reachable flow, including applicable loading/error/empty/recovery states.
+  Use targeted browser tests for critical flows, not the whole E2E suite.
+- Backend: after each coherent service/API/state transition, run focused automated
+  tests before building dependent behavior. Never defer backend validation until
+  the entire backend or a large phase is written. At completion run affected and
+  dependent suites plus required system/schema/migration checks in isolation.
+  Prove happy path and invalid input; where applicable prove role denial, tenant
+  isolation, lifecycle invariants, transaction rollback, money/stock correctness,
+  concurrency, idempotency, retries and recovery. UI screenshots do not prove these.
+- Shared tokens/components/contracts: inspect callers and test representative
+  affected consumers. Broaden only for demonstrated shared impact; auth, permissions,
+  payments, migrations and shared infrastructure are high risk even in a one-line diff.
+- Full-project/E2E gates: release candidates, explicitly authorized comprehensive
+  certification, or a documented cross-cutting risk needing that scope. A routine
+  task completion, commit, push or context restoration alone is not that reason.
+
+Reuse PASS only while relevant code, dependencies, configuration and fixtures are
+unchanged. Run affected checks again after relevant fixes; do not repeat unaffected
+suites. Do not reinstall dependencies locally if the validated environment and lock
+inputs are unchanged; retain deterministic installation in clean CI. Prefer concise
+success summaries and bounded failure logs. Read the selected checkpoint and relevant
+contracts, not entire historical records. Keep required failures visible; these rules
+do not waive existing release acceptance or retroactively turn a failed gate green.
+
+For targeted browser coverage inspect the actual Playwright configuration and
+select existing relevant specs with required fixtures/prerequisites. The broad
+`verify:web` remains required for release/composition acceptance where the matrix
+says so. Do not invent unsupported filtering flags or silently omit prerequisites.
+A scoped typecheck/test/build is allowed only when the actual workspace scripts
+support it; otherwise use the smallest supported enclosing gate.
 
 ### 4.1 Preflight до дорогих запусков
 

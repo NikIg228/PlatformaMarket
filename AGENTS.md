@@ -140,7 +140,7 @@ Roadmap не разрешает автоматически подключать 
    контракт, затем реализацию и клиент, затем интерфейс.
 4. Делайте минимальный связный change set. Не смешивайте рефакторинг,
    редизайн, удаление данных и новую бизнес-функцию в одном коммите.
-5. Добавьте или обновите тест на риск, который устраняет задача.
+5. Для изменения поведения добавьте или обновите целевой regression-тест на риск задачи. Для обратимой правки текста/стилей достаточно проверки затронутого UI; не создавать тесты, повторяющие CSS.
 6. Выполните проверки из `actual_docs/governance/DEVELOPMENT_WORKFLOW.md`, соответствующие
    затронутой области.
 7. Обновите документацию, если изменились контракт, бизнес-правило, команда,
@@ -218,15 +218,52 @@ Roadmap не разрешает автоматически подключать 
   или бренд. Не копируйте чужие SKILL.md и не применяйте маркетинговые паттерны
   к кабинетам.
 
+### Proportional verification — owner decision 2026-10-02
+
+Choose checks by behavior, blast radius and failure impact, not file count. Before
+implementation record a short plan: changed behavior, risk, focused checks and
+completion checks. These are verification levels, not extra approval phases.
+
+- Docs/rules: diff hygiene, links, examples and consistency only; no app installs,
+  builds, database or browser suites just for Markdown.
+- Local visual/copy change: inspect existing tokens, typography, spacing, sizes
+  and layout; verify the affected component/page at relevant viewport/locale and
+  keyboard states. Do not audit/redesign unrelated pages or create E2E tests that
+  merely mirror CSS. Run frontend build/types once at completion where required.
+- Functional frontend: targeted component/interaction tests and the changed
+  reachable flow, including applicable loading/error/empty/recovery states.
+  Use targeted browser tests for critical flows, not the whole E2E suite.
+- Backend: after each coherent service/API/state transition, run focused automated
+  tests before building dependent behavior. Never defer backend validation until
+  the entire backend or a large phase is written. At completion run affected and
+  dependent suites plus required system/schema/migration checks in isolation.
+  Prove happy path and invalid input; where applicable prove role denial, tenant
+  isolation, lifecycle invariants, transaction rollback, money/stock correctness,
+  concurrency, idempotency, retries and recovery. UI screenshots do not prove these.
+- Shared tokens/components/contracts: inspect callers and test representative
+  affected consumers. Broaden only for demonstrated shared impact; auth, permissions,
+  payments, migrations and shared infrastructure are high risk even in a one-line diff.
+- Full-project/E2E gates: release candidates, explicitly authorized comprehensive
+  certification, or a documented cross-cutting risk needing that scope. A routine
+  task completion, commit, push or context restoration alone is not that reason.
+
+Reuse PASS only while relevant code, dependencies, configuration and fixtures are
+unchanged. Run affected checks again after relevant fixes; do not repeat unaffected
+suites. Do not reinstall dependencies locally if the validated environment and lock
+inputs are unchanged; retain deterministic installation in clean CI. Prefer concise
+success summaries and bounded failure logs. Read the selected checkpoint and relevant
+contracts, not entire historical records. Keep required failures visible; these rules
+do not waive existing release acceptance or retroactively turn a failed gate green.
+
+
 ## 7. Проверки
 
-Базовый минимум для любого TypeScript change:
-
-```powershell
-npm run typecheck
-npm test
-git diff --check
-```
+Проверки выбираются по риску и затронутому поведению, а не для всего проекта
+при каждом TypeScript change. Обязательны `git diff --check`, проверка типов
+затронутого приложения/пакета и применимые целевые тесты. Проверить реальные
+scripts/конфигурацию перед выбором команды; если scoped typecheck отсутствует,
+использовать существующий общий typecheck. Общий `npm test` не является минимумом
+для любой правки UI. Точные границы — матрица Workflow §4.
 
 Дополнительно выбирайте проверку по риску, а не по удобству:
 
@@ -235,8 +272,8 @@ git diff --check
   `npm run verify:postgres`;
 - runtime API/worker — `npm run verify:runtime-split`;
 - production environment — `npm run verify:production-config`;
-- затронутый UI critical flow — `npm run verify:web` после запуска требуемого
-  окружения;
+- затронутый UI critical flow — целевые browser-тесты с необходимыми fixtures;
+  общий `npm run verify:web` — для composition/release границ по Workflow §4;
 - релизная готовность — `npm run verify:release`.
 
 Docs-only: ссылки/согласованность правил, сохранность истории и `git diff --check`;

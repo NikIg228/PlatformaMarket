@@ -178,9 +178,9 @@ export default function RegisterPage() {
             <span>Ссылка ограничена по времени и используется один раз.</span>
           </div>
           <div className="registrationActions">
-            <a className="primary registrationPrimary" href={withWorkspaceReturn("/login", returnTo)}>
+            <DmButton as="a" appearance="primary" className="primary registrationPrimary" href={withWorkspaceReturn("/login", returnTo)}>
               Перейти ко входу
-            </a>
+            </DmButton>
             <DmButton
               type="button"
               appearance="subtle"

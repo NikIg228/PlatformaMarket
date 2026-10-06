@@ -1,3 +1,4 @@
+import { DmButton } from "@marketplace/ui/controls";
 import { MarketplaceApiClient, MarketplaceApiError, frontendFeatures } from "@marketplace/api-client";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -232,7 +233,7 @@ export default async function ProductPage({
             {description ? <p className={styles.description}>{description}</p> : null}
             {cheapest ? <p className={styles.summaryPrice}>от {formatCatalogMoney(cheapest.priceMinor, cheapest.currency)}<small>за единицу продажи · зависит от фасовки поставщика</small></p> : null}
             <div className={styles.heroActions}>
-              <a className={styles.chooseSupplier} href="#supplier-offers">Выбрать поставщика</a>
+              <DmButton as="a" appearance="primary" className={styles.chooseSupplier} href="#supplier-offers">Выбрать поставщика</DmButton>
               <span className={styles.trustNote}>Предложений: {product.offers.length}</span>
             </div>
           </div>

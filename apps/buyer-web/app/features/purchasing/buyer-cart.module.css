@@ -3,13 +3,13 @@
 }
 
 .validationState {
-  margin: 0 18px 16px;
+  margin: 0 var(--dm-space-4) var(--dm-space-4);
 }
 
 .changedRow {
   background: color-mix(
     in srgb,
-    var(--colorPaletteYellowBackground2) 72%,
+    var(--dm-warning-surface) 72%,
     transparent
   );
 }
@@ -17,39 +17,39 @@
 .unavailableRow {
   background: color-mix(
     in srgb,
-    var(--colorPaletteRedBackground2) 72%,
+    var(--dm-danger-surface) 72%,
     transparent
   );
 }
 
 .valueChange {
   display: grid;
-  gap: 3px;
+  gap: var(--dm-space-micro);
 }
 
 .valueChange del {
   color: var(--colorNeutralForeground3);
-  font-size: 12px;
+  font-size: var(--dm-font-size-caption);
 }
 
 .changeMessage,
 .issue {
   display: block;
-  margin-top: 4px;
-  color: var(--colorPaletteDarkOrangeForeground1);
-  font-size: 11px;
+  margin-top: var(--dm-space-1);
+  color: var(--dm-warning-text);
+  font-size: var(--dm-font-size-caption);
 }
 
 .issue {
-  color: var(--colorPaletteRedForeground1);
+  color: var(--dm-danger-text);
 }
 
 .checkoutBar {
   display: flex;
   justify-content: space-between;
-  gap: 24px;
+  gap: var(--dm-space-6);
   align-items: end;
-  padding: 20px;
+  padding: var(--dm-space-6);
   border-top: 1px solid var(--colorNeutralStroke2);
   background: linear-gradient(
     110deg,
@@ -60,31 +60,31 @@
 
 .checkoutBar > div:first-child {
   display: grid;
-  gap: 3px;
+  gap: var(--dm-space-micro);
 }
 
 .checkoutBar span,
 .checkoutBar small {
   color: var(--colorNeutralForeground3);
-  font-size: 11px;
+  font-size: var(--dm-font-size-caption);
 }
 
 .checkoutBar strong {
   color: var(--colorNeutralForeground1);
-  font-size: 26px;
-  letter-spacing: -0.02em;
+  font-size: var(--dm-font-size-page-sm);
+  letter-spacing: var(--dm-tracking-heading);
 }
 
 .checkoutActions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 10px;
+  gap: var(--dm-space-3);
 }
 
 @media (max-width: 760px) {
   .validationState {
-    margin: 0 12px 12px;
+    margin: 0 var(--dm-space-3) var(--dm-space-3);
   }
 
   .checkoutBar {
@@ -93,8 +93,8 @@
     z-index: 2;
     display: grid;
     align-items: stretch;
-    padding: 16px;
-    box-shadow: 0 -12px 30px rgb(0 38 27 / 9%);
+    padding: var(--dm-space-4);
+    box-shadow: var(--dm-shadow-overlay);
   }
 
   .checkoutActions {

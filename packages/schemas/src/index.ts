@@ -1419,3 +1419,4 @@ export * from "./conversations.js";
 export * from "./operations-workflow.js";
 export * from "./support-workflow.js";
 export * from "./commerce-analytics.js";
+export * from "./notification-inbox";

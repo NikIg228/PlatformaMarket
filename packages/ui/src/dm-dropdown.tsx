@@ -1,6 +1,7 @@
 "use client";
 import { Children, isValidElement, type ReactNode } from "react";
-import { Dropdown, Option, type DropdownProps } from "@fluentui/react-components";
+import { Option, type DropdownProps } from "@fluentui/react-components";
+import { DmFluentDropdown as Dropdown } from "./controls";
 
 type Props = Pick<DropdownProps, "disabled" | "id" | "aria-label" | "aria-labelledby" | "className"> & {
   value: string; children: ReactNode;

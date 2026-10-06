@@ -16,6 +16,85 @@ WAIT/PENDING и запреты относятся к указанному соб
 
 ## История передачи
 
+Передача02.10 generation5 ЗАВЕРШЕНА: primary 01a0fd63-0ae1-71e2-a4d4-271515cf0d40,
+transition=idle, successorThreadId=null; source01a0f302-2d38-75d1-b79c-141e7428b533 retired.
+Native wait_threads подтвердил source idle / turn01a0fd60-9924-72a2-94a6-204a615cf983 completed.
+Native set_thread_archived вернул archived=true для точного source; list_archived_threads
+независимо подтвердил архив. READY: turn01a0fd63-0d5c-7253-b226-2a89ec596a53.
+HEAD main cfd415bb2039e260bb72d6f2a427a60f1da6a458 и исходный dirty scope сохранены.
+Изменены только реестр и два checkpoint передачи; продукт/dev/БД не тронуты,
+tests/build/commit/push не выполнялись. CI по последней проверке IN_PROGRESS, НЕ PASS.
+Ровно следующий шаг: ждать новой задачи владельца. Исторические записи передачи ниже.
+
+## Передача по прямому запросу владельца — 02.10.2026
+
+Последний запрос: «Бро, перенеси пожалуйста всё в новыйчат». Это ручная передача
+текущего состояния с ещё выполняющимся CI, а не автоматическая ротация с CI_PASS.
+Source: 01a0f302-2d38-75d1-b79c-141e7428b533; generation4 →5. Source прекращает
+продуктовую запись. Разрешены только checkpoint/реестр/проверка понимания/передача.
+Не исправлять CI, не начинать следующую страницу/backlog, не делать commit/push
+ради передачи. Сохранить существующий WIP. После передачи ждать запроса владельца.
+
+Актуальный checkout: C:\Users\user\Desktop\dentmarket-kz-main, main,
+HEAD cfd415bb2039e260bb72d6f2a427a60f1da6a458; origin/main совпал после push.
+Работать только в этой папке: никаких новых worktrees, клонов или агентов.
+Последние инструкции владельца AGENTS.md включают proportional verification;
+они заменяют прежний обязательный общий npm test для каждого TS изменения.
+Проверки по риску, максимум3 попытки, не повторять PASS без изменённых входов.
+В последних UI-задачах владелец просил не ждать CI и не запускать полные suites.
+
+Что уже сделано и опубликовано:
+- CORE-01–09 и итоговый аудит/консолидация — предыдущие записи в этом checkpoint,
+  Foundation и Acceptance Matrix; не запускать их заново как очередь задач.
+- 4aa1e00: временный FULL_ACCESS в локальных кабинетах всех ролей. JWT,
+  membership/tenant и назначения ролей сохранены; production ROLE_BASED.
+- 57d75f5: sidebar clinic/supplier200px, logo144px, без карточки организации.
+- 9d4ea6a +99e6357: компактный header56px, greeting по имени/локальному времени
+  только на /clinic и /supplier, заголовки остальных страниц в header; без вводных
+  подзаголовков. Главная клиники отдельная с быстрыми ссылками, будущий контент
+  пока НЕ задан. Сообщения со счётчиком между Документы/Настройки в sidebar.
+- bca9c17: сообщения clinic/supplier подняты, края12px, список/чат равной высоты,
+  кнопка Обновить убрана; автообновление и retry сохранены.
+- cfd415b: в этих сообщениях нет Назад/Далее/Показать, фильтр Fluent Dropdown,
+  placeholder Выберите диалог центрирован. Список с внутренней прокруткой и
+  автоподгрузкой30; loaded-window refresh, dedup, ошибки с retry. Admin сохраняет
+  прежние controls через default compactList=false. Полная миграция всех
+  селекторов НЕ сделана: optional scope-вопрос остался без ответа, принято
+  только messages сейчас; правило для будущих редактируемых селекторов записано
+  в UI_UX_IMPLEMENTATION_STANDARD. Не запускать массовую миграцию автоматически.
+
+Последние evidence: .tmp/messages-controls-*.log; screenshots
+output/playwright/messages-controls-*.png. Реальные обе роли1440/390: filter,
+keyboard/Escape, no overflow, равные819px desktop, центр delta0 PASS.
+Изолированный browser route mock35 диалогов (включая read receipt, без DB writes):
+следующая страница, сохранение предыдущих30 на ошибке, retry35, selected chat,
+reset фильтра PASS. Clinic попытка1 transient mock-error не наблюдалась;
+стабильная503 до retry — попытка2 PASS. Supplier попытка1 PASS.
+Команды: npx vitest run packages/ui/src/conversation-pages.test.ts —3 PASS;
+целевой npx eslint —PASS; npm run build --workspace=@marketplace/web —PASS,
+включая TypeScript; git diff --check —PASS. Общие suites/DB/E2E не запускались
+по proportional scope. Self-review выполнен; роли Frontend Developer, Fluent UI,
+development-toolkit, Playwright применены. Не повторять эти checks ради нового чата.
+CI текущего SHA: CI37031544832 IN_PROGRESS, Security37031544753 IN_PROGRESS,
+проверено при передаче. Это НЕ PASS и не причина автоматически исправлять/ждать.
+
+Dev canonical go_live/JWT/FULL_ACCESS сохранён: launcher10492, API11744:4012,
+web6328:3000. GET /clinic/messages200 и /api/health/ready200 после восстановления.
+Первый readiness50s с короткими3s запросами истёк на startup; после Ready второй
+одиночный запрос50s дал200. Не перезапускать/не reseed ради передачи. Браузеры
+проверок закрыты, незавершённых команд и продуктовых операций source нет.
+
+Preexisting dirty (не staging/не revert): .codex/project-session.json (реестр с
+актуальными переходами), AGENTS.md, actual_docs/governance/DEVELOPMENT_WORKFLOW.md,
+apps/admin-web/next-env.d.ts, apps/buyer-web/next-env.d.ts,
+apps/landing-web/next-env.d.ts, apps/supplier-web/next-env.d.ts.
+packages/ui/src/styles.css может показываться M, но diff/numstat0 (phantom).
+Handoff добавляет только PROJECT_HANDOFF.md/PRIMARY-SESSION.md и поля реестра;
+эти изменения остаются локальными для передачи, не публиковать чужой WIP.
+Ровно один следующий шаг: fresh local successor read-only comprehension, затем
+тот же переход generation5 с проверенной архивацией source, и ожидание владельца.
+
+
 SIDEBAR receipt02.10: код57d75f569593f31aaa610cd344399c9dcf786d89 в origin/main,
 remote SHA совпал; CI37021253380 / Security37021253329 completed/success attempt1.
 Финальная запись только docs [skip ci], runtime evidence REUSED_PASS, новый CI NOT_RUN.

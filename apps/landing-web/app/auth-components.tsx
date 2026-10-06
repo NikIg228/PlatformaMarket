@@ -1,4 +1,6 @@
 "use client";
+import { DmAction } from "@marketplace/ui/controls";
+
 
 import { DmButton } from "@marketplace/ui";
 import type { AuthCapability, AuthFeedback } from "./auth-client";
@@ -28,9 +30,9 @@ export function AuthRolePicker({
 }) {
   return (
     <div className="rolePicker" role="group" aria-label="Тип кабинета">
-      <DmButton
+      <DmAction variant="choice"
         type="button"
-        appearance="secondary"
+
         data-selected={value === "BUYER"}
         aria-pressed={value === "BUYER"}
         disabled={disabled}
@@ -40,10 +42,10 @@ export function AuthRolePicker({
         <span>
           {registration ? "Закупки, бюджеты и документы" : "Магазин и закупки"}
         </span>
-      </DmButton>
-      <DmButton
+      </DmAction>
+      <DmAction variant="choice"
         type="button"
-        appearance="secondary"
+
         data-selected={value === "SUPPLIER"}
         aria-pressed={value === "SUPPLIER"}
         disabled={disabled}
@@ -53,7 +55,7 @@ export function AuthRolePicker({
         <span>
           {registration ? "Каталог, заказы и договор ЭЦП" : "Продажи и товары"}
         </span>
-      </DmButton>
+      </DmAction>
     </div>
   );
 }

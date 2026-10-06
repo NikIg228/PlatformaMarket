@@ -1,3 +1,4 @@
+import { DmButton } from "@marketplace/ui/controls";
 import Link from "next/link";
 import { registrationUrl, supplierAppUrl } from "../public-links";
 import styles from "./page.module.css";
@@ -26,7 +27,7 @@ export default function AboutPage() {
           <p>Каталог, условия поставщиков, заказ и документы работают как одна прозрачная цепочка.</p>
           <div className={styles.actions}>
             <Link className={styles.primary} href="/">Открыть каталог</Link>
-            <a className={styles.secondary} href={registrationUrl("buyer")}>Подключить клинику</a>
+            <DmButton as="a" appearance="secondary" className={styles.secondary} href={registrationUrl("buyer")}>Подключить клинику</DmButton>
           </div>
         </div>
         <figure className={styles.heroVisual}>
@@ -85,7 +86,7 @@ export default function AboutPage() {
             <li>Контроль свежести цены и доступного количества</li>
             <li>История исполнения заказа и договор с ЭЦП</li>
           </ul>
-          <a className={styles.primary} href={supplierAppUrl}>Открыть кабинет</a>
+          <DmButton as="a" appearance="primary" className={styles.primary} href={supplierAppUrl}>Открыть кабинет</DmButton>
         </div>
       </section>
 

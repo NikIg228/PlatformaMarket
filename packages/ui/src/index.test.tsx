@@ -14,6 +14,8 @@ vi.mock("@fluentui/react-components", () => ({
   Field: "label",
   FluentProvider: "div",
   Input: "input",
+  makeStyles: () => () => ({}),
+  tokens: {},
   Select: "select",
   Spinner: "span",
   Tag: "span",

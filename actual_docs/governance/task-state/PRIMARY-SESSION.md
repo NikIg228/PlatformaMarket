@@ -10,7 +10,7 @@ Docs-only пересборка — [DOCS-REFRESH](DOCS-REFRESH-2026-10-06.md); �
 сохраняют свои версии/границы; слово «текущий» внутри старой записи не назначает
 нынешнюю задачу. Историю и архив читать адресно, после актуальных источников.
 
-## 06.10.2026 — OFFER-INSPECTOR-REFERENCE (LOCAL_PASS; publication pending)
+## 06.10.2026 — OFFER-INSPECTOR-REFERENCE (LOCAL_PASS; pushed)
 
 Owner primary 01a0fd63-0ae1-71e2-a4d4-271515cf0d40; main@0a384e8.
 User approved reference implementation and 640px desktop drawer; explicitly
@@ -50,9 +50,14 @@ Diff hygiene/review PASS; origin/main==HEAD before publication. Shared working
 snapshot includes preserved foreign WIP, none needed by this source slice or staged.
 Backend/DB/full E2E NOT_RUN: API and domain rules unchanged. Dev restore npm run dev
 launcher7484 started; readiness pending. Owned commit/push + CI snapshot next.
+Delivery: 2fe8c1fdb91496c1fa32293e81f71a0dcc14f59e pushed main, remote SHA
+independently matches. CI37460031312 QUEUED; Security37460031174 IN_PROGRESS
+at delivery snapshot (not PASS; no waiting per owner). Canonical dev restored:
+launcher7484, API3172:4012, web1436:3000; unified readiness confirmed.
+Foreign Orders/Notifications, governance, next-env and output WIP remains unstaged.
+Own implementation complete; no next phase or broad gates authorized by this result.
 
-
-## 05.10.2026 — INVENTORY-EDITOR-TEMPLATES (LOCAL_PASS; delivery pending)
+## 05.10.2026 — INVENTORY-EDITOR-TEMPLATES (LOCAL_PASS; pushed)
 
 Owner same primary; canonical main@94d4de9, sole writer. User requests fully
 populated one-product XLSX/CSV examples without decorative fills/fonts; move
@@ -94,8 +99,14 @@ Dev14440 stopped for final web build; canonical launcher restoration started.
 Applied Development Toolkit, Agency UI/Code Reviewer and Spreadsheets practices:
 existing Fluent tokens, real template parsing, state transitions/least privilege,
 targeted isolated tests and explicit diff scope. Pending commit/push/CI snapshot.
+Delivery: 0a384e894b67634e6568c65615d36e28f6a62e68 pushed main; independent
+remote SHA matches. CI37359303966 and Security37359303932 both IN_PROGRESS
+at delivery snapshot (not PASS; no waiting per owner). Canonical dev restored:
+launcher16772, API14752:4012 healthy, web15652:3000 unified ready. Working tree
+retains prior governance/next-env/output plus local delivery receipt only.
+Do not repeat these tests or start another phase without a new owner request.
 
-## 05.10.2026 — PRODUCT-PAGES-REFINEMENT (LOCAL_PASS; delivery pending)
+## 05.10.2026 — PRODUCT-PAGES-REFINEMENT (LOCAL_PASS; pushed)
 
 Owner same primary; canonical main@8955f56. Owner supplied8 screenshots and
 explicit UI corrections, plus discussion-only questions about master cards,
@@ -146,7 +157,17 @@ diff hygiene and remote fast-forward check PASS. API/DB writes unchanged.
 calendar2. Screenshots output/playwright/product-refinement/final-fixed and
 supplier; retained logs .tmp/refine-*.log. Dev restarted after build.
 Only owned source/tests/template/docs and this section may be staged. Preserve
-preexisting governance, next-env and output files. Commit/push/CI snapshot next.
+preexisting governance, next-env and output files.
+Delivery: e276e0e582ea79771bfc7164fb57d1081bf2ba7a pushed main; remote SHA
+independently matches. CI37352917770 queued; Security37352917806 in_progress
+at delivery snapshot, NOT PASS; no waiting per owner.
+Dev restore19940 found API build FAIL1: new template spec used import.meta,
+unsupported by Nest CommonJS compile. Replaced with resolve(__dirname,...);
+parser13/13 PASS3, scoped ESLint PASS2, API build PASS2 under npm run dev.
+Replacement local dev launcher14492 ready: API4012 PID11152, web3000 PID19424.
+Corrective commit94d4de97af35c186678a137fc937666b3d0784b8 pushed main;
+remote SHA matches. Final CI37353308439 queued, Security37353308261 in_progress;
+NOT PASS, no waiting. Product implementation and local checks complete.
 Business discussion: proposedSku currently copied to variant+offer on approval;
 separate manufacturer/internal SKU needs future model change, not label fiction.
 
@@ -180,6 +201,11 @@ not started; same controls exercised in unified app). No writes to working DB.
 Applied Development Toolkit frontend/accessibility, Code Reviewer and Git
 Workflow Master checklists; no new agents/worktrees. Full E2E/backend gates
 not applicable. Diff hygiene and staged scope review before publication.
+
+Delivery05.10: 8955f56ec36becbb74462731f8d7e1ac16701965 pushed main; remote SHA
+matches. CI37343844105 and Security37343844327 IN_PROGRESS attempt1 (snapshot
+only, not waiting). Dev restored: launcher17620, API4012 PID15096/web3000
+PID17880; canonical readiness PASS. No further product scope active.
 
 ## 05.10.2026 — PRODUCTS-UX-V2 (LOCAL_PASS)
 
@@ -224,6 +250,201 @@ Git Workflow Master. No agents, worktrees or successor tasks created.
 Foreign governance/history WIP, legacy next-env and output preserved unstaged.
 Dev final launcher4168 from canonical root, npm run dev (JWT/go_live); API4012
 and web3000 startup/readiness PASS. Commit/push main authorized; CI snapshot only.
+
+Delivery05.10: a0098865d65dae64a45725e519afeccb73de1f5f committed/pushed main;
+remote refs/heads/main matches. CI37340942986 and Security37340942994 both
+IN_PROGRESS (attempt1); owner requested snapshot only, not waiting. Local DoD
+and publication complete; CI_PASS not claimed. No further product scope active.
+
+## 05.10.2026 — PRODUCTS-CONTENT (implemented / pushed; CI pending)
+
+Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40, canonical main@2719863.
+Владелец утвердил desktop/mobile preview и наполнение всех6 страниц.
+Scope выполнен: компактный desktop список/mobile cards, подробности/edit в Fluent
+Drawer; new/import/proposals/corrections/inventory/promotions на существующих
+write API. Добавлены только bounded read filters/warehouse/order reference и
+безопасное description собственных заявок, с Zod/client/OpenAPI. Миграций нет.
+Риски: права, tenant, фильтры до пагинации, потеря ввода, публикация и mobile.
+Проверки: API22/22 (reads10, promotions7, proposals5), UI logic11/11; все PASS1.
+17 уникальных browser сценариев PASS на1440/390:6pages navigation, permissions,
+legacy links, filters/drawer, ERP authority, manual create+retry+publication,
+import mapping/error/confirm, proposal retry, correction/history, inventory,
+promotion draft+submit, shared operator moderation+keyboard, A13x2/A08 late GET.
+Первый browser run9PASS/2FAIL: required labels в test locators; исправлено на
+role selectors, second affected6/6PASS. Visual refinement: td wrappers/mobile
+card gap; drawer vw сдвигал панель на15px scrollbar — width100% исправлен;
+geometry assertion attempt1FAIL/2PASS. Последняя close/operator проверка2/2PASS.
+Снимки output/playwright/products-content просмотрены. Full suite NOT_RUN: focused scope.
+UI types PASS3 (первые2: CSS module declaration не включён tsconfig; include исправлен).
+E2E/supplier types PASS; canonical web build/types PASS1. Runtime+API build PASS2
+(первый EPERM Prisma DLL занята own dev; после остановки launcher12020 PASS).
+node scripts/verify-supplier-product-reads.mjs PASS1: реальные PG filters/paging,
+warehouse tenant/foreign parent denial/promotion phases; fixtures transaction rolled back.
+Focused ESLint и git diff --check PASS. Схема/зависимости/рабочая БД не менялись.
+Dev replacement launcher17404, canonical go_live JWT, API/site/catalog READY.
+Self-review: guards/contracts/callers/error recovery просмотрены; no known blocker.
+Foreign dirty scope сохранить: governance5, legacy next-env4, ui/styles phantom,
+output artifacts; НЕ включать их в commit. Own supplier application doc обновлён.
+Practices: development-toolkit/frontend/backend/verification/review, Fluent/Web
+Interface Guidelines, Agency frontend/UX/code reviewer/Git workflow, Playwright.
+Commit29c57b0c7b69fc9493486e0c86c6985054ca0ba0 pushed origin/main, remote SHA matched.
+CI37320109540 and Security37320109513 IN_PROGRESS, not PASS; snapshot only per owner.
+Own product scope clean. Dev17404 READY. Следующее: review владельца; новой фазы нет.
+
+## 05.10.2026 — шесть отдельных пустых страниц товаров (реализовано и отправлено)
+
+Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40, canonical main@6600dfe.
+Запрос: добавить отдельные new/import; очистить содержимое всех6 разделов,
+убрать встроенные new/import, проанализировать будущее наполнение без реализации.
+План: сохранить shell/header/guards и edit существующего предложения, удалить
+только выбранные UI surfaces. Риск: старые deep links/permissions/route titles.
+Проверки: scoped unit+lint, targeted mocked browser navigation/empty routes/denial
+1440/390, legacy import redirect, unchanged edit flow; web build/types один раз.
+Обновить устаревшие assertions только снятых по запросу сценариев; backend,
+рабочие данные и legacy entry points не менять. Исходный dirty scope сохранён.
+Реализовано:6 links, new/import routes, cleared6 pages, server redirect old editor URLs, sources link updated. Existing offer edit retained. Unit page-title3/3 PASS, lint PASS, browser7 scenarios PASS:1 unchanged-response case attempt1;5 route/permissions cases attempt2 after fixture conversations response fix;1 edit case attempt1. First browser run5 failures were missing /conversations fixture, not product failures. Visual shell desktop/mobile inspected: output/playwright/product-pages-new-1440.png and -390.png. CLI capture1 before server ready failed connection; capture2 after readiness PASS. Browser closed. Web build/types1 and e2e typecheck1 PASS. Own dev1312 stopped after lineage verification for build; replacement launcher12020 READY API/site/catalog, left running. Promotion E2E setup now uses existing API because supplier form intentionally removed; full DB scenario NOT_RUN locally, contract inspected. DoD:6 ссылок и пустых страниц, таблица работает, checks/review/commit/push,
+CI snapshot без ожидания, dev READY, рекомендации по наполнению в ответе. Commit2719863 pushed main, remote SHA verified. CI37310571347 and Security37310571492 IN_PROGRESS, not PASS. No further product phase authorized; next await owner choice on page content. Applied development-toolkit/frontend/verification, web-interface-guidelines, Agency frontend/UX, Playwright.
+
+
+## 05.10.2026 — supplier/products: компактные карточки действий
+
+Owner: primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40, canonical main@cfd415b.
+Запрос: шесть карточек с подходящими иконками по ширине таблицы; аудит дальше
+не документировать. Scope: products.tsx, product-actions.tsx, products.module.css.
+План: локальная компоновка, риск адаптивности/keyboard; focused lint, visual
+1440/1024/390, переходы/панели без submit; completion web build/types, diff review.
+Реализованы6 карточек80px desktop,3x2 mobile; Fluent icons, существующие права,
+handlers и feature flag сохранены. Browser smoke attempt1: неверная focus modality
+в проверке; attempt2 PASS после Tab. Геометрия/6 icons/нет page overflow/видимый
+focus/Enter+Space/4 перехода PASS. Снимки: output/playwright/product-actions-*.png.
+ESLint focused attempt1 PASS. Web build/types attempt1 PASS, .tmp/product-actions-build.log.
+Dev launcher12772 с проверенными дочерними API/web остановлен для сборки;
+после неё восстановить npm run dev. Browser product-actions закрыт.
+Исходный dirty scope сохранён, stage только3 названных кодовых файла.
+Review3 files и git diff --check PASS. Commit6600dfe pushed origin/main; remote SHA совпал. CI37308526822 и Security37308527119 IN_PROGRESS; по предпочтению владельца не ждать. Dev restart launcher1312 READY: API/site/catalog PASS, /supplier/products HTTP200. Сервер оставлен. Следующее: показать результат владельцу, новых страниц не менять. Общие suites/DB gates NOT_RUN: локальная визуальная правка.
+Practices: development-toolkit/frontend/verification, Agency Frontend/UI/UX, Playwright.
+
+## 05.10.2026 — supplier UI/UX audit: снимки и анализ готовы
+
+Последний запрос владельца: собрать снимки Главная/Товары/Заказы/Документы/
+Настройки/Уведомления/Поддержка поставщика, разобрать удобство и подготовить
+доработку кабинетов supplier/clinic. Messages — уже согласованный ориентир.
+Owner: 01a0fd63-0ae1-71e2-a4d4-271515cf0d40; canonical root, main@cfd415b.
+Scope этой итерации: analysis/artifacts, без изменения приложения и бизнес-данных.
+План проверки: текущие страницы1440x900/390x844, полные и первые экраны;
+раскрытие добавления товара/документов организации без submit, shared consumers
+клиники по коду. Риск — ошибочно принять loading за итог; ожидать loaded state.
+
+Результат: output/playwright/supplier-audit-2026-10-05/audit.html,
+evidence.json,35 PNG; ZIP рядом. Ссылки33/33 существуют. Семь supplier страниц
+просмотрены в обеих ширинах; Messages дополнительно. Основные проблемы:
+товары — перегруженные строки/внутренняя горизонтальная прокрутка mobile;
+заказы — unpaid/длинные номера; уведомления — внутренние event names/длинная
+лента; документы — большие счётчики до списка/вложенный комплаенс; настройки —
+onboarding+сотрудники+длинные User-Agent сессии; поддержка — форма под пустым
+списком на mobile. Главная не выделяет рабочие задачи. Shared documents,
+orders,settings,notifications,support подтверждены по route exports; clinic
+браузером не проверялась. Полного a11y/backend/production PASS не заявлять.
+
+Attempts: login1 старая ui-account отклонена, login2 актуальная dev-account PASS.
+Capture1 home/products/documents попал в loading; только эти3 пересняты после
+данных capture2 PASS. Остальные изображения сохранены с первого прохода.
+Mobile menu Escape/focus return PASS; ширина страницы390 у всех семи, что
+не доказывает удобство внутренних таблиц. Support populated/ошибки/submit
+не проверялись, форм/уведомлений не сохраняли; штатный login создаёт auth-сессию.
+CLI npx help Windows UV assertion; direct cached CLI успешно, без установки.
+HTML file preview через CLI заблокирован file protocol; обход не выполнялся,
+проверены локальные ссылки, HTML передан в Codex file panel. Снимки осмотрены.
+
+Dev запущен05.10 штатным npm run dev: launcher12772/API12968, web3000;
+go_live/JWT/FULL_ACCESS, launcher readiness API/site/catalog PASS. Dev оставлен.
+Owned audit browser sessions закрыты. Seed/migrations/tests/build/CI в аудите
+NOT_RUN: analysis-only. Нового commit/push нет; исходный foreign WIP и локальная
+метаинформация передачи сохранены. Practices: development-toolkit/frontend/
+verification, Playwright CLI, прочитанные Agency UI Designer/UX Architect.
+Предлагаемый порядок (не выполненная реализация): товары → заказы → уведомления
+→ поддержка → документы → настройки → главные. Следующий шаг — выбрать первый
+UI slice по этому аудиту; рекомендован список товаров. Продуктовые правки
+в рамках аудита не начинались; POST/EXT и массовая миграция селекторов не открыты.
+
+Передача02.10 generation5 ЗАВЕРШЕНА: primary 01a0fd63-0ae1-71e2-a4d4-271515cf0d40,
+transition=idle, successorThreadId=null; source01a0f302-2d38-75d1-b79c-141e7428b533 retired.
+Native wait_threads подтвердил source idle / turn01a0fd60-9924-72a2-94a6-204a615cf983 completed.
+Native set_thread_archived вернул archived=true для точного source; list_archived_threads
+независимо подтвердил архив. READY: turn01a0fd63-0d5c-7253-b226-2a89ec596a53.
+HEAD main cfd415bb2039e260bb72d6f2a427a60f1da6a458 и исходный dirty scope сохранены.
+Изменены только реестр и два checkpoint передачи; продукт/dev/БД не тронуты,
+tests/build/commit/push не выполнялись. CI по последней проверке IN_PROGRESS, НЕ PASS.
+Ровно следующий шаг: ждать новой задачи владельца. Исторические записи передачи ниже.
+
+## Передача по прямому запросу владельца — 02.10.2026
+
+Последний запрос: «Бро, перенеси пожалуйста всё в новыйчат». Это ручная передача
+текущего состояния с ещё выполняющимся CI, а не автоматическая ротация с CI_PASS.
+Source: 01a0f302-2d38-75d1-b79c-141e7428b533; generation4 →5. Source прекращает
+продуктовую запись. Разрешены только checkpoint/реестр/проверка понимания/передача.
+Не исправлять CI, не начинать следующую страницу/backlog, не делать commit/push
+ради передачи. Сохранить существующий WIP. После передачи ждать запроса владельца.
+
+Актуальный checkout: C:\Users\user\Desktop\dentmarket-kz-main, main,
+HEAD cfd415bb2039e260bb72d6f2a427a60f1da6a458; origin/main совпал после push.
+Работать только в этой папке: никаких новых worktrees, клонов или агентов.
+Последние инструкции владельца AGENTS.md включают proportional verification;
+они заменяют прежний обязательный общий npm test для каждого TS изменения.
+Проверки по риску, максимум3 попытки, не повторять PASS без изменённых входов.
+В последних UI-задачах владелец просил не ждать CI и не запускать полные suites.
+
+Что уже сделано и опубликовано:
+- CORE-01–09 и итоговый аудит/консолидация — предыдущие записи в этом checkpoint,
+  Foundation и Acceptance Matrix; не запускать их заново как очередь задач.
+- 4aa1e00: временный FULL_ACCESS в локальных кабинетах всех ролей. JWT,
+  membership/tenant и назначения ролей сохранены; production ROLE_BASED.
+- 57d75f5: sidebar clinic/supplier200px, logo144px, без карточки организации.
+- 9d4ea6a +99e6357: компактный header56px, greeting по имени/локальному времени
+  только на /clinic и /supplier, заголовки остальных страниц в header; без вводных
+  подзаголовков. Главная клиники отдельная с быстрыми ссылками, будущий контент
+  пока НЕ задан. Сообщения со счётчиком между Документы/Настройки в sidebar.
+- bca9c17: сообщения clinic/supplier подняты, края12px, список/чат равной высоты,
+  кнопка Обновить убрана; автообновление и retry сохранены.
+- cfd415b: в этих сообщениях нет Назад/Далее/Показать, фильтр Fluent Dropdown,
+  placeholder Выберите диалог центрирован. Список с внутренней прокруткой и
+  автоподгрузкой30; loaded-window refresh, dedup, ошибки с retry. Admin сохраняет
+  прежние controls через default compactList=false. Полная миграция всех
+  селекторов НЕ сделана: optional scope-вопрос остался без ответа, принято
+  только messages сейчас; правило для будущих редактируемых селекторов записано
+  в UI_UX_IMPLEMENTATION_STANDARD. Не запускать массовую миграцию автоматически.
+
+Последние evidence: .tmp/messages-controls-*.log; screenshots
+output/playwright/messages-controls-*.png. Реальные обе роли1440/390: filter,
+keyboard/Escape, no overflow, равные819px desktop, центр delta0 PASS.
+Изолированный browser route mock35 диалогов (включая read receipt, без DB writes):
+следующая страница, сохранение предыдущих30 на ошибке, retry35, selected chat,
+reset фильтра PASS. Clinic попытка1 transient mock-error не наблюдалась;
+стабильная503 до retry — попытка2 PASS. Supplier попытка1 PASS.
+Команды: npx vitest run packages/ui/src/conversation-pages.test.ts —3 PASS;
+целевой npx eslint —PASS; npm run build --workspace=@marketplace/web —PASS,
+включая TypeScript; git diff --check —PASS. Общие suites/DB/E2E не запускались
+по proportional scope. Self-review выполнен; роли Frontend Developer, Fluent UI,
+development-toolkit, Playwright применены. Не повторять эти checks ради нового чата.
+CI текущего SHA: CI37031544832 IN_PROGRESS, Security37031544753 IN_PROGRESS,
+проверено при передаче. Это НЕ PASS и не причина автоматически исправлять/ждать.
+
+Dev canonical go_live/JWT/FULL_ACCESS сохранён: launcher10492, API11744:4012,
+web6328:3000. GET /clinic/messages200 и /api/health/ready200 после восстановления.
+Первый readiness50s с короткими3s запросами истёк на startup; после Ready второй
+одиночный запрос50s дал200. Не перезапускать/не reseed ради передачи. Браузеры
+проверок закрыты, незавершённых команд и продуктовых операций source нет.
+
+Preexisting dirty (не staging/не revert): .codex/project-session.json (реестр с
+актуальными переходами), AGENTS.md, actual_docs/governance/DEVELOPMENT_WORKFLOW.md,
+apps/admin-web/next-env.d.ts, apps/buyer-web/next-env.d.ts,
+apps/landing-web/next-env.d.ts, apps/supplier-web/next-env.d.ts.
+packages/ui/src/styles.css может показываться M, но diff/numstat0 (phantom).
+Handoff добавляет только PROJECT_HANDOFF.md/PRIMARY-SESSION.md и поля реестра;
+эти изменения остаются локальными для передачи, не публиковать чужой WIP.
+Ровно один следующий шаг: fresh local successor read-only comprehension, затем
+тот же переход generation5 с проверенной архивацией source, и ожидание владельца.
+
 
 02.10 MESSAGES-CONTROLS LOCAL_PASS main@bca9c17, same primary/foreign7.
 Remove previous/next and visible filter label; Fluent dropdown, center detail empty.

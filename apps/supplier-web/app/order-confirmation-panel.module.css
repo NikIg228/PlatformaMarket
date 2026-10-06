@@ -5,43 +5,43 @@
 
 .content {
   display: grid;
-  gap: 16px;
+  gap: var(--dm-space-4);
 }
 
 .intro {
   margin: 0;
   color: var(--colorNeutralForeground3);
-  line-height: 1.5;
+  line-height: var(--dm-line-body);
 }
 
 .items {
   display: grid;
-  gap: 12px;
+  gap: var(--dm-space-3);
 }
 
 .item {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(180px, 0.7fr);
-  gap: 12px 16px;
-  padding: 16px;
+  gap: var(--dm-space-3) var(--dm-space-4);
+  padding: var(--dm-space-4);
   border: 1px solid var(--colorNeutralStroke2);
-  border-radius: 10px;
+  border-radius: var(--dm-radius-card);
   background: var(--colorNeutralBackground2);
 }
 
 .itemHeading {
   display: grid;
   align-content: start;
-  gap: 5px;
+  gap: var(--dm-space-1);
 }
 
 .itemHeading strong {
-  line-height: 1.35;
+  line-height: var(--dm-line-compact);
 }
 
 .itemHeading span {
   color: var(--colorNeutralForeground3);
-  font-size: 12px;
+  font-size: var(--dm-font-size-caption);
 }
 
 .item > :last-child:nth-child(3) {
@@ -51,18 +51,18 @@
 .summary {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  padding: 14px 16px;
-  border-radius: 8px;
+  gap: var(--dm-space-4);
+  padding: var(--dm-space-4) var(--dm-space-4);
+  border-radius: var(--dm-radius-card);
   background: var(--colorNeutralBackground3);
 }
 
 .error {
-  padding: 12px 14px;
-  border: 1px solid var(--colorPaletteRedBorder2);
-  border-radius: 8px;
-  color: var(--colorPaletteRedForeground1);
-  background: var(--colorPaletteRedBackground1);
+  padding: var(--dm-space-3) var(--dm-space-4);
+  border: 1px solid var(--dm-danger-text);
+  border-radius: var(--dm-radius-card);
+  color: var(--dm-danger-text);
+  background: var(--dm-danger-surface);
 }
 
 @media (max-width: 650px) {

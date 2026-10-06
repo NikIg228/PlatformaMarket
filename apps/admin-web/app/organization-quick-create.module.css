@@ -1,31 +1,31 @@
 .form {
   display: grid;
-  gap: 18px;
+  gap: var(--dm-space-4);
 }
 
 .form fieldset {
   margin: 0;
-  padding: 14px;
+  padding: var(--dm-space-4);
   border: 1px solid var(--dm-border);
   border-radius: var(--dm-radius-card);
 }
 
 .form legend {
-  padding: 0 6px;
+  padding: 0 var(--dm-space-2);
   color: var(--dm-text-primary);
-  font-size: 14px;
-  font-weight: 650;
+  font-size: var(--dm-font-size-body);
+  font-weight: var(--dm-font-weight-bold);
 }
 
 .capabilities {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--dm-space-3);
 }
 
 .checkbox {
   color: var(--dm-text-secondary);
-  font-size: 14px;
+  font-size: var(--dm-font-size-body);
 }
 
 @media (max-width: 560px) {

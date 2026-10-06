@@ -1,22 +1,22 @@
 .root {
   display: grid;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid var(--colorPaletteMarigoldBorder2);
-  border-radius: 8px;
-  background: var(--colorPaletteMarigoldBackground1);
+  gap: var(--dm-space-3);
+  padding: var(--dm-space-3);
+  border: 1px solid var(--dm-warning-text);
+  border-radius: var(--dm-radius-card);
+  background: var(--dm-warning-surface);
 }
 
 .summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--dm-space-3);
 }
 
 .items {
   display: grid;
-  gap: 8px;
+  gap: var(--dm-space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -25,10 +25,10 @@
 .item {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) auto minmax(240px, 1fr);
-  gap: 12px;
+  gap: var(--dm-space-3);
   align-items: baseline;
-  padding: 10px;
-  border-radius: 6px;
+  padding: var(--dm-space-3);
+  border-radius: var(--dm-radius-card);
   background: var(--colorNeutralBackground1);
 }
 

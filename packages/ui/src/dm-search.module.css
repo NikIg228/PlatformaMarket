@@ -1,7 +1,4 @@
-.search { width: 440px !important; max-width: 100%; min-width: 0 !important; flex: 0 1 440px !important; height: 44px; box-sizing: border-box; }
+.search { width: 440px !important; max-width: 100%; min-width: 0 !important; flex: 0 1 440px !important; box-sizing: border-box; }
 .search input { min-width: 0; }
-.actions { display: inline-flex; align-items: center; gap: 2px; }
-.actions button { min-width: 0; height: 32px; padding: 0 10px; }
-.actions .submit { color: var(--dm-brand-deep); font-weight: 600; }
-.actions .clear { padding: 0 6px; color: var(--dm-text-secondary); font-size: 20px; }
+.actions { display: inline-flex; align-items: center; gap: var(--dm-space-micro); }
 @media(max-width: 760px) { .search { width: 100% !important; flex-basis: 100% !important; } }

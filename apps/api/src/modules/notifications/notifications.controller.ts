@@ -1,10 +1,11 @@
 import { BadRequestException, Body, Controller, Get, Headers, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { createNotificationSchema, notificationPreferenceSchema, notificationQuerySchema } from "@marketplace/schemas";
+import { notificationInboxQuerySchema, notificationReadAllSchema } from "@marketplace/schemas";
 import { ApiTags } from "@nestjs/swagger";
 import { PermissionsGuard } from "../access-control/permissions.guard";
 import { RequirePermissions } from "../access-control/require-permissions.decorator";
 import { NotificationsService } from "./notifications.service";
-import { ApiCoreErrors, ApiCoreProtected, ApiCoreQuery, ApiCoreResponse, ApiUuidParam } from "../../platform/openapi/core-openapi";
+import { ApiCoreBody, ApiCoreErrors, ApiCoreProtected, ApiCoreQuery, ApiCoreResponse, ApiUuidParam } from "../../platform/openapi/core-openapi";
 
 @ApiTags("notifications")
 @ApiCoreProtected()
@@ -52,6 +53,23 @@ export class NotificationsController {
   @RequirePermissions("notification.view")
   markRead(@Param("notificationId") notificationId: string, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     return this.notifications.markRead(notificationId, this.context(actorId, organizationId));
+  }
+
+  @Get("organizations/:organizationId/inbox")
+  @ApiUuidParam("organizationId", "Recipient organization") @ApiCoreQuery("NotificationInboxQuery") @ApiCoreResponse("NotificationInbox")
+  @RequirePermissions("notification.view")
+  inbox(@Param("organizationId") organizationId: string, @Query() query: Record<string, unknown>, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") actorOrganizationId: string) {
+    const parsed = notificationInboxQuerySchema.safeParse(query); if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.notifications.inbox(organizationId, parsed.data, this.context(actorId, actorOrganizationId));
+  }
+
+  @Post("organizations/:organizationId/inbox/read")
+  @ApiCoreBody("NotificationReadAll")
+  @ApiUuidParam("organizationId", "Recipient organization") @ApiCoreResponse("NotificationReadAllResult", 201)
+  @RequirePermissions("notification.view")
+  readInbox(@Param("organizationId") organizationId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") actorOrganizationId: string) {
+    const parsed = notificationReadAllSchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.notifications.readInbox(organizationId, parsed.data.before, this.context(actorId, actorOrganizationId));
   }
 
   @Post(":notificationId/retry")

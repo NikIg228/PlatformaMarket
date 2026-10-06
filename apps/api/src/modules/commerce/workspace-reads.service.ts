@@ -6,6 +6,7 @@ import { PrismaService } from "../../platform/prisma/prisma.service";
 import { workspacePage, workspaceOrderBy } from "./workspace-page";
 import { workspaceCartInclude, workspaceOfferSelect } from "./workspace-read-selects";
 import { recoveredCartId } from "./cart-recovery";
+import { orderAttention } from "./workspace-order-attention";
 
 @Injectable()
 export class WorkspaceReadsService {
@@ -16,17 +17,37 @@ export class WorkspaceReadsService {
   }
   async orders(organizationId: string, role: "buyer" | "supplier", query: z.output<typeof workspaceOrderQuerySchema>) {
     await this.authorize(organizationId, role === "buyer" ? "BUYER" : "SUPPLIER");
-    const page = workspacePage([organizationId, role, "orders", query.q, query.status, query.limit], query.cursor);
+    const page = workspacePage([organizationId, role, "orders", query.q, query.status, query.limit, query.group], query.cursor);
+    const filters: Prisma.SupplierOrderWhereInput[] = [...page.where.AND];
+    if (query.group === "attention") filters.push(orderAttention(role, organizationId));
+    if (query.group === "active") filters.push({ status: { notIn: ["DELIVERED", "CANCELLED", "REJECTED"] } });
+    if (query.group === "completed") filters.push({ status: "DELIVERED" });
+    if (query.group === "cancelled") filters.push({ status: { in: ["CANCELLED", "REJECTED"] } });
     const where: Prisma.SupplierOrderWhereInput = {
-      ...page.where, ...(role === "buyer" ? { buyerOrganizationId: organizationId } : { supplierOrganizationId: organizationId }),
+      AND: filters, ...(role === "buyer" ? { buyerOrganizationId: organizationId } : { supplierOrganizationId: organizationId }),
       ...(query.status ? { status: query.status } : {}),
       ...(query.q ? { OR: [{ orderNumber: { contains: query.q, mode: "insensitive" } }, { [role === "buyer" ? "supplier" : "buyer"]: { displayName: { contains: query.q, mode: "insensitive" } } }] } : {}),
     };
     const rows = await this.db.supplierOrder.findMany({ where, orderBy: [...workspaceOrderBy], take: query.limit + 1,
       select: { id: true, orderNumber: true, status: true, paymentStatus: true, subtotalAmountMinor: true, currency: true, createdAt: true,
-        supplier: { select: { id: true, displayName: true } }, buyer: { select: { id: true, displayName: true } }, _count: { select: { items: true } } } });
+        manualInvoiceDocumentId: true,
+        transferClaims: { select: { status: true }, take: 1, where: { status: { not: "CONFIRMED" } } },
+        manualReturns: { select: { id: true }, take: 1, where: { status: { notIn: ["REJECTED", "REFUND_RECEIVED"] } } },
+        supplier: { select: { id: true, displayName: true } }, buyer: { select: { id: true, displayName: true } }, _count: { select: { items: true, transferClaims: { where: { status: "CONFIRMED" } } } } } });
     const result = page.finish(rows, query.limit);
-    return { ...result, items: result.items.map(({ _count, ...row }) => ({ ...row, itemCount: _count.items })) };
+    return { ...result, items: result.items.map(({ _count, transferClaims, manualReturns, manualInvoiceDocumentId, ...row }) => {
+      const terminal = ["CANCELLED", "REJECTED", "DELIVERED"].includes(row.status);
+      const nextAction = manualReturns.length ? "Посмотреть возврат" : terminal ? null
+        : role === "supplier" ? row.status === "AWAITING_CONFIRMATION" ? "Подтвердить состав"
+          : transferClaims.length ? transferClaims[0].status === "NEEDS_INFORMATION" ? "Ожидается уточнение оплаты" : "Проверить перевод"
+          : ["CONFIRMED", "AWAITING_PAYMENT"].includes(row.status) && !manualInvoiceDocumentId ? "Выставить счёт"
+          : ["PAID", "ASSEMBLING", "READY_TO_SHIP"].includes(row.status) ? "Подготовить отгрузку" : null
+        : row.status === "PARTIALLY_CONFIRMED" ? "Согласовать состав"
+          : transferClaims.some(claim => claim.status === "NEEDS_INFORMATION") ? "Уточнить оплату"
+          : row.status === "AWAITING_PAYMENT" && !transferClaims.length ? "Проверить счёт" : null;
+      return { ...row, itemCount: _count.items, paymentReviewPending: transferClaims.length > 0,
+        partiallyPaid: row.paymentStatus === "UNPAID" && _count.transferClaims > 0, hasOpenReturn: manualReturns.length > 0, nextAction };
+    }) };
   }
   async offers(organizationId: string, query: z.output<typeof workspaceOfferQuerySchema>) {
     await this.authorize(organizationId, "SUPPLIER");

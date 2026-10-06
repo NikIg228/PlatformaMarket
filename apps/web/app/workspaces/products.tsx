@@ -1,4 +1,5 @@
 "use client";
+import { DmAction } from "@marketplace/ui/controls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { WorkspaceOffer } from "@marketplace/schemas";
@@ -57,7 +58,7 @@ export default function Products() {
           const price = item.prices.find(value => value.status === "ACTIVE");
           const warning = offerAttention(item);
           return <tr key={item.id}>
-            <td className={styles.identity}><button className={styles.productName} onClick={event => open(item, event.currentTarget)}>{item.productVariant.product.canonicalName}</button><small>{item.supplierSku ?? "Без артикула"} · {item.packaging?.name ?? item.saleUnit?.nameRu ?? "Упаковка не указана"}</small></td>
+            <td className={styles.identity}><DmAction variant="text" className={styles.productName} onClick={event => open(item, event.currentTarget)}>{item.productVariant.product.canonicalName}</DmAction><small>{item.supplierSku ?? "Без артикула"} · {item.packaging?.name ?? item.saleUnit?.nameRu ?? "Упаковка не указана"}</small></td>
             <td className={styles.price} data-label="Цена"><span>{price ? formatMoney(price.amountMinor, price.currency) : "Не задана"}{price ? ` / ${item.saleUnit?.symbol ?? "ед."}` : ""}</span>{warning.priceWarning ? <small className={styles.warning}>{warning.priceWarning}</small> : null}</td>
             <td className={styles.available} data-label="Доступно"><span>{item.inventoryBalances.length ? totalAvailable(item) : "—"} {item.saleUnit?.symbol ?? "ед."}</span>{warning.stockWarning ? <small className={styles.warning}>{warning.stockWarning}</small> : null}</td>
             <td className={styles.publication} data-label="Публикация"><StatusTag tone={item.publication?.marketplaceVisible ? "success" : "neutral"}>{item.publication?.marketplaceVisible ? "В каталоге" : formatStatus(item.publication?.status ?? item.status)}</StatusTag>{item.publication?.blockedReason ? <small className={styles.warning}>{item.publication.blockedReason}</small> : null}</td>

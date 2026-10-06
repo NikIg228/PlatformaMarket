@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@fluentui/react-components";
+import { DmButton as Button } from "@marketplace/ui/controls";
 import type { MarketplaceApiClient, OrderDocumentResponse } from "@marketplace/api-client";
 import { StatusTag, errorMessage, formatDate, formatStatus } from "@marketplace/ui";
 import { useState } from "react";

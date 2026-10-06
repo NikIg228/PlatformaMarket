@@ -1,63 +1,60 @@
 .drawer { width:min(640px, 100%) !important; max-width:100%; }
-.header { padding:24px 32px !important; }
-.headerActions { display:flex; gap:12px; }
-.body { padding:0 32px 24px !important; }
+.header { padding:var(--dm-space-6) var(--dm-space-8) !important; }
+.headerActions { display:flex; gap:var(--dm-space-3); }
+.body { padding:0 var(--dm-space-8) var(--dm-space-6) !important; }
 .detail { min-width:0; overflow-wrap:anywhere; }
-.detail h2 { margin:0 0 8px; font-size:20px; line-height:1.35; }
-.detail h3 { margin:0 0 14px; font-size:18px; line-height:1.35; }
-.detail > section { padding:20px 0; border-bottom:1px solid var(--dm-border); }
-.identity { display:flex; gap:20px; align-items:center; padding:0 0 20px; border-bottom:1px solid var(--dm-border); }
+.detail h2 { margin:0 0 var(--dm-space-2); font-size:var(--dm-font-size-title); line-height:var(--dm-line-compact); }
+.detail h3 { margin:0 0 var(--dm-space-4); font-size:var(--dm-font-size-subtitle); line-height:var(--dm-line-compact); }
+.detail > section { padding:var(--dm-space-6) 0; border-bottom:1px solid var(--dm-border); }
+.identity { display:flex; gap:var(--dm-space-6); align-items:center; padding:0 0 var(--dm-space-6); border-bottom:1px solid var(--dm-border); }
 .identity > :first-child { width:100px; height:100px; flex-basis:100px; }
 .identity > div:last-child { min-width:0; }
-.identity p { color:var(--dm-text-secondary); font-size:14px; margin:0 0 10px; }
-.priceRow { display:flex; align-items:center; justify-content:space-between; gap:16px; }
-.priceRow strong { font-size:28px; line-height:1.3; font-weight:650; }
-.priceRow strong span { font-size:22px; font-weight:400; }
-.priceRow p, .freshness { margin:6px 0 0; color:var(--dm-text-secondary); font-size:14px; }
-.price .freshness { margin-top:14px; }
-.warning { color:var(--dm-text-primary); background:var(--dm-warning-surface); padding:8px 12px; border-radius:6px; margin:12px 0 0; }
-.outlined, .actionLink { border:1px solid var(--dm-brand-primary) !important; color:var(--dm-brand-deep) !important; border-radius:4px; font-size:14px; font-weight:600; background:var(--dm-surface); }
-.actionLink { display:inline-flex; justify-content:center; align-items:center; padding:10px 16px; min-height:40px; box-sizing:border-box; text-decoration:none; }
-.actionLink:hover { background:var(--dm-brand-surface); }
-.warehouses { display:grid; gap:12px; }
-.warehouses article { border:1px solid var(--dm-border); border-radius:8px; padding:16px 20px; }
-.warehouseTitle { display:flex; gap:10px; justify-content:space-between; align-items:center; }
-.warehouseTitle > strong { font-size:17px; }
-.warehouses dl { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin:14px 0 18px; padding-top:14px; border-top:1px solid var(--dm-border); }
-.warehouses dl > div { min-width:0; padding:0 14px; border-left:1px solid var(--dm-border); }
+.identity p { color:var(--dm-text-secondary); font-size:var(--dm-font-size-body); margin:0 0 var(--dm-space-3); }
+.priceRow { display:flex; align-items:center; justify-content:space-between; gap:var(--dm-space-4); }
+.priceRow strong { font-size:var(--dm-font-size-page-sm); line-height:var(--dm-line-heading); font-weight:var(--dm-font-weight-bold); }
+.priceRow strong span { font-size:var(--dm-font-size-heading); font-weight:var(--dm-font-weight-regular); }
+.priceRow p, .freshness { margin:var(--dm-space-2) 0 0; color:var(--dm-text-secondary); font-size:var(--dm-font-size-body); }
+.price .freshness { margin-top:var(--dm-space-4); }
+.warning { color:var(--dm-text-primary); background:var(--dm-warning-surface); padding:var(--dm-space-2) var(--dm-space-3); border-radius:var(--dm-radius-card); margin:var(--dm-space-3) 0 0; }
+.warehouses { display:grid; gap:var(--dm-space-3); }
+.warehouses article { border:1px solid var(--dm-border); border-radius:var(--dm-radius-card); padding:var(--dm-space-4) var(--dm-space-6); }
+.warehouseTitle { display:flex; gap:var(--dm-space-3); justify-content:space-between; align-items:center; }
+.warehouseTitle > strong { font-size:var(--dm-font-size-subtitle); }
+.warehouses dl { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin:var(--dm-space-4) 0 var(--dm-space-4); padding-top:var(--dm-space-4); border-top:1px solid var(--dm-border); }
+.warehouses dl > div { min-width:0; padding:0 var(--dm-space-4); border-left:1px solid var(--dm-border); }
 .warehouses dl > div:first-child { padding-left:0; border:0; }
 .warehouses dl > div:last-child { padding-right:0; }
-.warehouses dt { color:var(--dm-text-secondary); font-size:13px; margin:0 0 6px; }
-.warehouses dd { margin:0; font-size:20px; line-height:1.25; }
-.stockActions { display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-.stockActions small { color:var(--dm-text-secondary); font-size:12px; }
-.stockActions small span { display:block; margin-top:4px; }
+.warehouses dt { color:var(--dm-text-secondary); font-size:var(--dm-font-size-body); margin:0 0 var(--dm-space-2); }
+.warehouses dd { margin:0; font-size:var(--dm-font-size-title); line-height:var(--dm-line-heading); }
+.stockActions { display:flex; gap:var(--dm-space-3); align-items:center; justify-content:space-between; flex-wrap:wrap; }
+.stockActions small { color:var(--dm-text-secondary); font-size:var(--dm-font-size-caption); }
+.stockActions small span { display:block; margin-top:var(--dm-space-1); }
 .orderTerms { margin:0; }
-.orderTerms > div { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; padding:10px 0; border-bottom:1px solid var(--dm-border); font-size:14px; }
+.orderTerms > div { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:var(--dm-space-4); padding:var(--dm-space-3) 0; border-bottom:1px solid var(--dm-border); font-size:var(--dm-font-size-body); }
 .orderTerms > div:last-child { border:0; padding-bottom:0; }
 .orderTerms dt { color:var(--dm-text-secondary); }
-.orderTerms dd { margin:0; text-align:right; font-weight:600; }
+.orderTerms dd { margin:0; text-align:right; font-weight:var(--dm-font-weight-semibold); }
 .related { display:grid; }
-.related > a, .related > button { display:flex; width:100%; box-sizing:border-box; align-items:center; gap:18px; min-height:54px; padding:12px 0; border:0; border-bottom:1px solid var(--dm-border); background:transparent; text-decoration:none; color:var(--dm-text-secondary); font:inherit; font-size:14px; text-align:left; cursor:pointer; }
+.related > a, .related > button { display:flex; width:100%; box-sizing:border-box; align-items:center; gap:var(--dm-space-4); min-height:54px; padding:var(--dm-space-3) 0; border:0; border-bottom:1px solid var(--dm-border); background:transparent; text-decoration:none; color:var(--dm-text-secondary); font:inherit; font-size:var(--dm-font-size-body); text-align:left; cursor:pointer; }
 .related > :last-child { border-bottom:0; }
 .related > :hover { color:var(--dm-brand-deep); background:var(--dm-brand-surface); }
 .related svg { width:24px; height:24px; flex-shrink:0; color:var(--dm-brand-deep); }
 .related span:first-of-type { flex:1; }
-.related span:last-child { font-size:24px; color:var(--dm-text-primary); }
-.editor { padding-top:16px; }
-.editor > button { margin-bottom:16px; }
+.related span:last-child { font-size:var(--dm-font-size-heading); color:var(--dm-text-primary); }
+.editor { padding-top:var(--dm-space-4); }
+.editor > button { margin-bottom:var(--dm-space-4); }
 .editor :global(.mp-section) { border:0; padding:0; }
 .empty { color:var(--dm-text-secondary); }
 @media(max-width:500px) {
-  .header { padding:16px 20px !important; }
-  .body { padding:0 20px 20px !important; }
-  .identity { gap:12px; }
+  .header { padding:var(--dm-space-4) var(--dm-space-6) !important; }
+  .body { padding:0 var(--dm-space-6) var(--dm-space-6) !important; }
+  .identity { gap:var(--dm-space-3); }
   .identity > :first-child { width:64px; height:64px; flex-basis:64px; }
-  .detail h2 { font-size:18px; }
+  .detail h2 { font-size:var(--dm-font-size-subtitle); }
   .priceRow { flex-wrap:wrap; }
-  .priceRow strong { font-size:24px; }
-  .warehouses article { padding:14px; }
-  .warehouses dl > div { padding:0 8px; }
-  .warehouses dd { font-size:18px; }
+  .priceRow strong { font-size:var(--dm-font-size-heading); }
+  .warehouses article { padding:var(--dm-space-4); }
+  .warehouses dl > div { padding:0 var(--dm-space-2); }
+  .warehouses dd { font-size:var(--dm-font-size-subtitle); }
   .warehouseTitle { flex-wrap:wrap; }
 }

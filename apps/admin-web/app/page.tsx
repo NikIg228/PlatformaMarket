@@ -1,4 +1,6 @@
 "use client";
+import { DmAction } from "@marketplace/ui/controls";
+
 import { IdentitySettings } from "./identity-settings";
 import { workspacePath } from "@marketplace/api-client";
 
@@ -148,10 +150,10 @@ export default function OperationsWorkspace() {
           </div>
           <div className={styles.moduleGrid}>
             {modules.map((module) => (
-              <DmButton appearance="subtle" className={styles.module} key={module.id} type="button" onClick={() => setActive(module.id)}>
+              <DmAction variant="choice"  className={styles.module} key={module.id} type="button" onClick={() => setActive(module.id)}>
                 <span className={styles.moduleTop}><strong>{module.title}</strong>{module.icon}</span>
                 <span className={styles.moduleDescription}>{module.description}</span>
-              </DmButton>
+              </DmAction>
             ))}
           </div>
         </section>

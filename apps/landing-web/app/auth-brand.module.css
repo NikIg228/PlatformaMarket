@@ -4,7 +4,7 @@
   height: 56px;
   flex-shrink: 0;
   object-fit: contain;
-  border-radius: 10px;
+  border-radius: var(--dm-radius-field);
 }
 
 .link strong.name {

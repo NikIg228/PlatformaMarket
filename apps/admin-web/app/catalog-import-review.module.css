@@ -1,14 +1,14 @@
 .section {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  gap: var(--dm-space-4);
   min-width: 0;
 }
 .heading {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 20px;
+  gap: var(--dm-space-6);
   min-width: 0;
 }
 .heading > div {
@@ -20,31 +20,31 @@
   color: var(--dm-text-primary);
 }
 .heading h2 {
-  font-size: 24px;
-  letter-spacing: -0.03em;
+  font-size: var(--dm-font-size-heading);
+  letter-spacing: var(--dm-tracking-heading);
 }
 .heading p,
 .cardHeader p {
-  margin: 6px 0 0;
+  margin: var(--dm-space-2) 0 0;
   color: var(--dm-text-muted);
-  line-height: 1.5;
+  line-height: var(--dm-line-body);
 }
 .heading p {
   max-width: 720px;
-  font-size: 14px;
+  font-size: var(--dm-font-size-body);
 }
 .list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
+  gap: var(--dm-space-4);
   min-width: 0;
 }
 .card {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  gap: var(--dm-space-4);
   min-width: 0;
-  padding: 20px;
+  padding: var(--dm-space-6);
   border: 1px solid var(--dm-border);
   border-radius: var(--dm-radius-card);
   background: var(--dm-surface);
@@ -53,7 +53,7 @@
   display: flex;
   align-items: start;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--dm-space-4);
   min-width: 0;
 }
 .cardHeader > div,
@@ -67,10 +67,10 @@
   overflow-wrap: anywhere;
 }
 .card h3 {
-  font-size: 17px;
+  font-size: var(--dm-font-size-subtitle);
 }
 .cardHeader p {
-  font-size: 12px;
+  font-size: var(--dm-font-size-caption);
 }
 .facts {
   display: grid;
@@ -82,7 +82,7 @@
 }
 .facts div {
   min-width: 0;
-  padding: 12px;
+  padding: var(--dm-space-3);
   border-right: 1px solid var(--dm-border);
 }
 .facts div:last-child {
@@ -90,20 +90,20 @@
 }
 .facts dt {
   color: var(--dm-text-muted);
-  font-size: 11px;
+  font-size: var(--dm-font-size-caption);
 }
 .facts dd {
-  margin: 5px 0 0;
+  margin: var(--dm-space-1) 0 0;
   overflow-wrap: anywhere;
   color: var(--dm-text-secondary);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--dm-font-size-body);
+  font-weight: var(--dm-font-weight-bold);
 }
 .form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  padding-top: 4px;
+  gap: var(--dm-space-4);
+  padding-top: var(--dm-space-1);
 }
 .full {
   grid-column: 1 / -1;
@@ -112,18 +112,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--dm-space-4);
   min-width: 0;
-  padding-top: 14px;
+  padding-top: var(--dm-space-4);
   border-top: 1px solid var(--dm-border);
 }
 .publication > div:first-child {
   display: grid;
-  gap: 5px;
+  gap: var(--dm-space-1);
 }
 .publication span {
   color: var(--dm-text-muted);
-  font-size: 12px;
+  font-size: var(--dm-font-size-caption);
 }
 @media (max-width: 700px) {
   .heading,

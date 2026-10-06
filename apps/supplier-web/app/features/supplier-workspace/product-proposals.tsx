@@ -1,4 +1,5 @@
 "use client";
+import { DmAction } from "@marketplace/ui/controls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { ProductCandidateHistoryResponse, ProductCandidateSummary } from "@marketplace/schemas";
@@ -35,7 +36,7 @@ export function ProductProposals({ api, onRetry, hideHeading = false, initialSel
     {busy && !page ? <LoadingState label="Загружаем заявки" /> : null}
     {page?.items.length === 0 ? <section className={`${s.panel} ${s.empty}`}><h2>{q || status ? "Заявки не найдены" : "Заявок пока нет"}</h2><p>{q || status ? "Измените поиск или статус." : "Здесь будут заявки на товары, которых пока нет в каталоге."}</p>{!q && !status ? <a href="/supplier/products/new?request=1">Подать первую заявку</a> : null}</section> : page ? <div className={styles.columns} data-selected={Boolean(selected)}>
       <section className={styles.list} aria-label="Список заявок"><table className={s.table}><thead><tr><th>Товар</th><th>Отправлена</th><th>Статус</th></tr></thead><tbody>{page.items.map(item => <tr key={item.id} data-selected={item.id === selectedId}>
-        <td data-label="Товар"><button className={styles.select} onClick={() => setSelectedId(item.id)} aria-pressed={item.id === selectedId}><ProductThumbnail name={item.proposedName} /><span>{item.proposedName}<small>{item.proposedSku ?? "Без артикула"}</small></span></button></td>
+        <td data-label="Товар"><DmAction variant="row" className={styles.select} onClick={() => setSelectedId(item.id)} aria-pressed={item.id === selectedId}><ProductThumbnail name={item.proposedName} /><span>{item.proposedName}<small>{item.proposedSku ?? "Без артикула"}</small></span></DmAction></td>
         <td data-label="Отправлена"><span>{formatDate(item.createdAt)}</span></td><td data-label="Статус"><StatusTag tone={item.status === "REJECTED" ? "danger" : item.status === "APPROVED" ? "success" : "warning"}>{labels[item.status]}</StatusTag></td>
       </tr>)}</tbody></table>{page.nextCursor ? <div className={styles.more}><DmButton disabled={busy} onClick={() => void load(page.nextCursor!)}>Более ранние заявки</DmButton></div> : null}</section>
       <aside className={`${s.panel} ${styles.details}`} aria-label="Подробности заявки">

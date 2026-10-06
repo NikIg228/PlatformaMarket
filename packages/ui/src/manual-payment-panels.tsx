@@ -1,4 +1,5 @@
 "use client";
+import { DmCheckbox } from "./controls";
 import { useId, useState } from "react";
 import type { OrderWorkflowResponse } from "@marketplace/schemas";
 import { orderItemPromotion, giftForPromotionQuantity } from "@marketplace/schemas/promotion-snapshot";
@@ -9,7 +10,7 @@ import type { WorkflowAction } from "./order-workflow-command";
 type Shared = { data: OrderWorkflowResponse; busy: boolean; canAct: (action: WorkflowAction["action"]) => boolean; perform: (action: WorkflowAction) => Promise<void> };
 const statuses: Record<string, string> = { PENDING: "Ожидает проверки", NEEDS_INFORMATION: "Запрошено уточнение", NOT_RECEIVED: "Проверено — не поступило", DISPUTED: "Спор по переводу", CONFIRMED: "Поступление подтверждено" };
 
-export function PaymentSummaryPanel({ data }: { data: OrderWorkflowResponse }) {
+export function PaymentSummaryPanel({ data, compact = false }: { data: OrderWorkflowResponse; compact?: boolean }) {
   const summary = data.paymentSummary;
   if (!summary) return null;
   const receivedRefunds = (data.returns ?? []).filter(value => value.status === "REFUND_RECEIVED");
@@ -17,12 +18,12 @@ export function PaymentSummaryPanel({ data }: { data: OrderWorkflowResponse }) {
   const overpaidRefunded = receivedRefunds.filter(value => value.kind === "OVERPAYMENT" || value.kind === "CANCELLATION").reduce((sum, value) => sum + BigInt(value.amountMinor), BigInt(0));
   const outstandingOverpaid = BigInt(summary.overpaidAmountMinor) - overpaidRefunded;
   return <Section title="Расчёт оплаты"><dl>
-    <dt>Согласованная сумма</dt><dd>{formatMoney(data.order.subtotalAmountMinor, data.order.currency)}</dd>
+    <dt>Сумма заказа</dt><dd>{formatMoney(data.order.subtotalAmountMinor, data.order.currency)}</dd>
     <dt>Поставщик подтвердил получение</dt><dd>{formatMoney(summary.confirmedAmountMinor, data.order.currency)}</dd>
-    <dt>Осталось оплатить</dt><dd>{formatMoney(data.status === "CANCELLED" ? "0" : summary.remainingAmountMinor, data.order.currency)}</dd>
+    <dt>Осталось оплатить</dt><dd>{formatMoney(["CANCELLED", "REJECTED"].includes(data.status) ? "0" : summary.remainingAmountMinor, data.order.currency)}</dd>
     <dt>Переплата к возврату</dt><dd>{formatMoney(outstandingOverpaid > BigInt(0) ? outstandingOverpaid.toString() : "0", data.order.currency)}</dd>
     {refunded > BigInt(0) ? <><dt>Клиника подтвердила получение возвратов</dt><dd>{formatMoney(refunded.toString(), data.order.currency)}</dd></> : null}
-  </dl><p>Квитанции не входят в полученную сумму до проверки поставщиком. Сборка доступна после полной оплаты. Переплата учитывается отдельно и не переносится на другие заказы.</p>
+  </dl>{compact ? <p>Квитанция не подтверждает поступление денег. Проверяйте фактически полученную сумму.</p> : <p>Квитанции не входят в полученную сумму до проверки поставщиком. Сборка доступна после полной оплаты. Переплата учитывается отдельно и не переносится на другие заказы.</p>}
     {data.paymentReviewConfigured === false ? <DmFeedback tone="warning" title="График проверки оплаты не настроен" description="Уведомление о переводе поступит поставщику. Для напоминаний через 15/30/60 рабочих минут поставщику нужно назначить ответственных и рабочие часы." /> : null}
   </Section>;
 }
@@ -47,7 +48,7 @@ function TransferReview({ claim, index, busy, supplier, party, canAct, perform, 
   const received = parseMoneyInput(amount);
   const nextDate = nextCheck ? new Date(nextCheck) : null;
   const validNextDate = nextDate && Number.isFinite(nextDate.getTime()) && nextDate.getTime() > Date.now() && nextDate.getTime() <= Date.now() + 7 * 86400000;
-  return <article style={{ display: "grid", gap: 12, paddingBlock: 16, borderBottom: "1px solid var(--colorNeutralStroke2)" }}>
+  return <article style={{ display: "grid", gap: "var(--dm-space-3)", paddingBlock: "var(--dm-space-4)", borderBottom: "1px solid var(--colorNeutralStroke2)" }}>
     <h3>Перевод {index} · {statuses[claim.status] ?? claim.status}</h3>
     <p>{formatDate(claim.paidAt, true)} · Заявлено {formatMoney(claim.amountMinor, claim.currency)}{claim.status === "CONFIRMED" ? ` · Получено ${formatMoney(claim.receivedAmountMinor ?? claim.amountMinor, claim.currency)}` : ""}</p>
     {claim.comment ? <p>{claim.comment}</p> : null}
@@ -59,7 +60,7 @@ function TransferReview({ claim, index, busy, supplier, party, canAct, perform, 
         <DmField label={`Фактически поступило по переводу ${index}, ${claim.currency}`} validationState={amount && !received ? "error" : "none"} validationMessage={amount && !received ? "Укажите положительную сумму с точностью до двух знаков" : undefined}>
           <DmInput inputMode="decimal" value={amount} disabled={busy} onChange={(_, d) => { setAmount(d.value); setAcknowledged(false); }} />
         </DmField>
-        <label htmlFor={checkId}><input id={checkId} type="checkbox" checked={acknowledged} disabled={busy} onChange={e => setAcknowledged(e.target.checked)} /> Проверено по счёту поставщика: указанная сумма действительно поступила</label>
+        <DmCheckbox id={checkId} checked={acknowledged} disabled={busy} onChange={e => setAcknowledged(e.target.checked)} label="Проверено по счёту поставщика: указанная сумма действительно поступила" />
         <DmButton disabled={busy || !canAct("CONFIRM_TRANSFER") || !received || !acknowledged} onClick={() => received && void perform({ action: "CONFIRM_TRANSFER", claimId: claim.id, receivedAmountMinor: received })}>Подтвердить фактически полученную сумму</DmButton>
         <DmField label={`Следующая проверка перевода ${index}`} hint="Укажите местные дату и время в пределах семи дней"><DmInput type="datetime-local" value={nextCheck} disabled={busy} onChange={(_, d) => setNextCheck(d.value)} /></DmField>
       </> : null}
@@ -96,7 +97,7 @@ export function PaymentReductionPanel({ data, busy, organizationId, canAct, perf
       <h3>{names[reduction.status]}</h3><p>{formatMoney(reduction.previousAmountMinor, data.order.currency)} → {formatMoney(reduction.proposedAmountMinor, data.order.currency)} · {reduction.reason}</p>
       <ul>{reduction.items.map(line => <li key={line.itemId}>{data.order.items.find(item => item.id === line.itemId)?.offer?.productVariant.product.canonicalName ?? "Товар"}: {line.previousQuantity} → {line.acceptedQuantity}; {formatMoney(line.totalPriceMinor, data.order.currency)}</li>)}</ul>
       {reduction.status === "PENDING" && reduction.proposedByOrganizationId !== organizationId ? <>
-        <label><input type="checkbox" checked={acknowledged} disabled={busy} onChange={e => setAcknowledged(e.target.checked)} /> Согласен с новым составом и суммой</label>
+        <DmCheckbox checked={acknowledged} disabled={busy} onChange={e => setAcknowledged(e.target.checked)} label="Согласен с новым составом и суммой" />
         <DmButton disabled={busy || !canAct("DECIDE_PAYMENT_REDUCTION") || !acknowledged} onClick={() => void perform({ action: "DECIDE_PAYMENT_REDUCTION", reductionId: reduction.id, accepted: true })}>Принять уменьшение</DmButton>
         <DmButton disabled={busy || !canAct("DECIDE_PAYMENT_REDUCTION")} onClick={() => void perform({ action: "DECIDE_PAYMENT_REDUCTION", reductionId: reduction.id, accepted: false })}>Отклонить уменьшение</DmButton>
       </> : null}

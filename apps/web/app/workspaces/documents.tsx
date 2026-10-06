@@ -1,4 +1,5 @@
 "use client";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   DocumentArchiveItem,
@@ -31,6 +32,9 @@ const initial: DocumentArchiveFilters = {
   dateTo: "",
 };
 export default function Documents() {
+  const search = useSearchParams();
+  const documentId = search.get("documentId");
+  const initialDocumentId = documentId && /^[0-9a-f-]{36}$/i.test(documentId) ? documentId : null;
   const { api, apiContext, role, organizationId } = useWorkspace();
   const [items, setItems] = useState<DocumentArchiveItem[]>([]);
   const [summary, setSummary] = useState<DocumentArchiveSummaryResponse | null>(
@@ -43,7 +47,8 @@ export default function Documents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [legalOpen, setLegalOpen] = useState(false);
+  const [legalOpen, setLegalOpen] = useState(search.get("organization") === "1");
+  useEffect(() => { if (search.get("organization") === "1") setLegalOpen(true); }, [search]);
   const [uploading, setUploading] = useState(false);
   const sequence = useRef(0);
   const moreLock = useRef(false);
@@ -189,6 +194,7 @@ export default function Documents() {
       {role === "supplier" ? (
         <details
           className={styles.panel}
+          open={legalOpen}
           onToggle={(event) => setLegalOpen(event.currentTarget.open)}
         >
           <summary>Договор и документы организации</summary>
@@ -202,6 +208,7 @@ export default function Documents() {
       ) : null}
       <ResourceStatus resource={{ lastSuccessAt, offline, refreshing: loading, error: refreshError }} />
       <DocumentArchiveWorkspace
+        initialDocumentId={initialDocumentId}
         hideHeading
         roleLabel={role === "clinic" ? "клиника" : "поставщик"}
         organizationId={organizationId}

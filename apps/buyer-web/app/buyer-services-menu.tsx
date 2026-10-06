@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  Button,
-  Menu,
-  MenuItem,
-  MenuList,
-  MenuPopover,
-  MenuTrigger,
-} from "@fluentui/react-components";
+import { Menu, MenuItem, MenuList, MenuPopover, MenuTrigger } from "@fluentui/react-components";
+import { DmButton as Button } from "@marketplace/ui/controls";
 import { Bot24Regular } from "@fluentui/react-icons/svg/bot";
 import { Location24Regular } from "@fluentui/react-icons/svg/location";
 import { MoreHorizontal24Regular } from "@fluentui/react-icons/svg/more-horizontal";

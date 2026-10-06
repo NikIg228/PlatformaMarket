@@ -1,4 +1,5 @@
 import { CloudArrowUp24Regular } from "@fluentui/react-icons/svg/cloud-arrow-up";
+import { DmFileInput } from "@marketplace/ui/controls";
 import { ShieldCheckmark24Regular } from "@fluentui/react-icons/svg/shield-checkmark";
 import {
   DmButton,
@@ -70,9 +71,9 @@ export function SupplierCompliance({
             />
           </DmField>
           <DmField label="Файл PDF / изображение">
-            <input
+            <DmFileInput
               className={styles.fileInput}
-              type="file"
+
               accept="application/pdf,image/png,image/jpeg"
               onChange={(event) => onFileChange(event.currentTarget.files?.[0] ?? null)}
             />

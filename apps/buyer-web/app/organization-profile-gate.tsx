@@ -25,7 +25,7 @@ export function OrganizationProfileGate({ children }: { children: ReactNode }) {
   if (error) return <ErrorState title="Не удалось проверить анкету" description={error} action={<DmButton onClick={() => void load()}>Повторить</DmButton>} />;
   if (!profile || profile.organizationId !== session.organizationId) return <LoadingState label="Проверяем анкету организации" />;
   if (profile.complete) return children;
-  return <main style={{ maxWidth: 680, padding: 24, margin: "0 auto" }}>
+  return <main style={{ maxWidth: 680, padding: "var(--dm-space-6)", margin: "0 auto" }}>
     <h1>Завершите подключение клиники</h1><p>После сохранения вы вернётесь к выбранному товару или странице.</p>
     <OrganizationProfileForm value={profile} cities={cities} onSave={input => api.saveOrganizationProfile(input)} onSaved={setProfile} />
   </main>;

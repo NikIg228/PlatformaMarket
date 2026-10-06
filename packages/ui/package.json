@@ -8,7 +8,9 @@
     "./promotions": "./src/promotion-workspace.tsx",
     "./commerce-analytics": "./src/commerce-analytics.tsx",
     "./styles.css": "./src/styles.css",
-    "./provider": "./src/provider.tsx"
+    "./provider": "./src/provider.tsx",
+    "./controls": "./src/controls.tsx",
+    "./link-button": "./src/link-button.ts"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit",

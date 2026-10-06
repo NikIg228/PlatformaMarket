@@ -1,3 +1,4 @@
+import { DmAction } from "@marketplace/ui/controls";
 import { Box24Regular } from "@fluentui/react-icons/svg/box";
 import { BuildingShop24Regular } from "@fluentui/react-icons/svg/building-shop";
 import { ClipboardTaskListLtr24Regular } from "@fluentui/react-icons/svg/clipboard-task-list-ltr";
@@ -70,8 +71,8 @@ export function SupplierDashboard({
         description="Приоритетные действия на сегодня"
       >
         <div className={styles.attentionGrid}>
-          <DmButton
-            appearance="subtle"
+          <DmAction variant="row"
+
             className={styles.attentionAction}
             onClick={() => onNavigate("orders")}
           >
@@ -84,9 +85,9 @@ export function SupplierDashboard({
                 : "Все заказы обработаны"}
             </strong>
             <span>Подтвердите доступное количество и срок поставки.</span>
-          </DmButton>
-          <DmButton
-            appearance="subtle"
+          </DmAction>
+          <DmAction variant="row"
+
             className={styles.attentionAction}
             onClick={() => onNavigate("inventory")}
           >
@@ -99,9 +100,9 @@ export function SupplierDashboard({
                 : "Остатки актуальны"}
             </strong>
             <span>Обновите данные, чтобы предложения оставались видимыми.</span>
-          </DmButton>
-          <DmButton
-            appearance="subtle"
+          </DmAction>
+          <DmAction variant="row"
+
             className={styles.attentionAction}
             onClick={() => onNavigate("offers")}
           >
@@ -114,7 +115,7 @@ export function SupplierDashboard({
                 : "Предложения опубликованы"}
             </strong>
             <span>Проверьте цену, публикацию и обязательные документы.</span>
-          </DmButton>
+          </DmAction>
         </div>
       </Section>
       <div className="mp-metrics">

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { workspaceReturnPath } from "./product-navigation.js";
+import { supportAttachmentReferencesSchema } from "./support-files.js";
 
 const moneyMinor = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const currency = z.string().trim().regex(/^[A-Z]{3}$/).default("KZT");
@@ -149,16 +150,18 @@ export const createSupportTicketSchema = z.object({
   subject: z.string().trim().min(4).max(200),
   description: z.string().trim().min(10).max(10_000),
   category: z.string().trim().min(2).max(80),
+  attachments: supportAttachmentReferencesSchema.optional(),
   priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).default("NORMAL"),
   links: z.array(z.object({ entityType: z.string().trim().min(2).max(80), entityId: z.string().trim().min(1).max(160), label: z.string().trim().max(160).optional() })).max(20).default([]),
 });
 
 export const addSupportMessageSchema = z.object({
   idempotencyKey: z.uuid(),
-  body: z.string().trim().min(1).max(20_000),
+  body: z.string().trim().max(20_000),
   isInternal: z.boolean().default(false),
-  attachments: z.array(z.object({ assetId: z.uuid(), name: z.string().trim().max(240) })).max(10).default([]),
-});
+  reopen: z.boolean().optional(),
+  attachments: supportAttachmentReferencesSchema.default([]),
+}).refine(value => Boolean(value.body || value.attachments.length), { path: ["body"], message: "Add a message or attachment" });
 
 export const updateSupportTicketSchema = z.object({
   expectedVersion: z.number().int().positive(),

@@ -1,5 +1,5 @@
 .section {
-  margin-top: 24px;
+  margin-top: var(--dm-space-6);
   overflow: hidden;
   border: 1px solid var(--dm-border);
   border-radius: var(--dm-radius-card);
@@ -10,27 +10,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 20px 22px;
+  gap: var(--dm-space-6);
+  padding: var(--dm-space-6) var(--dm-space-6);
   border-bottom: 1px solid var(--dm-border);
 }
 
 .header h2 {
   margin: 0;
   color: var(--dm-text-primary);
-  font-size: 17px;
+  font-size: var(--dm-font-size-subtitle);
 }
 
 .header p {
-  margin: 4px 0 0;
+  margin: var(--dm-space-1) 0 0;
   color: var(--dm-text-muted);
-  font-size: 12px;
+  font-size: var(--dm-font-size-caption);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--dm-space-2);
 }
 
 .metrics {
@@ -43,8 +43,8 @@
   min-height: 108px;
   display: grid;
   align-content: center;
-  gap: 4px;
-  padding: 17px;
+  gap: var(--dm-space-1);
+  padding: var(--dm-space-4);
   border-right: 1px solid var(--dm-border);
 }
 
@@ -54,13 +54,13 @@
 
 .metric span {
   color: var(--dm-text-muted);
-  font-size: 11px;
+  font-size: var(--dm-font-size-caption);
 }
 
 .metric strong {
   color: var(--dm-text-primary);
-  font-size: 24px;
-  letter-spacing: -0.03em;
+  font-size: var(--dm-font-size-heading);
+  letter-spacing: var(--dm-tracking-heading);
 }
 
 .systems {
@@ -71,8 +71,8 @@
 .system {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
-  gap: 10px;
-  padding: 17px;
+  gap: var(--dm-space-3);
+  padding: var(--dm-space-4);
   border-right: 1px solid var(--dm-border);
 }
 
@@ -93,18 +93,18 @@
 .system strong {
   display: block;
   color: var(--dm-text-primary);
-  font-size: 12px;
+  font-size: var(--dm-font-size-caption);
 }
 
 .system p {
-  margin: 4px 0 0;
+  margin: var(--dm-space-1) 0 0;
   color: var(--dm-text-muted);
-  font-size: 11px;
-  line-height: 1.45;
+  font-size: var(--dm-font-size-caption);
+  line-height: var(--dm-line-body);
 }
 
 .feedback {
-  padding: 12px 18px 18px;
+  padding: var(--dm-space-3) var(--dm-space-4) var(--dm-space-4);
 }
 
 @media (max-width: 1100px) {

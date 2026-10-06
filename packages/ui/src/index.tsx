@@ -1,6 +1,10 @@
 "use client";
+import { DmAction, DmDismissLayer } from "./controls";
+export { SupportFilePicker, SupportAttachmentList } from "./support-files";
 export { DmSearch } from "./dm-search";
 export { WorkflowSteps, ProductThumbnail, useUnsavedChanges, productWorkflowStyles } from "./product-workflow";
+export { DmButton, DmCheckbox, DmField, DmInput, DmTextarea, DmSelect, DmFluentDropdown, DmCombobox, DmSurface, DmAction, DmFileInput } from "./controls";
+import { DmButton } from "./controls";
 export { DmDropdown } from "./dm-dropdown";
 export { ConversationWorkspace, ConversationCounter } from "./conversation-workspace";
 export { MemberManagement } from "./member-management";
@@ -8,46 +12,19 @@ export { SessionManagement } from "./session-management";
 export { PermissionsProvider, PermissionFields, usePermissions, useAccessMode } from "./permissions";
 export { documentArchiveDateRange, DOCUMENT_ARCHIVE_TIME_ZONE } from "./document-date-range";
 export { MarketplaceProvider } from "./provider";
-import { ThemeContext } from "./provider";
 
 export * from "./document-archive";
 export * from "./document-relations";
 export { OrganizationProfileForm } from "./organization-profile-form";
 export { useSessionLogout } from "./use-session-logout";
 
-import {
-  Avatar,
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogBody,
-  DialogContent,
-  DialogSurface,
-  DialogTitle,
-  Field,
-  Input,
-  Select,
-  Spinner,
-  Tag,
-  Textarea,
-  Tooltip,
-  type ButtonProps,
-  type CheckboxProps,
-  type FieldProps,
-  type DropdownProps,
-  type InputProps,
-  type SelectProps,
-  type TextareaProps,
-} from "@fluentui/react-components";
+import { Avatar, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Spinner, Tag, Tooltip, type DropdownProps } from "@fluentui/react-components";
+import { DmButton as Button } from "./controls";
 import { Dismiss24Regular } from "@fluentui/react-icons/svg/dismiss";
 import { Navigation24Regular } from "@fluentui/react-icons/svg/navigation";
 import { SignOut24Regular } from "@fluentui/react-icons/svg/sign-out";
-import { WeatherMoon24Regular } from "@fluentui/react-icons/svg/weather-moon";
-import { WeatherSunny24Regular } from "@fluentui/react-icons/svg/weather-sunny";
 import type { ReactNode } from "react";
 import {
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -69,44 +46,6 @@ export const dmDropdownPositioning: DropdownProps["positioning"] = {
   matchTargetSize: "width",
   overflowBoundaryPadding: 8,
 };
-
-/** Shared field wrapper for all role workspaces. */
-export function DmField({ className, ...props }: FieldProps) {
-  return <Field {...props} className={joinClasses("dm-field", className)} />;
-}
-
-/** Shared text input with the marketplace control contract. */
-export function DmInput({ className, ...props }: InputProps) {
-  return <Input {...props} className={joinClasses("dm-control", "dm-input", className)} />;
-}
-
-/** Shared multiline input with the marketplace control contract. */
-export function DmTextarea({ className, ...props }: TextareaProps) {
-  return <Textarea {...props} className={joinClasses("dm-control", "dm-textarea", className)} />;
-}
-
-/** Shared native-select based Fluent control. */
-export function DmSelect({ className, ...props }: SelectProps) {
-  return <Select {...props} className={joinClasses("dm-control", "dm-select", className)} />;
-}
-
-/** Shared action control. Keep action hierarchy in one component boundary. */
-export function DmButton({ className, ...props }: ButtonProps) {
-  const appearance = props.appearance ?? "secondary";
-  return (
-    <Button
-      {...props}
-      appearance={appearance}
-      data-dm-appearance={appearance}
-      className={joinClasses("dm-button", className)}
-    />
-  );
-}
-
-/** Shared checkbox control for filters and capability selections. */
-export function DmCheckbox({ className, ...props }: CheckboxProps) {
-  return <Checkbox {...props} className={joinClasses("dm-checkbox", className)} />;
-}
 
 /** Shared modal contract with Fluent focus trap, Escape handling and labelled title. */
 export function DmDialog({
@@ -291,7 +230,6 @@ export function AppShell({
   actions,
   children,
 }: AppShellProps) {
-  const { mode, toggle } = useContext(ThemeContext);
   const [mobileOpen, setMobileOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -351,7 +289,7 @@ export function AppShell({
               <span>{item.label}</span>
               {item.badge ? <small>{item.badge}</small> : null}
             </a> :
-            <button
+            <DmAction variant="navigation"
               key={item.id}
               type="button"
               className={item.id === activeNavigation ? "is-active" : ""}
@@ -361,7 +299,7 @@ export function AppShell({
               <span aria-hidden="true">{item.icon}</span>
               <span>{item.label}</span>
               {item.badge ? <small>{item.badge}</small> : null}
-            </button>
+            </DmAction>
           ))}
         </nav>
 
@@ -386,7 +324,7 @@ export function AppShell({
       </aside>
 
       {mobileOpen ? (
-        <button
+        <DmDismissLayer
           type="button"
           className="mp-backdrop"
           aria-label="Закрыть меню"
@@ -411,22 +349,7 @@ export function AppShell({
           </span>
           <div className="mp-topbar-actions">
             {actions}
-            <Tooltip
-              content={mode === "light" ? "Тёмная тема" : "Светлая тема"}
-              relationship="label"
-            >
-              <Button
-                appearance="subtle"
-                icon={
-                  mode === "light" ? (
-                    <WeatherMoon24Regular />
-                  ) : (
-                    <WeatherSunny24Regular />
-                  )
-                }
-                onClick={toggle}
-              />
-            </Tooltip>
+
           </div>
         </header>
         <main className="mp-content">
@@ -690,3 +613,4 @@ export function errorMessage(error: unknown) {
 export { useWorkspaceSession } from "./use-workspace-session";
 
 export { OrderWorkflowWorkspace } from "./order-workflow-workspace";
+export { orderStatusLabel, orderStatusTone, orderPaymentPresentation, orderItemCount } from "./order-presentation";

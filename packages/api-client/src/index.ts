@@ -144,9 +144,15 @@ export class MarketplaceApiError extends Error {
 export class MarketplaceApiClient {
   createSupportTicket(input: import("@marketplace/schemas").CreateSupportTicketInput) { return this.post<import("@marketplace/schemas").SupportTicketSummary>("/support/tickets", input); }
   internalNotifications(organizationId: string, offset = 0) { return this.get<import("@marketplace/schemas").InternalNotification[]>(`/notifications/organizations/${encodeURIComponent(organizationId)}?channel=IN_APP&limit=50&offset=${offset}`); }
+  notificationInbox(organizationId: string, query: import("@marketplace/schemas").NotificationInboxQuery = {}, options?: { signal?: AbortSignal }) {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) if (value !== undefined) params.set(key, String(value));
+    return this.get<import("@marketplace/schemas").NotificationInbox>(`/notifications/organizations/${encodeURIComponent(organizationId)}/inbox?${params}`, options);
+  }
+  readNotificationInbox(organizationId: string, before: string) { return this.post<{ count: number }>(`/notifications/organizations/${encodeURIComponent(organizationId)}/inbox/read`, { before }); }
   readNotification(id: string) { return this.post<import("@marketplace/schemas").InternalNotification>(`/notifications/${encodeURIComponent(id)}/read`, {}); }
   operationObject(type: import("@marketplace/schemas").OperationQueueType, id: string) { return this.get<import("@marketplace/schemas").OperationObject>(`/operations/work-queue/${type}/${encodeURIComponent(id)}`); }
-  supportTickets(status?: string, offset = 0) { return this.get<import("@marketplace/schemas").SupportTicketSummary[]>(`/support/tickets?offset=${offset}${status ? `&status=${encodeURIComponent(status)}` : ""}`); }
+  supportTickets(status?: string, offset = 0, options: { q?: string; sort?: "queue" | "recent" } = {}) { const query = new URLSearchParams({ offset: String(offset) }); if (status) query.set("status", status); if (options.q) query.set("q", options.q); if (options.sort) query.set("sort", options.sort); return this.get<import("@marketplace/schemas").SupportTicketSummary[]>(`/support/tickets?${query}`); }
   supportTicket(id: string, beforeMessageId?: string) { return this.get<import("@marketplace/schemas").SupportTicketDetail>(`/support/tickets/${encodeURIComponent(id)}${beforeMessageId ? `?beforeMessageId=${encodeURIComponent(beforeMessageId)}` : ""}`); }
   updateSupportTicket(id: string, input: import("@marketplace/schemas").UpdateSupportTicketInput) { return this.patch<import("@marketplace/schemas").SupportTicketSummary>(`/support/tickets/${encodeURIComponent(id)}`, input); }
   supportTicketHistory(id: string) { return this.get<import("@marketplace/schemas").OperationHistory>(`/support/tickets/${encodeURIComponent(id)}/history`); }
@@ -491,6 +497,14 @@ export class MarketplaceApiClient {
 
   searchOfferOptions(input: import("@marketplace/schemas").OfferOptionsQuery) {
     return this.get<import("@marketplace/schemas").OfferOptionsResponse>(this.withQuery("/catalog/offer-options", input));
+  }
+
+  uploadSupportAttachment(input: import("@marketplace/schemas").UploadSupportAttachmentInput) {
+    return this.post<import("@marketplace/schemas").UploadedSupportAttachment>("/support/attachments", input);
+  }
+
+  downloadSupportAttachment(ticketId: string, messageId: string, assetId: string) {
+    return this.download(`/support/tickets/${encodeURIComponent(ticketId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(assetId)}`);
   }
 
   workspaceCorrectionOffers(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {

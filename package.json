@@ -25,7 +25,7 @@
     "dev:landing": "node scripts/dev-local.mjs landing",
     "dev:all": "node scripts/dev-local.mjs all",
     "dev:gateway": "node scripts/dev-gateway.mjs",
-    "lint": "eslint apps packages scripts eslint.config.mjs --max-warnings=0",
+    "lint": "eslint apps packages scripts eslint.config.mjs --max-warnings=0 && npm run verify:ui-contract",
     "test": "turbo test --concurrency=2",
     "test:all": "npm test && npm run e2e --workspace=@marketplace/e2e",
     "typecheck": "turbo typecheck",
@@ -93,7 +93,8 @@
     "db:prepare:dev": "node scripts/prepare-dev-database.mjs",
     "db:test": "node scripts/with-test-database.mjs",
     "verify:web-bundle": "node scripts/verify-web-bundle.mjs",
-    "verify:web:legacy": "node scripts/with-test-database.mjs run e2e:legacy --workspace=@marketplace/e2e"
+    "verify:web:legacy": "node scripts/with-test-database.mjs run e2e:legacy --workspace=@marketplace/e2e",
+    "verify:ui-contract": "node --test scripts/lib/ui-contract-policy.test.mjs && node scripts/verify-ui-contract.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",

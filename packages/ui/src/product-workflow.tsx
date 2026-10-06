@@ -1,4 +1,5 @@
 "use client";
+import { DmAction } from "./controls";
 import { useEffect, useState } from "react";
 import { Checkmark20Regular } from "@fluentui/react-icons/svg/checkmark";
 import { Box24Regular } from "@fluentui/react-icons/svg/box";
@@ -6,7 +7,7 @@ import styles from "./product-workflow.module.css";
 
 export function WorkflowSteps({ steps, current, label = "Этапы", onSelect }: { steps: string[]; current: number; label?: string; onSelect?: (index: number) => void }) {
   return <ol className={styles.steps} aria-label={label}>{steps.map((step, index) => <li key={step} data-complete={index < current} aria-current={index === current ? "step" : undefined}>
-    {onSelect && index < current ? <button type="button" onClick={() => onSelect(index)}><span className={styles.stepNumber}><Checkmark20Regular /></span><span>{step}</span></button> : <span className={styles.stepLabel}><span className={styles.stepNumber}>{index < current ? <Checkmark20Regular /> : index + 1}</span><span>{step}</span></span>}
+    {onSelect && index < current ? <DmAction variant="text" type="button" onClick={() => onSelect(index)}><span className={styles.stepNumber}><Checkmark20Regular /></span><span>{step}</span></DmAction> : <span className={styles.stepLabel}><span className={styles.stepNumber}>{index < current ? <Checkmark20Regular /> : index + 1}</span><span>{step}</span></span>}
   </li>)}</ol>;
 }
 

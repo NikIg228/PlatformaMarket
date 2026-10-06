@@ -1,3 +1,4 @@
+import { DmFileInput } from "@marketplace/ui/controls";
 import { Box24Regular } from "@fluentui/react-icons/svg/box";
 import { CloudArrowUp24Regular } from "@fluentui/react-icons/svg/cloud-arrow-up";
 import { DataTrending24Regular } from "@fluentui/react-icons/svg/data-trending";
@@ -84,9 +85,9 @@ export function SupplierIntegrations({
             label="PDF поставщика"
             hint="До 20 МБ. Текстовые таблицы распознаются автоматически; сканы уходят на ручную проверку."
           >
-            <input
+            <DmFileInput
               className={styles.fileInput}
-              type="file"
+
               accept="application/pdf,.pdf"
               onChange={(event) => onFileChange(event.target.files?.[0] ?? null)}
             />
