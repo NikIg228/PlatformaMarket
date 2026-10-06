@@ -1,5 +1,34 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 07.10.2026 — SIDEBAR-HEADER-ALIGNMENT (LOCAL_PASS)
+
+Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40; clean main@6bbd586.
+Explicit owner request: desktop logo shares page-heading horizontal axis;
+sidebar navigation starts on the grid beneath the header bottom edge.
+Local shared shell CSS only: common header row height from44px controls and
+existing spacing; logo row bottom border and navigation/content24px spacing.
+Preserve200px sidebar,144px asset, navigation behavior and mobile composition.
+Risk desktop alignment at1440/1024 and mobile390 regression. Inspect fixture
+screenshots/geometry, keyboard focus, both roles; no permanent CSS-mirroring tests.
+Completion web types/build go_live, UI contract, diff review, commit/push main and
+CI snapshot (no wait). No DB/fullE2E/API changes; max3/gate,20min command budget.
+Reuse already-read toolkit/frontend, UI Designer/Code Reviewer and UI guidelines.
+Previous6bbd586 pushed/remote verified, CI+Security were IN_PROGRESS; no waiting.
+Implemented common61px desktop header/logo row (44px control+8px top/bottom+border),
+shared bottom rule and24px navigation offset; logo144px and sidebar200px retained.
+Evidence .tmp/sidebar-align-visual1.log PASS supplier1440/390; browser1 PASS both
+roles1440/1024/390 via .tmp/sidebar-alignment.mjs fixture-only/no DB writes.
+Desktop logo/title center delta0px, bottom-rule delta0px, nav gap24px;
+keyboard logo-to-first-link and mobile Escape/focus/overflow PASS. Screenshots
+output/playwright/sidebar-alignment inspected. Clinic evidence covers shell layout,
+not profile content acceptance (onboarding fixture loading); no functional claim.
+npm run verify:ui-contract PASS (.tmp/sidebar-align-contract1.log);
+npm run build --workspace @marketplace/web in go_live PASS (.tmp/sidebar-align-build1.log).
+npm run typecheck --workspace @marketplace/web PASS (.tmp/sidebar-align-types1.log).
+Diff/review PASS, no TS/API/data changes or full E2E suites; origin equals6bbd586.
+Owned launcher17960 stopped for build; canonical dev restart in progress.
+Next: commit/push, verify remote SHA/CI snapshot and finish dev readiness.
+
 ## 06–07.10.2026 — WORKSPACE-PROFILE-NAV (LOCAL_PASS)
 
 Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40; clean main@11fcbe6.

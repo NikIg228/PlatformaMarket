@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--dm-space-3) var(--dm-space-6);
-  min-height: 56px;
+  min-height: var(--workspace-header-height);
   box-sizing: border-box;
   margin: calc(-1 * var(--dm-space-8)) calc(-1 * var(--dm-space-8)) var(--dm-space-6);
   padding: var(--dm-space-2) var(--dm-space-8);

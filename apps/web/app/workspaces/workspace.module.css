@@ -10,6 +10,7 @@
     var(--dm-page-surface);
   color: var(--dm-text-primary);
   --workspace-sidebar-width: 200px;
+  --workspace-header-height: calc(var(--dm-control-default) + var(--dm-space-2) * 2 + 1px);
 }
 .header {
   min-height: 76px;
@@ -43,14 +44,20 @@
   flex-direction: column;
   background: var(--dm-surface);
   border-right: 1px solid var(--dm-border);
-  padding: var(--dm-space-6) var(--dm-space-3) var(--dm-space-6);
+  padding: 0 var(--dm-space-3) var(--dm-space-6);
   overflow-y: auto;
   overscroll-behavior: contain;
   z-index: 20;
 }
 .sidebarBrand {
-  display: block;
-  padding: 0 var(--dm-space-3) var(--dm-space-6);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: var(--workspace-header-height);
+  box-sizing: border-box;
+  margin: 0 calc(-1 * var(--dm-space-3)) var(--dm-space-6);
+  padding: 0 var(--dm-space-6);
+  border-bottom: 1px solid var(--dm-border);
 }
 .navigation {
   display: flex;
