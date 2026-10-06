@@ -1,8 +1,7 @@
 "use client";
-import { DmButton, usePermissions } from "@marketplace/ui";
-import { Tooltip } from "@fluentui/react-components";
+import { usePermissions } from "@marketplace/ui";
 import { NotificationBell } from "./notification-bell";
-import { QuestionCircle24Regular } from "@fluentui/react-icons/svg/question-circle";
+import { ProfileMenu } from "./profile-menu";
 import { useEffect, useState } from "react";
 import { useWorkspace } from "./workspace";
 import { workspaceGreeting } from "./greeting";
@@ -36,9 +35,7 @@ export function MessageHeader() {
     </div>
     <div className={styles.actions}>
       {has("notification.view") ? <NotificationBell /> : null}
-      {has("support.ticket.view") ? <>
-        <Tooltip content="Поддержка" relationship="label"><DmButton as="a" href={`/${role}/support`} appearance="subtle" icon={<QuestionCircle24Regular />} aria-label="Поддержка" /></Tooltip>
-      </> : null}
+      <ProfileMenu />
     </div>
   </header>;
 }

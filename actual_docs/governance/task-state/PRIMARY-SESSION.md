@@ -1,5 +1,44 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 06–07.10.2026 — WORKSPACE-PROFILE-NAV (LOCAL_PASS)
+
+Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40; clean main@11fcbe6.
+Explicit owner approval: implement proposed clinic/supplier header and sidebar.
+Move support/settings to bottom, replace header support with employee menu,
+move logout into menu/profile and personal session management out of business settings.
+Reuse Fluent Menu/Avatar, existing session/logout and permission contracts.
+Profile displays existing identity/context; no new personal-data editing API.
+Risk shared shell navigation, support permission, logout recovery, keyboard/mobile
+and personal/business separation. Fixture browser tests both roles at1440/390,
+profile sessions load/error/retry and logout success/failure; existing bell/mobile
+regressions, web/e2e types, scoped lint, UI contract and go_live web build.
+No working DB writes, new dependencies, agents or source trees. Max3/gate;
+command20min/diagnosis15min. DoD review, commit/push main and CI snapshot (no wait).
+Agency UI Designer/Code Reviewer checklists read and applied with toolkit/frontend
+and web-interface-guidelines; preserve project tokens and existing auth behavior.
+Implemented shared bottom navigation and44px avatar menu; personal profile has
+identity/context, logout and existing session controls. Settings retains business
+profile/member management. Permission loading/errors keep shell/logout reachable
+without rendering protected page content; support remains permission-controlled.
+Evidence .tmp/profile-nav-*: browser1 PASS10/FAIL2 (ambiguous alert locator also
+matched Next route announcer, not product failure); scoped locator fixed.
+browser2 PASS7 profile-nav scenarios. Final logout3 PASS2 additionally proves
+pending feedback, duplicate prevention, failed revoke preservation and retry.
+Unaffected A14 mobile keyboard and four notification cases reuse browser1 PASS.
+Web types2/e2e types2, scoped lint2, UI contract2 and go_live build1 PASS;
+commands npm run typecheck --workspace @marketplace/{web,e2e}, npm exec -- eslint
+explicit changed TS paths, npm run verify:ui-contract, npm run build --workspace
+@marketplace/web (DEPLOYMENT_PROFILE/NEXT_PUBLIC_DEPLOYMENT_PROFILE=go_live).
+Browser: npm exec --workspace @marketplace/e2e -- playwright test --config
+playwright.workspaces.config.ts --grep selectors recorded in each log.
+Desktop/mobile screenshots inspected, existing tokens and Fluent keyboard focus
+preserved. No API/domain/auth implementation change, DB/full-release suites not run.
+Review/diff hygiene PASS; fetched origin equals11fcbe6, no other writer changes.
+Owned canonical launcher3004 stopped for build; restarted launcher17960/API/web
+healthy in canonical folder. Final fixture visual capture .tmp/profile-nav-visual1.log
+PASS1440/390; output/playwright/profile-nav sidebar/menu images inspected.
+Next: publication under standing authorization and CI snapshot (no waiting).
+
 ## 06.10.2026 — HEADER-NOTIFICATION-SIZE (LOCAL_PASS)
 
 Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40; clean main@b7919a1.

@@ -2,7 +2,7 @@ export function workspacePageTitle(pathname: string) {
   const page = pathname.replace(/^\/(clinic|supplier)\/?/, "").replace(/\/$/, "");
   const titles: Record<string, string> = {
     cart: "Корзина", products: "Товары", orders: "Заказы", documents: "Документы",
-    settings: "Настройки организации", notifications: "Уведомления", messages: "Сообщения", support: "Поддержка",
+    settings: "Настройки организации", profile: "Мой профиль", notifications: "Уведомления", messages: "Сообщения", support: "Поддержка",
     "products/proposals": "Заявки на новые товары", "products/corrections": "Исправления карточек",
     "products/new": "Добавить товар", "products/import": "Загрузить из файла",
     "products/inventory": "Остатки", "products/promotions": "Акции поставщика", "settings/sources": "Источники товаров",

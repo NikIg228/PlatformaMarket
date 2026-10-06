@@ -8,7 +8,6 @@ import {
   LoadingState,
   OrganizationProfileForm,
   MemberManagement,
-  SessionManagement,
 } from "@marketplace/ui";
 import { OnboardingProgress } from "../../../supplier-web/app/onboarding-progress";
 import { useWorkspace } from "./workspace";
@@ -32,7 +31,6 @@ export default function Settings() {
         <ClinicSettings />
       )}
       <WorkspaceAccess />
-      <WorkspaceSessions />
     </div>
   );
 }
@@ -41,10 +39,6 @@ function WorkspaceAccess() {
   const load = useCallback(() => api.get<string[]>("/access-control/permissions"), [api]);
   const resource = useResource(load);
   return <><ResourceStatus resource={resource} />{resource.data ? <MemberManagement key={organizationId} api={api} organizationId={organizationId} actorId={session.actorId} permissions={resource.error ? [] : resource.data} /> : <LoadingState label="Проверяем права управления сотрудниками" />}</>;
-}
-function WorkspaceSessions() {
-  const { api, session } = useWorkspace();
-  return <SessionManagement api={api} currentSessionId={session.sessionId} onCurrentRevoked={() => window.location.assign("/login")} />;
 }
 function ClinicSettings() {
   const { api, organizationId } = useWorkspace();

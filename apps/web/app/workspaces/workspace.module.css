@@ -91,9 +91,6 @@
   margin-top: auto;
   padding-top: var(--dm-space-8);
 }
-.sidebarFooter > button {
-  width: 100%;
-}
 .main {
   box-sizing: border-box;
   min-width: 0;

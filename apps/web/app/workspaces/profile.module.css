@@ -1,0 +1,10 @@
+.menu:global(.fui-MenuPopover) { width: 260px; max-width: calc(100vw - 32px); box-sizing: border-box; }
+.identity { display: flex; flex-direction: column; gap: var(--dm-space-1); min-width: 0; overflow-wrap: anywhere; }
+.identity span { color: var(--dm-text-secondary); font-size: var(--dm-font-size-body); }
+.menu .identity { padding: var(--dm-space-3); }
+.profile { display: flex; flex-wrap: wrap; align-items: center; gap: var(--dm-space-4); }
+.profile .identity { flex: 1; min-width: 140px; }
+.profile .identity h2 { margin: 0; }
+@media (max-width: 480px) {
+  .profile > button { width: 100%; }
+}

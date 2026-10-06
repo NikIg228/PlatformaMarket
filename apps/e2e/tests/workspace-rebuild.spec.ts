@@ -304,6 +304,109 @@ test("CORE03 supplier agrees exact return conditions before money stage", async 
   await expect(page.getByRole("button", { name: "Приложить квитанцию отправленного возврата" })).toHaveCount(0);
 });
 
+for (const role of ["clinic", "supplier"] as const) for (const width of [1440, 390]) {
+  test(`profile-nav ${role} navigation and personal sessions ${width}`, async ({ page }, testInfo) => {
+    await fixture(page, role === "clinic" ? "BUYER" : "SUPPLIER");
+    await page.setViewportSize({ width, height: 900 });
+    await page.route("**/api/access-control/policy", route => route.fulfill({ json: { mode: "ROLE_BASED", permissions: ["support.ticket.view"] } }));
+    await page.route("**/api/support/tickets*", route => route.fulfill({ json: [] }));
+    let sessionFailure = true;
+    await page.route("**/api/auth/sessions", route => sessionFailure
+      ? route.fulfill({ status: 503, json: { message: "Список сессий временно недоступен" } })
+      : route.fulfill({ json: [{ id: sessionId, userAgent: "Тестовый браузер", createdAt: "2026-10-06T12:00:00Z", lastUsedAt: null }] }));
+    await page.goto(`/${role}`);
+    const sidebar = page.locator("#workspace-sidebar");
+    const toggle = page.locator("#workspace-menu-toggle");
+    if (width === 390) await toggle.click();
+    const footer = page.getByRole("navigation", { name: "Помощь и настройки", exact: true });
+    await expect(footer.getByRole("link")).toHaveText(["Поддержка", "Настройки"]);
+    await expect(sidebar.getByRole("button", { name: "Выйти", exact: true })).toHaveCount(0);
+    await expect(page.locator("main header").getByRole("link", { name: "Поддержка", exact: true })).toHaveCount(0);
+    await page.screenshot({ animations: "disabled", path: testInfo.outputPath(`sidebar-${role}-${width}.png`), fullPage: true });
+    await footer.getByRole("link", { name: "Поддержка", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/${role}/support$`));
+    await expect(page.getByRole("heading", { name: "Поддержка", exact: true })).toBeVisible();
+    if (width === 390) { await expect(sidebar).toBeHidden(); await expect(toggle).toBeFocused(); await toggle.click(); }
+    await expect(footer.getByRole("link", { name: "Поддержка", exact: true })).toHaveAttribute("aria-current", "page");
+    await footer.getByRole("link", { name: "Настройки", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Настройки организации", exact: true })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Сессии аккаунта", exact: true })).toHaveCount(0);
+    const avatar = page.getByRole("button", { name: "Меню профиля", exact: true });
+    await avatar.focus(); await page.keyboard.press("Enter");
+    const menu = page.getByRole("menu");
+    await expect(menu.getByRole("menuitem", { name: "Мой профиль", exact: true })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(menu.getByRole("menuitem", { name: "Выйти", exact: true })).toBeFocused();
+    await page.screenshot({ animations: "disabled", path: testInfo.outputPath(`profile-menu-${role}-${width}.png`), fullPage: true });
+    await page.keyboard.press("Escape"); await expect(menu).toBeHidden(); await expect(avatar).toBeFocused();
+    await avatar.click(); await menu.getByRole("menuitem", { name: "Мой профиль", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/${role}/profile$`));
+    await expect(page.getByRole("heading", { name: "Мой профиль", exact: true })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Данные сотрудника", exact: true })).toContainText("Тестовый сотрудник");
+    await expect(page.getByText("Не удалось обновить сессии", { exact: true })).toBeVisible();
+    sessionFailure = false;
+    await page.getByRole("button", { name: "Повторить", exact: true }).click();
+    await expect(page.getByText("Текущая сессия", { exact: true })).toBeVisible();
+    await expect(page.getByText("Не удалось обновить сессии", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Выйти", exact: true })).toBeEnabled();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ animations: "disabled", path: testInfo.outputPath(`profile-${role}-${width}.png`), fullPage: true });
+  });
+}
+
+for (const role of ["clinic", "supplier"] as const) test(`profile-nav ${role} logout failure preserves session and retry confirms revocation`, async ({ page }) => {
+  await fixture(page, role === "clinic" ? "BUYER" : "SUPPLIER");
+  let attempts = 0;
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route(`**/api/auth/sessions/${sessionId}/revoke`, async route => {
+    attempts++;
+    if (attempts === 1) await held;
+    return attempts === 1 ? route.fulfill({ status: 503, json: { message: "Недоступно" } })
+      : route.fulfill({ json: { id: sessionId, status: "REVOKED" } });
+  });
+  // Stub the destination so this test stays independent of the login UI.
+  await page.route("**/login", route => route.fulfill({ contentType: "text/html", body: "<h1>Вход</h1>" }));
+  await page.goto(`/${role}/profile`);
+  const avatar = page.getByRole("button", { name: "Меню профиля", exact: true });
+  await avatar.click(); await page.getByRole("menuitem", { name: "Выйти", exact: true }).click();
+  try {
+    await expect(avatar).toHaveAttribute("aria-busy", "true");
+    await expect(page.getByRole("button", { name: "Выходим…", exact: true })).toBeDisabled();
+    await avatar.click();
+    await expect(page.getByRole("menuitem", { name: "Выходим…", exact: true })).toBeDisabled();
+    expect(attempts).toBe(1);
+    await page.keyboard.press("Escape");
+  } finally { release(); }
+  await expect(page.locator("main").getByRole("alert")).toContainText("Сервер не подтвердил выход");
+  await expect(page).toHaveURL(new RegExp(`/${role}/profile$`));
+  expect(await page.evaluate(key => Boolean(sessionStorage.getItem(key)), `dentmarket:${role === "clinic" ? "buyer" : "supplier"}-session`)).toBe(true);
+  await page.getByRole("button", { name: "Выйти", exact: true }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  expect(attempts).toBe(2);
+});
+
+test("profile-nav permission failure keeps logout reachable and retry restores permitted support", async ({ page }) => {
+  await fixture(page, "SUPPLIER");
+  let fail = true, allowSupport = false;
+  await page.route("**/api/access-control/policy", route => fail ? route.fulfill({ status: 503, json: { message: "Недоступно" } })
+    : route.fulfill({ json: { mode: "ROLE_BASED", permissions: allowSupport ? ["support.ticket.view"] : [] } }));
+  await page.goto("/supplier/profile");
+  await expect(page.getByText("Не удалось проверить права доступа.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Поддержка", exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Меню профиля", exact: true }).click();
+  await expect(page.getByRole("menuitem", { name: "Выйти", exact: true })).toBeEnabled();
+  await page.keyboard.press("Escape");
+  fail = false;
+  await page.getByRole("button", { name: "Повторить", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Данные сотрудника", exact: true })).toBeVisible();
+  await expect(page.getByText("Активных сессий нет. Войдите заново.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Поддержка", exact: true })).toHaveCount(0);
+  allowSupport = true;
+  await page.reload();
+  await expect(page.getByRole("link", { name: "Поддержка", exact: true })).toBeVisible();
+});
+
 async function fixture(
   page: Page,
   capability: "BUYER" | "SUPPLIER",
@@ -322,6 +425,7 @@ async function fixture(
           accessToken: "ui-fixture-not-a-real-token",
           accessTokenExpiresAt: Date.now() + 3600000,
           organizationDisplayName: "Тестовая организация",
+          displayName: "Тестовый сотрудник",
         }),
       );
     },
