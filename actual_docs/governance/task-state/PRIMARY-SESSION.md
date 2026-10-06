@@ -1,5 +1,26 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 06.10.2026 — HEADER-NOTIFICATION-SIZE (LOCAL_PASS)
+
+Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40; clean main@b7919a1.
+User explicitly requested bell hit area match support; sidebar/profile relocation
+is a proposal for discussion, not included in this implementation.
+Small visual change: badge inside icon slot restores shared icon-only44px geometry;
+accessible unread count remains in aria-label. No shared primitive/API/auth change.
+Risk badge placement and popover keyboard/focus; checks existing notification
+browser cases clinic/supplier1440/390 and screenshot inspection, scoped web types,
+lint, ui-contract and go_live web build. No new CSS-mirroring E2E or DB suites.
+Then diff review, owned commit/push main and CI snapshot (no waiting).
+Evidence .tmp/header-size-*: browser1 PASS4 (existing notification popover/history
+supplier/clinic1440/390, unread badge, keyboard open/Escape/focus and navigation);
+web types1, scoped lint1, ui-contract1, go_live web build1 and diff hygiene PASS.
+Desktop/mobile screenshots inspected. No API/auth/domain changes or DB checks.
+Applied existing component geometry and Agency UI Designer/Code Reviewer practices:
+shared icon-only sizing, accessible count, existing keyboard regression coverage.
+Fetch confirms main@b7919a1 equals origin; dev restart after build in progress.
+Previous task b7919a1 was pushed and remote SHA confirmed; CI/Security queued.
+
+
 ## 06.10.2026 — OFFER-EDITOR-FLOWS (LOCAL_PASS; publication pending)
 
 Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40; clean main@f0502dd.
