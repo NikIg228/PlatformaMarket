@@ -1,5 +1,55 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 07.10.2026 — SETTINGS-PROFILE-RESET-REFERENCES (LOCAL_PASS)
+
+Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40; clean main@bd8d2dc.
+Owner explicitly requests empty Settings/Profile pages then generated references
+for business settings vs personal profile, based on implemented clinic/supplier
+capabilities. Roles/member administration excluded from references.
+Scope root /clinic|supplier/settings and /profile content only; preserve shell,
+profile-menu logout, existing services/data/onboarding guards and nested sources.
+Remove page contents and obsolete page-only CSS; adapt affected browser assertions
+to intentional blank pages while retaining menu/mobile/permission/logout coverage.
+Reference deliverables three desktop mockups: supplier settings, clinic settings,
+shared personal profile; imagegen built-in, current shell reference and source-backed
+minimum inventory. No implementation of proposed layouts/new API or data deletion.
+Risk empty-route regressions and loss of exit/navigation: fixture browser bothroles
+1440/390, assert no removed page data fetches, menu logout/error/retry, permission
+recovery; web/e2e types, scoped lint, UI contract, go_live web build, diff review.
+Max3/gate,20min commands; generated reference images visually inspected. Publish
+owned code under standing main authorization, remote SHA and CI snapshot/no wait.
+Applied toolkit/frontend, UI guidelines and Agency UI Designer/Code Reviewer;
+imagegen skill/prompting read. Previous bd8d2dc pushed, devlauncher11436 healthy.
+Three reference images generated/inspected with built-in imagegen and copied to
+output/imagegen/settings-profile-2026-10-07; reference-manifest.json records exact
+prompts, source paths and minimum inventory. Designs exclude role administration,
+global delivery policies (existing options are per-offer) and new integrations.
+Discovered CI full-access and canonical identity-management depend on removed
+member UI: retain operator UI, adapt participant operations to existing APIs so
+invitation, role/tenant isolation and revocation evidence is not discarded.
+Additional focused validation: these two specs on approved disposable audit DB,
+canonical pilot runtime/build, then restore go_live artifact/dev. No working DB
+changes or full-suite run. API implementation unchanged; inspect DB identity and
+fixture readiness before any writes. This is test maintenance for deliberate UI removal.
+Completed root content reset and three inspected references; preserve shell/logout.
+All gates attempt1 PASS, unchanged lock/dependencies/API; logs .tmp/settings-reset-*:
+- browser1: 10 targeted workspace tests, bothroles1440/390, empty pages, keyboard,
+  menu logout/retry, permission recovery; 55.7s, fixture-only.
+- db-preflight1: approved disposable dentmarket_audit_20260914 identity/fixtures.
+- pilot-build1: npm run build --workspace @marketplace/web with both profile vars pilot.
+- identity1: npm run db:test -- exec -- node scripts/run-canonical-browser.mjs
+  --config playwright.unified.config.ts tests/identity-management.spec.ts;3 PASS21.3s.
+- full-access1: same isolated wrapper with --config playwright.full-access.config.ts
+  tests/full-access.spec.ts;3 PASS12.6s, organization boundaries retained.
+- e2e-types1/web-types1: npm run typecheck --workspace @marketplace/e2e / @marketplace/web.
+- lint1: scoped ESLint five changed TSX/spec files --max-warnings=0.
+- contract1: npm run verify:ui-contract PASS; golive-build1 web build PASS, both vars go_live.
+Diff review/hygiene PASS; operator UI lifecycle and participant server lifecycle retained.
+Generated image PNGs/manifest are intended task deliverables, fictional data only.
+No full E2E/release/API suites: no corresponding runtime/domain change. Dev restart
+from canonical root in progress; publication next under standing authorization,
+then remote SHA and CI snapshot without waiting (owner preference).
+
 ## 07.10.2026 — SIDEBAR-HEADER-ALIGNMENT (LOCAL_PASS)
 
 Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40; clean main@6bbd586.

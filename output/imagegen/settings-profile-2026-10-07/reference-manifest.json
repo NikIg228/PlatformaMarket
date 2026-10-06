@@ -1,0 +1,54 @@
+{
+  "status": "DESIGN_REFERENCE_ONLY_NOT_IMPLEMENTED",
+  "generationMode": "built-in image_gen",
+  "date": "2026-10-07",
+  "images": [
+    "settings-supplier.png",
+    "settings-clinic.png",
+    "profile-employee.png"
+  ],
+  "scope": {
+    "businessCommon": [
+      "Legal name and BIN read-only",
+      "Organization contact person, phone and email",
+      "Legal address and one delivery/receiving address"
+    ],
+    "supplierExtra": [
+      "Warehouse list and create, existing supplier endpoints",
+      "Existing item source list and navigation to price-file import"
+    ],
+    "profile": [
+      "Current account name/email read-only",
+      "List and revoke own sessions",
+      "Logout"
+    ],
+    "excluded": [
+      "Employee and role administration",
+      "New general delivery policy: existing delivery options are offer-specific",
+      "New bank/payment settings, external integration onboarding, notification preferences",
+      "Personal identity editing and avatar upload without an existing API"
+    ]
+  },
+  "sources": [
+    "packages/schemas/src/organization-profile.ts",
+    "packages/api-client/src/index.ts",
+    "apps/api/src/modules/suppliers/suppliers.controller.ts",
+    "apps/web/app/workspaces/supplier-product-pages.tsx",
+    "packages/schemas/src/workspace-session.ts",
+    "packages/ui/src/session-management.tsx"
+  ],
+  "prompts": [
+    {
+      "key": "supplier_settings",
+      "prompt": "Use case: ui-mockup. Generate a polished, realistic desktop web UI reference for Platforma Market, a Russian-language B2B dental marketplace. Image 1 is the existing application screenshot: use it as the visual reference and preserve its compact white header, 200px white left sidebar, logo centered on the same horizontal axis as the page title, thin aligned bottom border, emerald green accents, pale mint-gray content background, readable restrained sans-serif typography, rounded bordered white cards, Fluent-style outlined icons. Full screen flat screenshot, no device mockup, no perspective, no exterior framing. Render at high resolution landscape about 1440x1000; every label legible. Keep 24px spacing, 44px accessible controls. Header right: small notification bell and green circular employee avatar. Sidebar footer anchored bottom: 'Поддержка' then 'Настройки'. Do not add employee/role management, tariffs, billing, integrations, marketing, fake graphs, AI features, or invented settings. These are future visual concepts, not production screenshots. Use only clearly fictional example data. No extra banners explaining implementation or technical APIs.\nScreen: supplier 'Настройки организации'. Sidebar main links: 'Главная', 'Товары', 'Заказы', 'Документы', 'Сообщения'; bottom 'Настройки' selected pale green. Main page has a compact horizontal tab strip: 'Организация' selected, 'Склады', 'Источники товаров'. Show the Organization tab with a clean practical form, not a dashboard. Top white section 'Данные организации', two read-only fields 'Юридическое название' with 'ТОО «Демо Снабжение»' and 'БИН' with '000000000001'. Next section 'Рабочие контакты': input labels 'Контактное лицо', 'Телефон организации', 'Электронная почта организации'; sample values 'Контакт для заказов', '+7 (___) ___-__-__', 'office@example.invalid'. Lower section 'Юридический адрес': fields 'Город', 'Адрес', 'Почтовый индекс', city 'Алматы', address placeholder 'Укажите адрес'. Include a compact 'Адрес получения' subsection with same three fields; it is not a warehouse. Rightmost or bottom clearly aligned primary button 'Сохранить изменения' and secondary 'Отмена'. Keep a small amount of empty breathing space. Tabs communicate existing additional supplier domains but do NOT invent global delivery conditions or automatic external connections. No employee personal data and no role list. All UI copy in accurate Cyrillic Russian."
+    },
+    {
+      "key": "clinic_settings",
+      "prompt": "Use case: ui-mockup. Generate a polished, realistic desktop web UI reference for Platforma Market, a Russian-language B2B dental marketplace. Image 1 is the existing application screenshot: use it as the visual reference and preserve its compact white header, 200px white left sidebar, logo centered on the same horizontal axis as the page title, thin aligned bottom border, emerald green accents, pale mint-gray content background, readable restrained sans-serif typography, rounded bordered white cards, Fluent-style outlined icons. Full screen flat screenshot, no device mockup, no perspective, no exterior framing. Render at high resolution landscape about 1440x1000; every label legible. Keep 24px spacing, 44px accessible controls. Header right: small notification bell and green circular employee avatar. Sidebar footer anchored bottom: 'Поддержка' then 'Настройки'. Do not add employee/role management, tariffs, billing, integrations, marketing, fake graphs, AI features, or invented settings. These are future visual concepts, not production screenshots. Use only clearly fictional example data. No extra banners explaining implementation or technical APIs.\nScreen: clinic 'Настройки организации'. Sidebar main links: 'Главная', 'Каталог', 'Корзина', 'Заказы', 'Документы', 'Сообщения'; bottom 'Настройки' selected pale green. Main content is a simple one-page business form with three calm white sections and no tab strip (clinic has no warehouses or import-source settings). Top section 'Данные организации', read-only fields 'Юридическое название' with 'ТОО «Демо Клиника»' and 'БИН' with '000000000002'. Next section 'Рабочие контакты': input labels 'Контактное лицо', 'Телефон организации', 'Электронная почта организации'; sample values 'Контакт для поставщиков', '+7 (___) ___-__-__', 'clinic@example.invalid'. Lower section 'Адреса организации' with two subcolumns: 'Юридический адрес' and 'Адрес получения'; each has exactly fields 'Город', 'Адрес', 'Почтовый индекс'. City example 'Алматы', address placeholder 'Укажите адрес'. At bottom right primary button 'Сохранить изменения' and secondary 'Отмена'. No multiple delivery-address books, no automatic integrations, no employee or role management. Readable compact form fitting on one screen. All UI copy accurate Russian."
+    },
+    {
+      "key": "employee_profile",
+      "prompt": "Use case: ui-mockup. Generate a polished, realistic desktop web UI reference for Platforma Market, a Russian-language B2B dental marketplace. Image 1 is the existing application screenshot: use it as the visual reference and preserve its compact white header, 200px white left sidebar, logo centered on the same horizontal axis as the page title, thin aligned bottom border, emerald green accents, pale mint-gray content background, readable restrained sans-serif typography, rounded bordered white cards, Fluent-style outlined icons. Full screen flat screenshot, no device mockup, no perspective, no exterior framing. Render at high resolution landscape about 1440x1000; every label legible. Keep 24px spacing, 44px accessible controls. Header right: small notification bell and green circular employee avatar. Sidebar footer anchored bottom: 'Поддержка' then 'Настройки'. Do not add employee/role management, tariffs, billing, integrations, marketing, fake graphs, AI features, or invented settings. These are future visual concepts, not production screenshots. Use only clearly fictional example data. No extra banners explaining implementation or technical APIs.\nScreen: 'Мой профиль', shared employee profile design for both clinic and supplier; use supplier sidebar main 'Главная', 'Товары', 'Заказы', 'Документы', 'Сообщения', footer 'Поддержка', 'Настройки' (none selected). Main content maximum 900px wide and left aligned after sidebar with ample whitespace. Two functional white sections. First 'Данные аккаунта': small avatar with initials 'ТС', read-only labelled text 'Имя' = 'Тестовый сотрудник', 'Электронная почта' = 'user@example.invalid'. Display as calm information rows, NOT editable inputs, no Save button and no upload-avatar action. Second section 'Активные сеансы': explanatory single sentence 'Завершите сеанс на устройстве, которым больше не пользуетесь.' Two compact device rows: 'Chrome · Windows' with green subtle badge 'Текущий сеанс', subline 'Сегодня, 10:24'; second 'Safari · macOS', subline 'Вчера, 18:40'. Each row has a secondary text button 'Завершить сеанс', plus small outlined device icons. Below the section a restrained outlined button 'Выйти из аккаунта'. No organization editing, no job roles, no employees table, no notification preference switches, no password change form or fake security score. Keep exact clean project typography, green-gray palette and aligned header/logo. All copy in readable Russian."
+    }
+  ]
+}

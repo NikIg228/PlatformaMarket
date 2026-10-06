@@ -49,17 +49,34 @@ for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const)
       await page.goto(operator ? "/admin" : `${base}/settings`);
       if (operator) await page.getByRole("button", { name: "Настройки", exact: true }).click();
       const management = page.getByRole("region", { name: "Сотрудники и доступ" });
-      await expect(management.getByText("Все активные сотрудники имеют полный доступ", { exact: false })).toBeVisible();
-      await expect(management.getByLabel("Роль приглашённого")).toHaveCount(0);
-      await management.getByLabel("Email сотрудника").fill(`colleague-${key}@example.invalid`);
-      await expect(management.getByRole("button", { name: "Пригласить сотрудника", exact: true })).toBeEnabled();
-      const invitationRequest = page.waitForRequest(value => value.method() === "POST" && value.url().endsWith(`/organizations/${org.id}/invitations`));
-      await management.getByRole("button", { name: "Пригласить сотрудника", exact: true }).focus();
-      await page.keyboard.press("Enter");
-      expect((await invitationRequest).postDataJSON().roleIds).toEqual([]);
-      await expect(management.getByText("Приглашение сохранено в локальной тестовой почте. Внешнее письмо не отправлялось.")).toBeVisible();
-      await expect(management.getByRole("button", { name: "Назначить роль", exact: true })).toHaveCount(0);
-      await expect(management.getByRole("article", { name: user.email, exact: true }).getByText("Полный доступ", { exact: true })).toBeVisible();
+      if (operator) {
+        await expect(management.getByText("Все активные сотрудники имеют полный доступ", { exact: false })).toBeVisible();
+        await expect(management.getByLabel("Роль приглашённого")).toHaveCount(0);
+        await management.getByLabel("Email сотрудника").fill(`colleague-${key}@example.invalid`);
+        await expect(management.getByRole("button", { name: "Пригласить сотрудника", exact: true })).toBeEnabled();
+        const invitationRequest = page.waitForRequest(value => value.method() === "POST" && value.url().endsWith(`/organizations/${org.id}/invitations`));
+        await management.getByRole("button", { name: "Пригласить сотрудника", exact: true }).focus();
+        await page.keyboard.press("Enter");
+        expect((await invitationRequest).postDataJSON().roleIds).toEqual([]);
+        await expect(management.getByText("Приглашение сохранено в локальной тестовой почте. Внешнее письмо не отправлялось.")).toBeVisible();
+        await expect(management.getByRole("button", { name: "Назначить роль", exact: true })).toHaveCount(0);
+        await expect(management.getByRole("article", { name: user.email, exact: true }).getByText("Полный доступ", { exact: true })).toBeVisible();
+      } else {
+        // The owner cleared participant Settings for redesign. Preserve the
+        // server invitation/role invariants without requiring the removed form.
+        await expect(page.getByRole("heading", { name: "Настройки организации", exact: true })).toBeVisible();
+        await expect(management).toHaveCount(0);
+        const email = `colleague-${key}@example.invalid`;
+        const created = await request.post(`/api/organizations/${org.id}/invitations`, { headers, data: { email, roleIds: [], expiresInHours: 72 } });
+        expect(created.status()).toBe(201);
+        const { invitationId } = await created.json();
+        const delivered = await request.post(`/api/organizations/${org.id}/invitations/${invitationId}/deliver`, { headers });
+        expect(delivered.ok()).toBe(true);
+        expect(await delivered.json()).toMatchObject({ invitationId, delivery: "LOCAL_FILE" });
+        const invitations = await request.get(`/api/organizations/${org.id}/invitations`, { headers });
+        expect(invitations.status()).toBe(200);
+        expect(await invitations.json()).toEqual(expect.arrayContaining([expect.objectContaining({ id: invitationId, email, roleIds: [] })]));
+      }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       if (!operator) {
         for (const [route, heading] of [["notifications", "Уведомления"], ["messages", "Сообщения"], ["orders", "Заказы"]]) {
