@@ -58,3 +58,4 @@
   .warehouses dd { font-size:var(--dm-font-size-subtitle); }
   .warehouseTitle { flex-wrap:wrap; }
 }
+.footer { flex-shrink:0; border-top:1px solid var(--dm-border); padding:var(--dm-space-4) var(--dm-space-6); }

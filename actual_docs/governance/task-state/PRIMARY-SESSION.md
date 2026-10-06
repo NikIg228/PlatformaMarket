@@ -1,5 +1,58 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 06.10.2026 — OFFER-EDITOR-FLOWS (LOCAL_PASS; publication pending)
+
+Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40; clean main@f0502dd.
+User annotation "приступай" approves the Computer Use audit proposal: 640px
+inspector with independent price, delivery list/add/edit, packaging/publication
+actions, explicit navigation and sticky save/cancel; dirty guard for all controls.
+Live audit reproduced missing-packaging price dead end, blank delivery upsert form,
+and dropdown edits lost on back. Existing fixture-only PASS missed these inputs.
+Scope frontend via existing typed API; no domain/API/schema change, working DB
+writes, extra source trees or agents. Keep latest shared controls contract.
+Risk price/stock separation, version/idempotency/conflict/retry, delivery target,
+permissions/source authority, pending/dirty modal navigation and mobile keyboard.
+Checks: focused browser fixtures with/without packaging, price errors/conflict/
+unknown retry, delivery list/edit/add/duplicate/dirty selects/checkboxes, standalone
+settings states; live Computer Use read-only on the actual missing-packaging offer;
+web/e2e types, scoped lint, web go_live build, diff review. No full E2E/DB suites
+for unchanged services. Max3 attempts/gate, check20min/diagnosis15min.
+DoD owned implementation + checks/review + commit/push main, SHA and CI snapshot.
+No CI waiting per prior owner preference. Implementation in progress.
+Implemented separate price, delivery list/add/edit, packaging/publication editors,
+portal footer actions and value-based dirty guard; removed obsolete panel adapter.
+Existing typed API/domain unchanged. Price ignores packaging, keeps stock unchanged,
+retains idempotency key for uncertain replay and explicit version comparison.
+Delivery rejects duplicate add targets and requires outcome comparison after 5xx.
+Settings require fresh reads before writes. Read-only fields rendered as text.
+Gates .tmp/editor-flows-*: web types1/2 PASS (2 adds final parent wiring), scoped
+lint1 PASS, e2e types1 PASS, ui-contract1 PASS. Browser1 11 PASS/1 FAIL:
+stock deep-link desktop input focus raced form mounting on cold navigation.
+Moved inventory focus to post-render loading effect; browser2 running on affected
+inspector/inventory fixtures plus new packaging/publication/role/recovery cases.
+No working DB writes. Source HEAD remains f0502dd; canonical launcher18928
+serves web3000/API4012 from root (verified process paths), no alternate tree.
+CUA create-tab timed out once after creating blank1634110475; recovered same tab,
+now /supplier/products initial auth loading. Original user Orders tab preserved.
+Final evidence: browser2 PASS22 (all affected inspector/inventory fixture cases),
+web types3 PASS, e2e types2 PASS, scoped lint2 PASS, ui-contract2 PASS,
+go_live web build1 PASS, diff hygiene PASS. No backend/DB/full E2E suite: domain,
+API, dependencies and migration inputs unchanged. Build-generated next-env restored
+by canonical dev restart; it is excluded from commit. Screenshots desktop1440/mobile390
+reviewed: field alignment, scrolling, keyboard, fixed footer, no horizontal overflow.
+CUA actual VOCO missing-packaging price is enabled with5186.61, correct unit/VAT;
+delivery list has pickupFREE2–8h and carrier2500KZT24–72h; explicit pickup edit
+prefills correct fields. Native confirm opened after toggling checkbox and cancel.
+Chrome CDP focus-emulation calls then stalled on that native dialog: dismissal and
+cleanup were not verified after bounded troubleshooting. Async user request asks
+cancel/close temporary tab1634110475; original user tabs preserved. No live save.
+Automated dirty-discard/recovery is PASS; CUA cleanup remains tooling-limited.
+Stopped verified canonical launcher18928 tree for build; restarted npm dev10436,
+root unchanged and go_live default. Fetch origin/main matches f0502dd (0/0).
+Applied Development Toolkit frontend/verification, Agency UI Designer/Code Reviewer:
+separate task flows, existing shared controls/tokens, role/source and retry review.
+Owned diff reviewed; pending commit/push, remote SHA and CI snapshot, no CI waiting.
+
 ## Навигация документации 06.10.2026
 
 Требования — [PROJECT_OVERVIEW](../../PROJECT_OVERVIEW.md), единственная очередь

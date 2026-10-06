@@ -29,11 +29,12 @@ export function InventoryEditor({ selection, warehouseName, onClose, onSaved, on
         if (cancelled) return;
         if (selection.balanceId && next.balance?.id !== selection.balanceId) throw new Error("Выбранный остаток больше не относится к этому предложению. Откройте его заново из списка.");
         setOffer(nextOffer); setState(next); setStock(next.balance?.quantityOnHand ?? "0");
-        requestAnimationFrame(() => input.current?.focus());
       }).catch(cause => { if (!cancelled) setError(errorMessage(cause)); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; alive.current = false; };
   }, [api, organizationId, selection.offerId, selection.warehouseId, selection.balanceId, retry]);
+  // Focus after React has mounted the loaded form, including a cold route render.
+  useEffect(() => { if (!loading) input.current?.focus(); }, [loading]);
   const save = async () => {
     if (!state || !manual || !canSave || flight.current || conflict || needsRefresh) return;
     setFieldError("");

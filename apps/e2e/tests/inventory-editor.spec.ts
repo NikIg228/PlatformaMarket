@@ -89,7 +89,7 @@ test("connected source cannot change stock", async ({ page }) => {
 test("inspector edits price without stock input or stock write", async ({ page }) => {
   const { state } = await stockFixture(page, permissions.filter(value => value !== "inventory.adjust")); await page.goto("/supplier/products");
   await page.getByRole("button", { name: "Композит для реставрации", exact: true }).click(); await page.getByRole("button", { name: "Изменить цену" }).click();
-  const price = page.getByRole("textbox", { name: "Цена за упаковку, ₸", exact: true }); await expect(price).toHaveValue("1000.00");
+  const price = page.getByRole("textbox", { name: "Новая цена за уп., ₸", exact: true }); await expect(price).toHaveValue("1000.00");
   await expect(page.getByRole("textbox", { name: "Остаток, упаковок" })).toHaveCount(0);
   await price.fill("1250"); await page.getByRole("button", { name: "Сохранить цену" }).click();
   await expect(page.getByText(/Цена сохранена. Остаток не изменён./)).toBeVisible();
