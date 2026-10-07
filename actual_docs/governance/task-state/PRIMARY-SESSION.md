@@ -1,5 +1,85 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 07.10.2026 — SETTINGS-PROFILE-REFERENCE-IMPLEMENTATION (LOCAL_PASS)
+
+Owner correction07.10: profile oversized vs settings, unbounded session list and
+unclear supplier tabs. Unify local headings18/body14, card24/mobile16, compact
+48px avatar/session rows; paginate sessions5 per page with current first. Explain
+warehouse stock location and source/import purpose, consistent shared actions and
+compact empty states. No backend/domain change. Check long-list navigation/revoke,
+bothroles1440/1024/390 visual+keyboard, supplier states; final types/lint/contract/build.
+Previous build1 completed but predates correction; retain earlier functional PASS
+only for unchanged flows. Revised-input checks use settings-unified-* evidence.
+Unified browser1 stopped after diagnosed invalid root import for existing link-button
+helper (export is @marketplace/ui/link-button); first case also hit startup race.
+Fixed import and verified HTTP200 before browser2: all17 PASS (1.1m), including
+11-session pagination, last-page revoke/clamp and keyboard at1440/390. Six layouts
+bothroles1440/1024/390 passed; screenshots retained output/playwright/settings-profile-unified.
+Unified e2e types1/lint1/UI contract1 PASS. Supplier visual capture expanded existing
+passing test only; final build/web types and publication remain pending.
+Completion07.10: supplier visual1 PASS1 (7.7s), desktop/mobile captures inspected.
+Final go_live build1, web types1, e2e types2, lint2 PASS (unified-* logs); UI types2
+PASS reused for unchanged shared primitives. UI contract1 PASS329 files. Final
+review/diff hygiene PASS, no API/schema/dependencies or working-data edits.
+Commands: npm exec --workspace @marketplace/e2e -- playwright test --config
+playwright.workspaces.config.ts tests/settings-profile.spec.ts; same command with
+--grep 'supplier warehouse creation' for expanded capture; npm run typecheck
+--workspace @marketplace/web / @marketplace/e2e; npm exec -- eslint named changed
+TSX/spec/config paths --max-warnings=0; npm run verify:ui-contract; npm run build
+--workspace @marketplace/web (DEPLOYMENT_PROFILE/NEXT_PUBLIC_DEPLOYMENT_PROFILE=go_live).
+Previous scoped workspace/menu/logout PASS reused (behavior unchanged by typography).
+Full E2E/backend suites NOT_RUN: UI-only slice, fixture browser performed no DB writes.
+Original reference images unchanged; manifest records owner-requested density refinement.
+Owned dev launcher15824 stopped for build, hidden final npm dev wrapper2636 restarting
+from canonical root (.tmp/settings-unified-final-dev*.log). Main/origin samee4fdc74
+before publication. One writer, no agents/worktrees, no release/deploy. CI snapshot only.
+
+Primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40, clean main@e4fdc74.
+Owner explicitly selected all three generated references for exact implementation.
+R7 UI slice only: business settings clinic/supplier and personal profile;
+organization/legal readonly fields, editable contacts/addresses, supplier tabs
+Organization/Warehouses/Sources, profile identity/session revoke/logout. No roles.
+Preserve existing200px shell, permissions/onboarding and server authority. Match
+reference cards, columns, spacing, typography, colors and responsive reflow using
+existing Fluent primitives/tokens. Existing APIs only; inspect contracts before wiring.
+Risk organization version/idempotency, permission denial and draft preservation,
+session revocation/error recovery; keep all working data untouched in validation.
+Checks targeted fixture browser bothroles1440/390 plus1024 visual, form save/cancel/
+invalid/retry/readonly/conflict, supplier tab flows and own-session revoke/logout;
+web/e2e types, scoped lint, UI contract, web go_live build, diff/review. Backend gates
+only if inspection proves a contract change necessary; no full suites by default.
+Max3/gate,20min commands. Commit/push owned paths, verify remote and CI snapshot.
+Applied development-toolkit frontend/visual/execution/verification and UI guidelines.
+Previous task e4fdc74 pushed clean,16browser PASS; CI/Security last IN_PROGRESS.
+Canonical dev launcher19968 ready from this root; no other writers/agents.
+Initial visual1 PASS6 layouts1440/1024/390 bothroles; inspected actual screenshots.
+Found supplier fieldset legend layout and narrow session rows; replacing legend with
+labelled groups and mobile session grid. UI contract1 FAIL2 local control styling;
+fix via opt-in shared filled-darker readonly Input appearance and brand outline
+button intent, remove local control padding/background. Existing consumers retain
+defaults; add UI types and representative current new consumers to completion.
+Web types1 PASS, lint1 PASS; backend/API/schema unchanged. New functional tests ready.
+Functional1:3 PASS (bothrole session recovery/revoke and current-session clear),
+5 FAIL:4 test selectors matched Next route-announcer alert as well as app alert;
+scope assertions to main. One actual tab guard reuse issue: PermissionBoundary
+retained opened state across different tab requirements; key each tab boundary.
+No server authorization bypass; denied-tab UI now does not mount/fetch that feature.
+Functional2 reruns only these5 affected cases. Preserve failure evidence/attempts.
+Functional2 PASS5. Browser2 PASS16/FAIL2: old logout fixture returned incomplete
+primary-cookie identity after adding profile identity; return identity only for
+workspace query, retain null primary-cookie fixture. Product logout unchanged.
+Final-browser3 PASS7 (30.3s):1440 readonly visual bothroles, save/retry/version bothroles,
+held loading/save with restored permissions, bothrole logout failure/retry.
+Final screenshots output/playwright/settings-profile-design inspected1440/1024/390;
+mobile session grid and supplier address headings fixed. Shared readonly appearance
+uses opt-in root class (Fluent routes native data attrs to input), defaults unchanged.
+Contract2 PASS; UI types1/web types2 PASS. E2E types1 FAIL fixture literal narrowing
+(canEdit true/postal string); correct fixture annotation to existing response fields;
+no runtime change. E2E types2 and final web/UI types/lint/build pending.
+Canonical dev was restarted before this task: actual launcher13532 from this source
+(Next10764/server7928,API11204), not stale19968. Stop this canonical tree only for
+go_live build and restore it afterward. No database writes during browser fixtures.
+
 ## 07.10.2026 — SETTINGS-PROFILE-RESET-REFERENCES (LOCAL_PASS)
 
 Owner primary01a0fd63-0ae1-71e2-a4d4-271515cf0d40; clean main@bd8d2dc.

@@ -11,7 +11,7 @@ if (!["postgres:", "postgresql:"].includes(database.protocol) || !["localhost", 
 process.env.JWT_SECRET = e2eJwtSecret;
 export default defineConfig({
   testDir: "./tests",
-  testMatch: ["unified-application.spec.ts", "public-catalog.spec.ts", "workspace-rebuild.spec.ts", "supplier-capabilities.spec.ts", "identity-management.spec.ts", "conversations.spec.ts", "commerce-analytics.spec.ts"],
+  testMatch: ["unified-application.spec.ts", "public-catalog.spec.ts", "workspace-rebuild.spec.ts", "supplier-capabilities.spec.ts", "identity-management.spec.ts", "conversations.spec.ts", "commerce-analytics.spec.ts", "settings-profile.spec.ts"],
   workers: 1, retries: 0, timeout: 90_000, expect: { timeout: 15_000 },
   forbidOnly: Boolean(process.env.CI),
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",

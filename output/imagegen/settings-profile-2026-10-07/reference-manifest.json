@@ -1,5 +1,6 @@
 {
-  "status": "DESIGN_REFERENCE_ONLY_NOT_IMPLEMENTED",
+  "status": "DESIGN_REFERENCE_IMPLEMENTED_IN_SETTINGS_AND_PROFILE",
+  "ownerRefinement": "2026-10-07: use consistent 18px section headings and 14px body text across Settings/Profile, compact 48px avatar, five sessions per page, compact supplier empty states and shared action styling; generated images remain the original reference.",
   "generationMode": "built-in image_gen",
   "date": "2026-10-07",
   "images": [

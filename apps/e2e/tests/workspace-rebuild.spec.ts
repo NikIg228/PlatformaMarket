@@ -305,10 +305,10 @@ test("CORE03 supplier agrees exact return conditions before money stage", async 
 });
 
 for (const role of ["clinic", "supplier"] as const) for (const width of [1440, 390]) {
-  test(`profile-nav ${role} empty settings and profile preserve navigation ${width}`, async ({ page }, testInfo) => {
+  test(`profile-nav ${role} settings and profile preserve navigation ${width}`, async ({ page }, testInfo) => {
     const state = await fixture(page, role === "clinic" ? "BUYER" : "SUPPLIER");
     await page.setViewportSize({ width, height: 900 });
-    await page.route("**/api/access-control/policy", route => route.fulfill({ json: { mode: "ROLE_BASED", permissions: ["support.ticket.view"] } }));
+    await page.route("**/api/access-control/policy", route => route.fulfill({ json: { mode: "ROLE_BASED", permissions: ["support.ticket.view", "organization.view", "organization.members.manage"] } }));
     await page.route("**/api/support/tickets*", route => route.fulfill({ json: [] }));
     await page.goto(`/${role}`);
     const sidebar = page.locator("#workspace-sidebar");
@@ -326,8 +326,8 @@ for (const role of ["clinic", "supplier"] as const) for (const width of [1440, 3
     await expect(footer.getByRole("link", { name: "Поддержка", exact: true })).toHaveAttribute("aria-current", "page");
     await footer.getByRole("link", { name: "Настройки", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Настройки организации", exact: true })).toBeVisible();
-    await expect(page.locator("#workspace-content > :not(header)")).toHaveCount(0);
-    await page.screenshot({ animations: "disabled", path: testInfo.outputPath(`settings-empty-${role}-${width}.png`), fullPage: true });
+    await expect(page.getByRole("heading", { name: "Данные организации", exact: true })).toBeVisible();
+    await page.screenshot({ animations: "disabled", path: testInfo.outputPath(`settings-${role}-${width}.png`), fullPage: true });
     const avatar = page.getByRole("button", { name: "Меню профиля", exact: true });
     await avatar.focus(); await page.keyboard.press("Enter");
     const menu = page.getByRole("menu");
@@ -339,8 +339,8 @@ for (const role of ["clinic", "supplier"] as const) for (const width of [1440, 3
     await avatar.click(); await menu.getByRole("menuitem", { name: "Мой профиль", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/${role}/profile$`));
     await expect(page.getByRole("heading", { name: "Мой профиль", exact: true })).toBeVisible();
-    await expect(page.locator("#workspace-content > :not(header)")).toHaveCount(0);
-    expect(state.calls.filter(path => path === "/auth/sessions" || path === "/access-control/permissions" || path === "/organizations/current/onboarding" || path.includes("/memberships") || path.includes("/data-sources"))).toEqual([]);
+    await expect(page.getByRole("region", { name: "Данные аккаунта", exact: true })).toContainText("Тестовый сотрудник");
+    expect(state.calls.filter(path => path === "/access-control/permissions" || path === "/organizations/current/onboarding" || path.includes("/memberships") || path.includes("/data-sources"))).toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ animations: "disabled", path: testInfo.outputPath(`profile-${role}-${width}.png`), fullPage: true });
   });
@@ -392,7 +392,7 @@ test("profile-nav permission failure keeps logout reachable and retry restores p
   fail = false;
   await page.getByRole("button", { name: "Повторить", exact: true }).click();
   await expect(page.getByText("Не удалось проверить права доступа.", { exact: true })).toHaveCount(0);
-  await expect(page.locator("#workspace-content > :not(header)")).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Данные аккаунта", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Поддержка", exact: true })).toHaveCount(0);
   allowSupport = true;
   await page.reload();
@@ -439,7 +439,7 @@ async function fixture(
         capabilities: [capability],
       };
     else if (path === "/access-control/permissions") body = ["catalog.product.view", "catalog.offer.edit", "catalog.offer.publish", "import.manage", "inventory.view", "inventory.adjust", "inventory.freshness.manage", "pricing.manage", "order.create", "order.approve", "order.confirm", "payment.transfer.confirm", "document.view", "document.upload", "document.sign", "document.accounting.review", "compliance.view", "compliance.credential.manage", "shipment.manage", "delivery.view", "delivery.manage", "supplier.warehouse.manage"];
-    else if (path === "/access-control/policy") body = { mode: "ROLE_BASED", permissions: ["catalog.product.view", "catalog.offer.edit", "catalog.offer.publish", "import.manage", "inventory.view", "inventory.adjust", "inventory.freshness.manage", "pricing.manage", "order.create", "order.approve", "order.confirm", "payment.transfer.confirm", "document.view", "document.upload", "document.sign", "document.accounting.review", "compliance.view", "compliance.credential.manage", "shipment.manage", "delivery.view", "delivery.manage", "supplier.warehouse.manage"] };
+    else if (path === "/access-control/policy") body = { mode: "ROLE_BASED", permissions: ["organization.view", "organization.members.manage", "catalog.product.view", "catalog.offer.edit", "catalog.offer.publish", "import.manage", "inventory.view", "inventory.adjust", "inventory.freshness.manage", "pricing.manage", "order.create", "order.approve", "order.confirm", "payment.transfer.confirm", "document.view", "document.upload", "document.sign", "document.accounting.review", "compliance.view", "compliance.credential.manage", "shipment.manage", "delivery.view", "delivery.manage", "supplier.warehouse.manage"] };
     else if (path === "/auth/sessions") body = [];
     else if (path === "/organizations/current/profile") body = profile;
     else if (path === "/organizations/current/onboarding")
@@ -458,7 +458,7 @@ async function fixture(
         ],
       };
     else if (path === "/conversations") body = { items: [], hasMore: false, unreadCount: 0 };
-    else if (path === "/auth/current") body = null;
+    else if (path === "/auth/current") body = new URL(route.request().url()).searchParams.has("workspace") ? { sessionId, user: { id: organizationId, displayName: "Тестовый сотрудник", email: "employee@example.invalid" } } : null;
     else if (path === "/catalog/cities")
       body = [
         { id: cityId, nameRu: "Павлодар", nameKk: "Павлодар", isActive: true },
@@ -611,7 +611,7 @@ test("clinic navigation survives reload and isolates an order outage", async ({
   await expect(
     page.getByRole("heading", { name: "Настройки организации" }),
   ).toBeVisible();
-  await expect(page.locator("#workspace-content > :not(header)")).toHaveCount(0);
+  await expect(page.getByLabel("Контактное лицо", { exact: true })).toBeVisible();
   await page.reload();
   await expect(
     page.getByRole("heading", { name: "Настройки организации" }),

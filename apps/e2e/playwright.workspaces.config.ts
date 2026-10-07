@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 // UI integration with intercepted API responses: never writes to a dev database.
 export default defineConfig({
   testDir: "./tests",
-  testMatch: ["workspace-rebuild.spec.ts", "supplier-capabilities.spec.ts", "product-refinement.spec.ts", "inventory-editor.spec.ts", "offer-inspector.spec.ts"],
+  testMatch: ["workspace-rebuild.spec.ts", "supplier-capabilities.spec.ts", "product-refinement.spec.ts", "inventory-editor.spec.ts", "offer-inspector.spec.ts", "settings-profile.spec.ts"],
   workers: 1,
   retries: 0,
   timeout: 60000,

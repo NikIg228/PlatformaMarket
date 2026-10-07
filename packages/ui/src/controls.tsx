@@ -12,7 +12,7 @@ export function DmField({ className, ...props }: ComponentPropsWithRef<typeof Fi
 }
 
 export function DmInput({ className, density, ...props }: ComponentPropsWithRef<typeof Input> & Density) {
-  return <Input {...props} data-dm-density={densityFor(density, props.size)} className={classes("dm-control", "dm-input", className)} />;
+  return <Input {...props} data-dm-density={densityFor(density, props.size)} className={classes("dm-control", "dm-input", props.readOnly && props.appearance === "filled-darker" ? "dm-input-readonly" : undefined, className)} />;
 }
 
 export function DmTextarea({ className, density, variant = "default", ...props }: ComponentPropsWithRef<typeof Textarea> & Density & { variant?: "default" | "composer" }) {
@@ -32,7 +32,7 @@ export function DmCombobox({ className, density, ...props }: ComponentPropsWithR
   return <Combobox {...props} data-dm-density={densityFor(density, props.size)} className={classes("dm-control", "dm-combobox", className)} />;
 }
 
-export type DmButtonProps = ComponentPropsWithRef<typeof Button> & Density & { intent?: "default" | "danger" };
+export type DmButtonProps = ComponentPropsWithRef<typeof Button> & Density & { intent?: "default" | "danger" | "brand" };
 export function DmButton({ className, density, intent = "default", ...props }: DmButtonProps) {
   const appearance = props.appearance ?? "secondary";
   return <Button {...props} appearance={appearance} data-dm-appearance={appearance}

@@ -210,6 +210,7 @@ button, input, select, textarea { font: inherit; }
 .dm-control.fui-Dropdown:hover,
 .dm-control.fui-Combobox:hover { border-color: var(--dm-brand-primary); }
 .dm-control:has(:disabled), .dm-control:has(:disabled):hover { background: var(--dm-disabled-surface); color: var(--dm-disabled-content); border-color: var(--dm-disabled-border); }
+.dm-input.fui-Input.dm-input-readonly { background: var(--dm-surface-subtle); border-color: var(--dm-border); }
 .dm-control:has([aria-invalid="true"]):not(:has(:disabled)) { border-color: var(--dm-danger-text); }
 .dm-textarea { min-height: 112px; }
 :is(.dm-button.fui-Button, .dm-link-button) { min-height: var(--dm-control-height); display: inline-flex; align-items: center; justify-content: center; gap: var(--dm-space-2); padding: var(--dm-space-2) var(--dm-space-4); border: 1px solid transparent; border-radius: var(--dm-radius-button); background: var(--dm-surface); color: var(--dm-text-primary); font-weight: var(--dm-font-weight-semibold); font-size: var(--dm-font-size-body); line-height: var(--dm-line-compact); text-align: center; text-decoration: none; cursor: pointer; transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease; }
@@ -219,6 +220,7 @@ button, input, select, textarea { font: inherit; }
 :is(.dm-button.fui-Button, .dm-link-button)[data-dm-appearance="primary"]:active:not(:disabled):not([aria-disabled="true"]) { border-color: var(--dm-brand-deep); background: var(--dm-brand-deep); color: var(--dm-text-inverse); }
 :is(.dm-button.fui-Button, .dm-link-button)[data-dm-appearance="secondary"],
 :is(.dm-button.fui-Button, .dm-link-button)[data-dm-appearance="outline"] { border-color: var(--dm-border); background: var(--dm-surface); color: var(--dm-text-primary); }
+.dm-button.fui-Button[data-dm-intent="brand"][data-dm-appearance="outline"]:not(:disabled):not([aria-disabled="true"]) { border-color: var(--dm-brand-primary); color: var(--dm-brand-primary); padding-inline: var(--dm-space-6); }
 :is(.dm-button.fui-Button, .dm-link-button)[data-dm-appearance="secondary"]:hover:not(:disabled):not([aria-disabled="true"]),
 :is(.dm-button.fui-Button, .dm-link-button)[data-dm-appearance="outline"]:hover:not(:disabled):not([aria-disabled="true"]) { border-color: var(--dm-brand-primary); background: var(--dm-brand-surface); color: var(--dm-brand-deep); }
 :is(.dm-button.fui-Button, .dm-link-button)[data-dm-appearance="subtle"],
