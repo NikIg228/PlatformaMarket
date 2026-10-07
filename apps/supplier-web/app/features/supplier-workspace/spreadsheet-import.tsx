@@ -3,7 +3,8 @@ import { DmAction, DmFileInput } from "@marketplace/ui/controls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient, SupplierImportBatchResponse, SupplierImportDiagnosticsResponse } from "@marketplace/api-client";
 import { importPriceMinor, type SupplierColumnMappingInput, type SupplierImportPreview } from "@marketplace/schemas";
-import { DmButton, DmField, DmInput, DmDropdown, DmTable, ErrorState, LoadingState, StatusTag, useUnsavedChanges, productWorkflowStyles as styles, errorMessage, formatStatus, formatDate, formatMoney } from "@marketplace/ui";
+import { Tab } from "@fluentui/react-components";
+import { DmTabList, DmButton, DmField, DmInput, DmDropdown, DmTable, ErrorState, LoadingState, StatusTag, useUnsavedChanges, productWorkflowStyles as styles, errorMessage, formatStatus, formatDate, formatMoney } from "@marketplace/ui";
 import type { SupplierDataSource } from "./types";
 import local from "./spreadsheet-import.module.css";
 const fields = [
@@ -79,7 +80,7 @@ export function SpreadsheetImport({ api, supplierId, sources, onChanged, hideHea
   const reset = () => { setBatch(null); batchId.current = null; setDiagnostics(null); setFile(null); setPreview(null); content.current = ""; setStep(0); setReason(""); setError(null); setUnknownCreation(false); setTab("new"); };
   return <div className={styles.form}>
     {!hideHeading ? <h2>Импорт товаров</h2> : null}
-    <div className={local.tabs} role="tablist" aria-label="Импорт"><DmAction variant="tab" role="tab" aria-selected={tab === "new"} onClick={() => setTab("new")}>Новая загрузка</DmAction><DmAction variant="tab" role="tab" aria-selected={tab === "history"} onClick={() => { setTab("history"); void loadHistory(); }}>История загрузок</DmAction></div>
+    <DmTabList aria-label="Импорт" selectedValue={tab} onTabSelect={(_, data) => { const value = data.value as "new" | "history"; setTab(value); if (value === "history") void loadHistory(); }}><Tab value="new">Новая загрузка</Tab><Tab value="history">История загрузок</Tab></DmTabList>
     {tab === "history" ? <section className={`${styles.panel} ${styles.form}`} aria-label="История загрузок">
       <div className={styles.toolbar}><h2>История загрузок</h2><DmButton disabled={historyLoading} onClick={() => void loadHistory()}>Обновить</DmButton></div>
       {historyError ? <ErrorState description={historyError} action={<DmButton onClick={() => void loadHistory()}>Повторить</DmButton>} /> : null}

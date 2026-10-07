@@ -1,5 +1,6 @@
 "use client";
 import { DmInput } from "@marketplace/ui/controls";
+import type { OrganizationContact } from "@marketplace/schemas";
 import { useRef, useState } from "react";
 import { MarketplaceApiClient, workspacePath } from "@marketplace/api-client";
 import { DmButton, StatusTag, errorMessage } from "@marketplace/ui";
@@ -10,7 +11,7 @@ import { deliveryLabel } from "../../catalog-ranking";
 import styles from "./supplier-offers.module.css";
 
 export type SupplierOffer = {
-  id: string; supplier: { name: string }; priceMinor: string | null;
+  id: string; supplier: { name: string; publicContact?: OrganizationContact | null }; priceMinor: string | null;
   normalizedPriceMinor?: string | null; currency: string;
   packaging?: { name: string; quantityInBaseUnit?: string; unit?: string | null };
   available: boolean; deliveryMethods?: string[]; delivery?: DeliverySummary[];
@@ -70,6 +71,11 @@ export function SupplierOffers({ offers, loginHref, compact = false }: {
       return <article className={styles.row} key={offer.id} aria-label={`Предложение: ${offer.supplier.name}`}>
         <div className={styles.supplier}>
           <strong>{offer.supplier.name}</strong>
+          {offer.supplier.publicContact ? <div className={styles.contact} aria-label="Официальный контакт поставщика">
+            <span>{offer.supplier.publicContact.contactName}</span>
+            <a href={`tel:${offer.supplier.publicContact.phone.replace(/[^+\d]/g, "")}`}>{offer.supplier.publicContact.phone}</a>
+            <a href={`mailto:${offer.supplier.publicContact.email}`}>{offer.supplier.publicContact.email}</a>
+          </div> : null}
           <StatusTag tone={offer.available ? "success" : "warning"}>{offer.available ? "В наличии" : "Под заказ"}</StatusTag>
           {offer.verifiedDocuments ? <small>Документы проверены</small> : null}
           {offer.officialDistributor ? <small>Официальный дистрибьютор</small> : null}

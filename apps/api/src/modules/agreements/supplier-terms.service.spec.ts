@@ -16,7 +16,8 @@ function setup() {
   let stored: any = null;
   const membership = { organization, user: { id: context.actorId, displayName: "Тестовый представитель" } };
   const prisma = {
-    organizationProfile: { findUnique: vi.fn().mockResolvedValue({ contactName: "Test Person", phone: "+77000000000", email: "fixture@example.invalid", legalAddress: { organizationId: context.organizationId, cityId: "00000000-0000-4000-8000-000000000001", line1: "Test street 1", postalCode: null }, deliveryAddress: { organizationId: context.organizationId, cityId: "00000000-0000-4000-8000-000000000001", line1: "Test street 2", postalCode: null } }) },
+    organizationCapability: { findUnique: vi.fn().mockResolvedValue({ capability: "SUPPLIER" }) },
+    organizationProfile: { findUnique: vi.fn().mockResolvedValue({ contactName: "Test Person", phone: "+77000000000", email: "fixture@example.invalid", additionalContacts: [1, 2].map(n => ({ contactName: `Reserve ${n}`, phone: `+7700000000${n}`, email: `reserve${n}@example.invalid` })), legalAddress: { organizationId: context.organizationId, cityId: "00000000-0000-4000-8000-000000000001", line1: "Test street 1", postalCode: null }, deliveryAddress: { organizationId: context.organizationId, cityId: "00000000-0000-4000-8000-000000000001", line1: "Test street 2", postalCode: null } }) },
     warehouse: { findMany: vi.fn().mockResolvedValue([{ addressLine: "Test warehouse 1" }]) },
     organizationCredential: { count: vi.fn().mockResolvedValue(1) },
     organizationMembership: { findFirst: vi.fn().mockResolvedValue(membership) },
@@ -41,7 +42,14 @@ const approval = { expectedVersion: 1, status: "APPROVED" as const, organization
 describe("supplier common terms and independent admission", () => {
   it("cannot accept terms before completing the organization profile", async () => {
     const test = setup(); test.prisma.organizationProfile.findUnique.mockResolvedValue(null);
-    await expect(test.service.accept(input, context, evidence)).rejects.toThrow("анкету");
+    await expect(test.service.accept(input, context, evidence)).rejects.toMatchObject({ status: 409, response: { code: "ORGANIZATION_PROFILE_REQUIRED" } });
+    expect(test.prisma.supplierTermsAcceptance.create).not.toHaveBeenCalled();
+  });
+  it("cannot accept terms with a legacy supplier profile missing reserve contacts", async () => {
+    const test = setup();
+    const profile = await test.prisma.organizationProfile.findUnique();
+    test.prisma.organizationProfile.findUnique.mockResolvedValue({ ...profile, additionalContacts: [] });
+    await expect(test.service.accept(input, context, evidence)).rejects.toMatchObject({ status: 409, response: { code: "ORGANIZATION_PROFILE_REQUIRED" } });
     expect(test.prisma.supplierTermsAcceptance.create).not.toHaveBeenCalled();
   });
   it.each(["warehouse", "credentials", "profile"])("operator cannot bypass missing %s", async missing => {

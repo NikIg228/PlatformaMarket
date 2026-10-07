@@ -4,11 +4,12 @@ import { Avatar, Spinner, Tooltip } from "@fluentui/react-components";
 import { Edit20Regular } from "@fluentui/react-icons/svg/edit";
 import { Checkmark20Regular } from "@fluentui/react-icons/svg/checkmark";
 import { DmAction, DmButton, DmFileInput, DmInput } from "./controls";
+import { DmInfoTip } from "./info-tip";
 
 /** Short independent values: explicit save, preserved draft on failure, no blur save. */
-export function DmInlineEdit({ label, value, onSave, disabled = false, required = false, type = "text", maxLength = 160, onEditingChange }: {
+export function DmInlineEdit({ label, value, onSave, disabled = false, required = false, type = "text", maxLength = 160, onEditingChange, help }: {
   label: string; value: string; onSave: (value: string) => Promise<void>; disabled?: boolean;
-  required?: boolean; type?: "text" | "email" | "tel"; maxLength?: number; onEditingChange?: (editing: boolean) => void;
+  required?: boolean; type?: "text" | "email" | "tel"; maxLength?: number; onEditingChange?: (editing: boolean) => void; help?: string;
 }) {
   const id = useId(), errorId = `${id}-error`;
   const [editing, setEditing] = useState(false), [draft, setDraft] = useState(value), [error, setError] = useState<string | null>(null), [pending, setPending] = useState(false);
@@ -25,7 +26,7 @@ export function DmInlineEdit({ label, value, onSave, disabled = false, required 
     finally { lock.current = false; setPending(false); }
   }
   return <div className="dm-inline-edit" data-editing={editing || undefined}>
-    <label id={`${id}-label`} htmlFor={editing ? id : undefined}>{label}{required ? " *" : ""}</label>
+    <div className="dm-inline-edit-label"><label id={`${id}-label`} htmlFor={editing ? id : undefined}>{label}{required ? " *" : ""}</label>{help ? <DmInfoTip label={`Подсказка: ${label}`}>{help}</DmInfoTip> : null}</div>
     <div className="dm-inline-edit-row">
       {editing ? <DmInput id={id} ref={input} density="compact" type={type} required={required} maxLength={maxLength} value={draft} disabled={pending || disabled}
         aria-labelledby={`${id}-label`} aria-invalid={Boolean(error)} aria-describedby={error ? errorId : undefined} onChange={(_, data) => { setDraft(data.value); setError(null); }}
@@ -39,7 +40,7 @@ export function DmInlineEdit({ label, value, onSave, disabled = false, required 
       </Tooltip>
     </div>
     {error ? <span id={errorId} role="alert" className="dm-inline-edit-error">{error}</span> : null}
-    {editing ? <div className="dm-inline-edit-hint"><span>Enter — сохранить</span><DmAction variant="text" density="compact" disabled={pending} onClick={close}>Отмена</DmAction></div> : null}
+    {editing ? <div className="dm-inline-edit-hint"><DmButton appearance="subtle" density="compact" disabled={pending} onClick={close}>Отмена</DmButton></div> : null}
   </div>;
 }
 

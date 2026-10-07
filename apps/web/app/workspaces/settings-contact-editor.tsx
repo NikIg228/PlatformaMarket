@@ -6,9 +6,12 @@ import type { z } from "zod";
 import styles from "./account-settings.module.css";
 export type OrganizationContact = z.infer<typeof organizationContactSchema>;
 export const contactFields = [["contactName", "Контактное лицо", "text"], ["phone", "Телефон организации", "tel"], ["email", "Электронная почта организации", "email"]] as const;
-export function ContactInputs({ value, onChange, disabled }: { value: OrganizationContact; onChange: (value: OrganizationContact) => void; disabled: boolean }) {
-  return <div className={styles.three}>{contactFields.map(([key, label, type]) => <DmField key={key} label={label} required>
-    <DmInput value={value[key]} type={type} maxLength={key === "phone" ? 30 : key === "email" ? 254 : 160} required disabled={disabled} onChange={(_, data) => onChange({ ...value, [key]: data.value })} />
+export const supplierContactFields = (official: boolean) => official
+  ? [["contactName", "Официальный представитель", "text"], ["phone", "Публичный телефон организации", "tel"], ["email", "Электронная почта организации", "email"]] as const
+  : [["contactName", "Контактное лицо", "text"], ["phone", "Телефон", "tel"], ["email", "Электронная почта", "email"]] as const;
+export function ContactInputs({ value, onChange, disabled, kind, errors }: { value: OrganizationContact; onChange: (value: OrganizationContact) => void; disabled: boolean; kind?: "official" | "reserve"; errors?: Record<string, string> }) {
+  return <div className={styles.three}>{(kind ? supplierContactFields(kind === "official") : contactFields).map(([key, label, type]) => <DmField key={key} label={label} required validationState={errors?.[key] ? "error" : "none"} validationMessage={errors?.[key]}>
+    <DmInput value={value[key]} type={type} placeholder={key === "contactName" && kind === "official" ? "Имя официального представителя" : undefined} maxLength={key === "phone" ? 30 : key === "email" ? 254 : 160} required disabled={disabled} onChange={(_, data) => onChange({ ...value, [key]: data.value })} />
   </DmField>)}</div>;
 }
 export function NewContact({ onSave, onCancel }: { onSave: (value: OrganizationContact) => Promise<void>; onCancel: () => void }) {

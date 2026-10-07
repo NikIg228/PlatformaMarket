@@ -15,6 +15,7 @@ import { refreshFulfillmentStatus } from "../logistics/order-fulfillment-state";
 import { manualReturn, manualReturnActions } from "./order-manual-return";
 import { reorder } from "./order-reorder";
 import { metricFact, receivedGoodsSnapshot, recordReceiptMetrics } from "./commerce-metric-facts";
+import { publicContactSelect, supplierOrderContacts } from "../organizations/contact-projection";
 
 const include = { items: { include: { reservation: { include: { externalReservation: true, inventoryLot: true } } } }, transferClaims: { orderBy: { createdAt: "asc" as const } }, paymentAllocation: true };
 export type Order = Prisma.SupplierOrderGetPayload<{ include: typeof include }>;
@@ -40,7 +41,8 @@ export class OrderWorkflowService {
     const [policy, reductions, returns] = await Promise.all([paymentPolicy(this.prisma, order.supplierOrganizationId),
       this.prisma.orderPaymentReduction.findMany({ where: { supplierOrderId: order.id }, orderBy: { createdAt: "asc" } }),
       this.prisma.orderManualReturn.findMany({ where: { supplierOrderId: order.id }, orderBy: { createdAt: "asc" } })]);
-    return { orderId: order.id, order: { ...detail, items: items.map(({ reservation, ...item }) => item) }, version: order.version, status: order.status, paymentStatus: order.paymentStatus, invoiceDocumentId: order.manualInvoiceDocumentId,
+    const contactProfile = await this.prisma.organizationProfile.findUnique({ where: { organizationId: order.supplierOrganizationId }, select: { ...publicContactSelect, additionalContacts: true } });
+    return { orderId: order.id, order: { ...detail, items: items.map(({ reservation, ...item }) => item) }, supplierContacts: supplierOrderContacts(contactProfile), version: order.version, status: order.status, paymentStatus: order.paymentStatus, invoiceDocumentId: order.manualInvoiceDocumentId,
       claims: transferClaims.map(({ reviewPolicySnapshot, reviewStartedAt, reportedById, remindedAt, backupNotifiedAt, ...claim }) => claim),
       events: workflowEvents, reservationState: orderReservationState(order),
       paymentSummary: manualPaymentSummary(order.subtotalAmountMinor, transferClaims), paymentReviewConfigured: Boolean(policy.policy),

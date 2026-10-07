@@ -24,6 +24,21 @@ function setup() {
   return { db, organization, addresses, service: new OrganizationProfileService(db) };
 }
 describe("organization profile ownership and atomic save", () => {
+  it("requires official and exactly two reserve supplier contacts before writes; legacy incomplete profiles remain readable", async () => {
+    const t = setup();
+    await t.service.save(input, context);
+    t.organization.capabilities = [{ capability: "SUPPLIER" }];
+    expect(await t.service.current(context)).toMatchObject({ complete: false, profile: { contactName: input.contactName } });
+    t.db.organizationProfile.upsert.mockClear(); t.db.auditLog.create.mockClear();
+    const reserve = { contactName: "Reserve Person", phone: "+77000000001", email: "reserve@example.invalid" };
+    for (const additionalContacts of [[], [reserve], [reserve, reserve, reserve]]) {
+      await expect(t.service.save({ ...input, additionalContacts, expectedVersion: 2, idempotencyKey: `invalid-contacts-${additionalContacts.length}` }, context)).rejects.toMatchObject({ status: 400 });
+    }
+    expect(t.db.organizationProfile.upsert).not.toHaveBeenCalled(); expect(t.db.auditLog.create).not.toHaveBeenCalled();
+    const additionalContacts = [reserve, { ...reserve, contactName: "Second Reserve", phone: "+77000000002" }];
+    expect(await t.service.save({ ...input, additionalContacts, expectedVersion: 2, idempotencyKey: "valid-three-contacts" }, context)).toMatchObject({ complete: true, profile: { additionalContacts } });
+    expect(await t.service.save({ ...input, expectedVersion: 3, idempotencyKey: "legacy-retains-two-reserves" }, context)).toMatchObject({ complete: true, profile: { additionalContacts } });
+  });
   it("persists extra contacts, preserves them for legacy saves and does not invalidate unchanged address verification", async () => {
     const t = setup(); const additionalContacts = [{ contactName: "Other Person", phone: "+77000000001", email: "second@example.invalid" }];
     const saved = await t.service.save({ ...input, additionalContacts }, context);

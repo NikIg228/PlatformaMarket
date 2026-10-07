@@ -1,11 +1,16 @@
 "use client";
 
-import { Button, Checkbox, Combobox, Dropdown, Field, Input, Select, Textarea } from "@fluentui/react-components";
+import { Button, Checkbox, Combobox, Dropdown, Field, Input, Select, TabList, Textarea } from "@fluentui/react-components";
 import type { ComponentPropsWithRef, HTMLAttributes } from "react";
 
 type Density = { density?: "default" | "compact" };
 const classes = (...values: Array<string | undefined>) => values.filter(Boolean).join(" ");
 const densityFor = (density: Density["density"], size?: string) => density ?? (size === "small" ? "compact" : "default");
+
+/** Navigation between panels. Data filters use their separate filled selection. */
+export function DmTabList({ className, ...props }: ComponentPropsWithRef<typeof TabList>) {
+  return <TabList {...props} data-dm-tab-kind="navigation" className={classes("dm-navigation-tabs", className)} />;
+}
 
 export function DmField({ className, ...props }: ComponentPropsWithRef<typeof Field>) {
   return <Field {...props} className={classes("dm-field", className)} />;

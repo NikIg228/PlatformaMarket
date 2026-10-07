@@ -201,6 +201,12 @@ concurrent checkout и release/return доказаны целевыми contract
 Evidence: [Acceptance Matrix](governance/PROJECT_ACCEPTANCE_MATRIX.md),
 SETTINGS-PROFILE-EDITABLE-V2. Это не закрывает общий R7.1/R7.3.
 
+08.10: SUPPLIER-CONTACTS-SOURCES-TABS — частный LOCAL_PASS: три обязательных
+контакта поставщика с разделением публичного и заказного доступа, карточки
+1С/МойСклад с заявкой в поддержку, общие внутренние вкладки и уведомления
+сохранения. Evidence — в той же Acceptance Matrix. Реальные коннекторы и общий
+R7 этим не приняты.
+
 - [ ] **R7.1** Консолидировать shared controls/theme и последние UI/Support/
   Orders/Notifications slices после R0; проверить нужные consumers, mobile,
   keyboard/focus, loading/empty/error, черновики и recovery.

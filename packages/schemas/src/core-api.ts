@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { acceptedPromotionSchema } from "./promotions.js";
+import { organizationContactSchema } from "./organization-profile.js";
 
 const decimalStringSchema = z.string().regex(/^-?\d+(?:\.\d+)?$/);
 const dateTimeSchema = z.iso.datetime();
@@ -97,7 +98,7 @@ export const catalogMediaSchema = z.object({
 export const catalogSearchOfferSchema = z.object({
   id: z.uuid(),
   variantId: z.uuid(),
-  supplier: z.object({ id: z.uuid(), name: z.string() }),
+  supplier: z.object({ id: z.uuid(), name: z.string(), publicContact: organizationContactSchema.nullable().optional() }),
   priceMinor: decimalStringSchema.nullable(),
   currency: currencySchema.nullable(),
   normalizedPriceMinor: decimalStringSchema.nullable(),
@@ -191,7 +192,7 @@ export const catalogSearchResponseSchema = z.object({
 export const comparedOfferSchema = z.object({
   offerId: z.uuid(),
   variantId: z.uuid(),
-  supplier: z.object({ organizationId: z.uuid(), name: z.string() }),
+  supplier: z.object({ organizationId: z.uuid(), name: z.string(), publicContact: organizationContactSchema.nullable().optional() }),
   supplierSku: z.string().nullable(),
   price: z.object({
     amountMinor: decimalStringSchema,

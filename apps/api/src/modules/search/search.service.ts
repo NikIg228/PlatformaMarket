@@ -20,6 +20,7 @@ import { environment } from "../../platform/config/environment";
 import { SupplierTermsService } from "../agreements/supplier-terms.service";
 import { visibleOfferSummary } from "./visible-offer-summary";
 import { catalogSaleJoin } from "./catalog-sale-query";
+import { publicContactSelect, publicOrganizationContact } from "../organizations/contact-projection";
 
 type SearchRow = { productId: string; rank: number };
 type PublicSearchPromotion = {
@@ -446,6 +447,7 @@ export class SearchService {
             supplier: {
               organizationId: offer.supplierOrganizationId,
               name: offer.supplier.organization.displayName,
+              publicContact: publicOrganizationContact(offer.supplier.organization.profile),
             },
             supplierSku: offer.supplierSku,
             price: {
@@ -648,7 +650,7 @@ export class SearchService {
                 confirmationMode: true,
                 supplier: {
                   select: {
-                    organization: { select: { displayName: true } },
+                    organization: { select: { displayName: true, profile: { select: publicContactSelect } } },
                   },
                 },
                 publication: {
@@ -742,7 +744,7 @@ export class SearchService {
                 },
               },
               include: {
-                supplier: { include: { organization: true } },
+                supplier: { include: { organization: { select: { displayName: true, profile: { select: publicContactSelect } } } } },
                 publication: true,
                 saleUnit: true,
                 packaging: { include: { unit: true } },
@@ -902,6 +904,7 @@ export class SearchService {
             supplier: {
               id: offer.supplierOrganizationId,
               name: offer.supplier.organization.displayName,
+              publicContact: publicOrganizationContact(offer.supplier.organization.profile),
             },
             priceMinor: offer.prices[0]?.amountMinor.toString() ?? null,
             currency: offer.prices[0]?.currency ?? null,

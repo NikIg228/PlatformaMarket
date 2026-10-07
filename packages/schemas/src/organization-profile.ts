@@ -15,6 +15,16 @@ export const organizationProfileFieldsSchema = organizationContactSchema.extend(
   legalAddress: organizationAddressSchema,
   deliveryAddress: organizationAddressSchema,
 }).strict();
+// Suppliers publish the primary company contact; two reserve contacts are private
+// to the organization and participants of an order.
+export const supplierOrganizationProfileFieldsSchema = organizationProfileFieldsSchema.extend({
+  additionalContacts: z.array(organizationContactSchema).length(2, "Укажите два резервных контакта поставщика"),
+});
+export const supplierOrderContactsSchema = z.object({
+  official: organizationContactSchema.nullable(),
+  reserves: z.array(organizationContactSchema).max(9),
+}).strict();
+export type OrganizationContact = z.infer<typeof organizationContactSchema>;
 export const saveOrganizationProfileSchema = organizationProfileFieldsSchema.extend({
   expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(8).max(160),
@@ -22,6 +32,7 @@ export const saveOrganizationProfileSchema = organizationProfileFieldsSchema.ext
 export const organizationProfileResponseSchema = z.object({
   organizationId: z.uuid(), legalName: z.string(), displayName: z.string(), bin: z.string(),
   version: z.number().int().positive(), canEdit: z.boolean(), complete: z.boolean(),
+  requiredReserveContacts: z.union([z.literal(0), z.literal(2)]).optional(),
   profile: organizationProfileFieldsSchema.nullable(),
 }).strict();
 export const organizationOnboardingStepSchema = z.object({

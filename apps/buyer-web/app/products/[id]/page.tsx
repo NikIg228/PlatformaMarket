@@ -34,7 +34,7 @@ type DetailProduct = {
   isAvailable: boolean;
   offers: Array<{
     id: string;
-    supplier: { id: string; name: string };
+    supplier: { id: string; name: string; publicContact?: import("@marketplace/schemas").OrganizationContact | null };
     supplierSku: string | null;
     priceMinor: string | null;
     normalizedPriceMinor?: string | null;
@@ -114,6 +114,7 @@ function fromComparison(comparison: PublicComparison): DetailProduct {
       supplier: {
         id: offer.supplier.organizationId,
         name: offer.supplier.name,
+        publicContact: offer.supplier.publicContact,
       },
       supplierSku: offer.supplierSku,
       minimumOrderQuantity: offer.minimumOrderQuantity,

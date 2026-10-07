@@ -1,0 +1,55 @@
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { PrismaClient } from "@prisma/client";
+import { OrganizationProfileService, supplierOrganizationPrerequisites } from "../apps/api/dist/src/modules/organizations/organization-profile.service.js";
+import { publicContactSelect, publicOrganizationContact, supplierOrderContacts } from "../apps/api/dist/src/modules/organizations/contact-projection.js";
+import { completeFixtureOrganization } from "./lib/organization-profile-fixture.mjs";
+
+const target = new URL(process.env.POSTGRES_TEST_DATABASE_URL ?? "http://invalid");
+assert(["127.0.0.1", "localhost"].includes(target.hostname) && target.pathname === "/dentmarket_audit_20260914", "Requires approved disposable database via npm run db:test");
+assert.equal(process.env.DATABASE_URL, process.env.POSTGRES_TEST_DATABASE_URL);
+const db = new PrismaClient(), actorId = randomUUID(), organizationId = randomUUID();
+const service = new OrganizationProfileService(db), context = { actorId, organizationId };
+try {
+  assert.equal((await db.$queryRaw`SELECT current_database() AS name`)[0].name, "dentmarket_audit_20260914");
+  await db.organization.create({ data: { id: organizationId, legalName: "Synthetic contact verification", displayName: "Synthetic", bin: String(Date.now()).slice(-12), capabilities: { create: { capability: "SUPPLIER" } } } });
+  await db.user.create({ data: { id: actorId, email: `${actorId}@example.invalid`, displayName: "Synthetic", memberships: { create: { organizationId, status: "ACTIVE" } } } });
+  await completeFixtureOrganization(db, organizationId);
+  await db.organizationProfile.update({ where: { organizationId }, data: { additionalContacts: [] } });
+  process.env.ACCESS_CONTROL_MODE = "FULL_ACCESS";
+  const base = await service.current(context);
+  assert.equal(base.complete, false); assert.equal(base.requiredReserveContacts, 2); assert(base.profile);
+  assert.equal((await supplierOrganizationPrerequisites(db, organizationId)).profileComplete, false);
+  const input = { ...base.profile, expectedVersion: base.version, idempotencyKey: randomUUID() };
+  await assert.rejects(service.save(input, context), error => error.status === 400);
+  assert.equal((await db.organization.findUniqueOrThrow({ where: { id: organizationId } })).version, base.version);
+  assert.equal(await db.auditLog.count({ where: { actorId } }), 0);
+  const reserves = [1, 2].map(n => ({ contactName: `Reserve ${n}`, phone: `+7700000000${n}`, email: `reserve${n}@example.invalid` }));
+  const valid = { ...input, additionalContacts: reserves, idempotencyKey: randomUUID() };
+  const saved = await service.save(valid, context);
+  assert.equal(saved.complete, true); assert.deepEqual(saved.profile.additionalContacts, reserves);
+  assert.equal((await supplierOrganizationPrerequisites(db, organizationId)).profileComplete, true);
+  assert.equal((await service.save(valid, context)).version, saved.version);
+  assert.equal(await db.auditLog.count({ where: { actorId } }), 1);
+  await assert.rejects(service.save({ ...valid, expectedVersion: saved.version, idempotencyKey: randomUUID() }, { ...context, organizationId: randomUUID() }), error => error.status === 403);
+  const publicRow = await db.organizationProfile.findUnique({ where: { organizationId }, select: publicContactSelect });
+  assert.deepEqual(Object.keys(publicRow).sort(), ["contactName", "email", "phone"]);
+  assert.equal(JSON.stringify(publicOrganizationContact(publicRow)).includes("reserve"), false);
+  assert.deepEqual(supplierOrderContacts(await db.organizationProfile.findUnique({ where: { organizationId } })).reserves, reserves);
+  const rollback = new Error("synthetic rollback");
+  const broken = new OrganizationProfileService({ $transaction: run => db.$transaction(tx => run(new Proxy(tx, { get: (obj, key) => key === "auditLog" ? { create: () => { throw rollback; } } : obj[key] }))), organizationMembership: db.organizationMembership });
+  await assert.rejects(broken.save({ ...valid, phone: "+77000000999", expectedVersion: saved.version, idempotencyKey: randomUUID() }, context), error => error === rollback);
+  assert.equal((await service.current(context)).profile.phone, saved.profile.phone);
+  process.env.ACCESS_CONTROL_MODE = "ROLE_BASED";
+  await assert.rejects(service.save({ ...valid, expectedVersion: saved.version, idempotencyKey: randomUUID() }, context), error => error.status === 403);
+  console.log("PASS supplier three contacts: legacy read/completion, atomic invalid/save/replay/rollback, role/tenant denial and public/private projection");
+} finally {
+  await db.auditLog.deleteMany({ where: { actorId } });
+  await db.outboxEvent.deleteMany({ where: { aggregateId: organizationId } });
+  await db.idempotencyRecord.deleteMany({ where: { scope: `organization-profile:${organizationId}` } });
+  await db.organizationProfile.deleteMany({ where: { organizationId } });
+  await db.address.deleteMany({ where: { organizationId } });
+  await db.user.deleteMany({ where: { id: actorId } });
+  await db.organization.deleteMany({ where: { id: organizationId } });
+  await db.$disconnect();
+}

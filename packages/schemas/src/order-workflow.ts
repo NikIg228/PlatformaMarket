@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { supplierOrderResponseSchema } from "./core-api.js";
+import { supplierOrderContactsSchema } from "./organization-profile.js";
 import { paymentReviewStatusSchema, paymentSummarySchema, paymentReductionLineSchema, paymentReductionSchema, positiveMinorAmountSchema } from "./manual-payments.js";
 import { orderReturnSchema, returnKindSchema, returnLineSchema } from "./order-returns.js";
 
@@ -27,7 +28,7 @@ export const orderWorkflowCommandSchema = z.discriminatedUnion("action", [
 export const orderWorkflowEventSchema = z.object({ id: z.string().uuid(), action: z.string(), actorId: z.string().uuid(), organizationId: z.string().uuid(), createdAt: z.string(), details: z.record(z.string(), z.unknown()) });
 export const orderTransferClaimSchema = z.object({ id: z.string().uuid(), invoiceDocumentId: z.string().uuid(), documentId: z.string().uuid(), amountMinor: z.string(), currency: z.string(), paidAt: z.string(), comment: z.string(), status: paymentReviewStatusSchema, createdAt: z.string(), confirmedAt: z.string().nullable(), confirmedById: z.string().uuid().nullable(), receivedAmountMinor: z.string().nullable().optional(), checkedAt: z.string().nullable().optional(), nextCheckAt: z.string().nullable().optional(), supportTicketId: z.uuid().nullable().optional() });
 export const orderReservationStateSchema = z.object({ status: z.enum(["NONE", "ACTIVE", "DUE", "HELD_TRANSFER", "HELD_EXTERNAL", "SETTLED", "EXPIRED"]), expiresAt: z.string().datetime().nullable() });
-export const orderWorkflowResponseSchema = z.object({ orderId: z.string().uuid(), order: supplierOrderResponseSchema, version: z.number().int(), status: z.string(), paymentStatus: z.string(), invoiceDocumentId: z.string().uuid().nullable(), claims: z.array(orderTransferClaimSchema), events: z.array(orderWorkflowEventSchema), reservationState: orderReservationStateSchema.optional(), paymentSummary: paymentSummarySchema.optional(), reductions: z.array(paymentReductionSchema).optional(), paymentReviewConfigured: z.boolean().optional(), returns: z.array(orderReturnSchema).optional() });
+export const orderWorkflowResponseSchema = z.object({ orderId: z.string().uuid(), order: supplierOrderResponseSchema, supplierContacts: supplierOrderContactsSchema.optional(), version: z.number().int(), status: z.string(), paymentStatus: z.string(), invoiceDocumentId: z.string().uuid().nullable(), claims: z.array(orderTransferClaimSchema), events: z.array(orderWorkflowEventSchema), reservationState: orderReservationStateSchema.optional(), paymentSummary: paymentSummarySchema.optional(), reductions: z.array(paymentReductionSchema).optional(), paymentReviewConfigured: z.boolean().optional(), returns: z.array(orderReturnSchema).optional() });
 export const orderWorkflowResultSchema = z.object({ orderId: z.string().uuid(), version: z.number().int(), status: z.string(), paymentStatus: z.string(), eventId: z.string().uuid(), cartId: z.uuid().optional() });
 export type OrderWorkflowCommand = z.infer<typeof orderWorkflowCommandSchema>;
 export type OrderWorkflowResponse = z.infer<typeof orderWorkflowResponseSchema>;

@@ -3,6 +3,7 @@ import { FluentProvider } from "@fluentui/react-components";
 import { useEffect, type ReactNode } from "react";
 import { dentMarketLightTheme } from "./light-theme";
 import { installInputModality } from "./input-modality";
+import { SaveToastProvider } from "./save-toast";
 
 export function MarketplaceProvider({ children }: { children: ReactNode }) {
   useEffect(() => installInputModality(document), []);
@@ -13,7 +14,7 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
         className="mp-provider"
         theme={dentMarketLightTheme}
       >
-        {children}
+        <SaveToastProvider>{children}</SaveToastProvider>
       </FluentProvider>
   );
 }

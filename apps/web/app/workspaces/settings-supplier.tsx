@@ -1,40 +1,24 @@
 "use client";
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Option } from "@fluentui/react-components";
 import { createWarehouseSchema } from "@marketplace/schemas";
-import { DmSurface, DmButton, DmFeedback, DmField, DmFluentDropdown, DmInput, ErrorState, LoadingState, errorMessage, formatStatus, usePermissions, useUnsavedChanges } from "@marketplace/ui";
-import { dmLinkButtonProps } from "@marketplace/ui/link-button";
-import type { SupplierDataSource } from "../../../supplier-web/app/features/supplier-workspace/types";
+import { DmSurface, DmButton, DmFeedback, DmField, DmFluentDropdown, DmInput, ErrorState, LoadingState, errorMessage, formatStatus, usePermissions, useUnsavedChanges, useSaveToast } from "@marketplace/ui";
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
 import type { SettingsCity } from "./settings-organization";
 import styles from "./account-settings.module.css";
 
-export function SettingsSources() {
-  const { api, organizationId } = useWorkspace();
-  const load = useCallback((signal: AbortSignal) => api.get<SupplierDataSource[]>(`/suppliers/${organizationId}/data-sources`, { signal }), [api, organizationId]);
-  const resource = useResource(load);
-  return <DmSurface role="region" className={`${styles.card} ${styles.page}`} aria-label="Источники товаров"><div className={styles.toolbar}><h2>Источники товаров</h2>
-    <div className={styles.actions}><DmButton disabled={resource.loading} onClick={() => void resource.refresh()}>Обновить список</DmButton><Link {...dmLinkButtonProps({ appearance: "primary" })} href="/supplier/products/import">Загрузить прайс</Link></div></div>
-    <p className={styles.intro}>Здесь отображаются источники, из которых загружены товары. Новый прайс загружается в разделе «Товары».</p>
-    {resource.error ? <ErrorState description={resource.error} action={<DmButton disabled={resource.loading} onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : null}
-    {!resource.data && resource.loading ? <LoadingState label="Загружаем источники" /> : null}
-    {resource.data?.length === 0 ? <div className={styles.empty} role="status"><strong>Источников пока нет</strong><p>Загрузите прайс, чтобы добавить товары.</p></div> : <ul className={styles.list}>{resource.data?.map(source => <li key={source.id}><strong>{source.name}</strong><p className={styles.muted}>{formatStatus(source.type)} · {formatStatus(source.status)}</p></li>)}</ul>}
-  </DmSurface>;
-}
-
 const blankWarehouse = { code: "", name: "", cityId: "", addressLine: "" };
 export function SettingsWarehouses({ onDirtyChange }: { onDirtyChange: (dirty: boolean) => void }) {
   const { api, organizationId } = useWorkspace();
-  const has = usePermissions();
+  const has = usePermissions(), notify = useSaveToast();
   const load = useCallback(async () => {
     const [warehouses, cities] = await Promise.all([api.listSupplierWarehouses(organizationId), api.get<SettingsCity[]>("/catalog/cities")]);
     return { warehouses, cities };
   }, [api, organizationId]);
   const resource = useResource(load, { automatic: false });
   const [creating, setCreating] = useState(false), [draft, setDraft] = useState(blankWarehouse), [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null), [notice, setNotice] = useState(false), [errors, setErrors] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null), [errors, setErrors] = useState<Record<string, string>>({});
   const lock = useRef(false), form = useRef<HTMLFormElement>(null);
   const dirty = creating && Object.values(draft).some(Boolean);
   useUnsavedChanges(dirty || busy);
@@ -49,7 +33,7 @@ export function SettingsWarehouses({ onDirtyChange }: { onDirtyChange: (dirty: b
     lock.current = true; setBusy(true); setError(null); setErrors({});
     try {
       await api.post(`/suppliers/${organizationId}/warehouses`, parsed.data);
-      setCreating(false); setDraft(blankWarehouse); setNotice(true); await resource.refreshAfterWrite();
+      setCreating(false); setDraft(blankWarehouse); notify("Склад добавлен"); await resource.refreshAfterWrite();
     } catch (cause) { setError(errorMessage(cause)); }
     finally { lock.current = false; setBusy(false); }
   }
@@ -58,8 +42,7 @@ export function SettingsWarehouses({ onDirtyChange }: { onDirtyChange: (dirty: b
     {resource.error ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : null}
     {!resource.data && resource.loading ? <LoadingState label="Загружаем склады" /> : null}
     {resource.data?.warehouses.length === 0 ? <div className={styles.empty} role="status"><strong>Складов пока нет</strong><p>Добавьте место хранения, чтобы учитывать его остатки.</p></div> : <ul className={styles.list}>{resource.data?.warehouses.map(warehouse => <li key={warehouse.id}><strong>{warehouse.name}</strong><p className={styles.muted}>{formatStatus(warehouse.status)}</p></li>)}</ul>}
-    {notice ? <DmFeedback tone="success" title="Склад добавлен" description="Склад доступен для работы с остатками." /> : null}
-    {!creating ? <div className={styles.actions}><DmButton disabled={!has("supplier.warehouse.manage") || !resource.data} onClick={() => { setCreating(true); setNotice(false); }}>Добавить склад</DmButton></div> : <form ref={form} noValidate onSubmit={event => void submit(event)} className={styles.page} aria-label="Новый склад">
+    {!creating ? <div className={styles.actions}><DmButton disabled={!has("supplier.warehouse.manage") || !resource.data} onClick={() => { setCreating(true); }}>Добавить склад</DmButton></div> : <form ref={form} noValidate onSubmit={event => void submit(event)} className={styles.page} aria-label="Новый склад">
       <h3>Новый склад</h3><div className={styles.two}>
         <DmField size="large" label="Название склада" validationMessage={errors.name} validationState={errors.name ? "error" : "none"}><DmInput size="large" disabled={busy || !has("supplier.warehouse.manage")} value={draft.name} maxLength={160} onChange={(_, data) => setDraft(value => ({ ...value, name: data.value }))} /></DmField>
         <DmField size="large" label="Код склада" validationMessage={errors.code} validationState={errors.code ? "error" : "none"}><DmInput size="large" disabled={busy || !has("supplier.warehouse.manage")} value={draft.code} maxLength={32} onChange={(_, data) => setDraft(value => ({ ...value, code: data.value }))} /></DmField>

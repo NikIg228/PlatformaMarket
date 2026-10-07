@@ -12,9 +12,11 @@ export async function completeFixtureOrganization(db, organizationId) {
   }
   if (await db.organizationProfile.findUnique({ where: { organizationId } })) return;
   const city = await db.city.findFirstOrThrow({ include: { region: true }, orderBy: { id: "asc" } });
+  const supplier = await db.organizationCapability.findUnique({ where: { organizationId_capability: { organizationId, capability: "SUPPLIER" } } });
+  const additionalContacts = supplier ? [1, 2].map(index => ({ contactName: `Synthetic Reserve ${index}`, phone: `+7700000000${index}`, email: `reserve${index}@example.invalid` })) : [];
   await db.$transaction(async tx => {
     const legal = await tx.address.create({ data: { organizationId, cityId: city.id, regionId: city.regionId, countryId: city.region.countryId, line1: "Synthetic fixture street 1" } });
     const delivery = await tx.address.create({ data: { organizationId, cityId: city.id, regionId: city.regionId, countryId: city.region.countryId, line1: "Synthetic fixture delivery 2" } });
-    await tx.organizationProfile.create({ data: { organizationId, contactName: "Synthetic Fixture", phone: "+77000000000", email: "organization-fixture@example.invalid", legalAddressId: legal.id, deliveryAddressId: delivery.id } });
+    await tx.organizationProfile.create({ data: { organizationId, contactName: "Synthetic Fixture", phone: "+77000000000", email: "organization-fixture@example.invalid", additionalContacts, legalAddressId: legal.id, deliveryAddressId: delivery.id } });
   });
 }

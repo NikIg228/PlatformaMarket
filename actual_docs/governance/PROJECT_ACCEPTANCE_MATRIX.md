@@ -7,6 +7,27 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+08.10 SUPPLIER-CONTACTS-SOURCES-TABS — LOCAL_PASS:
+scope main@110e27b plus this task's reviewed diff. Supplier official/public contact
+and exactly two reserve contacts required for completion/save; legacy profiles
+remain readable. Catalog receives official fields only, order contacts are read
+after permission/party checks. Existing JSON persistence, no migration or live seed.
+Shared navigation tabs (Settings/Import/order), contextual help, cancel hover and
+five-second bottom-right save toast; 1C/MoySklad guided request UI uses existing
+support API. No live connector activation or external-service readiness claimed.
+Service/profile8, projection/order12, terms15, schema3 and public render1 PASS.
+Isolated DB contact persistence/replay/rollback/role/tenant/privacy proof PASS;
+runtime split/OpenAPI PASS.17 unique browser cases PASS at1440/390 including
+contact completion, errors/recovery, keyboard/dialog focus, import/order tabs,
+touch help and toast timing. Visual captures inspected in
+`output/playwright/supplier-contacts-ui-2/`, `supplier-contacts-final/` and
+`supplier-toast-mobile-verified/`. Final affected types, scoped ESLint,
+UI-contract337 sources, API/schema builds and go_live web build PASS.
+Attempts and exact commands: [task checkpoint](task-state/PRIMARY-SESSION.md).
+Logs `.tmp/supplier-contacts-*`, `.tmp/supplier-sources-*`, `.tmp/supplier-toast-*`.
+Full E2E/release NOT_RUN: focused slice with isolated backend and affected UI gates.
+Publication/CI recorded separately; R7 remains open.
+
 08.10 SETTINGS-PROFILE-EDITABLE-V2 — LOCAL_PASS:
 scope main@3fa9089 plus this task's reviewed diff; owner-approved Settings/Profile
 for clinic and supplier, inline name/email/phone/avatar, additional work contacts.

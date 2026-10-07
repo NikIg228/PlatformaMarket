@@ -10,3 +10,4 @@
 @media(max-width:480px){.row,.compact .row{grid-template-columns:minmax(0,1fr)}.compact .price,.compact .action{grid-column:auto}.action{width:100%}.action label{justify-content:flex-start}}
 
 .action .quantity { width: 88px; flex-shrink: 0; }
+.contact { display: grid; gap: var(--dm-space-1); overflow-wrap: anywhere; }

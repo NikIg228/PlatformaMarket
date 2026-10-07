@@ -1,5 +1,94 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 08.10.2026 — SUPPLIER-CONTACTS-SOURCES-TABS (LOCAL_PASS / PUBLICATION_PENDING)
+
+Owner primary01a11758-1c55-7e52-bf15-2a04427aaf5d, canonical main110e27b.
+Explicit request: distinguish supplier official/public contact from two reserve
+contacts for order participants; owner native reply requires all three. Sources:
+two horizontal 1C/MoySklad placeholder cards with polished guided connection UI;
+remove Refresh list, preserve Upload price link. Audit all internal tabs and align
+navigation appearance/spacing with Settings, preserve distinct list-filter pattern.
+Plan: shared schema/server supplier-only three-contact invariant; public projection
+official only, authorized order contact projection includes reserves; UI completion
+and explanatory hover/focus/touch help. Existing JSON storage, no migration/seed.
+Connector scope is guidance/placeholders, no external setup, credentials or false
+connected state. Reuse existing support destination if actual activation unavailable.
+Risks: contact privacy/tenant boundary, readiness compatibility, shared tab callers,
+draft recovery and keyboard/mobile. Focused server/schema tests before dependent UI;
+isolated DB contact persistence/denial as applicable; targeted browser supplier/clinic,
+catalog/order contact visibility, connector modal keyboard and representative tabs.
+Completion: affected types/tests/lint/UI-contract, API/web build, diff/scope review,
+commit/push to origin main under standing permission, remote SHA and CI snapshot.
+No full release/E2E or live providers, no agents/worktrees. Max3 attempts per blocker.
+Baseline dirty3 historical metadata + Next-generated web AGENTS/CLAUDE preserved.
+Native list confirms only this task writing canonical repo. Dev wrapper11188 runs
+from canonical root; verify process tree before any build stop/restart.
+Steering08.10 screenshots: move successful save acknowledgements to shared bottom-right
+toast (5s then slide out), remove inline Enter hint; phone requirement in heading
+question help (hover/focus/touch), cancel controls hover fill without underline.
+Applied to Profile/Settings save acknowledgements incl sessions/warehouses; errors
+remain inline. Reusable provider/pattern; preserve blocking/status data elsewhere.
+Backend stage1 org tests8 PASS. Stage2 public whitelist/order authorization tests2,
+org8/order10 PASS; terms1 failed old exact wording expectation, changed assertion
+to stable409/code and added legacy missing-reserves case; terms2 PASS15.
+Schemas built twice for separate schema changes; web intermediate typecheck1 PASS.
+Current UI implemented; browser/visual evidence and remaining types pending.
+Sources requests reuse existing support API/idempotency; no real service activation.
+Latest: schema3 tests PASS; web intermediate types2/API types1 PASS; UI-contract1
+PASS337 sources; final schema/API build PASS; isolated supplier-contacts DB proof1
+PASS (legacy readability/completion, invalid/no mutation, save/replay/rollback,
+role/tenant denial, official-only public projection). Runtime split1 PASS.
+Browser1 stopped after all4 profile-layout cases failed: missing toast. DOM diagnosis
+found zero toast viewport, compiled root-provider chunk still old while current
+source and barrel chunk contain SaveToastProvider. Root-layout timestamp invalidation
+and canonical dev restart did not change the result. Three blocker attempts used;
+no further retry unless owner explicitly authorizes. No product defect guessed.
+Owner explicitly authorized one extra cache-refresh attempt. Exact canonical
+apps/web/.next/dev moved to .tmp/next-dev-before-toast-refresh; web wrapper1656.
+Clean code exposed empty Portal hydration mismatch; render Portal on notice only.
+Authorized check proves toast appears and help/cancel behavior works: original
+missing-toast blocker resolved. New assertion failure measured x during200ms entry
+animation; wait for settled position before checking margins (test fix, attempt2).
+Browser2:12 PASS; sources2 failed focus restoration. Kept local connector dialog
+mounted through exit and restored opener in onClosed. Source retry2 passed this,
+then caught test expectation mismatch: Fluent arrows focus, Enter selects. Test
+corrected; source retry3 PASS2 at1440/390. Order contact/navigation PASS2.
+Mobile toast timer1 failed because test clock kept ticking during screenshot;
+timer2 fixed pause but fixed date expired synthetic auth; use current time before
+pause, timer3 PASS. No product timing workaround.17 unique browser cases PASS.
+Screenshots inspected: profile/settings both widths, official/reserve contacts,
+sources, connector error/dialog, import/order tabs, order contacts, mobile toast.
+Public SupplierOffers SSR test1 PASS: official tel/mail links, legacy no-contact.
+Final web/UI/e2e/client types PASS; scoped ESLint PASS; e2e-only types/lint rerun
+for final clock-fixture edit pending. UI-contract final PASS337 sources.
+Evidence logs `.tmp/supplier-contacts-*`, `.tmp/supplier-sources-*`,
+`.tmp/supplier-toast-*`, `.tmp/supplier-public-render-1.log`; screenshots
+`output/playwright/supplier-contacts-ui-2/`, `supplier-contacts-final/`,
+`supplier-toast-mobile-verified/`. Test runtime only intercepted synthetic API.
+Original dev11188 stopped for build; subsequent fixture web1656 verified and stopped.
+API4012 currently stopped. Final go_live web build running (attempt1); restore
+ordinary canonical npm run dev afterwards. No live DB writes or provider setup.
+Final go_live web build1 PASS; final e2e-only types/lint PASS. Ordinary canonical
+dev startup requested. Scope review found no further changes required.
+Exact gates (outputs in log prefixes above):
+`npm run test --workspace=@marketplace/api -- src/modules/organizations/contact-projection.spec.ts src/modules/organizations/organization-profile.service.spec.ts src/modules/agreements/supplier-terms.service.spec.ts src/modules/commerce/order-workflow.spec.ts`;
+terms focused retry: `npm run test --workspace=@marketplace/api -- src/modules/agreements/supplier-terms.service.spec.ts`;
+`npm run test --workspace=@marketplace/schemas -- src/organization-profile.test.ts`;
+`npm run build --workspace=@marketplace/schemas` and `npm run build --workspace=@marketplace/api`;
+`node scripts/with-test-database.mjs exec -- node scripts/verify-supplier-contacts.mjs`;
+`node scripts/verify-runtime-split.mjs`;
+`npm exec --workspace=@marketplace/buyer-web -- vitest run app/features/catalog/supplier-contacts.test.tsx`;
+`npm exec -- playwright test --config apps/e2e/playwright.workspaces.config.ts apps/e2e/tests/settings-profile.spec.ts`
+with subsequent focused --grep retries only as documented;
+`npm run typecheck --workspace=@marketplace/web --workspace=@marketplace/ui --workspace=@marketplace/e2e --workspace=@marketplace/api-client`;
+`node node_modules/eslint/bin/eslint.js --max-warnings=0` with changed TS/TSX/MJS paths;
+`npm run verify:ui-contract`; go_live `npm run build --workspace=@marketplace/web`;
+`git diff --check`. Required local gates PASS; no full E2E/release needed.
+Ordinary canonical dev10572 restored, go_live; API4012 readiness200 and web3000
+/supplier/profile200. All source/build checks complete. No working data changed.
+Remaining: staging/scope/secret review, commit/push, remoteSHA/CI snapshot.
+
+
 ## 07.10.2026 — SETTINGS-PROFILE-EDITABLE-V2 (LOCAL_PASS / PUBLICATION_PENDING)
 
 Owner primary01a11758-1c55-7e52-bf15-2a04427aaf5d, canonical main@3fa9089.

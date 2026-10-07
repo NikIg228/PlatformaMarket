@@ -1,12 +1,13 @@
 "use client";
 import { SpreadsheetImport } from "../../../supplier-web/app/features/supplier-workspace/spreadsheet-import";
+import { SettingsSources } from "./settings-sources";
 import { Inventory } from "./supplier-inventory";
 import { PageNavigation, usePageNavigation } from "./page-navigation";
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
-import { DmSearch, DmButton, DmField, DmInput, EmptyState, ErrorState, LoadingState, formatStatus } from "@marketplace/ui";
+import { DmSearch, DmButton, DmField, DmInput, ErrorState, LoadingState } from "@marketplace/ui";
 import type { ProductCandidateHistoryResponse } from "@marketplace/schemas";
 import { ProductProposals } from "../../../supplier-web/app/features/supplier-workspace/product-proposals";
 import { ProductCorrectionsPanel } from "../../../supplier-web/app/product-corrections-panel";
@@ -67,18 +68,8 @@ export function InventoryPage() {
   return <Frame title="Остатки"><PermissionBoundary required={["inventory.view"]}><Inventory /></PermissionBoundary></Frame>;
 }
 export function SourcesPage() {
-  return <div className={styles.stack}><Link href="/supplier/settings">← Настройки организации</Link><PermissionBoundary required={["import.manage"]}><Sources /></PermissionBoundary></div>;
+  return <div className={styles.stack}><Link href="/supplier/settings">← Настройки организации</Link><PermissionBoundary required={["import.manage"]}><SettingsSources /></PermissionBoundary></div>;
 }
-function Sources() {
-  const { api, organizationId } = useWorkspace();
-  const load = useCallback((signal: AbortSignal) => api.get<SupplierDataSource[]>(`/suppliers/${organizationId}/data-sources`, { signal }), [api, organizationId]);
-  const resource = useResource(load);
-  return <section className={styles.panel}><p>Доступные источники для загрузки прайса. Внешнее подключение оформляется отдельно через команду площадки.</p><Link href="/supplier/products/import">Загрузить прайс</Link><DmButton disabled={resource.loading} onClick={() => void resource.refresh()}>Обновить источники</DmButton>
-    <ResourceStatus resource={resource} />
-    {resource.error && !resource.data ? <ErrorState description={resource.error} /> : !resource.data ? <LoadingState label="Загружаем источники" /> : !resource.data.length ? <EmptyState title="Источников пока нет" description="Создайте источник в форме импорта товаров." /> : <ul>{resource.data.map(source => <li key={source.id}>{source.name} · {formatStatus(source.type)} · {formatStatus(source.status)}</li>)}</ul>}
-  </section>;
-}
-
 export function AddProductPage() {
   return <Frame title="Добавить товар"><PermissionBoundary required={["catalog.offer.edit", "catalog.product.view"]}><AddProduct /></PermissionBoundary></Frame>;
 }

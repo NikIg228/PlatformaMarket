@@ -34,6 +34,8 @@ export class OrganizationOnboardingController {
       reason: organization.complete ? null : "Заполните контакты, юридический адрес и адрес доставки", action: "profile" }];
     if (!supplier) return { organization, capability: "BUYER", ready: organization.complete, steps };
     const prerequisites = await supplierOrganizationPrerequisites(this.prisma, organization.organizationId);
+    organization = { ...organization, requiredReserveContacts: 2, complete: prerequisites.profileComplete };
+    steps[0] = { ...steps[0], complete: prerequisites.profileComplete, reason: prerequisites.profileComplete ? null : "Заполните официальный и два резервных контакта поставщика, юридический адрес и адрес доставки" };
     const terms = await this.terms.commercialState(organization.organizationId);
     const bundle = this.terms.documentsAvailable();
     steps.push(
