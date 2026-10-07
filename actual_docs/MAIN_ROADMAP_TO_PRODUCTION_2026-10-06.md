@@ -207,6 +207,11 @@ SETTINGS-PROFILE-EDITABLE-V2. Это не закрывает общий R7.1/R7.
 сохранения. Evidence — в той же Acceptance Matrix. Реальные коннекторы и общий
 R7 этим не приняты.
 
+08.10: DOCUMENTS-REDESIGN — частный LOCAL_PASS: реестры закупок/продаж,
+серверные группы состояний, связанные документы по заказу, desktop/mobile,
+договор площадки в настройках. [Evidence](governance/task-state/DOCUMENTS-REDESIGN-2026-10-08.md).
+Это не общая приёмка document relationship matrix или R7.
+
 - [ ] **R7.1** Консолидировать shared controls/theme и последние UI/Support/
   Orders/Notifications slices после R0; проверить нужные consumers, mobile,
   keyboard/focus, loading/empty/error, черновики и recovery.

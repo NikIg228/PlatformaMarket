@@ -1,7 +1,7 @@
 import { DOCUMENT_UPLOAD_MAX_BYTES } from "@marketplace/schemas";
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import type { CompleteDocumentSignatureInput, CreateDocumentTemplateInput, CreateDocumentVersionInput, CreateGeneratedDocumentInput, CreateSignatureSessionInput, DocumentArchiveQuery, DocumentQueryInput, GenerateOrderDocumentPackRequest, UpdateDocumentAccountingStatusInput, UploadDocumentInput } from "@marketplace/schemas";
-import { DocumentAccountingStatus, DocumentCategory, DocumentKind, DocumentPartyRole, Prisma } from "@prisma/client";
+import { DocumentAccountingStatus, DocumentCategory, DocumentKind, DocumentPartyRole, DocumentStatus, Prisma } from "@prisma/client";
 import { createHash, randomUUID } from "node:crypto";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import { ObjectStorageService } from "../../platform/storage/object-storage.service";
@@ -149,6 +149,14 @@ export class DocumentsService {
       where: {
         AND: [
           access,
+          {
+            ...(input.view === "AWAITING_SIGNATURE" ? { OR: [
+              { status: "AWAITING_SIGNATURE" as const }, { status: "PARTIALLY_SIGNED" as const },
+            ] } : input.view === "ATTENTION" ? { OR: [
+              { status: { in: ["FAILED", "REJECTED", "EXPIRED"] as DocumentStatus[] } },
+              { accountingStatus: { in: ["PENDING_REVIEW", "DISPUTED"] as DocumentAccountingStatus[] } },
+            ] } : input.view === "ARCHIVED" ? { status: "ARCHIVED" as const } : {}),
+          },
           {
             category: input.category,
             kind: input.kind,

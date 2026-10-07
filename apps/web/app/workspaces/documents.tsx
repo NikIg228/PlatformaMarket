@@ -1,5 +1,5 @@
 "use client";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   DocumentArchiveItem,
@@ -8,7 +8,7 @@ import type {
 } from "@marketplace/api-client";
 import {
   DocumentArchiveUpload,
-  DocumentArchiveWorkspace,
+  DocumentRegistry,
   documentOrderOptions,
   documentAgreementOptions,
   documentArchiveDateRange,
@@ -16,15 +16,14 @@ import {
   type DocumentArchiveFilters,
   type DocumentArchiveUploadInput,
 } from "@marketplace/ui";
-import { SupplierTermsPanel } from "../../../supplier-web/app/supplier-terms-panel";
 import { useWorkspace } from "./workspace";
 import styles from "./workspace.module.css";
-import { Credentials } from "./credentials";
 import { ResourceStatus } from "./resource-status";
-import { PermissionBoundary } from "./permission-boundary";
 
 const initial: DocumentArchiveFilters = {
   q: "",
+  view: "",
+  counterpartyOrganizationId: "",
   category: "",
   status: "",
   accountingStatus: "",
@@ -33,9 +32,10 @@ const initial: DocumentArchiveFilters = {
 };
 export default function Documents() {
   const search = useSearchParams();
+  const router = useRouter();
   const documentId = search.get("documentId");
   const initialDocumentId = documentId && /^[0-9a-f-]{36}$/i.test(documentId) ? documentId : null;
-  const { api, apiContext, role, organizationId } = useWorkspace();
+  const { api, role, organizationId } = useWorkspace();
   const [items, setItems] = useState<DocumentArchiveItem[]>([]);
   const [summary, setSummary] = useState<DocumentArchiveSummaryResponse | null>(
     null,
@@ -47,8 +47,7 @@ export default function Documents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [legalOpen, setLegalOpen] = useState(search.get("organization") === "1");
-  useEffect(() => { if (search.get("organization") === "1") setLegalOpen(true); }, [search]);
+  useEffect(() => { if (role === "supplier" && search.get("organization") === "1") router.replace("/supplier/settings?tab=documents"); }, [role, search, router]);
   const [uploading, setUploading] = useState(false);
   const sequence = useRef(0);
   const moreLock = useRef(false);
@@ -67,6 +66,8 @@ export default function Documents() {
       if (!background) setError(null);
       const query: DocumentArchiveQueryInput = {
         q: applied.q || undefined,
+        view: applied.view || undefined,
+        counterpartyOrganizationId: applied.counterpartyOrganizationId || undefined,
         category: (applied.category ||
           undefined) as DocumentArchiveQueryInput["category"],
         status: (applied.status ||
@@ -156,6 +157,14 @@ export default function Documents() {
     },
     [api, organizationId],
   );
+  const loadCounterparties = useCallback(async (q: string) => {
+    const page = await api.listDocumentArchive({ q: q || undefined, limit: 100 });
+    const counterparties = new Map<string, { id: string; name: string }>();
+    for (const document of page.items) for (const party of document.participants) {
+      if (party.organizationId !== organizationId) counterparties.set(party.organizationId, { id: party.organizationId, name: party.organization.displayName || party.organization.legalName });
+    }
+    return { items: [...counterparties.values()].sort((a, b) => a.name.localeCompare(b.name, "ru")), hasMore: page.nextCursor !== null };
+  }, [api, organizationId]);
   const download = async (item: DocumentArchiveItem) => {
     setBusyId(item.id);
     setError(null);
@@ -172,6 +181,7 @@ export default function Documents() {
       setError(
         cause instanceof Error ? cause.message : "Не удалось скачать документ",
       );
+      throw cause;
     } finally {
       setBusyId(null);
     }
@@ -191,26 +201,10 @@ export default function Documents() {
   };
   return (
     <div className={styles.stack}>
-      {role === "supplier" ? (
-        <details
-          className={styles.panel}
-          open={legalOpen}
-          onToggle={(event) => setLegalOpen(event.currentTarget.open)}
-        >
-          <summary>Договор и документы организации</summary>
-          {legalOpen ? (
-            <div className={styles.stack}>
-              <SupplierTermsPanel apiContext={apiContext} />
-              <PermissionBoundary required={["compliance.view"]}><Credentials /></PermissionBoundary>
-            </div>
-          ) : null}
-        </details>
-      ) : null}
-      <ResourceStatus resource={{ lastSuccessAt, offline, refreshing: loading, error: refreshError }} />
-      <DocumentArchiveWorkspace
+      {offline || refreshError ? <ResourceStatus resource={{ lastSuccessAt, offline, refreshing: loading, error: refreshError }} /> : null}
+      <DocumentRegistry
         initialDocumentId={initialDocumentId}
-        hideHeading
-        roleLabel={role === "clinic" ? "клиника" : "поставщик"}
+        role={role === "clinic" ? "clinic" : "supplier"}
         organizationId={organizationId}
         items={items}
         summary={summary}
@@ -264,7 +258,9 @@ export default function Documents() {
             moreLock.current = false;
           });
         }}
-        onDownload={(item) => void download(item as DocumentArchiveItem)}
+        onDownload={(item) => download(item as DocumentArchiveItem)}
+        loadCounterparties={loadCounterparties}
+        onRelatedDocuments={(supplierOrderId, cursor) => api.listDocumentArchive({ supplierOrderId, cursor, limit: 25 })}
         onOpenDocument={(id) => api.getArchiveDocument(id)}
         onAccountingStatus={async (item, status, reason) => {
           setBusyId(item.id);
@@ -277,7 +273,8 @@ export default function Documents() {
             setItems((current) =>
               current.map((row) => (row.id === updated.id ? updated : row)),
             );
-            setSummary(await api.getDocumentArchiveSummary());
+            void api.getDocumentArchiveSummary().then(setSummary).catch(() => setRefreshError("Не удалось обновить сводку. Бухгалтерская отметка сохранена."));
+            return updated;
           } finally {
             setBusyId(null);
           }

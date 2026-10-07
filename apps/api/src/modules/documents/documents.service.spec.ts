@@ -90,8 +90,23 @@ describe("DocumentsService archive", () => {
       where: { AND: [expect.objectContaining({ OR: expect.arrayContaining([
         { ownerOrganizationId: "buyer" },
         { participants: { some: { organizationId: "buyer" } } },
-      ]) }), expect.any(Object)] },
+      ]) }), expect.any(Object), expect.any(Object)] },
       take: 26,
+    }));
+  });
+
+  it.each([
+    ["AWAITING_SIGNATURE", { OR: [{ status: "AWAITING_SIGNATURE" }, { status: "PARTIALLY_SIGNED" }] }],
+    ["ATTENTION", { OR: [{ status: { in: ["FAILED", "REJECTED", "EXPIRED"] } }, { accountingStatus: { in: ["PENDING_REVIEW", "DISPUTED"] } }] }],
+    ["ARCHIVED", { status: "ARCHIVED" }],
+  ] as const)("intersects %s with tenant access, search and cursor", async (view, expected) => {
+    const findMany = vi.fn().mockResolvedValue([]);
+    const service = new DocumentsService({ organizationCapability: { findUnique: vi.fn().mockResolvedValue(null) }, document: { findMany } } as never, {} as never, {} as never, {} as never, {} as never);
+    await service.listArchive({ view, q: "invoice", counterpartyOrganizationId: "supplier", cursor: "cursor", limit: 25 }, { actorId: "buyer-user", organizationId: "buyer" });
+    expect(findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { AND: [expect.objectContaining({ OR: expect.arrayContaining([{ ownerOrganizationId: "buyer" }]) }), expected, expect.objectContaining({
+        participants: { some: { organizationId: "supplier" } }, OR: expect.any(Array),
+      })] }, cursor: { id: "cursor" }, skip: 1, take: 26,
     }));
   });
 

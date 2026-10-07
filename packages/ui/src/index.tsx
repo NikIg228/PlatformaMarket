@@ -1,4 +1,5 @@
 "use client";
+export { DocumentRegistry } from "./document-registry";
 export { DmInfoTip } from "./info-tip";
 export { useSaveToast } from "./save-toast";
 export { DmInlineEdit, DmEditableAvatar } from "./inline-edit";

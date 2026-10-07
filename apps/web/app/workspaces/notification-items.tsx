@@ -20,7 +20,7 @@ export function notificationHref(item: NotificationInboxItem, role: "clinic" | "
     case "conversation": return `/${role}/messages?conversationId=${id}`;
     case "support": return `/${role}/support?ticketId=${id}`;
     case "document": return `/${role}/documents?documentId=${id}`;
-    case "organization": return `/${role}/documents?organization=1`;
+    case "organization": return role === "supplier" ? "/supplier/settings?tab=documents" : "/clinic/settings";
     case "products": return role === "supplier" ? `/supplier/products/${target.section ?? "proposals"}${target.section === "proposals" ? `?request=${id}` : ""}` : null;
   }
 }

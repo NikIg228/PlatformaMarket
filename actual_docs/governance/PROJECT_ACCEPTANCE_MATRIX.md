@@ -7,6 +7,21 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+08.10 DOCUMENTS-REDESIGN — LOCAL_PASS:
+scope main5d24ae5 plus reviewed Documents diff. Clinic procurement/supplier sales
+registry, grouped server filters, bounded counterparty search, periods, cursor
+paging; desktop detail/mobile drawer with independently loaded related order
+documents, downloads/signatures/versions and permission-based accounting.
+Marketplace agreement/credentials moved to supplier Settings; legacy link redirects.
+Schema4/client1/document-service-and-isolation55/OpenAPI3 tests PASS; nine unique
+targeted fixture browser cases PASS (1440/390, keyboard/return focus, filters,
+empty/error/retry, upload draft, accounting recovery/denial). Final screenshot and
+computed control sizes inspected. Affected types/scoped lint/UI-contract342 sources,
+schema/API builds, runtime split and go_live web build PASS. No DB writes, migration,
+external signing, release certification or full E2E. Legacy entry UI preserved.
+Attempts, commands, artifacts and publication status:
+[checkpoint](task-state/DOCUMENTS-REDESIGN-2026-10-08.md). This slice does not close R7.
+
 08.10 SUPPLIER-CONTACTS-SOURCES-TABS — LOCAL_PASS:
 scope main@110e27b plus this task's reviewed diff. Supplier official/public contact
 and exactly two reserve contacts required for completion/save; legacy profiles

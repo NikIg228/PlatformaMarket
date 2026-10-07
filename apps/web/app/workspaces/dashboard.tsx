@@ -31,7 +31,7 @@ export default function Dashboard() {
       </section>
       <section className={styles.panel}>
         <h2>Организация</h2><p>Проверьте реквизиты, склад и готовность к публикации предложений.</p>
-        <Link href="/supplier/settings">Настройки →</Link><p><Link href="/supplier/documents">Договор и документы →</Link></p>
+        <Link href="/supplier/settings">Настройки →</Link><p><Link href="/supplier/settings?tab=documents">Договор и документы →</Link></p>
       </section>
     </div>
   </div>;

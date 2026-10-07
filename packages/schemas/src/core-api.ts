@@ -588,6 +588,7 @@ export const documentArchiveAccountingStatusSchema = z.enum([
 
 export const documentArchiveQuerySchema = z.object({
   q: z.string().trim().max(120).optional(),
+  view: z.enum(["AWAITING_SIGNATURE", "ATTENTION", "ARCHIVED"]).optional(),
   category: documentArchiveCategorySchema.optional(),
   kind: documentArchiveKindSchema.optional(),
   status: z.enum(["DRAFT", "GENERATING", "GENERATED", "AWAITING_SIGNATURE", "PARTIALLY_SIGNED", "SIGNED", "REJECTED", "EXPIRED", "SUPERSEDED", "ARCHIVED", "FAILED"]).optional(),

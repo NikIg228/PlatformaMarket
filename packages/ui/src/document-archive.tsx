@@ -55,6 +55,8 @@ export type DocumentArchiveSummaryView = {
 };
 
 export type DocumentArchiveFilters = {
+  view?: "" | "AWAITING_SIGNATURE" | "ATTENTION" | "ARCHIVED";
+  counterpartyOrganizationId?: string;
   q: string;
   category: string;
   status: string;
@@ -63,7 +65,7 @@ export type DocumentArchiveFilters = {
   dateTo: string;
 };
 
-const categoryLabels: Record<string, string> = {
+export const categoryLabels: Record<string, string> = {
   CONTRACT: "Договоры",
   ORDER: "Заказы",
   PAYMENT: "Оплата",
@@ -73,7 +75,7 @@ const categoryLabels: Record<string, string> = {
   OTHER: "Прочее",
 };
 
-const kindLabels: Record<string, string> = {
+export const kindLabels: Record<string, string> = {
   MARKETPLACE_SUPPLIER_AGREEMENT: "Договор с площадкой",
   MARKETPLACE_BUYER_TERMS: "Условия для покупателя",
   FRAMEWORK_SUPPLY_AGREEMENT: "Рамочный договор поставки",
@@ -98,7 +100,7 @@ const kindLabels: Record<string, string> = {
   OTHER: "Прочий документ",
 };
 
-const statusLabels: Record<string, string> = {
+export const statusLabels: Record<string, string> = {
   DRAFT: "Черновик",
   GENERATING: "Формируется",
   GENERATED: "Готов",
@@ -120,7 +122,7 @@ const statusLabels: Record<string, string> = {
 const formatDate = (value: string, timeZone?: string) => new Intl.DateTimeFormat("ru-KZ", { day: "2-digit", month: "short", year: "numeric", timeZone }).format(new Date(value));
 const formatMoney = formatDocumentAmount;
 
-function DocumentStatus({ value }: { value: string }) {
+export function DocumentStatus({ value }: { value: string }) {
   const tone = ["SIGNED", "GENERATED", "RECONCILED", "REVIEWED"].includes(value)
     ? "success"
     : ["FAILED", "REJECTED", "DISPUTED", "EXPIRED"].includes(value)
