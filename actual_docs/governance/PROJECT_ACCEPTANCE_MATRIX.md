@@ -1,11 +1,20 @@
 # PlatformaMarket — актуальная матрица приёмки
 
-Маршрут с06.10: требования — [PROJECT_OVERVIEW](../PROJECT_OVERVIEW.md),
-очередь — [Main Roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
+Маршрут с08.10: приоритет №1 — [функциональная карта](../FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md),
+подробные требования — [PROJECT_OVERVIEW](../PROJECT_OVERVIEW.md),
+единый реестр исполнения — [Main Roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
 Ниже evidence отдельных задач, с датами и границами версий. Это не общий PASS
 текущего dirty checkout и не доказательство production. Старые карточки доступны
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
+
+08.10 FUNCTIONAL-AUDIT-ROADMAP — CODE_AUDIT / TARGETED_UNIT_PASS:
+функциональная карта на1fb24ca9698769c69d2c23265f6a9a7105fecd45; 24 server test
+files /163 tests PASS (13/79 +11/84). Точные команды, связи API/UI и границы —
+в [приоритетном документе](../FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md).
+Это не новый PostgreSQL/E2E/live PASS. Self-service ERP обеих ролей и совместная
+реализация backend/UI — принятые требования; runtime подключения через поддержку
+пока не заменён. Docs-only evidence — [checkpoint](task-state/FUNCTIONAL-AUDIT-ROADMAP-2026-10-08.md).
 
 08.10 STATUS-TOASTS — LOCAL_PASS:
 scope main1fb24ca plus reviewed action-feedback diff. Clinic, supplier and operator

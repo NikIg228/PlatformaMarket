@@ -1,7 +1,9 @@
 # Реестр документации PlatformaMarket
 
-Актуализировано 6 октября 2026. Начать с [описания](PROJECT_OVERVIEW.md)
-и выбранного пункта [roadmap](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
+Актуализировано 8 октября 2026. Начать с приоритетной
+[функциональной карты](FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md), затем
+[описания](PROJECT_OVERVIEW.md) и выбранного R-ID
+[реестра исполнения](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
 Этот реестр классифицирует материалы; его не нужно читать целиком перед задачей.
 
 ## Классы документов
@@ -18,6 +20,7 @@
 
 | Документ | Класс | Назначение |
 | --- | --- | --- |
+| [FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md](FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md) | CURRENT | Приоритет №1: функциональная карта, целевые решения, совместный backend/UI DoD; checklist/status R0–R9 в реестре исполнения |
 | [Корневой README](../README.md) | CURRENT | Краткий вход |
 | [AGENTS](../AGENTS.md) | CURRENT | Границы и порядок работы |
 | [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) | CURRENT | Рабочий источник по назначению |
@@ -51,6 +54,7 @@
 | [governance/SESSION_ROLLOVER.md](governance/SESSION_ROLLOVER.md) | EXECUTION | Читать только для выбранного scope/владения |
 | [governance/task-state/DOCS-REFRESH-2026-10-06.md](governance/task-state/DOCS-REFRESH-2026-10-06.md) | EXECUTION | Читать только для выбранного scope/владения |
 | [governance/task-state/PRIMARY-SESSION.md](governance/task-state/PRIMARY-SESSION.md) | EXECUTION | Читать только для выбранного scope/владения |
+| [governance/task-state/FUNCTIONAL-AUDIT-ROADMAP-2026-10-08.md](governance/task-state/FUNCTIONAL-AUDIT-ROADMAP-2026-10-08.md) | EXECUTION | Docs-only приоритизация аудита и правил ERP/backend/UI |
 | [integrations/connector-readiness.md](integrations/connector-readiness.md) | REFERENCE | Контракт/процедура выбранного канала |
 | [integrations/runbooks/custom-api.md](integrations/runbooks/custom-api.md) | REFERENCE | Контракт/процедура выбранного канала |
 | [integrations/runbooks/external-adapters.md](integrations/runbooks/external-adapters.md) | REFERENCE | Контракт/процедура выбранного канала |
