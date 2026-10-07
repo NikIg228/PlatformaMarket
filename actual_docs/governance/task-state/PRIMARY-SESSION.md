@@ -1,5 +1,92 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 07.10.2026 — SETTINGS-PROFILE-EDITABLE-V2 (LOCAL_PASS / PUBLICATION_PENDING)
+
+Owner primary01a11758-1c55-7e52-bf15-2a04427aaf5d, canonical main@3fa9089.
+Explicit owner request: implement approved clinic Settings / supplier Profile
+references for both roles, horizontal editable avatar/name/email/required phone,
+pencil/check actions, compact add-contact action, editable organization contacts
+and addresses; document reusable inline editing pattern. R7.1 scoped slice only.
+Preserve legal identity readonly, session controls, supplier warehouses/sources,
+authorization, validation, recoverable drafts and existing shared control contracts.
+Plan/risk: extend schema/API/client/persistence before UI. Personal email requires
+new-address verification; avatar uses existing private upload scanning/storage.
+Multiple organization contacts retain primary legacy fields, version/idempotency.
+Auth/upload/schema risk: focused contract/service tests after each transition,
+isolated DB migration/rollback/concurrency checks, dependent identity/onboarding
+tests, runtime check. UI: targeted both-role interactions, failure/retry, keyboard,
+1440/390 layouts; affected types/lint/UI-contract and go_live build at completion.
+No working DB migration/data writes, external mail or deployment authorized.
+Review migration and evidence before requesting working-environment application.
+Max3 attempts per blocker, checkpoints after coherent stages; retain old evidence
+only for unchanged inputs. No agents/worktrees or unrelated full-project gates.
+Dirty baseline: three historical handoff metadata, preserved/excluded from commit.
+Only this task active in canonical root, verified native list. Dev8128 preserved.
+Standing commit/push after required PASS; remote SHA and CI snapshot separately.
+Backend: schema/contact tests PASS2, org service attempt1 FAIL no-op comparison
+property order, canonicalization fixed and attempt2 PASS7. Personal service/controller
+attempt1 failed class-level Header decorator; method-level fix attempt2 PASS6.
+Existing email-token-consumption PASS5. Personal schema PASS1. API types1 failed
+same decorator; types2 PASS. Prisma generate1 EPERM active dev DLL; verified and
+stopped exact canonical dev8128 tree, generate2 PASS. Prisma validate1 lacked env;
+validate2 via isolated wrapper PASS. Migration deploy1 PASS isolated DB only.
+Postgres profile proof1 failed test SQL comment splitter; proof2 failed test context
+extra sessionId passed into org audit; corrected fixtures, proof3 PASS. Verified old
+schema upgrade/default preservation, CAS race (one winner), transactional rollback,
+role/tenant denial, multi-contact persistence/idempotency, verified email/revocation.
+No further same-input rerun; max3 honored. API build1 PASS; runtime1 caught late
+OpenAPI import TDZ, import moved to top, API rebuild2/runtime2 PASS.
+New UI implemented; web types1/UI-contract1 PASS. Browser evidence pending.
+Original canonical dev stopped for Prisma; standalone canonical web fixture dev
+started for browser verification. Working DB unchanged; activation needs approval
+of additive migration after code/evidence review. Logs .tmp/profile-edit-*.
+Next: targeted browser + dependent identity/upload/schema/client checks, UI review,
+completion builds/types/lint/docs; request exact working migration approval last.
+08.10 UI/verification: dependent identity/organization/upload/session tests100 PASS;
+shared UI token/theme5 PASS; client2 PASS; UI/e2e types1 PASS; scoped lint1 PASS.
+Browser1 four functional cases PASS, four layout cases FAIL avatar focus overlay.
+Changed overlay to :focus (kept shared focus ring); browser2 PASS11 including four
+layouts and seven existing profile-nav/logout recovery cases. Final layout inputs
+remove always-visible refresh action, add touch cancel, preserve draft on conflict.
+Recovery1 PASS2 (personal error/email + mobile cancel/session paging/revoke), one
+new address-conflict test failed ambiguous alert (Next announcer). Scoped selector,
+final visual/recovery PASS5;17 unique browser cases green, no working data used.
+Final desktop/mobile screenshots inspected in output/playwright/profile-edit-v2-final-visual.
+Review found avatar2MiB requires explicit bounded JSON body policy; added route-only
+base64 limit and boundary tests. Body-policy13 + affected personal6 PASS.
+API final build and schemas final build PASS. HTTP1 test environment LOG_LEVEL=silent
+invalid; changed test to supported fatal. HTTP2 PASS real go_live JWT API on isolated
+DB: forged headers401, self write201, invalid400/stale409, scanner reject400, PNG
+upload/download, private local mail, new-address confirmation, replay401/old token401.
+All synthetic fixtures/storage/mail cleaned by scripts; no live provider calls.
+Standalone web fixture process7784 remains until final build. Working migration NOT_APPLIED.
+Remaining: final types/lint/UI-contract/build, final scope/security review, publication,
+owner authorization for exact additive working migration and canonical dev restoration.
+Completion checks08.10 PASS: schemas/API final build, go_live web build1, web/API/
+client/e2e final types, UI types, UI-contract final. Final lint initially included
+Next-generated ignored next-env.d.ts and failed max-warnings; excluded generated
+file from source selection, final scoped32 files PASS. No source lint errors.
+Review/diff hygiene PASS. Working DB read-only preflight confirms exact target
+127.0.0.1:5432/marketplace and sole pending migration20261007190000_profile_contacts.
+Owner asked via pending native input to authorize additive migration + backup +
+dev restart; no approval inferred. Schema/user data not changed there yet.
+Fixture web7784 stopped after final screenshots for successful build. Next dev
+generated apps/web/AGENTS.md and CLAUDE.md confirmed against installed generator;
+not another writer, exclude from product scope. next-env build paths generated,
+restore original owned artifact before staging. Old three handoff metadata preserved.
+Owner08.10 explicitly approved native question: apply migration20261007190000_profile_contacts
+to local127.0.0.1:5432/marketplace after backup, then restart normal dev; no seed,
+deletion or changes to existing values. Proceed within this exact environment scope.
+Activation1 PASS: private pg_dump backup validated with pg_restore --list, sole
+pending migration applied via prisma migrate deploy; SQL digests confirm existing
+User/OrganizationProfile values unchanged. Backup .tmp/local-runtime/profile-edit-before-migration.dump
+is ignored/private. Canonical npm run dev launched hidden wrapper11188.
+Remaining: runtime readiness, commit/push verified own scope, remote SHA/CI snapshot.
+Runtime readiness PASS: canonical dev reports unified ready; API health, clinic
+settings and supplier profile HTTP200. Fetch confirms origin/main=baseline3fa9089;
+owned41-file staged scope reviewed, diff hygiene PASS; historical handoff hunks,
+generated Next instruction files and private backup excluded. Ready to publish.
+
 ## 07.10.2026 — SETTINGS-PROFILE-RESET-V2 (LOCAL_PASS)
 
 Owner primary01a11758-1c55-7e52-bf15-2a04427aaf5d; canonical main@9c64593.

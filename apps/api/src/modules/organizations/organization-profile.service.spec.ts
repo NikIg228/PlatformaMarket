@@ -24,6 +24,15 @@ function setup() {
   return { db, organization, addresses, service: new OrganizationProfileService(db) };
 }
 describe("organization profile ownership and atomic save", () => {
+  it("persists extra contacts, preserves them for legacy saves and does not invalidate unchanged address verification", async () => {
+    const t = setup(); const additionalContacts = [{ contactName: "Other Person", phone: "+77000000001", email: "second@example.invalid" }];
+    const saved = await t.service.save({ ...input, additionalContacts }, context);
+    expect(saved.profile?.additionalContacts).toEqual(additionalContacts);
+    const changed = await t.service.save({ ...input, phone: "+77000000002", expectedVersion: 2, idempotencyKey: "legacy-save-key" }, context);
+    expect(changed.profile?.additionalContacts).toEqual(additionalContacts);
+    expect(t.db.address.updateMany).not.toHaveBeenCalled();
+    expect((await t.service.save({ ...input, additionalContacts: [], expectedVersion: 3, idempotencyKey: "clear-contact-key" }, context)).profile?.additionalContacts).toEqual([]);
+  });
   it("checks active tenant membership and edit permission before reading or writing the profile", async () => {
     const t = setup(); t.db.organizationMembership.findFirst.mockResolvedValue(null);
     await expect(t.service.current(context)).rejects.toMatchObject({ status: 403 });

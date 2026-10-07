@@ -7,6 +7,27 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+08.10 SETTINGS-PROFILE-EDITABLE-V2 — LOCAL_PASS:
+scope main@3fa9089 plus this task's reviewed diff; owner-approved Settings/Profile
+for clinic and supplier, inline name/email/phone/avatar, additional work contacts.
+[UI pattern](../ui-ux/DESIGN_SYSTEM.md),
+[API and migration](../operations/production-auth-runbook.md),
+[attempts and publication](task-state/PRIMARY-SESSION.md).
+Identity/org/upload/session suites100 PASS; body-policy13 PASS; schema3/client2/
+UI tokens5 PASS. Isolated migration deploy/upgrade, CAS concurrency, rollback,
+role/tenant denial, contact idempotency and verified email/session transition PASS.
+Actual JWT HTTP API PASS with a loopback scanner simulator and private local mail;
+no external delivery certification. Targeted browser17 unique cases PASS, including
+1440/390 both roles, keyboard/touch cancellation, drafts/errors/retry, contact add,
+address conflict rebase, sessions pagination/revoke and existing navigation/logout.
+Final screenshots inspected: `output/playwright/profile-edit-v2-final-visual/`.
+Affected schemas/API/web/UI/client/e2e types, API build, go_live web build, scoped
+ESLint and UI-contract PASS. Logs `.tmp/profile-edit-*`. Full E2E/release were not
+run: scoped UI/auth/upload change, covered with targeted DB/HTTP/browser gates.
+Owner-approved local migration20261007190000_profile_contacts applied after a
+validated private backup; existing User/OrganizationProfile values unchanged.
+No seed or production deployment. R7 and external production readiness remain open.
+
 05.10 INVENTORY-EDITOR-TEMPLATES — LOCAL_PASS (CI отдельно при доставке):
 [контракт](../applications/supplier-web.md),
 [HTTP и проверка](../integrations/runbooks/manual-supplier.md).

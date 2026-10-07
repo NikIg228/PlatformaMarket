@@ -1,4 +1,5 @@
 "use client";
+export { DmInlineEdit, DmEditableAvatar } from "./inline-edit";
 import { DmAction, DmDismissLayer } from "./controls";
 export { SupportFilePicker, SupportAttachmentList } from "./support-files";
 export { DmSearch } from "./dm-search";

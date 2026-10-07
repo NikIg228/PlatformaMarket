@@ -1,5 +1,5 @@
 import { HttpException } from "@nestjs/common";
-import { DOCUMENT_UPLOAD_MAX_JSON_BYTES, IMPORT_UPLOAD_MAX_JSON_BYTES } from "@marketplace/schemas";
+import { AVATAR_MAX_JSON_BYTES, DOCUMENT_UPLOAD_MAX_JSON_BYTES, IMPORT_UPLOAD_MAX_JSON_BYTES } from "@marketplace/schemas";
 import express, { type Request, type RequestHandler } from "express";
 import { WEBHOOK_MAX_BODY_BYTES } from "../../modules/integrations/integration-webhooks.constants";
 
@@ -11,6 +11,7 @@ export function requestBodyPolicy(method: string, path: string) {
   const rawBody = /^\/api\/(?:integrations\/webhooks|payments\/webhooks|documents\/signatures\/callback)(?:\/|$)/i.test(path);
   if (rawBody) return { limit: WEBHOOK_MAX_BODY_BYTES, rawBody };
   if (method === "POST") {
+    if (/^\/api\/auth\/profile\/avatar\/?$/i.test(path)) return { limit: AVATAR_MAX_JSON_BYTES, rawBody };
     if (/^\/api\/documents\/upload\/?$/i.test(path) || /^\/api\/support\/attachments\/?$/i.test(path) || /^\/api\/compliance\/organizations\/[^/]+\/credentials\/?$/i.test(path)) {
       return { limit: DOCUMENT_JSON_MAX_BYTES, rawBody };
     }

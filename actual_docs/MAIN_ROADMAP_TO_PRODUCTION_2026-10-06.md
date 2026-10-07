@@ -195,6 +195,12 @@ concurrent checkout и release/return доказаны целевыми contract
 
 Статус: PLANNED. Частные UI slices уже имеют evidence; не делать общий redesign.
 
+08.10: Settings/Profile клиники и поставщика с редактированием личных данных и
+несколькими рабочими контактами — частный LOCAL_PASS; локальная миграция применена
+с разрешения владельца после резервного копирования.
+Evidence: [Acceptance Matrix](governance/PROJECT_ACCEPTANCE_MATRIX.md),
+SETTINGS-PROFILE-EDITABLE-V2. Это не закрывает общий R7.1/R7.3.
+
 - [ ] **R7.1** Консолидировать shared controls/theme и последние UI/Support/
   Orders/Notifications slices после R0; проверить нужные consumers, mobile,
   keyboard/focus, loading/empty/error, черновики и recovery.

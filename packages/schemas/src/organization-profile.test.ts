@@ -8,3 +8,11 @@ it("requires both addresses, complete contact details and a version without call
     expect(saveOrganizationProfileSchema.safeParse({ ...input, ...patch }).success).toBe(false);
   }
 });
+
+it("validates complete additional contacts and bounds the list without accepting ownership", () => {
+  const contact = { contactName: "Other Person", phone: "+77000000001", email: "SECOND@example.invalid" };
+  expect(saveOrganizationProfileSchema.parse({ ...input, additionalContacts: [contact] }).additionalContacts?.[0]?.email).toBe("second@example.invalid");
+  for (const additionalContacts of [[{ ...contact, phone: "" }], [{ ...contact, userId: address.cityId }], Array(10).fill(contact)]) {
+    expect(saveOrganizationProfileSchema.safeParse({ ...input, additionalContacts }).success).toBe(false);
+  }
+});

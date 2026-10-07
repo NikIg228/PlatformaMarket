@@ -3,7 +3,7 @@ import express, { type ErrorRequestHandler, type Request } from "express";
 import { request as httpRequest, type Server } from "node:http";
 import { gzipSync } from "node:zlib";
 import { createHash } from "node:crypto";
-import { DOCUMENT_UPLOAD_MAX_BYTES, IMPORT_UPLOAD_MAX_BYTES } from "@marketplace/schemas";
+import { AVATAR_MAX_BYTES, AVATAR_MAX_JSON_BYTES, DOCUMENT_UPLOAD_MAX_BYTES, IMPORT_UPLOAD_MAX_BYTES } from "@marketplace/schemas";
 import { DEFAULT_JSON_MAX_BYTES, DOCUMENT_JSON_MAX_BYTES, IMPORT_JSON_MAX_BYTES, marketplaceBodyParser, requestBodyPolicy } from "./request-body-policy";
 import { toApiErrorResponse } from "./api-exception.filter";
 
@@ -66,6 +66,7 @@ describe("HTTP request body resource boundary", () => {
   });
 
   it.each([
+    ["/api/auth/profile/avatar", AVATAR_MAX_BYTES],
     ["/api/documents/upload", DOCUMENT_UPLOAD_MAX_BYTES],
     ["/api/support/attachments", DOCUMENT_UPLOAD_MAX_BYTES],
     ["/api/compliance/organizations/org/credentials", DOCUMENT_UPLOAD_MAX_BYTES],
@@ -79,6 +80,7 @@ describe("HTTP request body resource boundary", () => {
   });
 
   it("bounds decompressed JSON and maps malformed JSON without reflecting it", async () => {
+    expect((await send("/api/auth/profile/avatar", JSON.stringify({ contentBase64: "A".repeat(AVATAR_MAX_JSON_BYTES) }), { chunked: true })).status).toBe(413);
     const compressed = gzipSync(JSON.stringify({ contentBase64: "A".repeat(DEFAULT_JSON_MAX_BYTES) }));
     expect((await send("/api/auth/login", compressed, { encoding: "gzip" })).status).toBe(413);
     const invalid = await send("/api/auth/login", '{"secret":"private-marker",');

@@ -46,7 +46,7 @@ export function DmCheckbox({ className, ...props }: ComponentPropsWithRef<typeof
 }
 
 /** Semantic actions whose content is a row, a choice card, a tab or inline text. */
-export function DmAction({ className, variant, density, type = "button", ...props }: ComponentPropsWithRef<"button"> & Density & { variant: "text" | "navigation" | "choice" | "tab" | "row" }) {
+export function DmAction({ className, variant, density, type = "button", ...props }: ComponentPropsWithRef<"button"> & Density & { variant: "text" | "navigation" | "choice" | "tab" | "row" | "avatar" }) {
   return <button {...props} type={type} data-dm-action={variant} data-dm-density={densityFor(density)} className={classes("dm-action", className)} />;
 }
 

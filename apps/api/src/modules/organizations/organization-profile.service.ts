@@ -14,7 +14,7 @@ export async function organizationProfileFields(db: Database, organizationId: st
   if (!profile || profile.legalAddress.organizationId !== organizationId || profile.deliveryAddress.organizationId !== organizationId) return null;
   const address = (value: typeof profile.legalAddress) => ({ cityId: value.cityId, line1: value.line1, postalCode: value.postalCode });
   const result = organizationProfileFieldsSchema.safeParse({ contactName: profile.contactName, phone: profile.phone, email: profile.email,
-    legalAddress: address(profile.legalAddress), deliveryAddress: address(profile.deliveryAddress) });
+    additionalContacts: profile.additionalContacts ?? [], legalAddress: address(profile.legalAddress), deliveryAddress: address(profile.deliveryAddress) });
   return result.success ? result.data : null;
 }
 
@@ -60,7 +60,7 @@ export class OrganizationProfileService {
   async save(input: SaveOrganizationProfileInput, context: AuthorityActorContext) {
     await this.member(context, true);
     const { expectedVersion: _expectedVersion, idempotencyKey: _key, ...values } = input;
-    const fields = organizationProfileFieldsSchema.parse(values);
+    let fields = organizationProfileFieldsSchema.parse(values);
     const requestHash = createHash("sha256").update(JSON.stringify({ ...fields, expectedVersion: input.expectedVersion })).digest("hex");
     const scope = `organization-profile:${context.organizationId}`;
     try {
@@ -74,9 +74,13 @@ export class OrganizationProfileService {
         if (organization.version !== input.expectedVersion) throw new ConflictException("Реквизиты изменились. Обновите анкету перед сохранением");
         const stored = await tx.organizationProfile.findUnique({ where: { organizationId: organization.id }, include: includeProfile });
         const existing = await organizationProfileFields(tx, organization.id);
+        // Older clients omit the extension; their saves must retain new contacts.
+        fields = organizationProfileFieldsSchema.parse({ ...fields, additionalContacts: fields.additionalContacts ?? existing?.additionalContacts ?? [] });
         if (JSON.stringify(existing) !== JSON.stringify(fields)) {
           const cities = await tx.city.findMany({ where: { id: { in: [fields.legalAddress.cityId, fields.deliveryAddress.cityId] } }, include: { region: true } });
           const saveAddress = async (address: typeof fields.legalAddress, id?: string) => {
+            const prior = id === stored?.legalAddressId ? existing?.legalAddress : id === stored?.deliveryAddressId ? existing?.deliveryAddress : undefined;
+            if (id && prior && JSON.stringify(prior) === JSON.stringify(address)) return { id };
             const city = cities.find(value => value.id === address.cityId);
             if (!city) throw new BadRequestException("Выберите город из справочника");
             const data = { ...address, organizationId: organization.id, regionId: city.regionId, countryId: city.region.countryId };
@@ -89,7 +93,7 @@ export class OrganizationProfileService {
           // A legacy profile can point both purposes at one Address. Split on edit
           // so a different delivery address never overwrites the legal address.
           const deliveryAddress = await saveAddress(fields.deliveryAddress, stored?.deliveryAddressId === stored?.legalAddressId ? undefined : stored?.deliveryAddressId);
-          const data = { contactName: fields.contactName, phone: fields.phone, email: fields.email, legalAddressId: legalAddress.id, deliveryAddressId: deliveryAddress.id };
+          const data = { contactName: fields.contactName, phone: fields.phone, email: fields.email, additionalContacts: fields.additionalContacts, legalAddressId: legalAddress.id, deliveryAddressId: deliveryAddress.id };
           await tx.organizationProfile.upsert({ where: { organizationId: organization.id }, create: { organizationId: organization.id, ...data }, update: data });
           const updated = await tx.organization.updateMany({ where: { id: organization.id, version: input.expectedVersion }, data: { version: { increment: 1 } } });
           if (updated.count !== 1) throw new ConflictException("Реквизиты изменились. Обновите страницу");

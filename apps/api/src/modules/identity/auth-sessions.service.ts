@@ -12,6 +12,7 @@ import { OnboardingService } from "../onboarding/onboarding.service";
 import { PlatformAuthorityPolicy } from "../access-control/platform-authority.policy";
 import { authMailMode, deliverAuthMail, requireAuthMail } from "./auth-mail.delivery";
 import { setTimeout as delay } from "node:timers/promises";
+import { verifyProfileEmailChange } from "./profile-email-verification";
 
 type RequestMetadata = { ipAddress?: string; userAgent?: string; correlationId?: string };
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -146,13 +147,18 @@ export class AuthSessionsService {
     if (!token || token.user.status !== "ACTIVE" || token.type !== "EMAIL_VERIFICATION" || token.consumedAt || token.expiresAt <= new Date()) throw new UnauthorizedException("Ссылка подтверждения недействительна или истекла");
     const registrationToken = token.metadata && typeof token.metadata === "object" && !Array.isArray(token.metadata) && typeof (token.metadata as { registrationToken?: unknown }).registrationToken === "string" ? (token.metadata as { registrationToken: string }).registrationToken : undefined;
     let onboarding: { organizationId?: string; capability?: string; organizationDisplayName?: string } | null = null;
+    let verifiedUser = token.user;
     await this.prisma.$transaction(async (tx) => {
       const claimed = await tx.emailAuthToken.updateMany({ where: { id: token.id, consumedAt: null, expiresAt: { gt: new Date() } }, data: { consumedAt: new Date() } });
       if (claimed.count !== 1) throw new UnauthorizedException("Ссылка подтверждения уже использована или истекла");
-      await tx.user.update({ where: { id: token.userId }, data: { emailVerifiedAt: new Date(), failedLoginAttempts: 0, lockedUntil: null } });
+      if (token.metadata && typeof token.metadata === "object" && !Array.isArray(token.metadata) && token.metadata.purpose === "profile-email") {
+        verifiedUser = await verifyProfileEmailChange(tx, token);
+      } else {
+        await tx.user.update({ where: { id: token.userId }, data: { emailVerifiedAt: new Date(), failedLoginAttempts: 0, lockedUntil: null } });
+      }
     });
     if (registrationToken) onboarding = await this.onboarding.claim(registrationToken, { id: token.user.id, email: token.user.email, displayName: token.user.displayName });
-    const result = await this.passwordSession(token.user, metadata);
+    const result = await this.passwordSession(verifiedUser, metadata);
     return { ...result, ...(onboarding ?? {}), verified: true };
   }
 

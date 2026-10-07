@@ -34,6 +34,8 @@ The default window is 60 seconds. The global limits are currently:
 Sensitive route classes have stricter limits:
 
 - authentication: 20/IP, 30/user, 60/tenant per minute;
+- personal email change: 10/IP, 5/user, 30/tenant per minute;
+- profile photo upload: 20/IP, 10/user, 60/tenant per minute;
 - onboarding: 8/IP, 8/user, 8/tenant per minute for the protected mutations;
 - integration and payment webhooks: 120/IP per minute.
 
@@ -43,6 +45,49 @@ header and the stable error code `RATE_LIMIT_EXCEEDED` in the normal API error
 envelope. Clients must back off; they must not retry in a tight loop.
 
 ## Deployment checklist
+
+### Personal profile contract (08.10.2026)
+
+`GET/POST /auth/profile` reads/edits the authenticated session owner's name and
+phone. The actor, session and active membership are rechecked in the service;
+the request cannot select another user. Writes use `expectedVersion` and audit
+in the same transaction. Existing users may have no phone until they fill it in;
+an edited phone is required and cannot be saved empty.
+
+`POST /auth/profile/email` requests verification at the new address through the
+existing auth mail delivery. The old login remains unchanged until the one-use
+`/auth/email/verify` proof is consumed. The requesting session must still be
+active; a stale/used/expired proof or an occupied address is rejected. Confirming
+the address atomically invalidates outstanding email proofs and existing sessions;
+the normal verification flow establishes a new session with the new address.
+Delivery failure invalidates the undelivered proof; it never changes the login.
+`LOCAL_FILE` is local evidence only, not external delivery.
+
+`POST /auth/profile/avatar` accepts PNG/JPEG up to 2 MiB through the existing
+upload policy and scanner. `GET /auth/profile/avatar` returns the owner's clean
+image as bounded base64 JSON; no public object URL is exposed. Both reads are
+`no-store`. Failed linking releases the asset; replaced assets are reclaimed by
+the existing unlinked-upload cleanup. The avatar route alone has the additional
+JSON allowance for base64, without raising the ordinary request-body limit.
+
+Apply migration `20261007190000_profile_contacts` before starting the new API:
+it adds nullable `User.phone`/`avatarAssetId`, `profileVersion=1`, and
+`OrganizationProfile.additionalContacts=[]`. Existing values are retained.
+Organization writes keep primary contacts, permissions, version and idempotency;
+omitted additional contacts from older clients preserve the stored list. The
+maximum is ten contacts including the primary. Contact-only edits preserve
+unchanged address verification. Working database migration requires separately
+authorized environment scope; isolated migration evidence does not authorize it.
+
+Focused proof: `npm run db:test -- exec -- node scripts/verify-profile-editing.mjs`
+after schemas/API build and isolated migration deploy. It covers upgrade defaults,
+authorization, concurrent version conflict, rollback and email/session transition.
+`npm run db:test -- exec -- node scripts/verify-profile-http.mjs` additionally
+exercises the actual JWT HTTP API, forged-header denial, file rejection/clean
+avatar download, local-mail proof consumption and session revocation. It uses a
+loopback scanner simulator and private synthetic mail, not a live provider.
+
+### Release environment
 
 1. Provision Redis with TLS and monitor memory, evictions, connection errors and
    command latency. Use a dedicated namespace for rate-limit keys.

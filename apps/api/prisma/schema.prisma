@@ -993,6 +993,9 @@ model User {
   id                       String                    @id @default(uuid()) @db.Uuid
   email                    String                    @unique
   displayName              String
+  phone                    String?
+  avatarAssetId            String?                   @db.Uuid
+  profileVersion           Int                       @default(1)
   status                   RecordStatus              @default(ACTIVE)
   emailVerifiedAt          DateTime?
   passwordHash             String?
@@ -1364,6 +1367,7 @@ model Address {
 
 model OrganizationProfile {
   organizationId    String       @id @db.Uuid
+  additionalContacts Json        @default("[]")
   contactName       String
   phone             String
   email             String

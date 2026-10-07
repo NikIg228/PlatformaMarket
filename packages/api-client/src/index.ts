@@ -288,6 +288,11 @@ export class MarketplaceApiClient {
   authClientOptions() { return this.get<AuthClientOptions>("/auth/client-options"); }
   loginEmail(input: import("@marketplace/schemas").AuthEmailLogin) { return this.request<import("@marketplace/schemas").AuthEmailSession>("/auth/login", { method: "POST", credentials: "include", body: JSON.stringify(input) }); }
   verifyEmail(input: import("@marketplace/schemas").AuthEmailToken) { return this.request<import("@marketplace/schemas").AuthEmailVerified>("/auth/email/verify", { method: "POST", credentials: "include", body: JSON.stringify(input) }); }
+  personalProfile(signal?: AbortSignal) { return this.request<import("@marketplace/schemas").PersonalProfile>("/auth/profile", { signal }); }
+  savePersonalProfile(input: import("@marketplace/schemas").UpdatePersonalProfile) { return this.request<import("@marketplace/schemas").PersonalProfile>("/auth/profile", { method: "POST", body: JSON.stringify(input) }); }
+  requestProfileEmail(input: import("@marketplace/schemas").RequestProfileEmail) { return this.request<import("@marketplace/schemas").ProfileEmailRequested>("/auth/profile/email", { method: "POST", body: JSON.stringify(input) }); }
+  uploadProfileAvatar(input: import("@marketplace/schemas").UploadProfileAvatar) { return this.request<import("@marketplace/schemas").PersonalProfile>("/auth/profile/avatar", { method: "POST", body: JSON.stringify(input) }); }
+  profileAvatar(signal?: AbortSignal) { return this.request<import("@marketplace/schemas").ProfileAvatar>("/auth/profile/avatar", { signal }); }
   resetPassword(input: import("@marketplace/schemas").AuthPasswordReset) { return this.post<import("@marketplace/schemas").AuthPasswordResetResult>("/auth/password/reset", input); }
   mfaStatus() { return this.get<import("@marketplace/schemas").MfaStatus>("/identity/mfa"); }
   enrollMfa() { return this.post<import("@marketplace/schemas").MfaEnrollment>("/identity/mfa/totp/enroll", {}); }

@@ -550,3 +550,17 @@ html[data-input-modality="keyboard"] .fui-Tab:focus { background: var(--dm-surfa
 @media (forced-colors: active) {
   html[data-input-modality="keyboard"] .fui-Tab:focus { color: Highlight; text-decoration-color: Highlight; }
 }
+.dm-inline-edit { display: grid; gap: var(--dm-space-1); min-width: 0; align-content: start; }
+.dm-inline-edit > label { color: var(--dm-text-secondary); font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); }
+.dm-inline-edit-row { display: flex; gap: var(--dm-space-2); align-items: center; min-width: 0; }
+.dm-inline-edit-value { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); }
+.dm-inline-edit-row .dm-input { flex: 1; min-width: 0; width: 100%; }
+.dm-inline-edit-row .dm-button { flex-shrink: 0; }
+.dm-inline-edit-error { color: var(--dm-danger-text); font-size: var(--dm-font-size-caption); }
+.dm-inline-edit-hint { display: flex; gap: var(--dm-space-2); align-items: center; justify-content: space-between; color: var(--dm-text-secondary); font-size: var(--dm-font-size-caption); }
+.dm-editable-avatar { flex-shrink: 0; }
+.dm-action[data-dm-action="avatar"] { position: relative; display: flex; padding: 0; width: var(--dm-space-12); height: var(--dm-space-12); min-width: var(--dm-space-12); border-radius: var(--dm-radius-circle); background: var(--dm-brand-surface); border: 0; cursor: pointer; }
+.dm-avatar-edit-overlay { position: absolute; inset: 0; display: grid; place-items: center; background: var(--dm-brand-surface); color: var(--dm-brand-primary); border-radius: var(--dm-radius-circle); opacity: 0; }
+.dm-action[data-dm-action="avatar"]:is(:hover, :focus) .dm-avatar-edit-overlay, .dm-avatar-edit-overlay[data-pending] { opacity: 1; }
+@media (hover: none) { .dm-avatar-edit-overlay { opacity: 1; inset: auto 0 0 auto; width: var(--dm-space-6); height: var(--dm-space-6); } }
+@media (max-width: 760px) { .dm-inline-edit .dm-control, .dm-inline-edit .dm-button { --dm-control-height: var(--dm-control-default); } }

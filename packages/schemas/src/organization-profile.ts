@@ -5,10 +5,13 @@ export const organizationAddressSchema = z.object({
   line1: z.string().trim().min(5).max(500),
   postalCode: z.string().trim().max(20).nullable(),
 }).strict();
-export const organizationProfileFieldsSchema = z.object({
+export const organizationContactSchema = z.object({
   contactName: z.string().trim().min(2).max(160),
   phone: z.string().trim().min(7).max(30).regex(/^\+?[\d ()-]+$/, "Укажите телефон с кодом города или оператора").refine(value => value.replace(/\D/g, "").length >= 7, "Укажите полный номер телефона"),
   email: z.email().max(254).toLowerCase(),
+}).strict();
+export const organizationProfileFieldsSchema = organizationContactSchema.extend({
+  additionalContacts: z.array(organizationContactSchema).max(9).optional(),
   legalAddress: organizationAddressSchema,
   deliveryAddress: organizationAddressSchema,
 }).strict();

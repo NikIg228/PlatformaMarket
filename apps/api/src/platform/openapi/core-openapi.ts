@@ -1,3 +1,4 @@
+import { personalProfileSchema, updatePersonalProfileSchema, requestProfileEmailSchema, profileEmailRequestedSchema, uploadProfileAvatarSchema, profileAvatarSchema } from "@marketplace/schemas";
 import { notificationInboxQuerySchema, notificationInboxSchema, notificationReadAllSchema, notificationReadAllResultSchema } from "@marketplace/schemas";
 import { commerceAnalyticsQuerySchema, commerceAnalyticsResponseSchema, supplierImportPreviewInputSchema, supplierImportPreviewSchema } from "@marketplace/schemas";
 import { accessPolicySchema } from "@marketplace/schemas";
@@ -194,6 +195,12 @@ const coreZodSchemas = {
   AccessPolicy: accessPolicySchema,
   IdentityMembers: identityMembersSchema,
   IdentitySessions: identitySessionsSchema,
+  PersonalProfile: personalProfileSchema,
+  UpdatePersonalProfile: updatePersonalProfileSchema,
+  RequestProfileEmail: requestProfileEmailSchema,
+  ProfileEmailRequested: profileEmailRequestedSchema,
+  UploadProfileAvatar: uploadProfileAvatarSchema,
+  ProfileAvatar: profileAvatarSchema,
   UpdateProductRequest: updateProductSchema,
   UpdatedCatalogProduct: updatedCatalogProductSchema,
   OrderWorkflowCommand: orderWorkflowCommandSchema,
