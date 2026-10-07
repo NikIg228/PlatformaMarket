@@ -16,7 +16,7 @@ function NotificationList() {
   const [category, setCategory] = useState<NotificationInboxItem["category"]>();
   const inbox = useNotificationInbox({ unreadOnly, category });
   return <section className={styles.history} aria-label="История уведомлений">
-    <div className={styles.toolbar}><TabList selectedValue={unreadOnly ? "unread" : "all"} onTabSelect={(_, value) => setUnreadOnly(value.value === "unread")} aria-label="Показать уведомления"><Tab value="all">Все</Tab><Tab value="unread">Непрочитанные{inbox.data?.unreadCount ? ` (${inbox.data.unreadCount})` : ""}</Tab></TabList>
+    <div className={styles.toolbar}><TabList data-dm-tab-kind="filter" selectedValue={unreadOnly ? "unread" : "all"} onTabSelect={(_, value) => setUnreadOnly(value.value === "unread")} aria-label="Показать уведомления"><Tab value="all">Все</Tab><Tab value="unread">Непрочитанные{inbox.data?.unreadCount ? ` (${inbox.data.unreadCount})` : ""}</Tab></TabList>
       <div className={styles.category}><DmDropdown aria-label="Категория уведомлений" value={category ?? ""} onChange={(_, data) => setCategory(data.value ? data.value as NotificationInboxItem["category"] : undefined)}><option value="">Все категории</option>{Object.entries(notificationCategories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</DmDropdown></div>
       <div className={styles.toolbarActions}><DmButton disabled={inbox.busy || !inbox.data?.unreadCount} onClick={() => void inbox.markRead()}>Прочитать все</DmButton><DmButton disabled={inbox.loading} onClick={() => void inbox.refresh()}>Обновить</DmButton></div>
     </div>

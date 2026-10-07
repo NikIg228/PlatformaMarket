@@ -536,3 +536,17 @@ html[data-input-modality="keyboard"] .dm-surface[data-dm-surface="composer"]:has
 @media (forced-colors: active) { html[data-input-modality="keyboard"] .dm-surface[data-dm-surface="composer"]:has(textarea:focus) { outline-color: Highlight; } }
 @media (max-width: 760px) { .dm-textarea-composer .fui-Textarea__textarea { font-size: var(--dm-font-size-body-lg); } }
 .mp-provider summary { min-height: var(--dm-control-default); align-content: center; }
+
+/* Filters indicate selection with fill; navigation tabs retain their underline. */
+.dm-action[data-dm-action="tab"][aria-pressed] { border: 0; box-shadow: none; font-size: var(--dm-font-size-body); }
+.dm-action[data-dm-action="tab"][aria-pressed="true"] { background: var(--dm-brand-surface); color: var(--dm-brand-deep); font-weight: var(--dm-font-weight-semibold); }
+.fui-TabList[data-dm-tab-kind="filter"] .fui-Tab { border-radius: var(--dm-radius-button); }
+.fui-TabList[data-dm-tab-kind="filter"] .fui-Tab::before,
+.fui-TabList[data-dm-tab-kind="filter"] .fui-Tab::after { display: none; }
+.fui-TabList[data-dm-tab-kind="filter"] .fui-Tab[aria-selected="true"] { background: var(--dm-brand-surface); color: var(--dm-brand-deep); }
+/* Fluent adds a focus shadow outside TabList's scroll clip. Use an interior fill. */
+html[data-input-modality] .fui-Tab.fui-Tab:focus { box-shadow: none !important; outline: none !important; }
+html[data-input-modality="keyboard"] .fui-Tab:focus { background: var(--dm-surface-hover); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: var(--dm-space-1); }
+@media (forced-colors: active) {
+  html[data-input-modality="keyboard"] .fui-Tab:focus { color: Highlight; text-decoration-color: Highlight; }
+}
