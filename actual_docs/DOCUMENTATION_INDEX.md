@@ -71,7 +71,8 @@
 | [runbooks/LOCAL-DEV-DATABASE.md](runbooks/LOCAL-DEV-DATABASE.md) | REFERENCE | Профильная справка |
 | [runbooks/UNIFIED-FRONTEND.md](runbooks/UNIFIED-FRONTEND.md) | REFERENCE | Профильная справка |
 | [security/security.md](security/security.md) | REFERENCE | Профильная справка |
-| [ui-ux/SHARED_SEMANTIC_THEME.md](ui-ux/SHARED_SEMANTIC_THEME.md) | REFERENCE | UI-инварианты и общая тема |
+| [ui-ux/DESIGN_SYSTEM.md](ui-ux/DESIGN_SYSTEM.md) | REFERENCE | Единый нормативный вход: компоненты, токены, тема, визуальная приёмка |
+| [ui-ux/SHARED_SEMANTIC_THEME.md](ui-ux/SHARED_SEMANTIC_THEME.md) | REFERENCE | Переход и исторический аудит |
 | [ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md](ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md) | REFERENCE | UI-инварианты и общая тема |
 
 ## Материалы текущего WIP
@@ -85,8 +86,8 @@
 | `actual_docs/governance/task-state/ORDERS-NOTIFICATIONS-UX-2026-10-06.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
 | `actual_docs/governance/task-state/SUPPORT-UX-2026-10-06.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
 | `actual_docs/governance/task-state/UI-CONTRACT-2026-10-06.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
-| `actual_docs/ui-ux/COMPONENT_CONTRACT.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
-| `actual_docs/ui-ux/COMPONENT_CONTRACT_AUDIT.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
+| [ui-ux/COMPONENT_CONTRACT.md](ui-ux/COMPONENT_CONTRACT.md) | REFERENCE | Переход к единой дизайн-системе |
+| [ui-ux/COMPONENT_CONTRACT_AUDIT.md](ui-ux/COMPONENT_CONTRACT_AUDIT.md) | REFERENCE | Исторический аудит; не текущий контракт или blanket PASS |
 | actual_docs/applications/support-workspace.md | [CURRENT · поддержка](applications/support-workspace.md) | Общий экран обращений, черновики, поиск, уведомления и повторное открытие; scope/evidence SUPPORT-UX |
 
 Ссылки этого раздела описывают материалы рабочего дерева. Название прежней

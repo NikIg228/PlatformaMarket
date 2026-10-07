@@ -1,61 +1,14 @@
-# Общий светлый контракт Platforma
+# Общая тема — переход и историческое evidence
 
-05.10 PRODUCT-PAGES-REFINEMENT: `DmSearch` — общий поиск кабинетов клиники и
-поставщика, включая каталог и документы. Размер440×44px, max-width100%; без
-лупы и отдельной внешней кнопки. При непустом вводе внутри появляются очистка
-и «Найти»; Enter применяет поиск, IME composition не отправляет его. Контекстный
-placeholder начинается с «Найти». Combobox сохраняет подсказки и клавиатурный
-выбор; очистка возвращает фокус полю. `pending` блокирует повторную отправку.
+Действующие роли, состояния и light-only режим определяет
+[единая дизайн-система](DESIGN_SYSTEM.md). Значения цветов:
+[semantic-light.json](../../packages/ui/src/semantic-light.json).
+Этот адрес сохранён для совместимости; новые нормативные правила здесь не добавляются.
 
-Версия `platforma-semantic-light-v1`, 02.10.2026. Утверждённые владельцем
-значения CRM/Market сохранены в [semantic-light.json](../../packages/ui/src/semantic-light.json).
-Этот JSON — контракт значений, а не новая библиотека компонентов.
-Market применяет его через [Fluent adapter](../../packages/ui/src/light-theme.ts)
-и существующие `--dm-*` переменные в [styles.css](../../packages/ui/src/styles.css).
-Изменение общей палитры требует согласования новой версии обоими продуктами.
-
-| Роль | Значение / поведение |
-| --- | --- |
-| Canvas / поверхность / subtle / hover | `#F6F8F7` / `#FFFFFF` / `#F0F4F2` / `#EAF0ED` |
-| Primary default / hover / pressed | `#007A59` / `#00664B` / `#00543E`; белый текст, фон темнеет |
-| Brand content / selected / border / accent | `#00543E` / `#E4F3ED` / `#B9DFCD` / `#4FD49A` |
-| Текст primary / secondary / muted | `#17201E` / `#4F5E58` / `#607169` |
-| Разделитель / граница поля | `#D7E1DC` / `#83988D` |
-| Keyboard focus | `#007A59`, один индикатор1px; Tab/Shift+Tab и навигационные клавиши вне текстового редактора включают keyboard mode. Клик, набор, IME и движение курсора не создают дополнительную рамку |
-| Disabled | фон `#EEF1EF`, текст `#728078`, граница `#D7E1DC`; без opacity на всей кнопке |
-| Loading | существующий pending-text и disabled/lock; не допускает повторного действия |
-| Success | `#237A4A` / `#EEF8F2` |
-| Warning | `#9A5A13` / `#FFF5E8` |
-| Danger | `#A33B35` / `#FFF0EE`; hover `#8F302B`, pressed `#762620` |
-| Info | `#245E8A` / `#EDF5FF` |
-| AI | `#6F4CC3` / `#F4F0FF`; hover `#5E3CAE` |
-
-Success/warning/danger/info обозначают смысл обратной связи, AI — отдельную
-фиолетовую роль. Не заменять их brand-зелёным. Accent не служит фоном primary
-с белой надписью. Disabled-текст не является образцом для обычного текста.
-
-Fluent ramp направлен от тёмного к светлому. Для primary/compound actions,
-ссылок, полей, focus и disabled заданы явные semantic overrides. Выбранный
-checkbox использует primary и белую отметку; выбранные строки/навигация — soft
-фон и тёмный content. Шапка и текущий каталог используют те же CSS-переменные.
-Геометрия, навигация, логотипы, permissions и бизнес-обработчики не меняются.
-
-Уточнение05.10 SHARED-FOCUS: общий индикатор рисуется на оболочке Fluent,
-внутренний input и собственный focus-псевдоэлемент не дублируют его. У обычных
-полей линия совпадает с границей; у ошибочных полей красная граница и сообщение
-сохраняются, тонкий Tab-индикатор вынесен наружу. Выбранное состояние checkbox,
-обычные границы, focus target и обработчики клавиатуры не изменяются. В режиме
-forced colors используется системный Highlight. После Tab обычный ввод сохраняет
-keyboard mode до следующего pointerdown. CSS действует также на портальные controls.
-
-Существующий `webDarkTheme` и выбор `marketplace-theme` сохранены; эта версия
-не вводит общий dark contract. Новая dark-палитра требует отдельной задачи.
-
-Проверки: [checkpoint и evidence](../governance/task-state/SHARED-THEME-2026-10-02.md).
-Unit regression проверяет реальные значения Fluent, затемнение primary,
-AA text/feedback, границы полей/focus и соответствие CSS утверждённым значениям.
-Browser regression использует реальные компоненты каталога при 390/1440px:
-hover/pressed, checkbox, keyboard focus, disabled/loading и запрет повторной записи.
+Ниже сохранён аудит02.10.2026 на тогдашних inputs. Упоминания dark preference,
+отсутствия потребителей и покрытых маршрутов — исторические наблюдения,
+не описание текущего runtime и не актуальная сертификация.
+[Исходное evidence](../governance/task-state/SHARED-THEME-2026-10-02.md).
 
 ## Итоговый аудит потребителей
 
