@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "./action-feedback";
 import { ArrowDownload24Regular } from "@fluentui/react-icons/svg/arrow-download";
 import { Filter24Regular } from "@fluentui/react-icons/svg/filter";
 import { Spinner } from "@fluentui/react-components";
@@ -52,7 +53,7 @@ export function DocumentRegistry({ role, organizationId, items, summary, filters
       </form> : null}
       {filterError ? <p className="dm-registry-message" role="alert">{filterError}</p> : null}
       <div className="dm-registry-views" role="group" aria-label="Состояние документов">{views.map(([value, label]) => <DmAction key={value} variant="tab" aria-pressed={(filters.view ?? "") === value} onClick={() => apply({ ...filters, view: value })}>{label}{summary && value === "AWAITING_SIGNATURE" ? ` · ${summary.awaitingSignature}` : summary && value === "ATTENTION" ? ` · ${summary.attention}` : ""}</DmAction>)}{active ? <DmButton appearance="subtle" onClick={onResetFilters}>Сбросить фильтры</DmButton> : null}</div>
-      {error ? <div className="dm-registry-message" role="alert"><p>{error}</p><DmButton onClick={onRefresh}>Повторить</DmButton></div> : null}
+      {error ? <ActionFeedback tone="error" description={error} action={<DmButton onClick={onRefresh}>Повторить</DmButton>} /> : null}
       {loading && !items.length ? <div className="dm-registry-message"><Spinner label="Загружаем документы" /></div> : null}
       {!loading && !error && !items.length ? <div className="dm-registry-empty"><h3>{active ? "Ничего не найдено" : "Документов пока нет"}</h3><p>{active ? "Измените поиск или сбросьте фильтры." : "Здесь появятся документы по заказам. Вы также можете загрузить свой файл."}</p>{active ? <DmButton onClick={onResetFilters}>Сбросить фильтры</DmButton> : null}</div> : null}
       {items.length ? <div className="dm-registry-table-wrap" aria-busy={loading}><table className="dm-registry-table"><caption className="dm-sr-only">Документы организации</caption><thead><tr><th>Документ</th><th>{role === "clinic" ? "Поставщик" : "Клиника"}</th><th>Заказ</th><th>Дата ↓</th><th>Сумма</th><th>Состояние</th><th><span className="dm-sr-only">Скачать</span></th></tr></thead><tbody>{items.map(item => <tr key={item.id} data-selected={selected === item.id}>

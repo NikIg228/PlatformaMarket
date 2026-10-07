@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { CartResponse } from "@marketplace/schemas";
@@ -24,8 +25,8 @@ export function CartRecovery({ api, carts, hasCurrentItems, onRecovered }: {
   const failed = carts.filter(cart => cart.status === "ABANDONED" && cart.checkout?.status === "FAILED" && !cart.recoveredCartId);
   if (!failed.length && !notice && !error) return null;
   return <Section title="Восстановление после неудачного оформления">
-    {error ? <p role="alert">{error}</p> : null}
-    {notice ? <p role="status">{notice}</p> : null}
+    {error ? <ActionFeedback tone="error" description={error} /> : null}
+    {notice ? <ActionFeedback tone="success" description={notice} /> : null}
     {hasCurrentItems && failed.length ? <p>Сначала завершите работу с текущей корзиной. Её товары сохраняются отдельно.</p> : null}
     {failed.map(cart => <section key={cart.id} aria-label="Неудачное оформление">
       <p>Товар не удалось зарезервировать. Предыдущая попытка сохранена в истории.</p>

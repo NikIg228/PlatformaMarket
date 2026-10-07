@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "./action-feedback";
 import { DmFileInput } from "./controls";
 import { useEffect, useId, useRef, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
@@ -87,7 +88,7 @@ export function SupportFilePicker({ api, value, onChange, disabled, onBusyChange
       {queue.map(entry => <li className={styles.card} key={entry.id}><Document20Regular aria-hidden="true" /><div className={styles.identity}><span className={styles.name}>{entry.file.name}</span>{entry.error ? <span className={styles.problem} role="alert">{entry.error}</span> : <span className={styles.hint} role="status">Загружаем и проверяем…</span>}</div>
         {entry.error ? <><DmButton type="button" size="small" appearance="subtle" disabled={disabled || uploading} onClick={() => void upload([entry])}>Повторить</DmButton><DmButton type="button" size="small" appearance="subtle" icon={<Dismiss16Regular />} aria-label={`Убрать ${entry.file.name}`} disabled={disabled || uploading} onClick={() => setQueue(items => items.filter(item => item.id !== entry.id))} /></> : null}</li>)}
     </ul> : null}
-    {error ? <p role="alert" className={styles.problem}>{error}</p> : null}
+    {error ? <ActionFeedback tone="error" description={error} /> : null}
     {invalid ? <p className={styles.hint}>Повторите загрузку или уберите файлы с ошибкой перед отправкой.</p> : null}
   </div>;
 }
@@ -119,9 +120,9 @@ export function SupportAttachmentList({ api, ticketId, messageId, files }: { api
     <div className={styles.identity}><span className={styles.name}>{file.name}</span><span className={styles.hint}>{busy === file.assetId ? "Загружаем…" : size(file.sizeBytes)}</span></div>
     {file.contentType.startsWith("image/") ? <DmButton type="button" appearance="subtle" size="small" disabled={Boolean(busy)} aria-label={`Посмотреть ${file.name}`} onClick={event => { opener.current = event.currentTarget; void open(file, true); }}>Посмотреть</DmButton> : null}
     <DmButton type="button" appearance="subtle" size="small" icon={<ArrowDownload20Regular />} disabled={Boolean(busy)} aria-label={`Скачать ${file.name}`} onClick={() => void open(file, false)} />
-  </li>)}</ul>{error ? <p role="alert" className={styles.problem}>{error} Попробуйте открыть файл ещё раз.</p> : null}
+  </li>)}</ul>{error ? <ActionFeedback tone="error" description={`${error} Попробуйте открыть файл ещё раз.`} /> : null}
     <DmDialog open={Boolean(preview)} title={preview?.name ?? "Изображение"} onOpenChange={open => { if (!open) setPreview(null); }} onClosed={() => opener.current?.focus()} actions={<DmButton onClick={() => setPreview(null)}>Закрыть</DmButton>}>
-      {previewFailed ? <p role="alert">Не удалось показать изображение. Закройте окно и скачайте файл, чтобы открыть его на устройстве.</p> : preview ? <img className={styles.preview} src={preview.url} alt={preview.name} onError={() => setPreviewFailed(true)} /> : null}
+      {previewFailed ? <ActionFeedback tone="error" description="Не удалось показать изображение. Закройте окно и скачайте файл, чтобы открыть его на устройстве." /> : preview ? <img className={styles.preview} src={preview.url} alt={preview.name} onError={() => setPreviewFailed(true)} /> : null}
     </DmDialog>
   </div>;
 }

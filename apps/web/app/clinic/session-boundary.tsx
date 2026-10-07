@@ -10,6 +10,6 @@ export function ClinicSessionBoundary({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const query = useSearchParams().toString();
   if (!ready) return <LoadingState label="Проверяем вход" />;
-  if (!session) return <ErrorState title="Войдите в кабинет клиники" description={error ?? "Кабинет доступен участникам организации."} action={<><DmButton as="a" href={withWorkspaceReturn("/login", pathname + (query ? `?${query}` : ""))}>Войти</DmButton><DmButton onClick={() => void sessionStore.retry()}>Повторить проверку</DmButton></>} />;
+  if (!session) return <ErrorState presentation="inline" title="Войдите в кабинет клиники" description={error ?? "Кабинет доступен участникам организации."} action={<><DmButton as="a" href={withWorkspaceReturn("/login", pathname + (query ? `?${query}` : ""))}>Войти</DmButton><DmButton onClick={() => void sessionStore.retry()}>Повторить проверку</DmButton></>} />;
   return children;
 }

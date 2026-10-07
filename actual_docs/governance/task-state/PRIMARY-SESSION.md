@@ -1,5 +1,89 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 08.10.2026 — STATUS-TOASTS (LOCAL_PASS / PUBLICATION_PENDING)
+
+Owner primary01a11758-1c55-7e52-bf15-2a04427aaf5d. Canonical main1fb24ca.
+Owner annotation: all action outcomes (success/failure/errors) should use compact
+bottom-right toast cards with strong green/red backgrounds and short explanations.
+Retain existing5s/slide-out behavior and contextual field validation.
+Owner clarified scope: all workspaces, one rule for all action-result notifications.
+Persistent business conditions/loading/empty and field validation remain contextual;
+this request concerns action outcomes. Shared provider/tone API are implemented;
+caller migration and verification remain pending.
+Plan: inspect shared tokens/feedback callers, add semantic toast variants with
+accessible announcements/contrast, migrate authorized action feedback and retain
+drafts/recovery controls. Risks: lost failures/retries, duplicate announcements,
+modal accessibility and concurrent notices. Targeted browser success/failure/
+repeat/dismiss/mobile/keyboard and consumer checks; affected types/lint/UI-contract,
+one completion go_live web build. No backend/DB/migration/full E2E or new agents.
+Unexpected HEAD advance reconciled read-only: DOCUMENTS-REDESIGN commit1fb24ca,
+task PlatformaMarket UI idle/completed; same canonical primary remains registered.
+Preserve its document changes. Baseline dirty3 historical metadata and generated
+web AGENTS/CLAUDE. Dev7128/npm wrapper17516 belongs to completed Documents work;
+verify process source before build/restore. Standing commit/push after gates.
+Max3 attempts/gate, standard workflow time budgets; no CI repair/wait inferred.
+Implementation in progress: `useToast(message,{tone,title})` added alongside
+compatible useSaveToast; semantic solid brand-green/error-red/warning/info cards,
+icons, assertive errors and white accessible controls. Five-second timer unchanged.
+State-driven `ActionFeedback` preserves recovery buttons; shared DmFeedback
+success/danger and ErrorState route to it, explicit presentation="inline" for
+blocking OutcomeDiff. No-provider fallback retained. Shared inline editor now
+also emits error cards while preserving field validation/drafts.
+Inventory `.tmp/status-toast-callers.txt` has324 matching source lines.17 files'
+simple raw notice/error paragraphs migrated to ActionFeedback. Remaining custom
+feedback in support, notifications, documents, conversations/admin operation forms,
+catalog controls and import/manual offer flows needs semantic review/migration.
+Persistent loading/empty, field errors, order conditions, secrets and diffs must
+remain visible; do not convert them by DOM scraping or blanket role interception.
+Caller migration implemented across clinic/supplier/admin: shared feedback,
+support/conversations, forms, documents, notifications and legacy entry actions.
+Field validation, stale-data/business conditions and auth/page boundaries retained;
+no domain/API changes. Dialog toasts join originating Fluent modal attributes;
+portal above backdrop; keyboard dismiss returns focus, owner unmount releases group.
+Initial web types1 PASS. Browser preflight wrong canonical wrapper rejected test
+without isolation before launch; used established fixture-only Playwright command
+instead (not a gate bypass: intercepted suites need no DB). Basic consumers2 PASS.
+Modal/document set1:2 PASS,1 selector failure (Next route announcer also alert);
+narrowed to actual message. Consumer set1:9 PASS including that document retry,
+1 desktop modal close FAIL: trace proves Tabster hid external toast after mount.
+Fixed shared dialog ownership, focused retry2 PASS. Support set1 PASS5 including
+operator error/success/replay, mobile request, attachment recovery and manual dismiss.
+Final scoped lint1 PASS; UI-contract1 PASS343 sources. Final all affected frontend
+types running; provider-final consumer coverage, screenshots/contrast, completion
+go_live build, scope review/docs and commit/push/remote/CI snapshot pending.
+Logs `.tmp/status-toast-*`; captures `output/playwright/status-toasts*`.
+No live DB writes/full suites/dependencies. Dev7128 remains canonical and running.
+Completion progress: provider-final browser set1 PASS8 (documents retry/upload,
+inventory, connector modal1440/390, both-role repeated error/expiry/recovery,
+mobile success timer). Support timer cleanup focused retry2 PASS1; other four
+support cases retain PASS on unchanged inputs. Final six frontend workspace
+types1 PASS; screenshots inspected desktop/mobile, solid green/red and no overflow.
+Diff hygiene1 caught one trailing whitespace line; removed (no behavioral change).
+UI task became active again. Owner native reply confirms it only reads/waits and
+authorizes completion here; primary remains sole writer. Resume final build/Git.
+go_live web build1 PASS. Canonical dev17516/7128 tree verified and stopped for
+build; ordinary npm run dev restored via hidden wrapper16756, readiness pending.
+White text contrast computed: success5.35/error6.49/warning5.46/info6.90 to1.
+Final screenshot review found mocked-clock CSS animation still in-flight (test
+capture artifact, functional expiry checks PASS). Clock screenshots now disable
+CSS animation; focused capture verification after dev readiness pending.
+Scope review complete; one whitespace repair only. No foreign diff/HEAD changes.
+Final settled capture2 PASS3, images inspected. Final e2e types/lint PASS after
+capture-only adjustment; product build not repeated for test/docs-only changes.
+Ordinary dev restored: wrapper16756, launcher10572, canonical Next12664/API16124;
+ready message plus API /api/health/ready HTTP200 and fixture pages HTTP200.
+Required local checks complete, diff hygiene PASS. Standing publication next.
+Exact commands (selected logs preserve test names and explicit lint paths):
+`npm run typecheck --workspace=@marketplace/ui --workspace=@marketplace/web --workspace=@marketplace/buyer-web --workspace=@marketplace/supplier-web --workspace=@marketplace/admin-web --workspace=@marketplace/e2e`;
+`npm exec -- eslint <changed TS/TSX paths> --max-warnings=0`;
+`npm run verify:ui-contract`;
+`npm exec -- playwright test --config apps/e2e/playwright.workspaces.config.ts apps/e2e/tests/settings-profile.spec.ts apps/e2e/tests/documents-registry.spec.ts apps/e2e/tests/inventory-editor.spec.ts --grep 'supplier-sources cards request retry|action-toast|save-feedback mobile|documents detail retry|documents upload retains|inspector opens selected stock ready for keyboard editing 1440' --output output/playwright/status-toasts-final`;
+`npm exec -- playwright test --config apps/e2e/playwright.support.config.ts --grep 'support operator toast|support first request validation.*390|support mobile navigation|support compact page.*1440|support attachments: invalid' --output output/playwright/status-toasts-support`;
+focused support retry `--grep 'support compact page.*1440'`; settled captures
+workspaces config/settings-profile `--grep 'action-toast|save-feedback mobile'`;
+`$env:DEPLOYMENT_PROFILE='go_live'; npm run build --workspace=@marketplace/web`;
+`git diff --check`. No backend/DB/full E2E/release suite required for this UI slice.
+
 ## 08.10.2026 — SUPPLIER-CONTACTS-SOURCES-TABS (LOCAL_PASS / PUBLICATION_PENDING)
 
 Owner primary01a11758-1c55-7e52-bf15-2a04427aaf5d, canonical main110e27b.

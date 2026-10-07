@@ -5,6 +5,7 @@ import { Edit20Regular } from "@fluentui/react-icons/svg/edit";
 import { Checkmark20Regular } from "@fluentui/react-icons/svg/checkmark";
 import { DmAction, DmButton, DmFileInput, DmInput } from "./controls";
 import { DmInfoTip } from "./info-tip";
+import { useToast } from "./save-toast";
 
 /** Short independent values: explicit save, preserved draft on failure, no blur save. */
 export function DmInlineEdit({ label, value, onSave, disabled = false, required = false, type = "text", maxLength = 160, onEditingChange, help }: {
@@ -12,17 +13,18 @@ export function DmInlineEdit({ label, value, onSave, disabled = false, required 
   required?: boolean; type?: "text" | "email" | "tel"; maxLength?: number; onEditingChange?: (editing: boolean) => void; help?: string;
 }) {
   const id = useId(), errorId = `${id}-error`;
+  const notify = useToast();
   const [editing, setEditing] = useState(false), [draft, setDraft] = useState(value), [error, setError] = useState<string | null>(null), [pending, setPending] = useState(false);
   const lock = useRef(false), trigger = useRef<HTMLButtonElement>(null), input = useRef<HTMLInputElement>(null);
   useEffect(() => { if (editing) input.current?.focus(); }, [editing]);
   const close = () => { setEditing(false); setError(null); onEditingChange?.(false); requestAnimationFrame(() => trigger.current?.focus()); };
   async function save() {
     if (lock.current || disabled) return;
-    if (required && !draft.trim()) { setError("Заполните это поле"); input.current?.focus(); return; }
-    if (type === "email" && !input.current?.validity.valid) { setError("Укажите корректную электронную почту"); input.current?.focus(); return; }
+    if (required && !draft.trim()) { setError("Заполните это поле"); notify("Заполните это поле", {tone:"error",title:label}); input.current?.focus(); return; }
+    if (type === "email" && !input.current?.validity.valid) { setError("Укажите корректную электронную почту"); notify("Укажите корректную электронную почту", {tone:"error",title:label}); input.current?.focus(); return; }
     lock.current = true; setPending(true); setError(null);
     try { await onSave(draft.trim()); close(); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось сохранить. Повторите попытку."); }
+    catch (cause) { const message=cause instanceof Error ? cause.message : "Не удалось сохранить. Повторите попытку."; setError(message); notify(message,{tone:"error",title:"Изменения не сохранены"}); }
     finally { lock.current = false; setPending(false); }
   }
   return <div className="dm-inline-edit" data-editing={editing || undefined}>

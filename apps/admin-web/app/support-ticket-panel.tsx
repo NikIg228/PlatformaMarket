@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OperationHistory, SupportTicketDetail, UpdateSupportTicketInput } from "@marketplace/schemas";
@@ -32,7 +33,7 @@ export function SupportTicketPanel({ id, api, assignees, canManage, canWrite, on
   const key = (action: string, input: unknown) => { const json = JSON.stringify(input); let current = pending.current.get(action); if (!current || current.json !== json) { current = { json, key: crypto.randomUUID() }; pending.current.set(action, current); } return current.key; };
   const run = async (action: () => Promise<void>, refreshAfter = true) => { if (lock.current) return; lock.current = true; setBusy(true); setError(""); setFeedback(""); try { await action(); if (refreshAfter) { await load(); await onChanged(); } } catch (cause) { setError(errorMessage(cause)); } finally { lock.current = false; setBusy(false); } };
   return <DmDialog open={open} title={ticket ? `${ticket.number} · ${ticket.subject}` : "Обращение"} onOpenChange={value => { if (!value && !busy) setOpen(false); }} onClosed={() => { if (destination.current) onConversation(destination.current); else onClose(); }} actions={<DmButton disabled={busy} onClick={() => setOpen(false)}>Закрыть</DmButton>}>
-    {error ? <p role="alert">{error} Ввод сохранён. <DmButton disabled={busy} onClick={() => void load().catch(cause => setError(errorMessage(cause)))}>Обновить обращение</DmButton></p> : null}{feedback ? <p role="status">{feedback}</p> : null}
+    {error ? <ActionFeedback tone="error" description={`${error} Ввод сохранён.`} action={<DmButton disabled={busy} onClick={() => void load().catch(cause => setError(errorMessage(cause)))}>Обновить обращение</DmButton>} /> : null}{feedback ? <ActionFeedback tone="success" description={feedback} /> : null}
     {!ticket ? <LoadingState label="Загружаем обращение" /> : <>
       <p>{ticket.description}</p>{ticket.links.filter(link => link.entityType === "BusinessConversation").map(link => <DmButton key={link.id} disabled={busy} onClick={() => { destination.current = link.entityId; setOpen(false); }}>Открыть связанный диалог</DmButton>)}
       {canManage ? <form className="mp-stack" onSubmit={event => { event.preventDefault(); void run(async () => { const input = { expectedVersion: ticket.version, status: status as UpdateSupportTicketInput["status"], priority: priority as UpdateSupportTicketInput["priority"], assigneeId: assigneeId || null, slaDueAt: dueAt ? new Date(dueAt).toISOString() : null, reason: reason.trim() }; await api.updateSupportTicket(id, { ...input, idempotencyKey: key("update", input) }); setReason(""); setFeedback("Изменение обращения сохранено."); }); }}>

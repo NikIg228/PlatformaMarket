@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useEffect, useId, useRef, useState } from "react";
 import { createOfferDeliveryOptionSchema, type OfferDeliveryOptionResponse, type SupplierWarehouseList } from "@marketplace/schemas";
 import { DmButton, DmCheckbox, DmField, DmInput, DmDropdown, ErrorState, errorMessage, formatMoney, usePermissions } from "@marketplace/ui";
@@ -59,7 +60,7 @@ export function OfferDeliveryEditor(props: OfferEditorProps) {
   };
   const field = (key: keyof Draft, title: string, numeric = false) => <DmField label={title} validationState={validation[key] ? "error" : "none"} validationMessage={validation[key]}><DmInput value={String(draft?.[key] ?? "")} disabled={busy || unknown} inputMode={numeric ? "decimal" : "text"} maxLength={key === "instructions" ? 1000 : undefined} onChange={(_, data) => change(key, data.value)} /></DmField>;
   return <div className={styles.form}>
-    {loading ? <p role="status">Загружаем варианты доставки…</p> : null}{error ? <ErrorState description={error} /> : null}{notice ? <p role="status">{notice}</p> : null}
+    {loading ? <p role="status">Загружаем варианты доставки…</p> : null}{error ? <ErrorState description={error} /> : null}{notice ? <ActionFeedback tone="success" description={notice} /> : null}
     {!loading && options === null ? <DmButton onClick={() => setAttempt(value => value + 1)}>Повторить загрузку редактора</DmButton> : null}
     {!allowed ? <p>Настройка доставки недоступна вашей роли.</p> : !loading && options ? <>
       {!draft ? <><div className={styles.options}>{!options.length ? <p>Способы доставки ещё не добавлены.</p> : options.map(option => <article className={styles.option} key={option.id}><div><strong>{label(option.method)}</strong><p>{warehouses.find(item => item.id === option.warehouseId)?.name ?? "Склад недоступен"}</p><p>{cost(option)} · от {option.minLeadTimeHours}{option.maxLeadTimeHours === null ? "" : ` до ${option.maxLeadTimeHours}`} ч.</p></div><DmButton onClick={() => select(option)} aria-label={`Изменить: ${label(option.method)}`}>Изменить</DmButton></article>)}</div>

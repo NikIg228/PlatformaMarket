@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "./action-feedback";
 import { DmSearch } from "./dm-search";
 import { Spinner } from "@fluentui/react-components";
 import { DmButton as Button, DmField as Field, DmSelect as Select } from "./controls";
@@ -33,6 +34,6 @@ export function DocumentRelationSelect({label,searchLabel,hint,required=false,di
       </Select>
     </Field>
     {selected?<div role="status">Выбрано: {selected.label}. {selected.description}</div>:null}
-    {loading?<Spinner size="tiny" label={`Загружаем: ${label}`} />:error?<div role="alert">{error}</div>:<div role="status">{page.items.length===0?'Ничего не найдено. Измените поиск или сначала создайте нужную запись.':page.hasMore?'Показаны первые 100 результатов. Уточните номер или контрагента.':`Найдено: ${page.items.length}`}</div>}
+    {loading?<Spinner size="tiny" label={`Загружаем: ${label}`} />:error?<ActionFeedback tone="error" description={error} />:<div role="status">{page.items.length===0?'Ничего не найдено. Измените поиск или сначала создайте нужную запись.':page.hasMore?'Показаны первые 100 результатов. Уточните номер или контрагента.':`Найдено: ${page.items.length}`}</div>}
   </div>;
 }

@@ -212,6 +212,10 @@ R7 этим не приняты.
 договор площадки в настройках. [Evidence](governance/task-state/DOCUMENTS-REDESIGN-2026-10-08.md).
 Это не общая приёмка document relationship matrix или R7.
 
+08.10: STATUS-TOASTS — частный LOCAL_PASS: единые цветные карточки результата
+действий во всех кабинетах, сохранение черновиков/повтора и доступность в диалогах.
+[Evidence](governance/PROJECT_ACCEPTANCE_MATRIX.md). Общий R7 остаётся открытым.
+
 - [ ] **R7.1** Консолидировать shared controls/theme и последние UI/Support/
   Orders/Notifications slices после R0; проверить нужные consumers, mobile,
   keyboard/focus, loading/empty/error, черновики и recovery.

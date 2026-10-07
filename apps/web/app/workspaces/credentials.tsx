@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useCallback, useRef, useState } from "react";
 import { DmButton, ErrorState, LoadingState, PermissionFields } from "@marketplace/ui";
 import { SupplierCompliance } from "../../../supplier-web/app/features/supplier-workspace/supplier-compliance";
@@ -43,8 +44,8 @@ export function Credentials() {
   return (
     <>
       <ResourceStatus resource={resource} />
-      {error ? <p role="alert">{error}</p> : null}
-      {notice ? <p role="status">{notice}</p> : null}
+      {error ? <ActionFeedback tone="error" description={error} /> : null}
+      {notice ? <ActionFeedback tone="success" description={notice} /> : null}
       <PermissionFields required={["compliance.credential.manage"]}><SupplierCompliance
         credentials={resource.data.credentials}
         checks={resource.data.checks}

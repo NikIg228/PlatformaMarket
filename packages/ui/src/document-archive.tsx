@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "./action-feedback";
 import { DmFileInput, DmAction } from "./controls";
 
 import { Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Spinner, Tag } from "@fluentui/react-components";
@@ -189,7 +190,6 @@ export function DocumentArchiveUpload({
   const submitLock = useRef(false);
   const has = usePermissions();
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const errorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Dialog unmounts its native input on close. Restore the already user-selected
   // in-memory File so native feedback and the retained draft tell the same story.
@@ -210,7 +210,6 @@ export function DocumentArchiveUpload({
     setOpen(false);
     window.requestAnimationFrame(() => triggerRef.current?.focus());
   };
-  useEffect(() => { if (open && error && !pending) errorRef.current?.focus(); }, [open, error, pending]);
 
   const submit = async () => {
     if (!has("document.upload")) { setError("Загрузка недоступна вашей роли. Ввод сохранён."); return; }
@@ -266,7 +265,7 @@ export function DocumentArchiveUpload({
 
   return <>
     <Button ref={triggerRef} disabled={!has("document.upload")} appearance="primary" icon={<Document24Regular />} onClick={() => { setSuccess(false); setOpen(true); }}>Загрузить документ</Button>
-    {success ? <span role="status">Документ загружен в архив.</span> : null}
+    {success ? <ActionFeedback tone="success" description="Документ загружен в архив." /> : null}
     <Dialog open={open} onOpenChange={(_, data) => { if (!data.open) close(); }}>
       <DialogSurface className="dm-document-dialog">
         <DialogBody>
@@ -289,7 +288,7 @@ export function DocumentArchiveUpload({
             </Field>
             </fieldset>
             {!has("document.upload") ? <p role="status">Загрузка недоступна вашей роли. Ввод сохранён.</p> : null}
-            {error ? <div ref={errorRef} tabIndex={-1} className="dm-document-message dm-document-message-error" role="alert" aria-label="Ошибка загрузки документа">{error}</div> : null}
+            {error ? <ActionFeedback tone="error" title="Документ не загружен" description={error} /> : null}
           </DialogContent>
           <DialogActions><Button appearance="primary" disabled={!has("document.upload") || pending || !!fileError || !!parsedAmount.error || !file || title.trim().length < 2 || !documentNumber.trim() || !documentDateValid(documentDate) || kind === "CONTRACT_ADDENDUM" && !selectedAgreement} onClick={() => void submit()}>{pending ? "Загружаем…" : "Загрузить"}</Button><Button disabled={pending} onClick={close}>Закрыть, сохранив черновик</Button></DialogActions>
         </DialogBody>
@@ -429,7 +428,7 @@ export function DocumentArchiveWorkspace({
       </form>
       {filterError ? <p role="alert">{filterError}</p> : null}
 
-      {error ? <div className="dm-document-message dm-document-message-error" role="alert"><strong>Архив не загрузился</strong><span>{error}</span><Button onClick={onRefresh}>Повторить</Button></div> : null}
+      {error ? <ActionFeedback tone="error" title="Архив не загрузился" description={error} action={<Button onClick={onRefresh}>Повторить</Button>} /> : null}
       {loading && !items.length ? <div className="dm-document-loading"><Spinner label="Загружаем документы" /></div> : null}
       {!loading && !error && !items.length ? <div className="dm-document-empty"><Document24Regular /><h2>Документов пока нет</h2><p>После оформления заказа, загрузки файла или заключения договора документы появятся здесь.</p></div> : null}
 
@@ -471,7 +470,7 @@ export function DocumentArchiveWorkspace({
               <section><h3>Подписи</h3>{selected.signatures.length ? selected.signatures.map((signature) => <p key={signature.id}><strong>{signature.signerName ?? "Подписант"}</strong><span>{signature.method} · {statusLabels[signature.status] ?? signature.status}{signature.signedAt ? ` · ${showDate(signature.signedAt)}` : ""}</span></p>) : <p>Подписи для документа не зарегистрированы.</p>}</section>
               <section><h3>История версий</h3>{selected.versions.length ? selected.versions.map((version) => <p key={version.id}><strong>Версия {version.version}</strong><span>{statusLabels[version.status] ?? version.status} · {showDate(version.documentDate)}</span></p>) : <p>{detailFailed ? "Историю версий загрузить не удалось." : "Загружаем цепочку версий…"}</p>}</section>
               {onAccountingStatus && selected.accountingStatus !== "NOT_APPLICABLE" ? <section className="dm-document-accounting"><h3>Бухгалтерская обработка</h3><Select aria-label="Новый бухгалтерский статус" value={accountingStatus} onChange={(_, data) => setAccountingStatus(data.value as typeof accountingStatus)}><option value="REVIEWED">Проверен</option><option value="RECONCILED">Сверен</option><option value="DISPUTED">Есть расхождение</option></Select><Textarea aria-label="Комментарий к бухгалтерской отметке" placeholder="Основание изменения" value={accountingReason} onChange={(_, data) => setAccountingReason(data.value)} /><Button appearance="primary" disabled={!has("document.accounting.review") || accountingReason.trim().length < 2 || busyDocumentId === selected.id} onClick={() => void onAccountingStatus(selected, accountingStatus, accountingReason).then(() => setAccountingReason(""))}>Сохранить отметку</Button></section> : null}
-            </DialogContent> : <DialogContent>{detailFailed ? <div role="alert"><p>Не удалось открыть документ. Проверьте доступ и повторите попытку.</p><Button onClick={() => selectedId && openDocument(selectedId)}>Повторить загрузку документа</Button></div> : <p role="status">Загружаем документ…</p>}</DialogContent>}
+            </DialogContent> : <DialogContent>{detailFailed ? <ActionFeedback tone="error" description="Не удалось открыть документ. Проверьте доступ и повторите попытку." action={<Button onClick={() => selectedId && openDocument(selectedId)}>Повторить загрузку документа</Button>} /> : <p role="status">Загружаем документ…</p>}</DialogContent>}
             <DialogActions><Button appearance="primary" icon={<ArrowDownload24Regular />} disabled={!selected || busyDocumentId === selected?.id} onClick={() => selected && onDownload(selected)}>Скачать</Button><Button onClick={() => setSelectedId(null)}>Закрыть</Button></DialogActions>
           </DialogBody>
         </DialogSurface>

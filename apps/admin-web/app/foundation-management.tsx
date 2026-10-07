@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { DmButton, DmCheckbox, DmField, DmInput, DmSelect } from "@marketplace/ui";
+import { useToast, DmButton, DmCheckbox, DmField, DmInput, DmSelect } from "@marketplace/ui";
 import styles from "./foundation-management.module.css";
 import { adminAuthHeaders } from "./admin-auth";
 import type { AccessPolicy } from "@marketplace/schemas";
@@ -39,7 +39,7 @@ export function FoundationManagement() {
   const [attributes, setAttributes] = useState<Attribute[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
+  const notify = useToast();
 
   const request = useCallback(
     async <T,>(path: string, init?: RequestInit): Promise<T> => {
@@ -69,13 +69,12 @@ export function FoundationManagement() {
       setMemberships(membershipData);
       setAttributes(attributeData);
       setCategories(categoryData);
-      setMessage("");
     } catch {
-      setMessage("Управление недоступно до запуска API и применения seed.");
+      notify("Не удалось загрузить управление. Повторите загрузку данных.", { tone: "error" });
     } finally {
       setLoading(false);
     }
-  }, [request]);
+  }, [request, notify]);
 
   useEffect(() => {
     void load();
@@ -98,10 +97,11 @@ export function FoundationManagement() {
       });
       event.currentTarget.reset();
       await load();
-      setMessage("Роль создана.");
+      notify("Роль создана.");
     } catch (error) {
-      setMessage(
+      notify(
         error instanceof Error ? error.message : "Не удалось создать роль.",
+        { tone: "error" },
       );
     }
   }
@@ -118,10 +118,11 @@ export function FoundationManagement() {
         },
       );
       await load();
-      setMessage("Роль назначена участнику.");
+      notify("Роль назначена участнику.");
     } catch (error) {
-      setMessage(
+      notify(
         error instanceof Error ? error.message : "Не удалось назначить роль.",
+        { tone: "error" },
       );
     }
   }
@@ -143,10 +144,11 @@ export function FoundationManagement() {
       });
       event.currentTarget.reset();
       await load();
-      setMessage("Определение атрибута создано.");
+      notify("Определение атрибута создано.");
     } catch (error) {
-      setMessage(
+      notify(
         error instanceof Error ? error.message : "Не удалось создать атрибут.",
+        { tone: "error" },
       );
     }
   }
@@ -167,12 +169,13 @@ export function FoundationManagement() {
           }),
         },
       );
-      setMessage("Правило категории сохранено.");
+      notify("Правило категории сохранено.");
     } catch (error) {
-      setMessage(
+      notify(
         error instanceof Error
           ? error.message
           : "Не удалось сохранить правило.",
+        { tone: "error" },
       );
     }
   }
@@ -186,11 +189,6 @@ export function FoundationManagement() {
         </div>
         <DmButton type="button" appearance="secondary" onClick={() => void load()}>Обновить данные</DmButton>
       </div>
-      {message && (
-        <div className={styles.notice} role="status">
-          {message}
-        </div>
-      )}
       {loading ? (
         <div className={styles.loading} aria-label="Загрузка управления">
           <i />

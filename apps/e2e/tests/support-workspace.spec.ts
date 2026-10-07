@@ -87,7 +87,7 @@ for (const width of [1440, 390]) test(`support first request validation and safe
   await page.getByRole("textbox", { name: "Тема", exact: true }).fill("Ошибка загрузки остатков");
   await page.getByRole("textbox", { name: "Описание", exact: true }).fill("Файл принят, но остатки не изменились.");
   await page.getByRole("button", { name: "Отправить обращение", exact: true }).click();
-  await expect(page.getByRole("region", { name: "Обращения в поддержку", exact: true }).getByRole("alert")).toContainText("Текст не потерян");
+  await expect(page.getByRole("alert").filter({hasText:"Текст не потерян"})).toContainText("Текст не потерян");
   await expect(page.getByRole("textbox", { name: "Описание", exact: true })).toHaveValue("Файл принят, но остатки не изменились.");
   page.once("dialog", dialog => dialog.accept()); await page.reload();
   await expect(page.getByRole("textbox", { name: "Описание", exact: true })).toHaveValue("Файл принят, но остатки не изменились.");
@@ -130,7 +130,7 @@ test("support mobile navigation and explicit reopen with reply replay", async ({
   await page.getByRole("button", { name: "Вопрос не решён" }).click();
   await page.getByRole("textbox", { name: "Что осталось нерешённым?" }).fill("Проблема сохранилась, проверьте ещё раз.");
   await page.getByRole("button", { name: "Отправить и открыть повторно" }).click();
-  await expect(page.getByRole("region", { name: "Обращения в поддержку", exact: true }).getByRole("alert")).toContainText("Текст не потерян");
+  await expect(page.getByRole("alert").filter({hasText:"Текст не потерян"})).toContainText("Текст не потерян");
   // The first command committed, but its response was lost. A refresh now shows an active ticket.
   await expect.poll(() => state.details, { timeout: 20_000 }).toBeGreaterThan(state.details);
   await expect(page.getByRole("textbox", { name: "Сообщение поддержке" })).toHaveValue("Проблема сохранилась, проверьте ещё раз.");
@@ -230,7 +230,7 @@ for (const [role, width] of [["supplier", 1440], ["clinic", 390]] as const) test
   await page.getByLabel("Файлы обращения").setInputFiles({ name: "Дополнение.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.7") });
   await expect(page.getByRole("button", { name: "Убрать Дополнение.pdf", exact: true })).toBeEnabled();
   state.failReply = true; await page.getByRole("button", { name: "Отправить", exact: true }).click();
-  await expect(page.getByRole("region", { name: "Обращения в поддержку", exact: true }).getByRole("alert")).toContainText("Текст не потерян");
+  await expect(page.getByRole("alert").filter({hasText:"Текст не потерян"})).toContainText("Текст не потерян");
   page.once("dialog", dialog => dialog.accept()); await page.reload();
   await expect(page.getByRole("button", { name: "Убрать Дополнение.pdf", exact: true })).toBeVisible();
   state.failReply = false; await page.getByRole("button", { name: "Отправить", exact: true }).click();
@@ -271,9 +271,25 @@ test("support attachments: invalid input, scanner recovery, remove and download 
   await expect(page.getByRole("button", { name: "Убрать Повреждённое.png" })).toBeEnabled();
   await page.getByRole("button", { name: "Отправить", exact: true }).click();
   await page.getByRole("button", { name: "Посмотреть Повреждённое.png" }).click();
-  await expect(page.getByRole("dialog", { name: "Повреждённое.png" }).getByRole("alert")).toContainText("Не удалось показать изображение");
+  await expect(page.getByRole("alert").filter({hasText:"Не удалось показать изображение"})).toContainText("Не удалось показать изображение");
   await page.keyboard.press("Escape");
   expect(state.unexpected).toEqual([]);
+});
+
+test("support operator toast preserves failed reply and announces recovery", async ({ page }) => {
+  const state = await fixture(page, "supplier", [...rights, "support.ticket.manage"]); state.failReply = true;
+  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "operator-support-fixture" })));
+  await page.goto("/admin?section=support");
+  await page.getByRole("button", { name: "Открыть обращение", exact: true }).first().click();
+  const dialog = page.getByRole("dialog", { name: /SUP-10/ }); const field = dialog.getByRole("textbox", {name:"Ответ", exact:true});
+  await field.fill("Проверили данные, уточните номер поставки.");
+  await dialog.getByRole("button", {name:"Отправить ответ",exact:true}).click();
+  await expect(page.getByRole("alert").filter({hasText:"Не удалось получить подтверждение ответа"})).toBeVisible();
+  await expect(field).toHaveValue("Проверили данные, уточните номер поставки.");
+  await page.getByRole("button", {name:"Закрыть уведомление",exact:true}).click();
+  state.failReply = false; await dialog.getByRole("button", {name:"Отправить ответ",exact:true}).click();
+  await expect(page.getByRole("status").filter({hasText:"Ответ сохранён"})).toBeVisible(); await expect(field).toHaveValue("");
+  expect(state.writes[0].body.idempotencyKey).toBe(state.writes[1].body.idempotencyKey); expect(state.unexpected).toEqual([]);
 });
 
 test("support attachments: operator can download customer files", async ({ page }) => {

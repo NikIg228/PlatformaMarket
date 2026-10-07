@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 
 import { useEffect, useRef } from "react";
 import { Spinner } from "@fluentui/react-components";
@@ -97,8 +98,8 @@ export function BuyerCart({
         }
       />
       {editor.pending ? <p role="status">Сохраняем и проверяем корзину…</p> : null}
-      {editor.error ? <p role="alert">{editor.error}</p> : null}
-      {editor.notice ? <p role="status">{editor.notice}</p> : null}
+      {editor.error ? <ActionFeedback tone="error" description={editor.error} /> : null}
+      {editor.notice ? <ActionFeedback tone="success" description={editor.notice} /> : null}
       {Object.entries(editor.drafts).filter(([id]) => !cart?.items.some(item => item.id === id)).map(([id, draft]) => <p key={id} role="alert">Позиция больше не находится в корзине. Несохранённое количество: {draft.value}. <DmButton onClick={() => editor.discard(id)}>Отменить ввод удалённой позиции</DmButton></p>)}
       {!cart?.items.length ? (
         <Section>

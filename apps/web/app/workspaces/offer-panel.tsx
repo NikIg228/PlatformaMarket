@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { dmLinkButtonProps } from "@marketplace/ui/link-button";
 import { DmAction } from "@marketplace/ui/controls";
 import Link from "next/link";
@@ -77,8 +78,8 @@ export function OfferPanel({ offer, onClose, onChanged, initiallyEditing = false
           : mode === "delivery" ? <OfferDeliveryEditor key={offer.id + ":delivery"} offer={offer} footer={footer} onDirtyChange={setDirty} onLockChange={setLocked} onSaved={saved} onCancel={() => edit("overview")} />
           : <OfferSettingsEditor key={offer.id + mode} mode={mode} offer={offer} footer={footer} onDirtyChange={setDirty} onLockChange={setLocked} onSaved={saved} onCancel={() => edit("overview")} />}
       </div> : <>
-        {notice ? <p role="status">{notice}</p> : null}
-        {refreshError ? <div role="status"><p>Изменение сохранено, но обзор не удалось обновить.</p><DmButton onClick={() => { void onChanged().then(() => setRefreshError(false)).catch(() => setRefreshError(true)); }}>Обновить обзор</DmButton></div> : null}
+        {notice ? <ActionFeedback tone="success" description={notice} /> : null}
+        {refreshError ? <ActionFeedback tone="warning" description="Изменение сохранено, но обзор не удалось обновить." action={<DmButton onClick={() => { void onChanged().then(() => setRefreshError(false)).catch(() => setRefreshError(true)); }}>Обновить обзор</DmButton>} /> : null}
         <section className={local.price} aria-label="Цена"><h3>Цена</h3><div className={local.priceRow}><div><strong>{price ? formatMoney(price.amountMinor, price.currency) : "Не задана"}{price ? <span> / {unit}</span> : null}</strong><p>{price ? price.includesVat ? "НДС включён" : "Без НДС" : "Укажите цену предложения"}</p></div>{canPrice ? <DmButton ref={priceButton} appearance="secondary" onClick={() => edit("price")}>Изменить цену</DmButton> : null}</div>
           <p className={local.freshness}>{sourceLabel(price?.source ?? offer.sourceType)} · {price?.freshnessExpiresAt ? `${Date.parse(price.freshnessExpiresAt) <= Date.now() ? "Подтверждение истекло" : "Подтверждена до"} ${formatDate(price.freshnessExpiresAt, true)}` : "Срок подтверждения не указан"}</p>
           {attention?.priceWarning ? <p className={local.warning}>{attention.priceWarning}</p> : null}

@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
@@ -114,7 +115,7 @@ export function ManualOffer({ api, supplierId, onChanged, initialOffer, initiall
   return <Section className={formStyles.panel} title={hideHeading ? undefined : initialOffer ? "Редактировать предложение" : "Добавить товар"}>
     {!open ? <DmButton appearance="primary" onClick={() => setOpen(true)}>Добавить предложение вручную</DmButton> : <div className="mp-stack">
       {error ? <ErrorState description={error} /> : null}
-      {notice ? <p role="status">{notice}</p> : null}
+      {notice ? <ActionFeedback tone="success" description={notice} /> : null}
       {!has("catalog.offer.edit") ? <p role="status">Создание и изменение предложения недоступны вашей роли. Ввод сохранён.</p> : null}
       {!selected ? <>
         <DmSearch aria-label="Товар, артикул или штрихкод" placeholder="Найти товар" value={query} maxLength={160} disabled={busy} onChange={setQuery} onSearch={value => void search(false, value)} />

@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MarketplaceApiClient } from "@marketplace/api-client";
 import type { SupportTicketSummary } from "@marketplace/schemas";
@@ -33,7 +34,7 @@ export function SupportOperations() {
   return <section ref={sectionRef} tabIndex={-1} className="mp-stack" aria-label="Обращения и диалоги"><h2>Обращения и споры</h2>
     <p>Решения по заказу, возврату и оплате выполняются в профильных операциях. Ответ в обращении не меняет коммерческие условия.</p>
     <div className="dm-conversations-toolbar"><DmButton aria-pressed={mode === "tickets"} onClick={() => setMode("tickets")}>Обращения</DmButton><DmButton aria-pressed={mode === "conversations"} onClick={() => { setConversationId(undefined); setMode("conversations"); }}>Диалоги с оператором</DmButton></div>
-    {error ? <p role="alert">{error} <DmButton onClick={() => void load()}>Повторить</DmButton></p> : null}
+    {error ? <ActionFeedback tone="error" description={error} action={<DmButton onClick={() => void load()}>Повторить</DmButton>} /> : null}
     {mode === "conversations" && organizationId ? <ConversationWorkspace key={conversationId ?? "all"} api={api} organizationId={organizationId} operator initialId={conversationId} canWrite={permissions.includes("support.ticket.create") && permissions.includes("support.ticket.manage")} /> : mode === "tickets" ? <>
       <DmField label="Статус обращения"><DmSelect value={status} onChange={event => { setStatus(event.target.value); setOffset(0); }}><option value="">Все статусы</option>{Object.entries(ticketStatuses).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</DmSelect></DmField>
       {tickets === null && busy ? <LoadingState label="Загружаем обращения" /> : tickets?.length === 0 ? <EmptyState title="Обращений нет" description="Новые обращения появятся после запроса участника." /> : null}

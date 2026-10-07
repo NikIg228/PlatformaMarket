@@ -57,7 +57,7 @@ test("profile-edit errors preserve drafts and email waits for confirmation",asyn
  await region.getByRole("button",{name:"Изменить: Имя",exact:true}).click(); const field=region.getByRole("textbox",{name:"Имя",exact:false}); await field.fill("Сохранённый черновик"); state.conflict=true; await field.press("Enter"); await expect(region.getByRole("alert")).toContainText("Профиль изменился"); await expect(field).toHaveValue("Сохранённый черновик"); state.conflict=false; state.personal.version=2;
  await region.getByRole("button",{name:"Обновить данные",exact:true}).click(); await field.press("Enter"); await expect(region.getByText("Сохранённый черновик",{exact:true})).toBeVisible(); expect(state.writes.at(-1)?.expectedVersion).toBe(2);
  await region.getByRole("button",{name:"Изменить: Электронная почта",exact:true}).click(); const email=region.getByRole("textbox",{name:"Электронная почта",exact:false}); await email.fill("new@example.invalid"); await email.press("Enter"); await expect(page.locator(".dm-save-toast")).toContainText("Подтвердите"); await expect(region.getByText("user@example.invalid",{exact:true})).toBeVisible();
- await region.locator('input[type="file"]').setInputFiles({name:"bad.svg",mimeType:"image/svg+xml",buffer:Buffer.from("<svg/>")}); await expect(region.getByRole("alert")).toContainText("JPG или PNG");
+ await region.locator('input[type="file"]').setInputFiles({name:"bad.svg",mimeType:"image/svg+xml",buffer:Buffer.from("<svg/>")}); await expect(page.getByRole("alert").filter({hasText:"Фото не обновлено"})).toContainText("JPG или PNG");
 });
 for(const role of ["clinic","supplier"] as const) test(`profile-edit ${role} contact add edit retry and address save`,async({page})=>{
  const state=await fixture(page,role); await page.goto(`/${role}/settings`); const contacts=page.getByRole("region",{name:"Рабочие контакты"});
@@ -76,7 +76,7 @@ test("profile-edit address conflict preserves local draft and fresh remote conta
   const address = page.getByRole("textbox", { name: "Адрес получения: адрес", exact: true });
   await address.fill("Мой новый адрес, 22"); state.conflict = true;
   await page.getByRole("button", { name: "Сохранить адреса", exact: true }).click();
-  await expect(page.locator("main").getByRole("alert")).toContainText("Профиль изменился");
+  await expect(page.getByRole("alert").filter({hasText:"Изменения не сохранены"})).toContainText("Профиль изменился");
   state.organization.version = 2; state.organization.profile!.phone = "+77005556677";
   await page.getByRole("button", { name: "Обновить сохранённые данные", exact: true }).click();
   await expect(page.locator(".dm-save-toast")).toContainText("Данные обновлены");
@@ -134,10 +134,17 @@ for (const width of [1440,390]) test(`supplier-sources cards request retry and i
   await expect(dialog).toContainText("Подключение 1С"); await dialog.getByRole("button",{name:"Отправить заявку",exact:true}).click();
   const field=dialog.getByRole("textbox",{name:"Название базы или конфигурации 1С",exact:false}); await expect(field).toBeFocused(); expect(state.writes).toHaveLength(0);
   await field.fill("Тестовая торговая база"); state.fail=true; await dialog.getByRole("button",{name:"Отправить заявку",exact:true}).click();
-  await expect(dialog.getByRole("alert")).toContainText("Заявка не отправлена"); await expect(field).toHaveValue("Тестовая торговая база");
+  await expect(page.getByRole("alert").filter({hasText:"Заявка не отправлена"})).toBeVisible(); await expect(field).toHaveValue("Тестовая торговая база");
+  await expect(page.locator(".dm-save-toast")).toHaveCSS("opacity", "1");
   await page.screenshot({path:info.outputPath(`connector-dialog-${width}.png`),fullPage:true});
+  const dismiss = page.getByRole("button", {name:"Закрыть уведомление",exact:true});
+  await dismiss.focus(); await expect(dismiss).toBeFocused(); await page.keyboard.press("Enter");
+  await expect(page.locator(".dm-save-toast")).toHaveCount(0); await expect(dialog).toBeVisible();
+  await dialog.getByRole("button",{name:"Отправить заявку",exact:true}).click();
+  await expect(page.getByRole("alert").filter({hasText:"Заявка не отправлена"})).toBeVisible();
+  await expect(page.locator(".dm-save-toast")).toHaveCount(1);
   state.fail=false; await dialog.getByRole("button",{name:"Отправить заявку",exact:true}).click(); await expect(dialog).toBeHidden();
-  expect(state.writes[0].idempotencyKey).toBe(state.writes[1].idempotencyKey); await expect(page.locator(".dm-save-toast")).toContainText("Заявка на подключение 1С отправлена");
+  expect(state.writes[0].idempotencyKey).toBe(state.writes.at(-1)?.idempotencyKey); await expect(page.locator(".dm-save-toast")).toContainText("Заявка на подключение 1С отправлена");
   await moy.getByRole("button",{name:"Подключить",exact:true}).click(); await expect(dialog).toContainText("Подключение МойСклад"); await page.keyboard.press("Escape"); await expect(dialog).toBeHidden();
   await expect(moy.getByRole("button",{name:"Подключить",exact:true})).toBeFocused();
   const settingsTab=page.getByRole("tab",{name:"Источники товаров",exact:true}); const expected=await settingsTab.evaluate(el=>({padding:getComputedStyle(el).paddingInline,radius:getComputedStyle(el,"::after").borderRadius}));
@@ -164,6 +171,27 @@ for (const width of [1440,390]) test(`supplier-order contact presentation and na
   await page.screenshot({path:info.outputPath(`order-contacts-${width}.png`),fullPage:true}); expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true); expect(state.unexpected).toEqual([]);
 });
 
+for (const [role, width] of [["clinic", 390], ["supplier", 1440]] as const) test(`action-toast ${role} expiry preserves recovery and repeated failure ${width}`, async ({page}, info) => {
+  const state = await fixture(page, role); state.fail = true;
+  await page.setViewportSize({width, height:900}); await page.goto(`/${role}/settings`);
+  const address = page.getByRole("textbox", {name:"Адрес получения: адрес", exact:true});
+  await address.fill("Сохраняемый адрес, 12");
+  const start = Date.now(); await page.clock.install({time:start}); await page.clock.pauseAt(start+1000);
+  const submit = page.getByRole("button", {name:"Сохранить адреса", exact:true}); await submit.click();
+  const toast = page.locator(".dm-save-toast"); await expect(toast).toHaveAttribute("role", "alert");
+  await expect(toast).toContainText("Сервис временно недоступен"); await expect(toast).toHaveAttribute("data-tone", "error");
+  await page.clock.fastForward(250); await page.screenshot({path:info.outputPath(`error-toast-${role}.png`), fullPage:true, animations:"disabled"});
+  await page.clock.fastForward(4750); await expect(toast).toHaveAttribute("data-leaving", "true");
+  await page.clock.fastForward(220); await expect(toast).toHaveCount(0);
+  await expect(address).toHaveValue("Сохраняемый адрес, 12");
+  await expect(page.getByRole("button", {name:"Обновить сохранённые данные", exact:true})).toBeEnabled();
+  await submit.click(); await expect(toast).toContainText("Сервис временно недоступен"); await expect(toast).toHaveCount(1);
+  state.fail = false; await submit.click(); await expect(toast).toHaveAttribute("role", "status");
+  await expect(toast).toHaveAttribute("data-tone", "success"); await expect(toast).toContainText("Изменения сохранены");
+  expect(state.writes.at(-1)?.idempotencyKey).toBe(state.writes[0]?.idempotencyKey);
+  expect(state.unexpected).toEqual([]);
+});
+
 test("save-feedback mobile touch help and timed dismissal", async ({page},info) => {
   const errors:string[]=[]; page.on("pageerror",error=>errors.push(error.message));
   await fixture(page,"clinic"); await page.setViewportSize({width:390,height:844}); await page.goto("/clinic/profile");
@@ -172,7 +200,7 @@ test("save-feedback mobile touch help and timed dismissal", async ({page},info) 
   const clockStart=Date.now(); await page.clock.install({time:clockStart}); await page.clock.pauseAt(clockStart+1000);
   await page.getByRole("button",{name:"Сохранить: Имя",exact:true}).click(); const toast=page.locator(".dm-save-toast"); await expect(toast).toContainText("Изменения сохранены");
   await page.clock.fastForward(4500); await expect(toast).toBeVisible(); await expect(toast).not.toHaveAttribute("data-leaving","true");
-  await page.screenshot({path:info.outputPath("save-toast-mobile.png"),fullPage:true});
+  await page.screenshot({path:info.outputPath("save-toast-mobile.png"),fullPage:true,animations:"disabled"});
   await page.clock.fastForward(500); await expect(toast).toHaveAttribute("data-leaving","true"); await page.clock.fastForward(220); await expect(toast).toHaveCount(0); expect(errors).toEqual([]);
 });
 

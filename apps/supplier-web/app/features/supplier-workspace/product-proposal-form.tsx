@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { ProductCandidateSummary } from "@marketplace/schemas";
@@ -28,7 +29,7 @@ export function ProductProposalForm({ api, initial, onDone, onCancel }: { api: M
     <h2>{sent ? "Заявка отправлена" : initial ? "Исправьте сведения о товаре" : "Новый товар для каталога"}</h2>
     {initial?.rejectionReason && !sent ? <p className={s.notice}>Причина отказа: {initial.rejectionReason}</p> : null}
     {error ? <ErrorState description={error} /> : null}
-    {sent ? <><p className={s.notice} role="status">Заявка отправлена на модерацию. После одобрения вы сможете заполнить цену и остаток.</p><a href={`/supplier/products/proposals?request=${sent}`}>Следить за рассмотрением</a></> : review ? <>
+    {sent ? <><ActionFeedback tone="success" description="Заявка отправлена на модерацию. После одобрения вы сможете заполнить цену и остаток." /><a href={`/supplier/products/proposals?request=${sent}`}>Следить за рассмотрением</a></> : review ? <>
       <dl className={s.metadata}><dt>Название</dt><dd>{name}</dd><dt>Артикул</dt><dd>{sku || "Не указан"}</dd><dt>Бренд</dt><dd>{brand || "Не указан"}</dd><dt>Штрихкод</dt><dd>{gtin || "Не указан"}</dd><dt>Сведения</dt><dd>{description}</dd></dl>
       <p className={s.hint}>Новая карточка появится в каталоге после проверки сведений.</p>
       <div className={s.footer}><DmButton disabled={busy} onClick={() => setReview(false)}>Назад</DmButton><DmButton appearance="primary" disabled={busy || !has("catalog.offer.edit")} onClick={() => void submit()}>{busy ? "Отправляем…" : "Отправить заявку"}</DmButton></div>

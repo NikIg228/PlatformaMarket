@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DmButton, ErrorState, LoadingState, PermissionFields } from "@marketplace/ui";
@@ -102,7 +103,7 @@ export default function Cart() {
     <>
       <ResourceStatus resource={resource} />
       {resource.error ? <DmButton disabled={resource.loading} onClick={() => void resource.refresh()}>Повторить загрузку истории</DmButton> : null}
-      {error ? <p role="alert">{error}</p> : null}
+      {error ? <ActionFeedback tone="error" description={error} /> : null}
       <PermissionFields required={["order.create"]}>
       <CartRecovery api={api} carts={resource.data.cursor === navigation.cursor ? resource.data.carts : []} hasCurrentItems={Boolean(cart?.items.length)} onRecovered={async () => {
         setValidation(null); setError(null); await resource.refresh();

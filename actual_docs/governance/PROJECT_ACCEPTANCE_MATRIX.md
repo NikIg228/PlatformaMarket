@@ -7,6 +7,26 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+08.10 STATUS-TOASTS — LOCAL_PASS:
+scope main1fb24ca plus reviewed action-feedback diff. Clinic, supplier and operator
+action outcomes use one bottom-right card: solid brand green success/red error,
+semantic icon/title/explanation, five-second timer and slide-out, manual close.
+Fluent modal ownership preserves accessible feedback and focus restoration;
+field validation, access conditions, business states, drafts and recovery controls
+remain contextual. No API, permissions, money/stock or database contract changes.
+Final shared-provider browser8 PASS; support5 PASS (compact support case rerun
+after removal of its old timer). Includes both roles1440/390, operator reply,
+same-error retry after expiry/dismiss, modal keyboard close, document upload and
+accounting recovery, inventory, attachments and retained drafts/idempotency.
+All six affected frontend workspace types, scoped ESLint, UI-contract343 sources,
+go_live web build and diff hygiene PASS. White-text contrast: green5.35:1,
+red6.49:1, amber5.46:1, blue6.90:1. Desktop/mobile modal captures inspected;
+clock-controlled captures use disabled CSS animation for a settled visual.
+Commands/attempts/publication: [checkpoint](task-state/PRIMARY-SESSION.md).
+Logs `.tmp/status-toast-*`; screenshots `output/playwright/status-toasts*`.
+Full E2E/release/backend/DB suites NOT_RUN: UI feedback slice with intercepted API.
+This does not close R7 or certify production/CI.
+
 08.10 DOCUMENTS-REDESIGN — LOCAL_PASS:
 scope main5d24ae5 plus reviewed Documents diff. Clinic procurement/supplier sales
 registry, grouped server filters, bounded counterparty search, periods, cursor

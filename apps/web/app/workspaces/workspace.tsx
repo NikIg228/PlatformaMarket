@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -213,7 +214,7 @@ export function Workspace({
         ) : !ready ? (
           <LoadingState label="Проверяем вход" />
         ) : !session?.organizationId ? (
-          <ErrorState
+          <ErrorState presentation="inline"
             title={
               error
                 ? "Не удалось проверить вход"
@@ -240,7 +241,7 @@ export function Workspace({
             }
           />
         ) : (
-          <><MessageHeader />{logout.logoutError ? <p role="alert">{logout.logoutError}</p> : null}{pageContent}</>
+          <><MessageHeader />{logout.logoutError ? <ActionFeedback tone="error" description={logout.logoutError} /> : null}{pageContent}</>
         )}
       </main>
     </div>

@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "./action-feedback";
 import { DmAction } from "./controls";
 
 import { useCallback, useEffect, useRef, useState, type ReactElement } from "react";
@@ -145,8 +146,8 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
   const href = current?.productId ? `/products/${current.productId}` : current ? contextHref?.(current.contextType, current.contextId) : undefined;
   return <section className="dm-conversations" aria-label="Сообщения">
     {!hideHeading || !hideRefresh ? <div className="dm-conversations-toolbar">{!hideHeading ? <h1>Сообщения</h1> : null}{!hideRefresh ? <DmButton disabled={loading || busy} onClick={() => void refresh()}>Обновить</DmButton> : null}</div> : null}
-    {error ? <div role="alert"><p>{error} Введённый текст сохранён. Повторите действие после проверки соединения.</p><DmButton disabled={busy} onClick={() => { if (!lookupReady && context) setLookupAttempt(value => value + 1); else void refresh(); }}>Повторить загрузку</DmButton></div> : null}
-    {feedback ? <p role="status">{feedback}</p> : null}
+    {error ? <ActionFeedback tone="error" description={`${error} Введённый текст сохранён. Повторите действие после проверки соединения.`} action={<DmButton disabled={busy} onClick={() => { if (!lookupReady && context) setLookupAttempt(value => value + 1); else void refresh(); }}>Повторить загрузку</DmButton>} /> : null}
+    {feedback ? <ActionFeedback tone="success" description={feedback} /> : null}
     <div className="dm-conversations-layout" data-selected={Boolean(selected || context)}>
       <aside className="dm-conversations-list" aria-label="Список диалогов">
         {compactList ? <Dropdown className="dm-conversations-filter" aria-label="Фильтр диалогов" disabled={busy}

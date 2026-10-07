@@ -1,7 +1,6 @@
 :global(#workspace-content):has(.workspace) { padding: 0; max-width: none; }
 :global(#workspace-content):has(.workspace) > :global(header[aria-label="События организации"]) { margin: 0; padding-inline: var(--dm-space-6); }
 .ticketHeader h2 { font-size: var(--dm-font-size-body-lg); line-height: var(--dm-line-compact); font-weight: var(--dm-font-weight-semibold); margin: 0; overflow-wrap: anywhere; }
-.toast { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); z-index: 5; max-width: calc(100% - 24px); display: flex; align-items: center; gap: var(--dm-space-3); padding: var(--dm-space-2) var(--dm-space-3); border: 1px solid var(--dm-border); border-radius: var(--dm-radius-card); background: var(--dm-success-surface); color: var(--dm-success-text); box-shadow: var(--dm-shadow-overlay); font-size: var(--dm-font-size-body); }
 .workspace { display: flex; flex-direction: column; gap: var(--dm-space-3); min-width: 0; height: calc(100dvh - 56px); min-height: 0; position: relative; }
 .workspace[data-first="true"] { height: auto; min-height: 0; }
 .layout { display: grid; grid-template-columns: 304px minmax(0, 1fr); flex: 1; min-height: 0; min-width: 0; background: var(--dm-surface); overflow: hidden; }

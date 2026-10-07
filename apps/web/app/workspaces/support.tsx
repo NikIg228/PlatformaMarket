@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { DmAction } from "@marketplace/ui/controls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -13,7 +14,6 @@ import { emptySupportDraft, supportDate, supportStatuses } from "./support-prese
 import styles from "./support.module.css";
 import { useSupportDrafts } from "./use-support-drafts";
 import { Add20Regular } from "@fluentui/react-icons/svg/add";
-import { Dismiss20Regular } from "@fluentui/react-icons/svg/dismiss";
 
 export default function Support() {
   const { organizationId, session } = useWorkspace();
@@ -34,11 +34,6 @@ function SupportContent() {
   const { draft, setDraft, replies, setReplies, files, setFiles, pending, key, forget, ready } = useSupportDrafts(`support-drafts:${organizationId}:${session.sessionId}`);
   const [busy, setBusy] = useState(false), [error, setError] = useState(""), [feedback, setFeedback] = useState("");
   const [uploading, setUploading] = useState(false);
-  useEffect(() => {
-    if (!feedback) return;
-    const timer = window.setTimeout(() => setFeedback(""), 6000);
-    return () => window.clearTimeout(timer);
-  }, [feedback]);
   const locked = busy || uploading;
   const lock = useRef(false);
   const sentinel = useRef<HTMLDivElement>(null);
@@ -91,8 +86,8 @@ function SupportContent() {
   });
   if (!ready) return <LoadingState label="Открываем поддержку" />;
   return <section className={styles.workspace} data-selected={Boolean(selected)} data-first={firstTicket} aria-label="Обращения в поддержку">
-    {error ? <p className={styles.notice} role="alert">{error} Текст не потерян. Повторите отправку.</p> : null}
-    {feedback ? <div className={styles.toast}><span role="status">{feedback}</span><DmButton appearance="subtle" icon={<Dismiss20Regular />} aria-label="Закрыть уведомление" onClick={() => setFeedback("")} /></div> : null}
+    {error ? <ActionFeedback tone="error" description={`${error} Текст не потерян. Повторите отправку.`} /> : null}
+    {feedback ? <ActionFeedback tone="success" description={feedback} /> : null}
     {firstTicket && list.error ? <ErrorState title="Не удалось обновить обращения" description={list.error} action={<DmButton onClick={() => void list.refresh()}>Повторить загрузку списка</DmButton>} /> : null}
     <div className={styles.layout} data-detail={Boolean(selected || creating)} data-first={firstTicket}>
       {!firstTicket ? <aside className={styles.list} aria-label="Список обращений">

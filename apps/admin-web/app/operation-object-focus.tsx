@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useEffect, useMemo, useState } from "react";
 import { MarketplaceApiClient } from "@marketplace/api-client";
 import { operationQueueTypeSchema } from "@marketplace/schemas";
@@ -22,6 +23,6 @@ export function OperationObjectFocus() {
   }, [api, revision]);
   if (!requested) return null;
   return <section aria-label="Объект из очереди" style={{ padding: "var(--dm-space-6)", border: "1px solid var(--dm-border)", borderRadius: "var(--dm-radius-card)", marginBottom: "var(--dm-space-6)" }}>
-    {error ? <p role="alert">{error}<DmButton onClick={() => setRevision(value => value + 1)}>Повторить</DmButton></p> : !object ? <LoadingState label="Открываем объект" /> : <><h2>{object.title}</h2><dl>{object.fields.map(field => <div key={field.label}><dt>{field.label}</dt><dd>{["Статус", "Оплата", "Актуальность", "Риск"].includes(field.label) ? formatStatus(field.value) : field.value}</dd></div>)}</dl><p>Действия по объекту доступны в профильном разделе ниже в пределах ваших полномочий.</p><DmButton onClick={() => setRevision(value => value + 1)}>Обновить объект</DmButton></>}
+    {error ? <ActionFeedback tone="error" description={error} action={<DmButton onClick={() => setRevision(value => value + 1)}>Повторить</DmButton>} /> : !object ? <LoadingState label="Открываем объект" /> : <><h2>{object.title}</h2><dl>{object.fields.map(field => <div key={field.label}><dt>{field.label}</dt><dd>{["Статус", "Оплата", "Актуальность", "Риск"].includes(field.label) ? formatStatus(field.value) : field.value}</dd></div>)}</dl><p>Действия по объекту доступны в профильном разделе ниже в пределах ваших полномочий.</p><DmButton onClick={() => setRevision(value => value + 1)}>Обновить объект</DmButton></>}
   </section>;
 }

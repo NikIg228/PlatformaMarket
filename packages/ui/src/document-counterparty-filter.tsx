@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "./action-feedback";
 import { Option, Spinner } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 import { DmButton, DmCombobox } from "./controls";
@@ -32,6 +33,6 @@ export function DocumentCounterpartyFilter({ label, value, load, onChange }: {
       {!loading && !error && !page.items.length ? <Option disabled value="empty">Контрагенты не найдены</Option> : null}
       {page.hasMore ? <Option disabled value="more">Уточните название для остальных результатов</Option> : null}
     </DmCombobox>
-    {error ? <div role="alert">Не удалось найти контрагентов. <DmButton density="compact" onClick={() => { setOpen(true); setRetry(n => n + 1); }}>Повторить</DmButton></div> : null}
+    {error ? <ActionFeedback tone="error" description="Не удалось найти контрагентов." action={<DmButton density="compact" onClick={() => { setOpen(true); setRetry(n => n + 1); }}>Повторить</DmButton>} /> : null}
   </div>;
 }

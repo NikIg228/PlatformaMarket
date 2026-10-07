@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OperationAssignment, OperationAssignmentResult, OperationHistory, OperationQueueType } from "@marketplace/schemas";
@@ -31,7 +32,7 @@ export function OperationAssignmentPanel({ api, type, item, defaultPriority, ass
     finally { locked.current = false; setBusy(false); }
   };
   return <DmDialog open={open} onClosed={onClose} title={`Задача: ${queueItemLabel(item)}`} onOpenChange={open => { if (!open && !busy) setOpen(false); }} actions={<DmButton disabled={busy} onClick={() => setOpen(false)}>Закрыть</DmButton>}>
-    <p>{item.reason}</p>{error ? <p role="alert">{error} Ввод сохранён. При конфликте закройте окно и обновите очередь.</p> : null}{feedback ? <p role="status">{feedback}</p> : null}
+    <p>{item.reason}</p>{error ? <ActionFeedback tone="error" description={`${error} Ввод сохранён. При конфликте закройте окно и обновите очередь.`} /> : null}{feedback ? <ActionFeedback tone="success" description={feedback} /> : null}
     <form className="mp-stack" onSubmit={event => { event.preventDefault(); void save(); }}><fieldset disabled={busy || !canManage} style={{ border: 0, padding: 0 }}>
       <DmField label="Приоритет"><DmSelect value={priority} onChange={event => setPriority(event.target.value)}>{Object.entries(priorityLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</DmSelect></DmField>
       <DmField label="Ответственный"><DmSelect value={assigneeId} onChange={event => setAssigneeId(event.target.value)}><option value="">Не назначен</option>{assignees.map(member => <option key={member.id} value={member.id}>{member.displayName}</option>)}</DmSelect></DmField>

@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useEffect, useRef, useState } from "react";
 import type { OfferCommercialState, SaveOfferStockInput, WorkspaceOffer } from "@marketplace/schemas";
 import { DmButton, DmField, DmInput, ErrorState, LoadingState, errorMessage, usePermissions, useUnsavedChanges, productWorkflowStyles as styles } from "@marketplace/ui";
@@ -76,7 +77,7 @@ export function InventoryEditor({ selection, warehouseName, onClose, onSaved, on
       <div className={styles.toolbar}><h2>Обновить остаток</h2><DmButton type="button" disabled={busy} onClick={onClose}>Закрыть</DmButton></div>
       {loading ? <LoadingState label="Загружаем остаток товара" /> : null}
       {error ? <ErrorState description={error} action={!state && !loading ? <DmButton type="button" onClick={() => setRetry(value => value + 1)}>Повторить загрузку товара</DmButton> : undefined} /> : null}
-      {notice ? <p role="status">{notice}</p> : null}
+      {notice ? <ActionFeedback tone="success" description={notice} /> : null}
       {offer && state ? <>
         <div><h3>{offer.productVariant.product.canonicalName}</h3><p className={styles.hint}>{offer.packaging?.name ?? offer.saleUnit?.nameRu} · {warehouseName ?? offer.inventoryBalances.find(item => item.warehouseId === selection.warehouseId)?.warehouse.name ?? "Выбранный склад"}</p></div>
         {!manual ? <p role="status">Это предложение недоступно для ручного изменения. Для подключённого источника обновите количество в его системе учёта.</p> : !canSave ? <p role="status">Для изменения остатка нужно право на корректировку запасов.</p> : null}

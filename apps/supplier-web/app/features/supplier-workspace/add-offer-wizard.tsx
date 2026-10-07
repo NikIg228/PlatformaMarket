@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferOption, OfferOptionsResponse, SupplierWarehouseList, SaveOfferCommercialInput, OfferCommercialState } from "@marketplace/schemas";
@@ -130,7 +131,7 @@ export function AddOfferWizard({ api, supplierId }: { api: MarketplaceApiClient;
       </form> : null}
       {step === 3 && saved ? <>
         <h2>{published ? "Предложение опубликовано" : "Проверьте перед публикацией"}</h2>
-        {published ? <p className={s.notice} role="status">Предложение опубликовано. Цена и остаток доступны клиникам.</p> : <p className={s.hint}>Условия сохранены в черновике. Проверьте их перед публикацией.</p>}
+        {published ? <ActionFeedback tone="success" description="Предложение опубликовано. Цена и остаток доступны клиникам." /> : <p className={s.hint}>Условия сохранены в черновике. Проверьте их перед публикацией.</p>}
         <dl className={s.metadata}><dt>Товар</dt><dd>{selected?.name}</dd><dt>Упаковка</dt><dd>{packaging?.name}</dd><dt>Цена за упаковку</dt><dd>{saved.price ? formatMoney(saved.price.amountMinor, saved.price.currency) : "Не задана"}</dd><dt>Количество упаковок</dt><dd>{saved.balance?.quantityOnHand}</dd><dt>Склад</dt><dd>{warehouses.find(item => item.id === warehouseId)?.name}</dd><dt>Минимум / шаг</dt><dd>{minimum} / {increment}</dd></dl>
         <div className={s.footer}>{published ? <a href={`/supplier/products?offer=${created.current}`}>Открыть предложение</a> : <><DmButton disabled={busy} onClick={editConditions}>Изменить условия</DmButton><DmButton appearance="primary" disabled={busy || !has("catalog.offer.publish")} onClick={() => void publish()}>Опубликовать предложение</DmButton></>}</div>
         {!published && !has("catalog.offer.publish") ? <p role="status">Публикация недоступна вашей роли. Черновик сохранён.</p> : null}

@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "./action-feedback";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { OfferPromotion, OfferPromotionCommand, PromotionPage, PromotionListQuery } from "@marketplace/schemas";
 import { Tab, TabList } from "@fluentui/react-components";
@@ -81,7 +82,7 @@ export function PromotionWorkspace({ api, operator = false, hideHeading = false,
   if (editor && !operator) return <PromotionEditor key={editor.selected?.id ?? editor.template?.id ?? initialOfferId ?? "new"} api={api} {...editor} initialOfferId={initialOfferId} onSaved={saved} onClose={closeEditor} />;
   return <div className="mp-stack">
     {!hideHeading ? <h2>{operator ? "Согласование акций" : "Акции поставщика"}</h2> : null}
-    {notice ? <p role="status">{notice}</p> : null}
+    {notice ? <ActionFeedback tone="success" description={notice} /> : null}
     {editor ? <PromotionEditor key={editor.selected?.id ?? editor.template?.id ?? "new"} api={api} {...editor} onSaved={saved} onClose={() => setEditor(null)} /> : null}
     <div className={workflow.filterToolbar}>
       <DmSearch aria-label="Поиск акций" placeholder="Найти акцию" value={draft} onChange={setDraft} onSearch={value => { setOffset(0); setQ(value); }} />

@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import type { SupportTicketDetail, UploadedSupportAttachment } from "@marketplace/schemas";
 import { DmButton, SupportAttachmentList, ErrorState, LoadingState, errorMessage } from "@marketplace/ui";
@@ -71,7 +72,7 @@ export function SupportTicket({ id, draft, onDraft, canWrite, busy, onSend, onBa
       </header>
       {ticket.status === "WAITING_CUSTOMER" ? <p className={styles.notice}>Поддержка ждёт уточнений. Ответьте в этом обращении.</p> : null}
       {hasOlder ? <div className={styles.historyAction}><DmButton disabled={busy || olderBusy} onClick={() => void older()}>{olderBusy ? "Загружаем…" : "Показать ранние сообщения"}</DmButton></div> : null}
-      {olderError ? <p role="alert" className={styles.notice}>{olderError} <DmButton disabled={olderBusy} onClick={() => void older()}>Повторить загрузку истории</DmButton></p> : null}
+      {olderError ? <ActionFeedback tone="error" description={olderError} action={<DmButton disabled={olderBusy} onClick={() => void older()}>Повторить загрузку истории</DmButton>} /> : null}
       <ol ref={viewport} className={styles.history} aria-label="Сообщения обращения" onScroll={() => { const list = viewport.current; if (list && list.scrollHeight - list.scrollTop - list.clientHeight < 70) setNewCount(0); }}>
         {messages.map((message, index) => <Fragment key={message.id}>
           {!index || new Date(messages[index - 1].createdAt).toLocaleDateString("ru-KZ") !== new Date(message.createdAt).toLocaleDateString("ru-KZ") ? <li className={styles.day}><time dateTime={message.createdAt}>{new Intl.DateTimeFormat("ru-KZ", { day: "numeric", month: "long", year: "numeric" }).format(new Date(message.createdAt))}</time></li> : null}

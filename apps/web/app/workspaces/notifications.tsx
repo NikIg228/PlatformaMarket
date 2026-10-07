@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useState } from "react";
 import { DmButton, DmDropdown, EmptyState, LoadingState } from "@marketplace/ui";
 import { Tab, TabList } from "@fluentui/react-components";
@@ -21,7 +22,7 @@ function NotificationList() {
       <div className={styles.toolbarActions}><DmButton disabled={inbox.busy || !inbox.data?.unreadCount} onClick={() => void inbox.markRead()}>Прочитать все</DmButton><DmButton disabled={inbox.loading} onClick={() => void inbox.refresh()}>Обновить</DmButton></div>
     </div>
     <p className={styles.scope}>Общие уведомления отмечаются прочитанными для организации. Личные — только для вас. «Прочитать все» включает все категории и ранее загруженные события за пределами списка.</p>
-    {inbox.error ? <div className={styles.feedback} role="alert">{inbox.error}<DmButton onClick={() => void inbox.refresh()}>Повторить</DmButton></div> : null}
+    {inbox.error ? <ActionFeedback tone="error" description={inbox.error} action={<DmButton onClick={() => void inbox.refresh()}>Повторить</DmButton>} /> : null}
     {inbox.newEvents ? <DmButton className={styles.newEvents} onClick={() => void inbox.refresh()}>Есть новые уведомления — показать</DmButton> : null}
     {inbox.loading && !inbox.data ? <LoadingState label="Загружаем уведомления" /> : inbox.data?.items.length ? <NotificationItems items={inbox.data.items} role={role} busy={inbox.busy} onRead={item => void inbox.markRead(item)} /> : !inbox.error ? <EmptyState title={unreadOnly ? "Непрочитанных уведомлений нет" : "Уведомлений пока нет"} description={category ? "Попробуйте другую категорию." : "Здесь появятся изменения заказов, документов и переписки."} /> : null}
     {inbox.data?.nextCursor ? <div className={styles.loadMore}><DmButton disabled={inbox.loading} onClick={() => void inbox.more()}>{inbox.loading ? "Загружаем…" : "Показать ещё"}</DmButton></div> : null}

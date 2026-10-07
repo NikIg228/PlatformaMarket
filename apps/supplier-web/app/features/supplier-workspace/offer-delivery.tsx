@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
@@ -69,7 +70,7 @@ export function OfferDelivery({ api, supplierId, offerId, warehouses, defaultWar
   });
   return <PermissionFields required={["delivery.view", "delivery.manage"]}><Section title="Условия доставки предложения" description="Укажите сроки подготовки и доставки. Выбор транспортной компании здесь не создаёт отправление.">
     {error ? <ErrorState description={error} /> : null}
-    {notice ? <p role="status">{notice}</p> : null}
+    {notice ? <ActionFeedback tone="success" description={notice} /> : null}
     {options === null ? <DmButton disabled={busy} onClick={() => void run(async () => setOptions(await api.listOfferDeliveryOptions(supplierId, offerId)))}>Настроить доставку</DmButton> : <div className="mp-stack">
       {!options.length ? <p>Условия доставки ещё не указаны.</p> : options.map(option => <div key={option.id}>
         <span>{methods[option.method as Method] ?? formatStatus(option.method)} · {warehouses.find(item => item.id === option.warehouseId)?.name ?? "Склад недоступен"} · от {option.minLeadTimeHours} ч.{option.maxLeadTimeHours === null ? "" : ` до ${option.maxLeadTimeHours} ч.`}</span>

@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferCommercialState, SaveOfferCommercialInput, SaveOfferPriceInput, SupplierWarehouseList } from "@marketplace/schemas";
@@ -127,7 +128,7 @@ export function OfferCommercialEditor({ api, supplierId, offerId, warehouses, in
   return <form className="mp-stack" onSubmit={event => { event.preventDefault(); void save(); }}>
     <h3>{stockEditable ? "Цена и остаток" : "Цена"}</h3>
     {error ? <ErrorState description={error} /> : null}
-    {notice ? <p role="status">{notice}</p> : null}
+    {notice ? <ActionFeedback tone="success" description={notice} /> : null}
     {unknownOutcome ? <p role="status">Ответ не получен. Повтор сохранения проверит прежний запрос; введённые условия сохранены.</p> : null}
     <DmField label="Склад"><DmSelect value={warehouseId} disabled={locked} onChange={(_, data) => void selectWarehouse(data.value)}>
       <option value="">Выберите склад</option>{activeWarehouses.map(warehouse => <option value={warehouse.id} key={warehouse.id}>{warehouse.name}</option>)}

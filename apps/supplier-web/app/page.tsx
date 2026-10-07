@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { workspacePath } from "@marketplace/api-client";
 
 import { useVerifiedSession, sessionApiContext, sessionStore, logoutSession } from "./workspace-session";
@@ -560,7 +561,7 @@ export default function SupplierWorkspace() {
   );
 
   if (!handoffChecked) return <LoadingState label="Проверяем вход" />;
-  if (!handoff) return <ErrorState title="Войдите в кабинет поставщика" description={sessionError ?? "Кабинет доступен только участникам организации."} action={<><DmButton as="a" href={loginUrl}>Войти</DmButton><DmButton onClick={() => void sessionStore.retry()}>Повторить проверку</DmButton></>} />;
+  if (!handoff) return <ErrorState presentation="inline" title="Войдите в кабинет поставщика" description={sessionError ?? "Кабинет доступен только участникам организации."} action={<><DmButton as="a" href={loginUrl}>Войти</DmButton><DmButton onClick={() => void sessionStore.retry()}>Повторить проверку</DmButton></>} />;
 
   return (
     <AppShell
@@ -643,7 +644,7 @@ export default function SupplierWorkspace() {
         </>
       )}
       {toast ? (
-        <div className={styles.toast} role="status" aria-live="polite">{toast}</div>
+        <ActionFeedback tone="success" description={toast} />
       ) : null}
     </AppShell>
   );

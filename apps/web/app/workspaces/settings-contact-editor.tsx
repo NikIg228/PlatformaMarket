@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@marketplace/ui";
 import { useRef, useState } from "react";
 import { organizationContactSchema } from "@marketplace/schemas";
 import { DmButton, DmField, DmInput, errorMessage } from "@marketplace/ui";
@@ -28,7 +29,7 @@ export function NewContact({ onSave, onCancel }: { onSave: (value: OrganizationC
   }
   return <form className={styles.contact} aria-label="Новый рабочий контакт" onSubmit={event => { event.preventDefault(); void save(); }}>
     <ContactInputs value={value} onChange={setValue} disabled={pending} />
-    {error ? <p role="alert">{error}</p> : null}
+    {error ? <ActionFeedback tone="error" description={error} /> : null}
     <div className={styles.actions}><DmButton appearance="subtle" density="compact" disabled={pending} onClick={onCancel}>Отмена</DmButton><DmButton type="submit" appearance="primary" density="compact" disabled={pending}>{pending ? "Сохраняем…" : "Добавить контакт"}</DmButton></div>
   </form>;
 }

@@ -1,7 +1,9 @@
 "use client";
 export { DocumentRegistry } from "./document-registry";
 export { DmInfoTip } from "./info-tip";
-export { useSaveToast } from "./save-toast";
+export { useSaveToast, useToast, type ToastTone, type ToastOptions } from "./save-toast";
+export { ActionFeedback } from "./action-feedback";
+import { ActionFeedback } from "./action-feedback";
 export { DmInlineEdit, DmEditableAvatar } from "./inline-edit";
 import { DmAction, DmDismissLayer } from "./controls";
 export { SupportFilePicker, SupportAttachmentList } from "./support-files";
@@ -141,6 +143,7 @@ export function DmFeedback({
   icon,
   action,
   alert = false,
+  presentation,
 }: {
   tone?: "success" | "warning" | "danger" | "info" | "neutral";
   title: string;
@@ -148,7 +151,11 @@ export function DmFeedback({
   icon?: ReactNode;
   action?: ReactNode;
   alert?: boolean;
+  presentation?: "inline" | "toast";
 }) {
+  if (presentation === "toast" || (presentation !== "inline" && (tone === "success" || tone === "danger"))) {
+    return <ActionFeedback tone={tone} title={title} description={description} action={action} />;
+  }
   return (
     <div
       className={`dm-feedback dm-feedback-${tone}`}
@@ -183,6 +190,7 @@ export function DmConflictState({
 }) {
   return (
     <DmFeedback
+      presentation="inline"
       tone={tone}
       title={title}
       description={description}
@@ -357,7 +365,7 @@ export function AppShell({
           </div>
         </header>
         <main className="mp-content">
-          {logoutError ? <div role="alert"><p>{logoutError}</p><Button disabled={logoutPending} onClick={onLogout}>Повторить выход</Button></div> : null}
+          {logoutError ? <ActionFeedback tone="error" description={logoutError} action={<Button disabled={logoutPending} onClick={onLogout}>Повторить выход</Button>} /> : null}
           {children}
         </main>
       </div>
@@ -483,11 +491,14 @@ export function ErrorState({
   title = "Не удалось загрузить данные",
   description,
   action,
+  presentation = "toast",
 }: {
   title?: string;
   description: string;
   action?: ReactNode;
+  presentation?: "inline" | "toast";
 }) {
+  if (presentation === "toast") return <ActionFeedback tone="error" title={title} description={description} action={action} />;
   return (
     <div className="mp-state mp-error" role="alert">
       <strong>{title}</strong>

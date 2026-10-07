@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "./action-feedback";
 import { OverlayDrawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Spinner } from "@fluentui/react-components";
 import { ArrowDownload24Regular } from "@fluentui/react-icons/svg/arrow-download";
 import { Dismiss24Regular } from "@fluentui/react-icons/svg/dismiss";
@@ -63,7 +64,7 @@ export function DocumentDetailPanel({ id, organizationId, role, timeZone, onSele
     <p className="dm-registry-muted">{kindLabels[item.kind] ?? item.kind} · {showDate(item.documentDate)}</p>
     <div className="dm-document-statuses"><DocumentStatus value={item.status} />{item.accountingStatus !== "NOT_APPLICABLE" ? <DocumentStatus value={item.accountingStatus} /> : null}</div>
     <DmButton appearance="primary" icon={<ArrowDownload24Regular />} disabled={busy} onClick={() => void run(() => actions.onDownload(item))}>Скачать {item.format}</DmButton>
-    {error ? <p role="alert">{error}</p> : null}{notice ? <p role="status">{notice}</p> : null}
+    {error ? <ActionFeedback tone="error" description={error} /> : null}{notice ? <ActionFeedback tone="success" description={notice} /> : null}
     <dl className="dm-registry-metadata">
       <div><dt>{role === "clinic" ? "Поставщик" : "Клиника"}</dt><dd>{item.participants.filter(p => p.organizationId !== organizationId).map(p => p.organization.displayName).join(", ") || "Не указан"}</dd></div>
       <div><dt>Сумма</dt><dd>{formatDocumentAmount(item.amountMinor, item.currency)}</dd></div>
@@ -76,7 +77,7 @@ export function DocumentDetailPanel({ id, organizationId, role, timeZone, onSele
       {item.supplierOrder ? <p className="dm-registry-muted">По заказу {item.supplierOrder.orderNumber}</p> : <p className="dm-registry-muted">Документ не связан с заказом.</p>}
       <div className="dm-registry-related">{related.items.filter(row => row.id !== id).map(row => <DmAction key={row.id} variant="row" onClick={() => onSelect(row.id)}><span><strong>{row.title}</strong><span className="dm-registry-muted">{showDate(row.documentDate)}</span></span><DocumentStatus value={row.status} /></DmAction>)}</div>
       {relatedBusy ? <Spinner size="tiny" label="Загружаем связанные документы" /> : null}
-      {relatedError ? <div role="alert">Не удалось загрузить связанные документы. <DmButton onClick={() => setRelatedRetry(n => n + 1)}>Повторить</DmButton></div> : !relatedBusy && orderId && !related.items.some(row => row.id !== id) ? <p className="dm-registry-muted">Других документов по заказу пока нет.</p> : null}
+      {relatedError ? <ActionFeedback tone="error" description="Не удалось загрузить связанные документы." action={<DmButton onClick={() => setRelatedRetry(n => n + 1)}>Повторить</DmButton>} /> : !relatedBusy && orderId && !related.items.some(row => row.id !== id) ? <p className="dm-registry-muted">Других документов по заказу пока нет.</p> : null}
       {related.nextCursor ? <DmButton disabled={relatedBusy} onClick={() => {
         if (!orderId || moreLock.current) return;
         moreLock.current = true; setRelatedBusy(true); setRelatedError(false); const current = generation.current;
@@ -90,7 +91,7 @@ export function DocumentDetailPanel({ id, organizationId, role, timeZone, onSele
       <DmField label="Основание изменения" required><DmTextarea value={reason} onChange={(_, data) => setReason(data.value)} /></DmField>
       <DmButton disabled={busy || reason.trim().length < 2} onClick={() => void run(async () => { const current = generation.current; const updated = await actions.onAccountingStatus(item, status, reason); if (current === generation.current) { setItem(updated); setReason(""); setNotice("Бухгалтерская отметка сохранена"); } })}>Сохранить отметку</DmButton>
     </div></details> : null}
-  </div> : failure ? <div role="alert"><p>Не удалось открыть документ. Проверьте доступ и повторите попытку.</p><DmButton onClick={() => setRetry(n => n + 1)}>Повторить загрузку документа</DmButton></div> : <Spinner label="Загружаем документ" />;
+  </div> : failure ? <ActionFeedback tone="error" description="Не удалось открыть документ. Проверьте доступ и повторите попытку." action={<DmButton onClick={() => setRetry(n => n + 1)}>Повторить загрузку документа</DmButton>} /> : <Spinner label="Загружаем документ" />;
   const close = <DmButton appearance="subtle" icon={<Dismiss24Regular />} aria-label="Закрыть документ" onClick={onClose} />;
   return mobile ? <OverlayDrawer className="dm-registry-overlay" open position="end" size="full" onOpenChange={(_, data) => { if (!data.open) onClose(); }}>
     <DrawerHeader><DrawerHeaderTitle action={close}>{item?.title ?? "Документ"}</DrawerHeaderTitle></DrawerHeader><DrawerBody>{content}</DrawerBody>
