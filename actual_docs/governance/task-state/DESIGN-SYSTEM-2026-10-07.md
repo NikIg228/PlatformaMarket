@@ -19,3 +19,17 @@ Publication BLOCKED by existing failed gates; no CI repair in this task.
 Commit only these docs, no primary registry/handoff or product changes.
 Next step for publication: resolve existing CI/Security failures in an authorized
 primary task and verify applicable gates, then publish reviewed outgoing scope.
+
+
+## Owner refinement: reference and implementation discipline
+
+Owner requested mandatory frontend/UI rules for current/future tasks and image
+references after prior references diverged from project controls and shell.
+Docs-only on main a35f4b5; preserve three foreign handoff files, product ownership.
+Plan/risk: require current-screen parameter passport, constrained generation,
+self-review before presentation, explicit handling of reference/contract conflicts,
+and runtime visual acceptance. No runtime changes or new visual generation here.
+AGENTS routes every UI/reference task to DESIGN_SYSTEM; UX standard aligned.
+Checks: local links, anchors, source consistency and staged diff hygiene.
+Existing base CI/Security FAILURE remains unresolved; publication blocked.
+No app/build/browser/DB suites for this documentation change.
