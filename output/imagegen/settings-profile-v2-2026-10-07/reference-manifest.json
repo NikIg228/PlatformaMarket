@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-07",
+  "head": "9c64593bae1281428e528d51e002b8ea71990b04",
+  "status": "CONCEPTS_REVIEWED_NOT_PIXEL_ACCURATE",
+  "visualReview": {
+    "inspected": "All four baseline and selected generated images visually inspected. Settings attempt1; profiles attempt2 selected after density correction.",
+    "actualRasterSize": "1505x1045; intended layout viewport1440x1000. Raster is uniformly larger than source.",
+    "preserved": "Role sidebar content, header/logo placement, settings tabs with underline, content inventory, light semantic palette, personal/business separation.",
+    "deviations": [
+      "Profile avatars remain visually about56px at target scale instead of48px; implement48px from contract.",
+      "Font weight/shape and text size are approximate, especially clinic profile headings. Manrope18/14 must be taken from JSON/shared adapters, not measured from generated pixels.",
+      "Clinic address labels remain beside controls instead of the proposed labels-above composition in the prompt.",
+      "Generated brand areas contain slight raster texture; actual controls use flat semantic colors.",
+      "Card heights, gaps and borders are conceptual, not certified computed geometry. Profiles differ slightly in row spacing; implementation should share one component."
+    ],
+    "acceptance": "Composition concepts only. Not approved for pixel-for-pixel implementation. No new contract values or exceptions authorized. Browser mockup with shared primitives is authoritative for exact layout."
+  },
+  "corrections": {
+  "clinic-profile": {
+    "attempt": 2,
+    "prompt": "Edit Image1 (the generated clinic-profile concept). Image2 is the real current browser screenshot and the AUTHORITATIVE font/control scale. Preserve sidebar, logo, header, labels and all functionality in Image1, change only density of its two content cards. The first version made the avatar and typography too large: correct them to Image2's scale. At equivalent1440x1000 composition, content starts x232, width1176, header61, sidebar200. Identity card y85 height150, padding24, title18px semibold not bold24; avatar exactly48px diameter (about50 image pixels if output1505px wide), no gradient. Avatar x257 y154. Name and email as two columns to right,14px values/labels. Sessions card y259 height280, padding24, title18px semibold, helper14px regular, row text14px, tiny20px icons, ALL buttons44px high with14px text, radius8. Two rows only, current first; no page navigation. Footer logout44px at y563. Use Manrope and standard flat #007A59 not marbled gradients. White cards radius12, thin #D7E1DC border,24px gap. Retain every Russian label and fictional data exactly. Do not enlarge fonts to fill space. Make the profile feel as compact as settings, NOT a hero. Shell and role-specific sidebar must remain unchanged. No new UI elements.",
+    "generatedSource": "C:\\Users\\user\\.codex\\generated_images\\01a11758-1c55-7e52-bf15-2a04427aaf5d\\exec-f164fa2c-fd9c-4c5e-beee-8a22a926a667.png",
+    "selectedFile": "clinic-profile.png"
+  },
+  "supplier-profile": {
+    "attempt": 2,
+    "prompt": "Edit Image1 (the generated supplier-profile concept). Image2 is the real current browser screenshot and the AUTHORITATIVE font/control scale. Preserve sidebar, logo, header, labels and all functionality in Image1, change only density of its two content cards. The first version made the avatar and typography too large: correct them to Image2's scale. At equivalent1440x1000 composition, content starts x232, width1176, header61, sidebar200. Identity card y85 height150, padding24, title18px semibold not bold24; avatar exactly48px diameter (about50 image pixels if output1505px wide), no gradient. Avatar x257 y154. Name and email as two columns to right,14px values/labels. Sessions card y259 height280, padding24, title18px semibold, helper14px regular, row text14px, tiny20px icons, ALL buttons44px high with14px text, radius8. Two rows only, current first; no page navigation. Footer logout44px at y563. Use Manrope and standard flat #007A59 not marbled gradients. White cards radius12, thin #D7E1DC border,24px gap. Retain every Russian label and fictional data exactly. Do not enlarge fonts to fill space. Make the profile feel as compact as settings, NOT a hero. Shell and role-specific sidebar must remain unchanged. No new UI elements.",
+    "generatedSource": "C:\\Users\\user\\.codex\\generated_images\\01a11758-1c55-7e52-bf15-2a04427aaf5d\\exec-5e82d3c5-22bb-4d27-8c54-91ca782f3ad5.png",
+    "selectedFile": "supplier-profile.png"
+  }
+},
+  "tool": "built-in image_gen",
+  "source": "DESIGN_SYSTEM.md + component-contract.json market-components-v1 + semantic-light.json platforma-semantic-light-v1",
+  "baseline": "baseline-passport.json",
+  "scope": "Four conceptual reference images only. Root pages cleared; references not implemented.",
+  "viewport": {
+    "width": 1440,
+    "height": 1000,
+    "scale": 1
+  },
+  "shell": {
+    "sidebar": 200,
+    "logo": [
+      144,
+      48
+    ],
+    "header": 61,
+    "mainInset": 32,
+    "contentWidth": 1176,
+    "breakpoints": [
+      760,
+      1100
+    ]
+  },
+  "typography": {
+    "family": "Manrope",
+    "page": {
+      "size": 20,
+      "weight": 600,
+      "lineHeight": 28
+    },
+    "section": {
+      "size": 18,
+      "weight": 600,
+      "lineHeight": 22.5
+    },
+    "body": {
+      "size": 14,
+      "weight": 400,
+      "lineHeight": 20
+    }
+  },
+  "components": {
+    "controls": "Dm* default 44px/radius8, default text14 (baseline large input16 deliberately not copied)",
+    "cards": "DmSurface radius12/padding24/gap24, mobile16",
+    "profileAvatar": 48
+  },
+  "runtimeDifferences": [
+    "Baseline Settings controls explicitly size=large render16px input text. Desired reference uses existing default shared size14, no local override.",
+    "Baseline identity is209.5px high with stacked name/email. Proposed identity composes existing primitives into a compact horizontal row.",
+    "Generated raster cannot certify exact font/geometry; inspect and classify deviations before showing as reference."
+  ],
+  "assets": [
+    {
+      "key": "clinic-settings",
+      "ref": "before-clinic-settings.png",
+      "prompt": "Use case: ui-mockup. Generate a polished, restrained production UI concept for PlatformaMarket, a Russian-language B2B dental supplies marketplace. Use the supplied current browser screenshot as mandatory shell and design-system reference. Output one flat desktop screenshot at 1440x1000 CSS-pixel composition, no device frame, no perspective, no annotations outside UI. Preserve sidebar exactly 200px wide, existing logo 144x48 at x24 y6, top header 61px high starting x200, bell and employee avatar at top right. Main content starts x232 y85 with width1176 and 32px side insets. Do not enlarge or redesign the shell. Preserve role navigation and bottom Support/Settings. Remove only the developer black Next indicator. Manrope typography: header20px/600/28, card headings18px/600/22.5, body/labels14px/400/20, caption12px; never oversized display typography. Shared DmButton/DmInput/DmFluentDropdown visual grammar, controls min44px high radius8px, buttons14px semibold, input text14px using default shared size. Cards white radius12px border1px #D7E1DC padding24px, vertical gap24px. Canvas #F6F8F7, text #17201E and secondary #4F5E58, inputs border #83988D. Primary #007A59 white text; read-only field background #F0F4F2, soft selected #E4F3ED with #00543E. No new features, dashboards, illustrations, decorative hero, subscriptions, roles/team administration, personal editing/password controls, language/theme preferences or integrations. All example people/organizations are fictional, use example.invalid email. Exact legible Russian labels. The goal is a desired content composition grounded in existing APIs, not a redesign of standard controls. Page: CLINIC SETTINGS. Header \"Настройки организации\". Sidebar as reference: Главная, Каталог, Корзина, Заказы, Документы, Сообщения; Поддержка, selected Настройки at bottom. Three stacked compact cards, avoid excessive height: 1 \"Данные организации\" with two columns readonly \"Юридическое название\" = \"ТОО «Демо Клиника»\", \"БИН\" = \"000000000001\". 2 \"Рабочие контакты\": three columns \"Контактное лицо\" = \"Тестовый сотрудник\", \"Телефон организации\" = \"+7 700 000 00 00\", \"Электронная почта организации\" = \"office@example.invalid\". 3 \"Адреса организации\": equal legal-address and receiving-address columns, heading18px each, vertical labels above controls (cleaner than inline labels), city dropdown \"Город\" = \"Алматы\", address \"Адрес\" = \"Тестовая улица, 1\" or \"Тестовая улица, 2\", smaller \"Почтовый индекс\" = \"050000\". All fields44px. Below right aligned \"Отмена\" neutral outline and \"Сохранить изменения\" green primary44px; show an editable dirty example. No supplier warehouse/source tabs. Fit content before y940.",
+      "referenceImage": "before-clinic-settings.png",
+      "expectedFile": "clinic-settings.png"
+    },
+    {
+      "key": "supplier-settings",
+      "ref": "before-supplier-settings.png",
+      "prompt": "Use case: ui-mockup. Generate a polished, restrained production UI concept for PlatformaMarket, a Russian-language B2B dental supplies marketplace. Use the supplied current browser screenshot as mandatory shell and design-system reference. Output one flat desktop screenshot at 1440x1000 CSS-pixel composition, no device frame, no perspective, no annotations outside UI. Preserve sidebar exactly 200px wide, existing logo 144x48 at x24 y6, top header 61px high starting x200, bell and employee avatar at top right. Main content starts x232 y85 with width1176 and 32px side insets. Do not enlarge or redesign the shell. Preserve role navigation and bottom Support/Settings. Remove only the developer black Next indicator. Manrope typography: header20px/600/28, card headings18px/600/22.5, body/labels14px/400/20, caption12px; never oversized display typography. Shared DmButton/DmInput/DmFluentDropdown visual grammar, controls min44px high radius8px, buttons14px semibold, input text14px using default shared size. Cards white radius12px border1px #D7E1DC padding24px, vertical gap24px. Canvas #F6F8F7, text #17201E and secondary #4F5E58, inputs border #83988D. Primary #007A59 white text; read-only field background #F0F4F2, soft selected #E4F3ED with #00543E. No new features, dashboards, illustrations, decorative hero, subscriptions, roles/team administration, personal editing/password controls, language/theme preferences or integrations. All example people/organizations are fictional, use example.invalid email. Exact legible Russian labels. The goal is a desired content composition grounded in existing APIs, not a redesign of standard controls. Page: SUPPLIER SETTINGS. Header \"Настройки организации\". Sidebar as reference: Главная, Товары, Заказы, Документы, Сообщения; Поддержка and selected Настройки at bottom. At y85 navigation TabList: \"Организация\" selected via thin GREEN UNDERLINE only, \"Склады\", \"Источники товаров\". This is navigation not filter, no green pills or accent border around tabs. Then compact cards full1176 width: \"Данные организации\" readonly legal name \"ТОО «Демо Снабжение»\" and БИН \"000000000001\"; \"Рабочие контакты\" three fields contact \"Тестовый сотрудник\", phone \"+7 700 000 00 00\", email \"office@example.invalid\". One addresses card has two horizontal rows stacked: section heading \"Юридический адрес\", then row city dropdown \"Город\" = \"Алматы\", broad \"Адрес\" = \"Тестовая улица, 1\", narrow \"Почтовый индекс\" = \"050000\"; second section \"Адрес получения\" same row with street2. Keep all content compact using18px headings14px labels44px fields. Footer right \"Отмена\" and \"Сохранить изменения\" primary green. Fit within1000px. Do not invent any new settings. Only Organization tab contents are displayed; other tabs imply already existing warehouse/list and import-source capabilities.",
+      "referenceImage": "before-supplier-settings.png",
+      "expectedFile": "supplier-settings.png"
+    },
+    {
+      "key": "clinic-profile",
+      "ref": "before-clinic-profile.png",
+      "prompt": "Use case: ui-mockup. Generate a polished, restrained production UI concept for PlatformaMarket, a Russian-language B2B dental supplies marketplace. Use the supplied current browser screenshot as mandatory shell and design-system reference. Output one flat desktop screenshot at 1440x1000 CSS-pixel composition, no device frame, no perspective, no annotations outside UI. Preserve sidebar exactly 200px wide, existing logo 144x48 at x24 y6, top header 61px high starting x200, bell and employee avatar at top right. Main content starts x232 y85 with width1176 and 32px side insets. Do not enlarge or redesign the shell. Preserve role navigation and bottom Support/Settings. Remove only the developer black Next indicator. Manrope typography: header20px/600/28, card headings18px/600/22.5, body/labels14px/400/20, caption12px; never oversized display typography. Shared DmButton/DmInput/DmFluentDropdown visual grammar, controls min44px high radius8px, buttons14px semibold, input text14px using default shared size. Cards white radius12px border1px #D7E1DC padding24px, vertical gap24px. Canvas #F6F8F7, text #17201E and secondary #4F5E58, inputs border #83988D. Primary #007A59 white text; read-only field background #F0F4F2, soft selected #E4F3ED with #00543E. No new features, dashboards, illustrations, decorative hero, subscriptions, roles/team administration, personal editing/password controls, language/theme preferences or integrations. All example people/organizations are fictional, use example.invalid email. Exact legible Russian labels. The goal is a desired content composition grounded in existing APIs, not a redesign of standard controls. Page: CLINIC PERSONAL PROFILE. Header \"Мой профиль\". Same clinic sidebar, no item selected for profile. Main content still1176px wide. Desired refinement: compact identity card height about150px instead of a large hero. Heading \"Данные аккаунта\"18px. Next row48px circular green avatar \"ТС\" at left, then two equal inline read-only TEXT columns (not inputs): label \"Имя\", value \"Тестовый сотрудник\"; label \"Электронная почта\", value \"user@example.invalid\". Body14px, restrained spacing. Next full-width card \"Активные сеансы\"18px, one14px helper \"Завершите сеанс на устройстве, которым больше не пользуетесь.\" Two neat device rows with20px line icons, title14px/600 \"Chrome · Windows\" and \"Safari · macOS\", current first with soft-green badge \"Текущий сеанс\", muted dates \"Сегодня, 10:24\" / \"Вчера, 18:40\". Right aligned44px outline buttons \"Завершить сеанс\" per row. Subtle separators. Card height about280px. Do not show pagination for two sessions; real design caps5 per page and pagination is only for >5. Below card left aligned44px outline \"Выйти из аккаунта\". Large calm whitespace below. No personal editing, password, company settings, counters, decorative panels, marketing copy or invented features.",
+      "referenceImage": "before-clinic-profile.png",
+      "expectedFile": "clinic-profile.png"
+    },
+    {
+      "key": "supplier-profile",
+      "ref": "before-supplier-profile.png",
+      "prompt": "Use case: ui-mockup. Generate a polished, restrained production UI concept for PlatformaMarket, a Russian-language B2B dental supplies marketplace. Use the supplied current browser screenshot as mandatory shell and design-system reference. Output one flat desktop screenshot at 1440x1000 CSS-pixel composition, no device frame, no perspective, no annotations outside UI. Preserve sidebar exactly 200px wide, existing logo 144x48 at x24 y6, top header 61px high starting x200, bell and employee avatar at top right. Main content starts x232 y85 with width1176 and 32px side insets. Do not enlarge or redesign the shell. Preserve role navigation and bottom Support/Settings. Remove only the developer black Next indicator. Manrope typography: header20px/600/28, card headings18px/600/22.5, body/labels14px/400/20, caption12px; never oversized display typography. Shared DmButton/DmInput/DmFluentDropdown visual grammar, controls min44px high radius8px, buttons14px semibold, input text14px using default shared size. Cards white radius12px border1px #D7E1DC padding24px, vertical gap24px. Canvas #F6F8F7, text #17201E and secondary #4F5E58, inputs border #83988D. Primary #007A59 white text; read-only field background #F0F4F2, soft selected #E4F3ED with #00543E. No new features, dashboards, illustrations, decorative hero, subscriptions, roles/team administration, personal editing/password controls, language/theme preferences or integrations. All example people/organizations are fictional, use example.invalid email. Exact legible Russian labels. The goal is a desired content composition grounded in existing APIs, not a redesign of standard controls. Page: SUPPLIER PERSONAL PROFILE. Header \"Мой профиль\". Same supplier sidebar as supplied: Главная, Товары, Заказы, Документы, Сообщения; bottom Поддержка/Настройки with no selected item for profile. Main content1176px wide. Desired compact identity card about150px high, heading \"Данные аккаунта\"18px, next row48px circular green avatar \"ТС\" then two equal read-only TEXT columns (not inputs): label \"Имя\", value \"Тестовый сотрудник\"; label \"Электронная почта\", value \"user@example.invalid\". Body14px. Next card \"Активные сеансы\"18px, helper14px \"Завершите сеанс на устройстве, которым больше не пользуетесь.\" Two device rows with20px line icons, Chrome · Windows and Safari · macOS in14px semibold, first soft-green badge \"Текущий сеанс\", muted dates \"Сегодня, 10:24\" / \"Вчера, 18:40\".44px outline \"Завершить сеанс\" aligned right per row. Card about280px high, subtle separators. No pagination for two entries, production behavior5/page if needed. Under card left44px outline \"Выйти из аккаунта\". Same profile hierarchy and density as clinic, only sidebar differs. Whitespace below. No business settings, editing profile fields, passwords, warehouses, dashboards or other new functionality.",
+      "referenceImage": "before-supplier-profile.png",
+      "expectedFile": "supplier-profile.png"
+    }
+  ]
+}

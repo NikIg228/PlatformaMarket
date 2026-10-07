@@ -326,7 +326,7 @@ for (const role of ["clinic", "supplier"] as const) for (const width of [1440, 3
     await expect(footer.getByRole("link", { name: "Поддержка", exact: true })).toHaveAttribute("aria-current", "page");
     await footer.getByRole("link", { name: "Настройки", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Настройки организации", exact: true })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Данные организации", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Данные организации", exact: true })).toHaveCount(0);
     await page.screenshot({ animations: "disabled", path: testInfo.outputPath(`settings-${role}-${width}.png`), fullPage: true });
     const avatar = page.getByRole("button", { name: "Меню профиля", exact: true });
     await avatar.focus(); await page.keyboard.press("Enter");
@@ -339,7 +339,7 @@ for (const role of ["clinic", "supplier"] as const) for (const width of [1440, 3
     await avatar.click(); await menu.getByRole("menuitem", { name: "Мой профиль", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/${role}/profile$`));
     await expect(page.getByRole("heading", { name: "Мой профиль", exact: true })).toBeVisible();
-    await expect(page.getByRole("region", { name: "Данные аккаунта", exact: true })).toContainText("Тестовый сотрудник");
+    await expect(page.getByRole("region", { name: "Данные аккаунта", exact: true })).toHaveCount(0);
     expect(state.calls.filter(path => path === "/access-control/permissions" || path === "/organizations/current/onboarding" || path.includes("/memberships") || path.includes("/data-sources"))).toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ animations: "disabled", path: testInfo.outputPath(`profile-${role}-${width}.png`), fullPage: true });
@@ -392,7 +392,8 @@ test("profile-nav permission failure keeps logout reachable and retry restores p
   fail = false;
   await page.getByRole("button", { name: "Повторить", exact: true }).click();
   await expect(page.getByText("Не удалось проверить права доступа.", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("region", { name: "Данные аккаунта", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Мой профиль", exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Данные аккаунта", exact: true })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Поддержка", exact: true })).toHaveCount(0);
   allowSupport = true;
   await page.reload();

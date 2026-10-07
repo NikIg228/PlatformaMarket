@@ -1,5 +1,58 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 07.10.2026 — SETTINGS-PROFILE-RESET-V2 (LOCAL_PASS)
+
+Owner primary01a11758-1c55-7e52-bf15-2a04427aaf5d; canonical main@9c64593.
+Explicit request: empty clinic/supplier Settings and Profile content, then generate
+four desired-screen references using DESIGN_SYSTEM.md and both JSON contracts.
+Preserve shared shell, navigation/profile-menu logout, authorization/onboarding,
+nested supplier sources, APIs and working data. No implementation of new designs.
+Existing dirty is three handoff metadata; preserve and exclude prior handoff hunks
+from product publication. Other UI task completed/idle confirmed via native wait;
+owner also explicitly said they would stop it. No agents/worktrees.
+Plan: capture current four fixture screens/computed passport before reset; remove
+root page contents; update affected regression assertions for intentional emptiness;
+generate four images with captured shell and numeric contract, inspect and record
+limitations. Risk empty-route/navigation/logout regression; no domain changes.
+Checks fixture browser1440/390 bothroles, empty/no page fetch, keyboard/menu/logout
+recovery; web/e2e types, scoped lint, UI contract, final go_live web build, diff review.
+Max3 attempts/gate;20min check budget. No DB/fullE2E/backend runs or dependency install.
+Dev2196 canonical source preserved until required build; verify actual tree before
+temporary build stop/restore. Commit/push own verified scope under standing permission;
+remote SHA and CI snapshot, no automatic CI repair. Existing failures remain historical.
+Applied development-toolkit frontend/verification/review and imagegen built-in;
+Agency UI Designer/Code Reviewer checklists read with project contracts overriding examples.
+Baseline capture1 PASS four1440x1000 fixture screenshots and computed styles;
+passport/prompts in output/imagegen/settings-profile-v2-2026-10-07.
+Root components now return null; removed4 exclusively owned content/CSS modules.
+Kept profile-menu CSS, supplier nested sources and clinic organization/delivery gates.
+Browser1:9 PASS/2 clinic FAIL (new fixture omitted existing verified-session and
+organization/delivery context, leaving clinic gate loading). Added those fixtures,
+no product guard changes; affected clinic browser2 PASS2. Total11 distinct cases
+PASS incl bothroles1440/390, query-tab roots, menu keyboard, logout recovery and
+permission retry. Screenshots inspected; no page content, fixture-only/no DB writes.
+web-types1/e2e-types1/lint1/ui-contract1 PASS (325 sources). Logs .tmp/settings-reset-v2.
+Imagegen1 four concepts generated; profile avatar/text oversized, targeted imagegen2
+corrections selected. All four selected concepts inspected and saved with prompts,
+sources and explicit deviations in reference-manifest.json. Raster1505x1045 is not
+pixel-certified: profile avatar remains about56 vs48, font weights/size approximate,
+clinic address labels beside controls; contract remains authoritative. No new UI implemented.
+Verified dev2196 full canonical process tree stopped for go_live build1 (session60333).
+Go_live build1 PASS. Dev restore1 launcher8128 (hidden wrapper15292) from canonical
+root; first readiness probe before bind failed, launcher subsequently reports Ready.
+Only this canonical tree touched; no DB mutations/full backend/E2E suites.
+Commands: npm exec --workspace @marketplace/e2e -- playwright test --config
+playwright.workspaces.config.ts tests/settings-profile.spec.ts tests/workspace-rebuild.spec.ts
+--grep 'settings-reset|profile-nav'; browser2 same config/settings-profile with
+--grep 'settings-reset clinic'; npm run typecheck --workspace @marketplace/web
+and @marketplace/e2e; npm exec -- eslint four changed TSX/spec paths --max-warnings=0;
+npm run verify:ui-contract; npm run build --workspace @marketplace/web (both profile
+vars go_live). Review/diff hygiene PASS; no API/schema/dependency changes.
+Origin/main equals baseline9c64593 after fetch; publish verified own paths only.
+Dev readiness confirmed: API health200, /clinic/settings200, /supplier/profile200;
+launcher reports unified ready. No source/runtime defect in initial early probe.
+Next: commit/push and CI snapshot; then await design selection.
+
 ## 07.10.2026 — SETTINGS-PROFILE-REFERENCE-IMPLEMENTATION (LOCAL_PASS)
 
 Owner correction07.10: profile oversized vs settings, unbounded session list and
