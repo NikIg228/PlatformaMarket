@@ -12,7 +12,7 @@ export async function verifyOfferCommercial({ prisma, offer, supplierId, fixture
   };
   const identity = await grant(actor.userId, ["catalog.product.view", "pricing.manage", "inventory.adjust"], "editor");
   const priceOnly = await grant(limited.userId, ["catalog.product.view", "pricing.manage"], "limited");
-  const stockActor = await createBuyer(84);
+  const stockActor = await createBuyer(87);
   const stockOnly = await grant(stockActor.userId, ["catalog.product.view", "inventory.adjust"], "stock");
   const foreignRole = await prisma.role.findFirstOrThrow({ where: { organizationId: outsider.organizationId } });
   const foreignPermissions = await prisma.permission.findMany({ where: { code: { in: ["catalog.product.view", "pricing.manage", "inventory.adjust"] } } });

@@ -46,6 +46,14 @@ export async function verifyContractLifecycle({ prisma, createBuyer, runId }) {
     await assert.rejects(() => terms.accept(input(), context(seller), evidence), { status: 409 });
     bundle = published("fixture-v1");
     await assert.rejects(() => terms.accept(input(), context(foreign), evidence), { status: 403 });
+    // createBuyer completed a buyer profile before this fixture gained SUPPLIER.
+    // The supplier must still provide its two reserve contacts before acceptance.
+    await assert.rejects(() => terms.accept(input(), context(seller), evidence), { status: 409 });
+    assert.equal(await prisma.supplierTermsAcceptance.count({ where: { organizationId: seller.organizationId } }), 0);
+    await prisma.organizationProfile.update({ where: { organizationId: seller.organizationId }, data: {
+      additionalContacts: [1, 2].map(index => ({ contactName: `Synthetic Reserve ${index}`,
+        phone: `+7700000000${index}`, email: `reserve${index}@example.invalid` })),
+    } });
     const first = await terms.accept(input(), context(seller), evidence);
     assert.equal((await terms.accept(input(), context(seller), evidence)).id, first.id);
     const original = await prisma.supplierTermsAcceptance.findUniqueOrThrow({ where: { id: first.id } });

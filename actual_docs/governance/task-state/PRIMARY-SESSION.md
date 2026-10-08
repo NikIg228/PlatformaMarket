@@ -2,6 +2,18 @@
 
 ## 08.10.2026 — R0 (BASELINE_RECORDED / CI_FAIL)
 
+Продолжение08.10 по явному «Приступай»: устранение CI blockers ACTIVE у того же
+R0 исполнителя. Исправлены reserve-contact fixture и повтор buyer84; targeted
+patches proxy-addr2.0.8/sharp0.35.5/source-map-js1.2.2. PG attempt2 PASS на прежних
+deps; после фактического install идёт PG3, types/build/CI впереди. Audit PASS
+high0/critical0, moderate9 не скрываются. Полный журнал/границы — checkpoint R0.
+Final local: PG3 PASS на установленных patches, API/web types, API32tests,
+auth contract, runtime split и go_live build PASS. Native/security regression3,
+fixture/CI tests7 и scoped lint PASS. Старый dev16756 tree остановлен;
+обычный canonical npm run dev запускается заново. Publication/actual CI впереди.
+Dev восстановлен wrapper2448/API4000/web6540; API ready и catalog HTTP200.
+Local gates/review PASS; scoped publication и actual CI остаются перед закрытием.
+
 Явный запрос владельца: R0 и push всех незакоммиченных изменений. Исполнитель
 R0 docs/read-only scope01a11795-17a2-7f52-9e7d-b3314bf87ed7; product primary
 01a11758-1c55-7e52-bf15-2a04427aaf5d проверен idle/completed. Передачи нет.
