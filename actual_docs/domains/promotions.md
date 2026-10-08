@@ -56,7 +56,12 @@ Tab focus green; Enter открывает /promotions, main пустой (0child
 и исходную оболочку. Raster — иллюстрация, точные значения доказаны браузером.
 Types buyer/web, scoped ESLint, UI contract345 PASS; логи `.tmp/compact-promo-*`.
 Web build go_live PASS1 (`.tmp/compact-promo-build.log`), diff review PASS.
-Публикация текущего scope выполняется после этих gates; CI проверяется отдельно.
+Опубликовано: `9febd70f8f93db386ff3e70450aac99b636a4fae`, origin/main SHA совпал.
+[CI37837003982](https://github.com/NikIg228/PlatformaMarket/actions/runs/37837003982)
+и [Security37837003960](https://github.com/NikIg228/PlatformaMarket/actions/runs/37837003960)
+на момент проверки IN_PROGRESS, не PASS. Canonical npm run dev восстановлен
+(wrapper2364), /catalog HTTP200 и launcher readiness PASS, каталог сохранён.
+Финальная запись docs-only переиспользует эти gates без повторения сборки.
 Прежний scroll blocker ниже относится к отменённой
 владельцем реализации, новый статичный scope принят отдельно по проверкам выше.
 
