@@ -79,6 +79,19 @@
 | [ui-ux/SHARED_SEMANTIC_THEME.md](ui-ux/SHARED_SEMANTIC_THEME.md) | REFERENCE | Переход и исторический аудит |
 | [ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md](ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md) | REFERENCE | UI-инварианты и общая тема |
 
+## Профильные описания направлений — CURRENT
+
+По запросу владельца08.10 подробности крупных звеньев ведутся отдельно:
+[каталог](domains/catalog.md), [заказы](domains/orders.md),
+[доставка](domains/delivery.md), [оплата](domains/payments.md),
+[комиссия/аналитика](domains/commissions.md), [импорт/ERP](domains/integrations.md),
+[организации](domains/organizations.md), [документы/договоры](domains/documents.md),
+[коммуникации](domains/communications.md), [trust](domains/trust.md),
+[рефералы](domains/referrals.md), [акции](domains/promotions.md).
+[Карта направлений](domains/README.md) задаёт порядок актуализации и ссылки
+на существующие эксплуатационные, security и UI документы. Это текущие описания,
+не WIP чужого исполнителя; исполнение по-прежнему только в R0–R9 roadmap.
+
 ## Материалы текущего WIP
 
 Публикация этих материалов и связанного продукта не входит в docs-пересборку.

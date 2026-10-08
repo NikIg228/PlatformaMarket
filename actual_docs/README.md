@@ -11,6 +11,7 @@
 | --- | --- |
 | Приоритет №1: функционал, незакрытые связи и целевой roadmap | [Функциональная карта и roadmap](FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md) |
 | Что за проект, для кого, какие правила и интеграции | [PROJECT_OVERVIEW](PROJECT_OVERVIEW.md) |
+| Как устроено отдельное звено продукта и какие решения по нему открыты | [Документы направлений](domains/README.md): доставка, оплата, комиссия, каталог и другие области |
 | Где находимся и что осталось до production | [Main Roadmap to Production](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md) |
 | Как выполнять задачу и выбирать проверки | [AGENTS](../AGENTS.md), [Workflow](governance/DEVELOPMENT_WORKFLOW.md) |
 | Что принято на конкретной версии | [Acceptance Matrix](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
