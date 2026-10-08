@@ -8,6 +8,17 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+08.10 R1.1 — OWNER_SCOPE_ACCEPTED / TRUST_CODE_AUDIT:
+trust обязателен в пилоте, AI только для стандартизатора Excel/CSV; AI-помощники
+вне текущего плана, рекомендации/подписки/реклама отложены. Реализация R3.7/R7.5
+не принята. Сверка main3012394/runtime1e666ee:9-компонентный score engine,
+reviews/appeals/API и часть UI существуют; автоматические producers событий
+из бизнес-переходов и полный canonical apps/web путь не подтверждены.
+Текущий pilot выключает trust. Точные параметры/пробелы —
+[R1 checkpoint](task-state/R1-LAUNCH-SCOPE-2026-10-08.md).
+Existing CI37739925051 `verify:trust-geo` PASS на synthetic fixtures переиспользован
+без расширения до live/полного UI; новых app/DB/browser запусков для docs нет.
+
 08.10 R0 — ACCEPTED / CI_PASS, baseline **R0-2026-10-08**:
 `1e666eef94d9012d0e7a54991e68391b677e7018`, remote SHA подтверждён.
 Опубликованный patch исправляет document retry focus, обновляет устаревшие
