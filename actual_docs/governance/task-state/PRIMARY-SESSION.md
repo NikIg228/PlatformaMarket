@@ -2,6 +2,16 @@
 
 ## 08.10.2026 — R0 (BASELINE_RECORDED / CI_FAIL)
 
+Repair опубликован в2d6b74988c5b5ea82efe507c8b74cb11a83100d1, remote SHA совпал.
+Локальные gates PASS; ожидаются exact-SHA CI37730933563/Security37730933626.
+Dev восстановлен. Ниже сохранены ход работы и исходные failures.
+
+Actual result: Security SUCCESS; CI containers/PG SUCCESS, verify FAIL FlowB3
+на snapshot200ms toast animation. Test-only синхронизация с animation.finished
+сохраняет visibility/overflow assertion; canonical local CSV/EXCEL2 PASS,
+pilot web build/e2e types/lint PASS. Предыдущие unchanged gates REUSED_PASS.
+Corrective publication/actual CI ещё впереди; R0.2 открыт.
+
 Продолжение08.10 по явному «Приступай»: устранение CI blockers ACTIVE у того же
 R0 исполнителя. Исправлены reserve-contact fixture и повтор buyer84; targeted
 patches proxy-addr2.0.8/sharp0.35.5/source-map-js1.2.2. PG attempt2 PASS на прежних

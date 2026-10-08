@@ -179,6 +179,15 @@ for (const fileType of ["CSV", "EXCEL"] as const) test(`operator approves ${file
   await expect(card.getByText("Опубликовано")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await page.setViewportSize({ width: 390, height: 844 });
+  if (process.env.FLOW_B3_UNIFIED === "true") {
+    const feedback = page.locator(".dm-save-toast");
+    await expect(feedback).toBeVisible();
+    // Measure the settled layout, while feedback is still present, not its slide-in frame.
+    await feedback.evaluate(async element => {
+      await Promise.all(element.getAnimations().map(animation => animation.finished));
+    });
+    await expect(feedback).toBeVisible();
+  }
   const overflowElements = await page.evaluate(() => Array.from(document.querySelectorAll("body *")).map((element) => {
     const rect = element.getBoundingClientRect();
     return { tag: element.tagName, className: element.className, left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) };
