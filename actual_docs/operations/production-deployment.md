@@ -1,5 +1,11 @@
 # Production deployment and rollback
 
+Owner decision08.10.2026: target hosting is **Yandex.Cloud Kazakhstan**.
+This records the owner's selection, not verified service availability or a deployed
+environment. Exact domain, cloud resources, account/operator, budget and operational
+acceptance remain open. No cloud purchase or deployment is authorized by this note.
+Choose backup/restore and outage/data-loss targets before production acceptance.
+
 Status01.10.2026: configuration now targets api + one apps/web image. Caddy
 serves WEB_DOMAIN with same-origin /api; operator login is /admin/login.
 This is a deferred production procedure, not a deployment authorization or
