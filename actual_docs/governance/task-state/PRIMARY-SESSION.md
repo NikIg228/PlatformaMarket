@@ -1,6 +1,40 @@
 # PRIMARY-SESSION — PlatformaMarket
 
-## 08.10.2026 — STATUS-CARDS-V2 (LOCAL_PASS / PUBLICATION_PENDING)
+## 09.10.2026 — CABINET-OWNER-REVIEW / AWAITING_OWNER_FEEDBACK
+
+Текущий исполнитель: primary `01a11758-1c55-7e52-bf15-2a04427aaf5d`.
+Владелец подтвердил: задача «PlatformaMarket UI» только читает/ожидает;
+единственный записывающий исполнитель текущего scope — здесь.
+Исходный main `8fb014bfdb6a55cfd5791eda272114f9c0a0218b`; dirty до задачи —
+только собственная запись публикации STATUS-CARDS-V2 ниже, сохраняется.
+
+Решение владельца: R1 ещё не закрыт, ответы партнёров отсутствуют; не подменять
+их предположениями. Ближайший приоритет — доведение кабинетов клиники и
+поставщика. Сейчас владелец самостоятельно просматривает работающий интерфейс
+и затем задаёт конкретный состав доработок. Предложения формы отзыва/страниц
+организаций из обсуждения не являются выбранными задачами реализации.
+
+Порядок сохраняется в едином [roadmap](../../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md):
+R0 ACCEPTED → R1 ACTIVE / DECISIONS_PENDING; до закрытия R1 допускаются отдельно
+согласованные независимые задачи кабинетов в R7. Просмотр → замечания владельца →
+сверка существующих кода/контрактов/evidence и зависимостей → выбранный scope/DoD →
+реализация вместе с API/UI → целевые проверки → review/commit/push/CI receipt →
+обновление roadmap и Matrix. Бизнес-зависимые части ждут ответа; общий R7 и
+следующие R2–R9 автоматически не принимаются и не запускаются.
+
+Scope этой задачи: только checkpoint/навигация/roadmap и доступный dev-сервер.
+Риск — потерять порядок или выдать обсуждение за разрешение реализации.
+Проверки: согласованность трёх документов, локальные ссылки, diff/staged review;
+app build/tests не нужны для документации. Product/backend/DB не изменяются.
+Dev уже работал, повторный запуск не потребовался: canonical npm run dev,
+wrapper10096/launcher9852, API12908:4012, Next2424:3000. Сайт и API readiness
+проверены HTTP200; http://127.0.0.1:3000 доступен для просмотра.
+Следующий шаг: получить замечания владельца; самовольных исправлений/редизайна нет.
+
+
+## 08.10.2026 — STATUS-CARDS-V2 (LOCAL_PASS / PUBLISHED / CI_PENDING)
+
+Publication: 8fb014bfdb6a55cfd5791eda272114f9c0a0218b pushed to origin/main; independent ls-remote matches. Exact-SHA snapshot: [CI37827161453](https://github.com/NikIg228/PlatformaMarket/actions/runs/37827161453) in_progress, [Security37827161490](https://github.com/NikIg228/PlatformaMarket/actions/runs/37827161490) queued. No CI_PASS claim or automatic repair/monitor.
 
 Final result after owner-authorized repair cycle: both defects resolved.
 Focused recovery run4 and filter run2 PASS2; final affected run PASS6
@@ -17,6 +51,9 @@ apps/e2e/playwright.workspaces.config.ts with focused recovery/filter and final
 catalog/network/supplier-modal selection. Logs .tmp/status-cards-*;
 output/playwright/status-cards-v2-* retains screenshots and prior failure traces.
 Build stopped only owned canonical dev tree; ordinary npm run dev restored.
+Verified canonical wrapper10096/launcher9852, API12908, Next2424; go_live readiness
+and public catalog HTTP200. next-env returned baseline. At completion only this publication
+receipt was uncommitted; included in the subsequent09.10 documentation update.
 Historical failed attempts below are superseded by these final results.
 Owner explicitly authorized an additional repair cycle for the two named defects.
 No reset of previous attempts. Trace/source diagnosis: Fluent atomic .f494woh
