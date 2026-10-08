@@ -110,7 +110,7 @@ test("supplier-contacts incomplete profile requires both reserves and explains v
   await contacts.getByRole("button", { name: "Где используется официальный контакт", exact: true }).hover();
   await expect(page.getByRole("note", { name: "Где используется официальный контакт", exact: true })).toContainText("в каталоге"); await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Сохранить настройки", exact: true }).click(); expect(state.writes).toHaveLength(0);
-  await expect(page.locator("main").getByRole("alert").last()).toContainText("два резервных");
+  await expect(page.locator('.dm-save-toast[role="alert"]')).toContainText("два резервных");
   for (const n of [1, 2]) { const group = contacts.getByRole("group", { name: `Резервный контакт ${n}`, exact: true });
     await group.getByRole("textbox", { name: "Контактное лицо", exact: false }).fill(`Сотрудник ${n}`);
     await group.getByRole("textbox", { name: "Телефон", exact: false }).fill(`+7700000000${n}`);

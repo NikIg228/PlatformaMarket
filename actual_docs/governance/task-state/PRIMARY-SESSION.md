@@ -1,5 +1,24 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 08.10.2026 — продолжение browser CI repair (ACTIVE / local WIP)
+
+После прежней остановки владелец явно разрешил дополнительный цикл до полного
+закрытия R0. Запуск4: 5/5 PASS (conversations + clinic/supplier desktop/mobile
+document recovery). Full-access3/3 и go_live promotions4 PASS. Builds/types/lint
+PASS; visual recovery4 PASS. Публикация и actual CI впереди. Dev launcher1516.
+Ниже сохранён предыдущий промежуточный результат и журнал попыток.
+
+Явное «Окей, бро, продолжай» разрешило устранение25 browser failures текущему
+исполнителю01a11795-17a2-7f52-9e7d-b3314bf87ed7; product primary проверен idle.
+main9c2fd7d. Test/CI updates и desktop document retry focus fix локально;
+targeted2 21/23 PASS, targeted3 desktop2 PASS/mobile2+conversations1 FAIL.
+Предел3 попыток AGENTS§7.1 достигнут; запуск4/commit/push/CI не выполнялись.
+Точный остаток: mobile focus после retry, старый locator поля темы в support;
+go_live promotion4/full-access NOT_RUN. UI/E2E types, lint, pilot build PASS.
+Полный журнал и следующий шаг — [R0 checkpoint](R0-BASELINE-2026-10-08.md).
+Dev восстановлен: wrapper3228/API16508/web7976, canonical root, health/catalog200,
+JWT/go_live/FULL_ACCESS. Рабочая DB/R1 не менялись.
+
 ## 08.10.2026 — R0 (ORIGINAL_BLOCKERS_FIXED / BROWSER_CI_FAIL)
 
 Итог на29ffa54435e77c796fd6dc676b438e49c1a81a93, origin/main подтверждён:

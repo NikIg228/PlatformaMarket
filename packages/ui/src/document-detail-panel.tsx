@@ -34,6 +34,7 @@ export function DocumentDetailPanel({ id, organizationId, role, timeZone, onSele
   const [status, setStatus] = useState<"REVIEWED" | "RECONCILED" | "DISPUTED">("REVIEWED");
   const [mobile, setMobile] = useState(false);
   const panel = useRef<HTMLElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
   const callbacks = useRef(actions); callbacks.current = actions;
   const generation = useRef(0);
   const moreLock = useRef(false);
@@ -91,8 +92,13 @@ export function DocumentDetailPanel({ id, organizationId, role, timeZone, onSele
       <DmField label="Основание изменения" required><DmTextarea value={reason} onChange={(_, data) => setReason(data.value)} /></DmField>
       <DmButton disabled={busy || reason.trim().length < 2} onClick={() => void run(async () => { const current = generation.current; const updated = await actions.onAccountingStatus(item, status, reason); if (current === generation.current) { setItem(updated); setReason(""); setNotice("Бухгалтерская отметка сохранена"); } })}>Сохранить отметку</DmButton>
     </div></details> : null}
-  </div> : failure ? <ActionFeedback tone="error" description="Не удалось открыть документ. Проверьте доступ и повторите попытку." action={<DmButton onClick={() => setRetry(n => n + 1)}>Повторить загрузку документа</DmButton>} /> : <Spinner label="Загружаем документ" />;
-  const close = <DmButton appearance="subtle" icon={<Dismiss24Regular />} aria-label="Закрыть документ" onClick={onClose} />;
+  </div> : failure ? <ActionFeedback tone="error" description="Не удалось открыть документ. Проверьте доступ и повторите попытку." action={<DmButton onClick={() => {
+    // Retry unmounts this button. Move focus before loading to a stable target
+    // inside the same desktop panel or mobile modal, keeping Escape reachable.
+    if (mobile) closeButton.current?.focus(); else panel.current?.focus();
+    setRetry(n => n + 1);
+  }}>Повторить загрузку документа</DmButton>} /> : <Spinner label="Загружаем документ" />;
+  const close = <DmButton ref={closeButton} appearance="subtle" icon={<Dismiss24Regular />} aria-label="Закрыть документ" onClick={onClose} />;
   return mobile ? <OverlayDrawer className="dm-registry-overlay" open position="end" size="full" onOpenChange={(_, data) => { if (!data.open) onClose(); }}>
     <DrawerHeader><DrawerHeaderTitle action={close}>{item?.title ?? "Документ"}</DrawerHeaderTitle></DrawerHeader><DrawerBody>{content}</DrawerBody>
   </OverlayDrawer> : <aside ref={panel} tabIndex={-1} role="region" aria-label="Карточка документа" className="dm-registry-detail" onKeyDown={event => { if (event.key === "Escape") { event.stopPropagation(); onClose(); } }}>

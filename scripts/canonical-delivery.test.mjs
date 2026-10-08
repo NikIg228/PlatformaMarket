@@ -38,3 +38,15 @@ test("release rejects mixed origins and non-HTTPS settings", () => {
     assert.throws(() => verifyReleaseWebConfig({ ...valid, ...delta }));
   }
 });
+
+test("CI proves pilot isolation before rebuilding for enabled promotion workspace", () => {
+  const steps = load(read(".github/workflows/ci.yml")).jobs.verify.steps;
+  const pilot = steps.findIndex(step => step.run === "npm run verify:web");
+  const fullAccess = steps.findIndex(step => step.run === "npm run verify:full-access");
+  const promotion = steps.findIndex(step => step.run?.includes("playwright.promotion-workspace.config.ts"));
+  const build = steps.findIndex((step, index) => index > fullAccess && step.run === "npm run build --workspace=@marketplace/web");
+  assert(pilot >= 0 && fullAccess > pilot && build > fullAccess && promotion > build);
+  assert.equal(steps[build].env.DEPLOYMENT_PROFILE, "go_live");
+  assert.equal(steps[promotion].env.DEPLOYMENT_PROFILE, "go_live");
+  assert.match(steps[promotion].run, /db:test.*run-canonical-browser/);
+});

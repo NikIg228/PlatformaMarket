@@ -177,6 +177,14 @@ jobs:
         run: npm run verify:web
       - name: Temporary full-access workspaces with real JWT and no roles
         run: npm run verify:full-access
+      - name: Build enabled-module web profile
+        run: npm run build --workspace=@marketplace/web
+        env:
+          DEPLOYMENT_PROFILE: go_live
+      - name: Promotion workspace with enabled-module web profile
+        run: npm run db:test -- exec -- node scripts/run-canonical-browser.mjs --config playwright.promotion-workspace.config.ts
+        env:
+          DEPLOYMENT_PROFILE: go_live
       - name: Upload failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4

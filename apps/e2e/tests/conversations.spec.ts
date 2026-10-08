@@ -37,14 +37,14 @@ test("CORE06: buyer, mobile supplier and operator conversation workflow", async 
     let failSend = true;
     await supplierPage.route(`**/conversations/${conversation.id}/messages`, async route => { if (failSend) { failSend = false; await route.abort("failed"); } else await route.continue(); });
     await supplierChat.getByRole("button", { name: "Отправить", exact: true }).click();
-    await expect(supplierChat.getByRole("alert")).toBeVisible();
+    await expect(supplierPage.locator('.dm-save-toast[role="alert"]')).toContainText("Введённый текст сохранён");
     await expect(supplierChat.getByLabel("Сообщение", { exact: true })).toHaveValue(`Ответ поставщика ${key}`);
     await supplierChat.getByRole("button", { name: "Отправить", exact: true }).click();
     await expect(supplierChat.getByRole("list", { name: "История сообщений" }).getByText(`Ответ поставщика ${key}`)).toBeVisible();
     expect(await db.conversationMessage.count({ where: { conversationId: conversation.id, body: `Ответ поставщика ${key}` } })).toBe(1);
     await supplierPage.screenshot({ path: test.info().outputPath("conversation-supplier-390.png"), fullPage: true });
     expect(await supplierPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await chat.getByRole("button", { name: "Обновить", exact: true }).click();
+    await page.reload();
     await expect(chat.getByRole("list", { name: "История сообщений" }).getByText(`Ответ поставщика ${key}`)).toBeVisible();
     await chat.getByRole("button", { name: "Вопрос решён", exact: true }).click();
     await expect(chat.getByText("Вопрос решён. Новое сообщение откроет его снова.")).toBeVisible();
@@ -76,7 +76,7 @@ test("CORE06: buyer, mobile supplier and operator conversation workflow", async 
     await dialog.getByLabel("Ответственный", { exact: true }).selectOption(user.id);
     await dialog.getByLabel("Причина изменения").fill("Назначение ответственного по обращению");
     await dialog.getByRole("button", { name: "Сохранить решение" }).click();
-    await expect(dialog.getByText("Изменение обращения сохранено.")).toBeVisible();
+    await expect(operatorPage.locator('.dm-save-toast[role="status"]')).toContainText("Изменение обращения сохранено.");
     await dialog.getByRole("button", { name: "Открыть связанный диалог" }).click();
     await expect(support).toBeFocused();
     const operatorChat = operatorPage.getByRole("region", { name: "Сообщения", exact: true });
@@ -84,14 +84,18 @@ test("CORE06: buyer, mobile supplier and operator conversation workflow", async 
     await operatorChat.getByRole("button", { name: "Отправить", exact: true }).click();
     await expect(operatorChat.getByRole("list", { name: "История сообщений" }).getByText(`Ответ оператора ${key}`)).toBeVisible();
     await operatorPage.screenshot({ path: test.info().outputPath("conversation-operator-1440.png"), fullPage: true });
-    await chat.getByRole("button", { name: "Обновить", exact: true }).click();
+    await page.reload();
     await expect(chat.getByRole("listitem").filter({ hasText: `Ответ оператора ${key}` }).getByText("Synthetic operator · Оператор площадки")).toBeVisible();
     await page.screenshot({ path: test.info().outputPath("conversation-buyer-1440.png"), fullPage: true });
-    await supplierPage.goto("/supplier/support");
-    await supplierPage.getByLabel("Тема", { exact: true }).fill(`Обращение ${key}`);
-    await supplierPage.getByLabel("Описание", { exact: true }).fill("Проверка создания обращения поставщиком");
-    await supplierPage.getByRole("button", { name: "Создать обращение", exact: true }).click();
-    await expect(supplierPage.getByText("Обращение создано.")).toBeVisible();
+    // The supported create route is stable both for an empty inbox and for
+    // an organization that already has tickets from other isolated fixtures.
+    await supplierPage.goto("/supplier/support?mode=new");
+    const compose = supplierPage.getByRole("region", { name: "Новое обращение", exact: true });
+    await compose.getByRole("textbox", { name: /^Тема(?:\s*\*)?$/ }).fill(`Обращение ${key}`);
+    await compose.getByRole("textbox", { name: /^Описание(?:\s*\*)?$/ }).fill("Проверка создания обращения поставщиком");
+    await compose.getByRole("button", { name: "Отправить обращение", exact: true }).click();
+    await expect(supplierPage.locator('.dm-save-toast[role="status"]')).toContainText("Обращение отправлено");
+    expect(await db.supportTicket.count({ where: { organizationId: supplier.organizationId, subject: `Обращение ${key}` } })).toBe(1);
     expect(await supplierPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   } catch (error) {
     console.log("CORE06 operator accessibility", await operatorPage.evaluate(() => {

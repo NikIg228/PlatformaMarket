@@ -58,12 +58,12 @@ for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const)
         await management.getByRole("button", { name: "Пригласить сотрудника", exact: true }).focus();
         await page.keyboard.press("Enter");
         expect((await invitationRequest).postDataJSON().roleIds).toEqual([]);
-        await expect(management.getByText("Приглашение сохранено в локальной тестовой почте. Внешнее письмо не отправлялось.")).toBeVisible();
+        await expect(page.locator('.dm-save-toast[role="status"]')).toContainText("Приглашение сохранено в локальной тестовой почте. Внешнее письмо не отправлялось.");
         await expect(management.getByRole("button", { name: "Назначить роль", exact: true })).toHaveCount(0);
         await expect(management.getByRole("article", { name: user.email, exact: true }).getByText("Полный доступ", { exact: true })).toBeVisible();
       } else {
-        // The owner cleared participant Settings for redesign. Preserve the
-        // server invitation/role invariants without requiring the removed form.
+        // Participant Settings covers the organization profile; member/role
+        // forms remain excluded. Prove those server invariants through the API.
         await expect(page.getByRole("heading", { name: "Настройки организации", exact: true })).toBeVisible();
         await expect(management).toHaveCount(0);
         const email = `colleague-${key}@example.invalid`;

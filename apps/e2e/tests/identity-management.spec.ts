@@ -51,7 +51,7 @@ for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const)
       await management.getByLabel("Роль приглашённого").selectOption(memberRole.id);
       await management.getByRole("button", { name: "Пригласить сотрудника", exact: true }).focus();
       await page.keyboard.press("Enter");
-      await expect(management.getByText("Приглашение сохранено в локальной тестовой почте. Внешнее письмо не отправлялось.")).toBeVisible();
+      await expect(page.locator('.dm-save-toast[role="status"]')).toContainText("Приглашение сохранено в локальной тестовой почте. Внешнее письмо не отправлялось.");
     } else {
       // Participant Settings is intentionally empty during the redesign;
       // exercise the unchanged server lifecycle and public invitation flow.

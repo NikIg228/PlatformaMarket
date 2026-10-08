@@ -65,7 +65,7 @@ R7 — итоговая композиция, не отложенный UI вс�
 
 ## R0 — согласованный исходный снимок
 
-Статус: BLOCKED_BY_BROWSER_CI. Предпосылка всех следующих реализаций.
+Статус: LOCAL_PASS / AWAITING_PUBLICATION_AND_CI. Предпосылка следующих реализаций.
 Сверка08.10 и точный остаток — [R0 checkpoint](governance/task-state/R0-BASELINE-2026-10-08.md).
 
 - [x] **R0.1** Разделить чужой/собственный WIP, установить владельцев и состав
@@ -84,8 +84,10 @@ CI/Security исходного SHA FAILURE сохранены в истории.
 2d6b749/29ffa54 подтверждены remote SHA. Local gates PASS; на29ffa54 Security,
 PG, containers и FlowB3 PASS; CI37732546397 завершён FAILURE: canonical browser
 81 PASS /25 FAIL в6 specs; full-access SKIPPED. Исходные два blockers исправлены.
-R0.2 открыт: требуется отдельная сверка browser failures с текущими UI-контрактами.
-Точный остаток/attempts в checkpoint; рабочая DB не менялась, R1 не начат.
+Продолжение по явному решению владельца: browser assertions сверены с принятыми
+UI-контрактами, исправлен document retry focus. Targeted26, full-access3,
+go_live promotion4 PASS; builds/types/lint PASS. R0.2 открыт до публикации и
+фактического нового CI. Точные attempts в checkpoint; рабочая DB/R1 не менялись.
 
 ## R1 — состав запуска и открытые решения
 

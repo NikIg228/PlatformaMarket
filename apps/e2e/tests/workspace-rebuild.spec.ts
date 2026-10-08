@@ -87,7 +87,7 @@ for (const width of [1440, 390]) test(`A13 offer information distinguishes expir
     saleUnit: { nameRu: "упаковка", symbol: "уп." }, packaging: { name: "10 штук", quantityInBaseUnit: "10", unit: { symbol: "шт." } },
     baseUnitsPerSaleUnit: "10", minimumOrderQuantity: "2", orderIncrement: "2", publication: { marketplaceVisible: true },
     prices: [{ id: "price", status: "ACTIVE", amountMinor: "9007199254740993", currency: "KZT", source: "MANUAL", lastConfirmedAt: "2020-01-01T00:00:00Z", freshnessExpiresAt: "2020-01-02T00:00:00Z" }],
-    inventoryBalances: [{ id: "balance", warehouse: { name: "Основной склад" }, quantityAvailable: "0", quantityReserved: "3", freshnessStatus: "STALE", source: "IMPORT", updatedAt: "2020-01-01T00:00:00Z", freshnessExpiresAt: "2020-01-02T00:00:00Z" }],
+    inventoryBalances: [{ id: "balance", warehouse: { name: "Основной склад" }, quantityOnHand: "3", quantityAvailable: "0", quantityReserved: "3", freshnessStatus: "STALE", source: "IMPORT", updatedAt: "2020-01-01T00:00:00Z", freshnessExpiresAt: "2020-01-02T00:00:00Z" }],
   };
   await page.route("**/api/workspaces/supplier/offers*", route => route.fulfill({ json: { items: [offer, { ...offer, id: "offer-b", supplierSku: "A13-B", productVariant: { product: { canonicalName: "Поштучный товар" } }, saleUnit: { nameRu: "штука", symbol: "шт." }, packaging: null, baseUnitsPerSaleUnit: "1", minimumOrderQuantity: "1", orderIncrement: "1", prices: [{ ...offer.prices[0], amountMinor: "10000", lastConfirmedAt: null, freshnessExpiresAt: null }], inventoryBalances: [] }], nextCursor: null } }));
   await page.goto("/supplier/products");
@@ -96,18 +96,24 @@ for (const width of [1440, 390]) test(`A13 offer information distinguishes expir
   await expect(row).toContainText("Подтвердите цену"); await expect(row).toContainText("Обновите остаток");
   await row.getByRole("button", { name: "Упаковка 10 штук", exact: true }).click();
   const detail = page.getByRole("dialog");
-  await detail.getByText("Источники и актуальность данных", { exact: true }).click();
-  await expect(detail).toContainText("за уп."); await expect(detail).toContainText("10 базовых ед.");
-  await expect(detail).toContainText("Минимум: 2; шаг: 2"); await expect(detail).toContainText("доступно 0; в резерве 3");
-  await expect(detail).toContainText("Основной склад (уп.):");
-  await expect(detail.getByText(/Срок подтверждения истёк/)).toHaveCount(2);
-  await expect(detail).toContainText("Источник цены: ручной ввод"); await expect(detail).toContainText("Источник остатка: импорт");
+  const price = detail.getByRole("region", { name: "Цена", exact: true });
+  await expect(price).toContainText(/90\s071\s992\s547\s409[,.]93/);
+  await expect(price).toContainText("/ уп.");
+  await expect(price).toContainText("Ручной ввод · Подтверждение истекло");
+  await expect(detail.getByText("Единица продажи", { exact: true }).locator("..")).toContainText("10 штук (10 шт.)");
+  await expect(detail.getByText("Минимальный заказ", { exact: true }).locator("..")).toContainText("2 уп.");
+  await expect(detail.getByText("Шаг заказа", { exact: true }).locator("..")).toContainText("2 уп.");
+  const stock = detail.getByRole("region", { name: "Остатки по складам", exact: true });
+  await expect(stock).toContainText("Основной склад");
+  await expect(stock.getByText("Доступно", { exact: true }).locator("..")).toContainText("0 уп.");
+  await expect(stock.getByText("В резерве", { exact: true }).locator("..")).toContainText("3 уп.");
+  await expect(stock).toContainText("Нужно подтвердить"); await expect(stock).toContainText("Импорт");
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Поштучный товар", exact: true }).click();
   const unknown = page.getByRole("dialog");
-  await unknown.getByText("Источники и актуальность данных", { exact: true }).click();
-  await expect(unknown).toContainText("В единице продажи: 1 базовых ед.");
-  await expect(unknown).toContainText("Срок подтверждения не указан"); await expect(unknown).toContainText("Подтверждено: не указано");
+  await expect(unknown.getByText("Единица продажи", { exact: true }).locator("..")).toContainText("1 шт.");
+  await expect(unknown.getByRole("region", { name: "Цена", exact: true })).toContainText("Срок подтверждения не указан");
+  await expect(unknown.getByRole("region", { name: "Остатки по складам", exact: true })).toContainText("Остатки ещё не указаны");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath(`workspace-audit-a13-${width}.png`), fullPage: true });
 });
@@ -369,7 +375,7 @@ for (const role of ["clinic", "supplier"] as const) test(`profile-nav ${role} lo
     expect(attempts).toBe(1);
     await page.keyboard.press("Escape");
   } finally { release(); }
-  await expect(page.locator("main").getByRole("alert")).toContainText("Сервер не подтвердил выход");
+  await expect(page.locator('.dm-save-toast[role="alert"]')).toContainText("Сервер не подтвердил выход");
   await expect(page).toHaveURL(new RegExp(`/${role}/profile$`));
   expect(await page.evaluate(key => Boolean(sessionStorage.getItem(key)), `dentmarket:${role === "clinic" ? "buyer" : "supplier"}-session`)).toBe(true);
   await avatar.click();
@@ -510,9 +516,9 @@ for (const role of ["clinic", "supplier"] as const) test(`refinement ${role} doc
   await expect.poll(() => queries.at(-1)).toBe("DOC-12");
   await page.getByRole("button", { name: "Очистить поиск", exact: true }).click();
   await expect.poll(() => queries.at(-1)).toBe("");
-  await input.fill("DOC-15"); await page.getByRole("button", { name: "Применить", exact: true }).click();
+  await input.fill("DOC-15"); await page.getByRole("button", { name: "Найти", exact: true }).click();
   await expect.poll(() => queries.at(-1)).toBe("DOC-15");
-  await page.getByRole("button", { name: "Сбросить", exact: true }).click();
+  await page.getByRole("button", { name: "Сбросить фильтры", exact: true }).first().click();
   await expect(input).toHaveValue("");
 });
 
@@ -613,7 +619,10 @@ test("clinic navigation survives reload and isolates an order outage", async ({
   await expect(
     page.getByRole("heading", { name: "Настройки организации" }),
   ).toBeVisible();
-  await expect(page.getByLabel("Контактное лицо", { exact: true })).toBeVisible();
+  const contact = page.getByRole("group", { name: "Основной контакт", exact: true });
+  await contact.getByRole("button", { name: "Изменить: Контактное лицо", exact: true }).click();
+  await expect(contact.getByRole("textbox", { name: "Контактное лицо", exact: false })).toBeVisible();
+  await page.keyboard.press("Escape");
   await page.reload();
   await expect(
     page.getByRole("heading", { name: "Настройки организации" }),
@@ -685,9 +694,10 @@ test.describe("A11 business calendar", () => {
       return route.fulfill({ json: { items: docs.filter(doc => (!query.has("dateFrom") || doc.documentDate >= query.get("dateFrom")!) && (!query.has("dateTo") || doc.documentDate <= query.get("dateTo")!)), nextCursor: null } });
     });
     await page.goto("/clinic/documents");
-    await expect(page.getByText("Даты в часовом поясе: Asia/Almaty.", { exact: true })).toBeVisible();
-    await page.getByLabel("Документы с даты", { exact: true }).fill("2026-09-30");
-    await page.getByLabel("Документы по дату", { exact: true }).fill("2026-09-30");
+    await page.getByRole("button", { name: "Период", exact: true }).click();
+    await expect(page.getByText("Часовой пояс: Asia/Almaty", { exact: true })).toBeVisible();
+    await page.getByLabel("С даты", { exact: true }).fill("2026-09-30");
+    await page.getByLabel("По дату", { exact: true }).fill("2026-09-30");
     await page.getByRole("button", { name: "Применить", exact: true }).click();
     await expect(page.getByText("Начало дня", { exact: true })).toBeVisible();
     await expect(page.getByText("Конец дня", { exact: true })).toBeVisible();
@@ -695,14 +705,14 @@ test.describe("A11 business calendar", () => {
     await expect(page.getByText("Следующий день", { exact: true })).toHaveCount(0);
     expect(queries.at(-1)!.get("dateFrom")).toBe("2026-09-29T19:00:00.000Z");
     expect(queries.at(-1)!.get("dateTo")).toBe("2026-09-30T18:59:59.999Z");
-    await expect(page.getByRole("row").filter({ hasText: "Начало дня" }).locator('[data-label="Дата"]')).toHaveText(/30\s+сент/);
+    await expect(page.getByRole("row").filter({ hasText: "Начало дня" }).locator('[data-label="Дата"]')).toHaveText("30.09.2026");
     const count = queries.length;
-    await page.getByLabel("Документы с даты", { exact: true }).fill("2026-10-01");
+    await page.getByLabel("С даты", { exact: true }).fill("2026-10-01");
     await page.getByRole("button", { name: "Применить", exact: true }).click();
     await expect(page.getByText("Дата начала не может быть позже даты окончания.", { exact: true })).toBeVisible();
     expect(queries.length).toBe(count);
     await expect(page.getByText("Начало дня", { exact: true })).toBeVisible();
-    await page.getByRole("button", { name: "Сбросить", exact: true }).click();
+    await page.getByRole("button", { name: "Сбросить фильтры", exact: true }).click();
     await expect(page.getByText("Предыдущий день", { exact: true })).toBeVisible();
     await expect(page.getByText("Следующий день", { exact: true })).toBeVisible();
     expect(queries.at(-1)!.has("dateFrom")).toBe(false);
@@ -1039,30 +1049,47 @@ test("orders-ux notification recovery, filters and arrivals preserve reading pos
   await history.getByRole("button", { name: "Есть новые уведомления — показать" }).click();
   await expect(history.getByRole("heading", { name: newer.title })).toBeVisible();
   state.setFailure(true); await history.getByRole("button", { name: "Обновить", exact: true }).click();
-  await expect(history.getByRole("alert")).toContainText("Сервис временно недоступен");
+  await expect(page.locator('.dm-save-toast[role="alert"]')).toContainText("Сервис временно недоступен");
   await expect(history.getByRole("article")).toHaveCount(10);
   state.setFailure(false); await history.getByRole("button", { name: "Повторить", exact: true }).click();
-  await expect(history.getByRole("alert")).toHaveCount(0);
+  await expect(history.getByRole("button", { name: "Повторить", exact: true })).toHaveCount(0);
   await history.getByRole("combobox", { name: "Категория уведомлений" }).click();
   await page.getByRole("option", { name: "Документы", exact: true }).click();
   await expect(history.getByRole("article")).toHaveCount(1);
   expect(state.writes).toHaveLength(0);
 });
 
-test("orders-ux document deep link recovers from denied read without losing the archive", async ({ page }) => {
-  const state = await ordersNotificationFixture(page, "clinic");
+for (const role of ["clinic", "supplier"] as const) for (const width of [1440, 390]) test(`orders-ux document deep link recovers from denied read without losing the archive ${role} ${width}`, async ({ page }, info) => {
+  await page.setViewportSize({ width, height: 900 });
+  const state = await ordersNotificationFixture(page, role);
   state.rows[0].target = { type: "document", id: sessionId, label: "Открыть документ" };
   let denied = true;
   await page.route(`**/api/documents/archive/${sessionId}`, route => denied ? route.fulfill({ status: 403, json: { message: "Нет доступа" } }) : route.fulfill({ json: { id: sessionId, title: "Счёт из уведомления", documentNumber: "INVOICE-UX", kind: "INVOICE", status: "GENERATED", accountingStatus: "NOT_APPLICABLE", documentDate: "2026-10-05T10:00:00.000Z", amountMinor: "3500000", currency: "KZT", version: 1, participants: [], signatures: [], versions: [] } }));
-  await page.goto("/clinic/orders");
+  await page.goto(`/${role}/orders`);
   await page.getByRole("button", { name: "Уведомления: 9 непрочитанных", exact: true }).click();
   await page.getByRole("group", { name: "Последние уведомления" }).getByRole("link", { name: "Открыть документ", exact: true }).click();
-  await expect(page).toHaveURL(new RegExp(`/clinic/documents\\?documentId=${sessionId}$`));
+  await expect(page).toHaveURL(new RegExp(`/${role}/documents\\?documentId=${sessionId}$`));
   await expect.poll(() => state.writes.length).toBe(1);
-  const dialog = page.getByRole("dialog");
-  await expect(dialog.getByRole("alert")).toContainText("Не удалось открыть документ");
-  denied = false; await dialog.getByRole("button", { name: "Повторить загрузку документа" }).click();
+  const dialog = width === 390 ? page.getByRole("dialog") : page.getByRole("region", { name: "Карточка документа", exact: true });
+  await expect(page.locator('.dm-save-toast[role="alert"]')).toContainText("Не удалось открыть документ");
+  await page.screenshot({ path: info.outputPath("document-denied.png"), animations: "disabled" });
+  denied = false;
+  const retry = dialog.getByRole("button", { name: "Повторить загрузку документа" });
+  await retry.focus(); await page.keyboard.press("Enter");
   await expect(dialog.getByRole("heading", { name: "Счёт из уведомления" })).toBeVisible();
+  if (width === 390) await expect(dialog.getByRole("button", { name: "Закрыть документ", exact: true })).toBeFocused();
+  else await expect(dialog).toBeFocused();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await info.attach("document-recovery-computed-styles", {
+    contentType: "application/json",
+    body: JSON.stringify(await dialog.evaluate(element => {
+      const style = getComputedStyle(element), focused = document.activeElement;
+      const focusStyle = focused ? getComputedStyle(focused) : null;
+      return { width: element.getBoundingClientRect().width, fontFamily: style.fontFamily, fontSize: style.fontSize,
+        focusLabel: focused?.getAttribute("aria-label"), focusOutline: focusStyle?.outline, focusColor: focusStyle?.color };
+    })),
+  });
+  await page.screenshot({ path: info.outputPath("document-recovered.png"), animations: "disabled" });
   await page.keyboard.press("Escape"); await expect(dialog).toBeHidden();
   await expect(page.getByRole("heading", { name: "Документы", exact: true })).toBeVisible();
 });

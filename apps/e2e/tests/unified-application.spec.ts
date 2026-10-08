@@ -55,7 +55,10 @@ for (const width of [390, 1440]) test(`shared theme auth audit ${width}`, async 
   await expect(email.locator("..")).toHaveCSS("border-top-color", "rgb(131, 152, 141)");
   await page.keyboard.press("Tab");
   await email.focus();
-  await expect(email).toHaveCSS("outline-color", "rgb(0, 122, 89)");
+  await expect(email).toHaveCSS("outline-style", "none");
+  await expect(email.locator("..")).toHaveCSS("outline-color", "rgb(0, 122, 89)");
+  await expect(email.locator("..")).toHaveCSS("outline-width", "1px");
+  await expect(email.locator("..")).toHaveCSS("outline-offset", "2px");
   const submit = page.getByRole("button", { name: "Войти", exact: true });
   await expect(submit).toHaveCSS("background-color", "rgb(0, 122, 89)");
   let release!: () => void;
@@ -123,7 +126,8 @@ test("password login, cookie refresh and legacy return use the same-origin proxy
     expect(post.status()).toBe(405);
     await login.goto("/catalog");
     await login.locator("header").getByRole("link", { name: /Личный кабинет/ }).click();
-    await login.getByRole("button", { name: "Выйти", exact: true }).click();
+    await login.getByRole("button", { name: "Меню профиля", exact: true }).click();
+    await login.getByRole("menuitem", { name: "Выйти", exact: true }).click();
     await expect(login).toHaveURL(/\/login$/);
     await login.goto("/catalog");
     await expect(login.locator("header").getByRole("link", { name: "Войти", exact: true })).toBeVisible();

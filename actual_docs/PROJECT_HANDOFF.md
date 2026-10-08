@@ -1,5 +1,13 @@
 # PlatformaMarket — текущий контекст
 
+Продолжение08.10 после9c2fd7d: владелец разрешил дополнительный цикл до закрытия R0.
+Browser repair WIP: targeted21 PASS переиспользуется; дополнительный запуск5/5
+PASS (conversations, document recovery desktop/mobile обеих ролей). Full-access3 PASS.
+go_live promotion4 PASS, оба builds/types/lint PASS. Публикация и actual CI
+впереди; R0 ещё не закрыт. Canonical dev восстанавливается launcher1516.
+Точные изменения/логи/следующий шаг — верх [R0 checkpoint](governance/task-state/R0-BASELINE-2026-10-08.md).
+Не считать старый чистый9c2fd7d описанием текущего dirty checkout.
+
 ## 08.10.2026 — текущий запрос R0 и публикация всего проверенного WIP
 
 Владелец явно поручил R0 и push всех незакоммиченных изменений. Исполнитель
