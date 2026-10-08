@@ -1,0 +1,45 @@
+.preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dm-space-6);
+  min-width: 0;
+  padding: var(--dm-space-4);
+}
+
+.rail {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 152px));
+  gap: var(--dm-space-3);
+  flex: 1;
+  min-width: 0;
+  max-width: 808px;
+}
+
+.card {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: var(--dm-radius-card);
+}
+
+.allPromotions {
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .preview {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--dm-space-3);
+  }
+
+  .rail {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .allPromotions {
+    align-self: flex-end;
+  }
+}
