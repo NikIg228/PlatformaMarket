@@ -1,5 +1,16 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 08.10.2026 — R0 ACCEPTED / CI_PASS
+
+Baseline **R0-2026-10-08**: `1e666eef94d9012d0e7a54991e68391b677e7018`,
+origin/main совпал. CI37739925051 и Security37739925079 SUCCESS: browser107,
+full-access3, go_live promotions4, import/rollback7 PASS; PG и контейнеры PASS.
+Обязательные lint/types/tests/build/runtime/production checks того же CI зелёные.
+R0.1–3 закрыты. Итог/attempts — [checkpoint](R0-BASELINE-2026-10-08.md).
+Dev1516/API1336/web3424 восстановлен; working DB/R1/deploy не менялись.
+Последующая публикация только5 docs receipts, CI inputs неизменны. Тот же
+исполнитель завершает scope; primary/registry не передаются. Ниже история.
+
 ## 08.10.2026 — продолжение browser CI repair (ACTIVE / local WIP)
 
 После прежней остановки владелец явно разрешил дополнительный цикл до полного

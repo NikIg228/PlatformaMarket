@@ -1,12 +1,15 @@
 # PlatformaMarket — текущий контекст
 
-Продолжение08.10 после9c2fd7d: владелец разрешил дополнительный цикл до закрытия R0.
-Browser repair WIP: targeted21 PASS переиспользуется; дополнительный запуск5/5
-PASS (conversations, document recovery desktop/mobile обеих ролей). Full-access3 PASS.
-go_live promotion4 PASS, оба builds/types/lint PASS. Публикация и actual CI
-впереди; R0 ещё не закрыт. Canonical dev восстанавливается launcher1516.
-Точные изменения/логи/следующий шаг — верх [R0 checkpoint](governance/task-state/R0-BASELINE-2026-10-08.md).
-Не считать старый чистый9c2fd7d описанием текущего dirty checkout.
+R0 полностью ACCEPTED08.10.2026: baseline **R0-2026-10-08**,
+`1e666eef94d9012d0e7a54991e68391b677e7018` опубликован, remote SHA совпал.
+CI37739925051 и Security37739925079 SUCCESS: browser107, full-access3,
+promotions4 и import/rollback7 PASS; PostgreSQL и оба контейнера PASS.
+Исправлен document retry focus, browser assertions приведены к текущим UI-контрактам.
+Dev launcher1516/API1336/web3424 восстановлен, readiness/catalog200.
+Итог и точные границы — [R0 checkpoint](governance/task-state/R0-BASELINE-2026-10-08.md).
+R1 не начат, production UNKNOWN; рабочая DB/deploy не менялись. Финальная
+публикация receipt docs-only переиспользует CI неизменного кодового baseline.
+Предыдущие промежуточные записи ниже — история, не текущий статус.
 
 ## 08.10.2026 — текущий запрос R0 и публикация всего проверенного WIP
 

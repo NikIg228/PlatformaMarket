@@ -65,12 +65,13 @@ R7 — итоговая композиция, не отложенный UI вс�
 
 ## R0 — согласованный исходный снимок
 
-Статус: LOCAL_PASS / AWAITING_PUBLICATION_AND_CI. Предпосылка следующих реализаций.
+Статус: ACCEPTED08.10.2026. Кодовый baseline **R0-2026-10-08**:
+`1e666eef94d9012d0e7a54991e68391b677e7018`, origin/main SHA подтверждён.
 Сверка08.10 и точный остаток — [R0 checkpoint](governance/task-state/R0-BASELINE-2026-10-08.md).
 
 - [x] **R0.1** Разделить чужой/собственный WIP, установить владельцев и состав
   публикации UI, Support, Orders/Notifications. Сохранить проверки и счётчики попыток.
-- [ ] **R0.2** Опубликовать только принятые изменения, проверить remote SHA и CI;
+- [x] **R0.2** Опубликовать только принятые изменения, проверить remote SHA и CI;
   получить один именованный кодовый baseline с точным перечнем остатка.
 - [x] **R0.3** Сверить состояние схемы/миграций нужных сред без изменения рабочей
   БД. Исторические DEV_PENDING и поздние receipts сверить, не повторять миграции.
@@ -86,8 +87,11 @@ PG, containers и FlowB3 PASS; CI37732546397 завершён FAILURE: canonical
 81 PASS /25 FAIL в6 specs; full-access SKIPPED. Исходные два blockers исправлены.
 Продолжение по явному решению владельца: browser assertions сверены с принятыми
 UI-контрактами, исправлен document retry focus. Targeted26, full-access3,
-go_live promotion4 PASS; builds/types/lint PASS. R0.2 открыт до публикации и
-фактического нового CI. Точные attempts в checkpoint; рабочая DB/R1 не менялись.
+go_live promotion4 PASS; builds/types/lint PASS. На опубликованном1e666ee
+[CI37739925051](https://github.com/NikIg228/PlatformaMarket/actions/runs/37739925051)
+и [Security37739925079](https://github.com/NikIg228/PlatformaMarket/actions/runs/37739925079)
+SUCCESS: browser107/107, full-access3/3, promotion4/4; PG и оба контейнера PASS.
+R0 закрыт. Точные attempts в checkpoint; рабочая DB/R1 не менялись.
 
 ## R1 — состав запуска и открытые решения
 

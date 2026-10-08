@@ -8,13 +8,21 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
-08.10 R0 browser repair — LOCAL_PASS / AWAITING_PUBLICATION_AND_CI:
-текущий patch от9c2fd7d исправляет document retry focus, обновляет устаревшие
+08.10 R0 — ACCEPTED / CI_PASS, baseline **R0-2026-10-08**:
+`1e666eef94d9012d0e7a54991e68391b677e7018`, remote SHA подтверждён.
+Опубликованный patch исправляет document retry focus, обновляет устаревшие
 UI assertions и проверяет promotions отдельным go_live profile после pilot.
 Targeted26, full-access3, promotion4 PASS; UI/web/E2E types, lint, оба builds PASS.
 Visual recovery4 PASS, desktop/mobile focus и screenshots проверены.
 История attempts и точные команды — [checkpoint](task-state/R0-BASELINE-2026-10-08.md).
-Новый exact-SHA CI пока не получен; R0.2 открыт. Ниже сохранены старые CI failures.
+[CI37739925051](https://github.com/NikIg228/PlatformaMarket/actions/runs/37739925051)
+и [Security37739925079](https://github.com/NikIg228/PlatformaMarket/actions/runs/37739925079)
+SUCCESS: canonical browser107/107, full-access3/3, promotion4/4, import/rollback7/7;
+PG, containers, lint/types/tests/build и runtime/production checks PASS.
+Dev/test44/44 migrations; production UNKNOWN. Audit9 moderate OpenTelemetry
+остаются при high/critical gate PASS. R0.1–3 закрыты, R1 не начат. Следующий
+receipt docs-only сохраняет code/config/lock inputs; CI переиспользуется.
+Ниже сохранены старые CI failures как история.
 
 08.10 R0 repair — ORIGINAL_BLOCKERS_FIXED / BROWSER_CI_FAIL:
 опубликованы2d6b749 и29ffa54435e77c796fd6dc676b438e49c1a81a93, remote SHA
