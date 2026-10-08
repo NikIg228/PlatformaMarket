@@ -1,6 +1,29 @@
 # PRIMARY-SESSION — PlatformaMarket
 
-## 08.10.2026 — STATUS-TOASTS (LOCAL_PASS / PUBLICATION_PENDING)
+## 08.10.2026 — R0 (BASELINE_RECORDED / CI_FAIL)
+
+Явный запрос владельца: R0 и push всех незакоммиченных изменений. Исполнитель
+R0 docs/read-only scope01a11795-17a2-7f52-9e7d-b3314bf87ed7; product primary
+01a11758-1c55-7e52-bf15-2a04427aaf5d проверен idle/completed. Передачи нет.
+[Checkpoint R0](R0-BASELINE-2026-10-08.md): исходный HEAD0bd933e, runtime e68a518,
+dirty5 metadata/instructions просмотрены; API/UI/test/schema WIP отсутствует.
+Dev/test44/44 migrations, read-only; API и9 страниц HTTP200. Фактический CI
+исходного SHA FAILURE (audit и postgres contract fixture), не CI_PENDING/PASS.
+Публикация docs выполняется по явному запросу; R0.2 остаётся незакрытым,
+R1/CI repair/deploy/DB writes не начаты. Исторические receipts ниже сохранены.
+
+## 08.10.2026 — STATUS-TOASTS (LOCAL_PASS / PUBLISHED / CI_PENDING)
+
+Final receipt: committed and pushed `e68a518b6e0607abb684ef748bd51a8ab7a62c88`
+(`feat: unify workspace action feedback toasts`) to origin/main; independent
+remote SHA matches. All required local gates below PASS; final settled capture
+verification PASS3 and canonical dev/API readiness confirmed. Earlier pending
+entries below are chronological evidence, superseded by this receipt.
+Exact-SHA GitHub snapshot: CI run37695280658 queued; Security run37695280657
+in_progress. Neither is CI PASS; no wait/repair or new product phase inferred.
+Final working tree retains only the three prior handoff metadata files (plus
+this publication receipt) and generated apps/web AGENTS.md/CLAUDE.md.
+No other writer's changes staged or published. Dev remains running.
 
 Owner primary01a11758-1c55-7e52-bf15-2a04427aaf5d. Canonical main1fb24ca.
 Owner annotation: all action outcomes (success/failure/errors) should use compact
@@ -84,7 +107,7 @@ workspaces config/settings-profile `--grep 'action-toast|save-feedback mobile'`;
 `$env:DEPLOYMENT_PROFILE='go_live'; npm run build --workspace=@marketplace/web`;
 `git diff --check`. No backend/DB/full E2E/release suite required for this UI slice.
 
-## 08.10.2026 — SUPPLIER-CONTACTS-SOURCES-TABS (LOCAL_PASS / PUBLICATION_PENDING)
+## 08.10.2026 — SUPPLIER-CONTACTS-SOURCES-TABS (LOCAL_PASS / PUBLISHED / CI_PENDING)
 
 Owner primary01a11758-1c55-7e52-bf15-2a04427aaf5d, canonical main110e27b.
 Explicit request: distinguish supplier official/public contact from two reserve
@@ -170,10 +193,14 @@ with subsequent focused --grep retries only as documented;
 `git diff --check`. Required local gates PASS; no full E2E/release needed.
 Ordinary canonical dev10572 restored, go_live; API4012 readiness200 and web3000
 /supplier/profile200. All source/build checks complete. No working data changed.
-Remaining: staging/scope/secret review, commit/push, remoteSHA/CI snapshot.
+Publication: reviewed46 paths, staged diff/secret-pattern checks PASS; prior handoff
+metadata and Next-generated instruction files excluded. Commit
+5d24ae5507cef32574d6ff9e3b1a2a95063a9d66 pushed to origin/main; independent ls-remote
+matches. CI37687157788 in_progress, Security37687157580 queued on this exact SHA.
+No CI PASS claimed; owner preference is snapshot without wait/automatic repair.
+Authorized product scope finished. No roadmap continuation or automatic handoff.
 
-
-## 07.10.2026 — SETTINGS-PROFILE-EDITABLE-V2 (LOCAL_PASS / PUBLICATION_PENDING)
+## 07.10.2026 — SETTINGS-PROFILE-EDITABLE-V2 (PUBLISHED / LOCAL_PASS / CI_PENDING)
 
 Owner primary01a11758-1c55-7e52-bf15-2a04427aaf5d, canonical main@3fa9089.
 Explicit owner request: implement approved clinic Settings / supplier Profile
@@ -259,8 +286,15 @@ Runtime readiness PASS: canonical dev reports unified ready; API health, clinic
 settings and supplier profile HTTP200. Fetch confirms origin/main=baseline3fa9089;
 owned41-file staged scope reviewed, diff hygiene PASS; historical handoff hunks,
 generated Next instruction files and private backup excluded. Ready to publish.
+Published main110e27b12fefbf308c7c59c770ff0fad93355225; ordinary push succeeded,
+independent ls-remote SHA matches. Secret scan1 flagged synthetic unit-test URL;
+review confirmed local/test with dummy credentials; outgoing secret review PASS.
+CI37679103249 QUEUED; Security37679103287 IN_PROGRESS at final snapshot, not PASS.
+No CI wait/repair per owner preference. Dev restored and ready; no further task
+scope remains. Dirty: original3 handoff metadata and Next-generated apps/web/AGENTS.md,
+apps/web/CLAUDE.md excluded from commit. Await owner feedback; no roadmap continuation.
 
-## 07.10.2026 — SETTINGS-PROFILE-RESET-V2 (LOCAL_PASS)
+## 07.10.2026 — SETTINGS-PROFILE-RESET-V2 (PUBLISHED / LOCAL_PASS / CI_PENDING)
 
 Owner primary01a11758-1c55-7e52-bf15-2a04427aaf5d; canonical main@9c64593.
 Explicit request: empty clinic/supplier Settings and Profile content, then generate
@@ -311,7 +345,33 @@ vars go_live). Review/diff hygiene PASS; no API/schema/dependency changes.
 Origin/main equals baseline9c64593 after fetch; publish verified own paths only.
 Dev readiness confirmed: API health200, /clinic/settings200, /supplier/profile200;
 launcher reports unified ready. No source/runtime defect in initial early probe.
-Next: commit/push and CI snapshot; then await design selection.
+Published main3fa9089677bc4547e2e93b2e67d66b04533f1104; ordinary push and independent
+ls-remote SHA match confirmed. Only original3 handoff metadata remain unstaged.
+CI37668181657 and Security37668181656 IN_PROGRESS at final snapshot, not PASS;
+no waiting/repair. Checkpoint publication result remains local with handoff metadata.
+Next: await owner design selection or new explicit task; do not implement concepts yet.
+
+## 07.10.2026 — MANUAL-HANDOFF (COMPLETED)
+
+Read-only READY проверен: successor01a11758-1c55-7e52-bf15-2a04427aaf5d,
+turn01a11758-1e53-7aa1-ad45-62d199147520 completed; контекст/Git/dirty/CI/dev/границы
+поняты верно. Registry generation6, primary=successor, source retired.
+Единственный finalizer подтвердил native wait_threads: source idle,
+turn01a11756-8a93-7851-8c77-f1bad69d3829 completed. Native set_thread_archived
+вернул archived=true для source01a0fd63-0ae1-71e2-a4d4-271515cf0d40;
+list_archived_threads независимо подтвердил архив. Тот же переход завершён:
+generation6, primary неизменен, transition=idle, successorThreadId=null.
+Изменены только три handoff metadata; HEAD и исходный scope сохранены.
+Без tests/build/commit/push/DB/process changes; dev2196 не тронут.
+Следующий шаг: ждать новой задачи владельца; не продолжать backlog или CI repair.
+
+Прямой запрос владельца: «перенеси все в новый чат». Передача разрешена с
+сохранением CI FAILURE (37654735114 / Security37654735057), без исправлений CI.
+main75dab025da6fa0cfd70a14336a01203f315d8aee опубликован, исходное дерево чистое.
+Source01a0fd63-0ae1-71e2-a4d4-271515cf0d40 останавливает продуктовую запись;
+только handoff metadata, read-only comprehension нового local saved-project чата.
+Полный краткий контекст — PROJECT_HANDOFF, ниже продуктовые evidence/attempts.
+Dev2196 сохраняется. Без tests/build/commit/push/DB/новой продуктовой фазы.
 
 ## 07.10.2026 — SETTINGS-PROFILE-REFERENCE-IMPLEMENTATION (LOCAL_PASS)
 

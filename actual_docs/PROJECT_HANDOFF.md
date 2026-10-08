@@ -1,5 +1,54 @@
 # PlatformaMarket — текущий контекст
 
+## 08.10.2026 — текущий запрос R0 и публикация всего проверенного WIP
+
+Владелец явно поручил R0 и push всех незакоммиченных изменений. Исполнитель
+этого docs/read-only baseline scope01a11795-17a2-7f52-9e7d-b3314bf87ed7;
+product primary01a11758-1c55-7e52-bf15-2a04427aaf5d idle/completed, не передаётся.
+Полный текущий результат и остаток — [R0 checkpoint](governance/task-state/R0-BASELINE-2026-10-08.md).
+main0bd933e/runtime e68a518; CI/Security FAILURE. Dev/test44/44 migrations,
+DB не менялась. Следующий продуктовый шаг требует исправления CI baseline;
+R1 не начат. Ниже сохранена история завершённой передачи, не новое поручение.
+
+## Ручная передача 07.10.2026 — завершённая история
+
+Передача generation6 ЗАВЕРШЕНА: primary01a11758-1c55-7e52-bf15-2a04427aaf5d,
+transition=idle, successorThreadId=null; source01a0fd63-0ae1-71e2-a4d4-271515cf0d40 retired.
+READY подтверждён: turn01a11758-1e53-7aa1-ad45-62d199147520 completed.
+Native wait_threads подтвердил source idle и turn01a11756-8a93-7851-8c77-f1bad69d3829
+completed. Native set_thread_archived вернул archived=true для точного source;
+list_archived_threads независимо подтвердил архив. Finalizer завершил тот же
+переход без повышения generation. Изменены только три handoff metadata;
+HEAD, продукт, dev2196 и DB сохранены. Tests/build/commit/push не выполнялись.
+
+Владелец: «перенеси все в новый чат». Source01a0fd63-0ae1-71e2-a4d4-271515cf0d40
+останавливает продуктовую запись. Разрешены только метаданные передачи; новая
+задача в том же saved project/local, без worktree, сначала read-only comprehension.
+Canonical root C:\Users\user\Desktop\dentmarket-kz-main, main@75dab025da6fa0cfd70a14336a01203f315d8aee,
+push/remote SHA подтверждены, до передачи дерево чистое. Dirty после неё — только
+этот файл, PRIMARY-SESSION и .codex/project-session.json; не commit/push ради передачи.
+Последний продуктовый scope: Settings/Profile по трём утверждённым референсам,
+затем коррекция владельца: единая типографика18/14, компактный профиль/аватар48,
+сеансы по5, текущий первым, понятные склады/источники, общие controls.
+Организация: readonly юридическое имя/БИН, контакты/адреса с version/idempotency,
+сохранение ввода при ошибке; supplier склады/источники; профиль identity/revoke/logout.
+Роли/сотрудники исключены. API/schema/рабочие данные не менялись.
+Evidence и история попыток — верхний раздел PRIMARY-SESSION. Локально PASS:
+17 целевых browser cases +1 supplier visual, web/e2e/UI types, lint, UI-contract,
+go_live build; screenshot output/playwright/settings-profile-unified. Проверки
+fixture-only без DB writes. Не повторять неизменные PASS, не сбрасывать attempts.
+Новый статус при переносе: CI37654735114 и Security37654735057 FAILURE, причина
+ещё не исследована. Не выдавать LOCAL_PASS за CI_PASS и не чинить автоматически.
+Dev работает из canonical root: launcher2196, wrapper2636, API4012/web3000,
+последний HTTP200/profile; .tmp/settings-unified-final-dev*.log. Не останавливать.
+Предыдущие CORE01–09 и UI slices уже выполнены; архивные планы не поручения.
+Текущий стандарт: AGENTS, PROJECT_OVERVIEW, MAIN_ROADMAP_TO_PRODUCTION_2026-10-06,
+Workflow, UI_UX_IMPLEMENTATION_STANDARD; читать релевантное, не весь архив.
+Предпочтения: русский, коротко/предметно; один writer/root, без агентов, worktrees,
+самовольных редизайнов и полных suites. Постоянный push для проверенной реализации;
+в последних UI задачах CI snapshot без ожидания, состояние сообщать честно.
+Следующий шаг: ждать нового запроса владельца.
+
 ## Рабочий вход с 6 октября 2026
 
 Описание продукта — [PROJECT_OVERVIEW](PROJECT_OVERVIEW.md); очередь —

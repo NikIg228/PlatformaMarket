@@ -8,6 +8,16 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+08.10 R0 — BASELINE_RECORDED / CI_FAIL:
+main0bd933e, runtime e68a518; исходный dirty5 — только проверенные metadata и
+Next instructions. [Checkpoint](task-state/R0-BASELINE-2026-10-08.md) содержит
+владение, состав публикации, маршруты, remote/CI и остаток. Dev/test44/44
+миграций;4 byte differences объяснены LF/CRLF, неизвестных/незавершённых0.
+Read-only10 HTTP probes200 — доступность оболочек, не бизнес/E2E приёмка.
+CI37696144727 и Security37696144642 FAILURE: verify:postgres fixture контактов
+и npm audit; контейнеры/CodeQL SUCCESS. Локальный UI PASS не отменяет эти FAIL.
+Документирование не запускает R1, рабочие migrations или CI repair.
+
 08.10 FUNCTIONAL-AUDIT-ROADMAP — CODE_AUDIT / TARGETED_UNIT_PASS:
 функциональная карта на1fb24ca9698769c69d2c23265f6a9a7105fecd45; 24 server test
 files /163 tests PASS (13/79 +11/84). Точные команды, связи API/UI и границы —
