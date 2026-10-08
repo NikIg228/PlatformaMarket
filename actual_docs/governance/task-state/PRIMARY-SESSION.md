@@ -1,6 +1,15 @@
 # PRIMARY-SESSION — PlatformaMarket
 
-## 08.10.2026 — R0 (BASELINE_RECORDED / CI_FAIL)
+## 08.10.2026 — R0 (ORIGINAL_BLOCKERS_FIXED / BROWSER_CI_FAIL)
+
+Итог на29ffa54435e77c796fd6dc676b438e49c1a81a93, origin/main подтверждён:
+Security37732546407 SUCCESS; CI37732546397 FAILURE. Audit/PG/containers/FlowB3
+PASS; canonical browser81 PASS /25 FAIL в6 specs, full-access SKIPPED.
+Исходные два blockers устранены, R0.2 открыт. Массовая актуализация browser
+assertions/новая UI реализация не начаты; следующий отдельный scope — сверка
+25 failures с принятыми UI-контрактами. Attempts/diagnostics и точный остаток
+в [R0 checkpoint](R0-BASELINE-2026-10-08.md). Dev5872/API18024/web17732 сохранён.
+Этот итог заменяет промежуточные pending записи ниже; они оставлены как история.
 
 Repair опубликован в2d6b74988c5b5ea82efe507c8b74cb11a83100d1, remote SHA совпал.
 Локальные gates PASS; ожидаются exact-SHA CI37730933563/Security37730933626.

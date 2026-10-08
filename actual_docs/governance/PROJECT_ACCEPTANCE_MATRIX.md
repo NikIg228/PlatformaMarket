@@ -8,7 +8,18 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
-08.10 R0 — BASELINE_RECORDED / CI_FAIL:
+08.10 R0 repair — ORIGINAL_BLOCKERS_FIXED / BROWSER_CI_FAIL:
+опубликованы2d6b749 и29ffa54435e77c796fd6dc676b438e49c1a81a93, remote SHA
+подтверждены. PG3 PASS; API32tests, dependency regression3, fixture tests7,
+types/lint, go_live build, production auth/runtime PASS. FlowB3 после ожидания
+animation.finished PASS2 locally; в CI29ffa54 FlowB3, PG, containers и Security
+PASS. CI37732546397 FAILURE: canonical browser81 PASS /25 FAIL в6 specs;
+full-access SKIPPED. Security37732546407 SUCCESS. Audit high0/critical0, moderate9
+OpenTelemetry остаются. Команды/attempts/границы в [checkpoint](task-state/R0-BASELINE-2026-10-08.md).
+R0.2 открыт; browser failures требуют сверки с принятыми UI-контрактами,
+массовая замена assertions не выполнена. Рабочая DB/R1/deploy не менялись.
+
+08.10 R0 initial baseline — исторический BASELINE_RECORDED / CI_FAIL:
 main0bd933e, runtime e68a518; исходный dirty5 — только проверенные metadata и
 Next instructions. [Checkpoint](task-state/R0-BASELINE-2026-10-08.md) содержит
 владение, состав публикации, маршруты, remote/CI и остаток. Dev/test44/44

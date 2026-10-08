@@ -3,12 +3,17 @@
 ## 08.10.2026 — текущий запрос R0 и публикация всего проверенного WIP
 
 Владелец явно поручил R0 и push всех незакоммиченных изменений. Исполнитель
-этого docs/read-only baseline scope01a11795-17a2-7f52-9e7d-b3314bf87ed7;
+этого R0 scope01a11795-17a2-7f52-9e7d-b3314bf87ed7;
 product primary01a11758-1c55-7e52-bf15-2a04427aaf5d idle/completed, не передаётся.
 Полный текущий результат и остаток — [R0 checkpoint](governance/task-state/R0-BASELINE-2026-10-08.md).
-main0bd933e/runtime e68a518; CI/Security FAILURE. Dev/test44/44 migrations,
-DB не менялась. Следующий продуктовый шаг требует исправления CI baseline;
-R1 не начат. Ниже сохранена история завершённой передачи, не новое поручение.
+Исходный main0bd933e/runtime e68a518 имел CI/Security FAILURE. Последующий
+явный запрос разрешил исправить CI: опубликованы2d6b749/29ffa54. Local gates
+PASS; Security37732546407, PG, containers и FlowB3 PASS. CI37732546397 FAILURE:
+canonical browser81 PASS /25 FAIL, full-access SKIPPED. Исходные два blockers
+исправлены; R0.2 открыт. Следующий отдельный scope — сверить25 browser failures
+в6 specs с действующими UI-контрактами, не ослабляя permissions/recovery checks.
+Dev/test44/44 migrations; рабочая DB не менялась. Dev5872/API18024/web17732
+восстановлен, health/catalog200. R1 не начат. Ниже история завершённой передачи.
 
 ## Ручная передача 07.10.2026 — завершённая история
 

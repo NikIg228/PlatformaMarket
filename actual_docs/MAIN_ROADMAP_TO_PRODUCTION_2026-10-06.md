@@ -65,7 +65,7 @@ R7 — итоговая композиция, не отложенный UI вс�
 
 ## R0 — согласованный исходный снимок
 
-Статус: BASELINE_RECORDED / CI_FAIL. Предпосылка всех следующих реализаций.
+Статус: BLOCKED_BY_BROWSER_CI. Предпосылка всех следующих реализаций.
 Сверка08.10 и точный остаток — [R0 checkpoint](governance/task-state/R0-BASELINE-2026-10-08.md).
 
 - [x] **R0.1** Разделить чужой/собственный WIP, установить владельцев и состав
@@ -78,8 +78,14 @@ R7 — итоговая композиция, не отложенный UI вс�
 08.10: исходный main0bd933e, runtime e68a518; dirty только5 файлов метаданных/
 инструкций, все просмотрены и явно разрешены владельцем к публикации.
 Dev/test44/44 migrations, checksum совпадает с учётом LF/CRLF; production UNKNOWN.
-CI/Security исходного SHA FAILURE: supplier-contract fixture и npm audit.
-Публикация docs не закрывает R0.2; новый код/DB не меняются, R1 не начинается.
+CI/Security исходного SHA FAILURE сохранены в истории. По отдельному явному
+«Приступай» исправлены supplier-contract fixture, duplicate fixture identity,
+три vulnerable dependencies и FlowB3 animation synchronization. Публикации
+2d6b749/29ffa54 подтверждены remote SHA. Local gates PASS; на29ffa54 Security,
+PG, containers и FlowB3 PASS; CI37732546397 завершён FAILURE: canonical browser
+81 PASS /25 FAIL в6 specs; full-access SKIPPED. Исходные два blockers исправлены.
+R0.2 открыт: требуется отдельная сверка browser failures с текущими UI-контрактами.
+Точный остаток/attempts в checkpoint; рабочая DB не менялась, R1 не начат.
 
 ## R1 — состав запуска и открытые решения
 
