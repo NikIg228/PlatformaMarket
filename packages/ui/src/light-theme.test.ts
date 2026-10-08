@@ -44,6 +44,7 @@ describe("shared semantic light contract", () => {
       expect(contrast(t[`${role}.content`], t[`${role}.soft`])).toBeGreaterThanOrEqual(4.5);
     expect(contrast(t["border.control"], t["surface.default"])).toBeGreaterThanOrEqual(3);
     expect(contrast(t["focus.ring"], t["surface.canvas"])).toBeGreaterThanOrEqual(3);
+    expect(contrast(t["text.primary"], t["warning.toast"])).toBeGreaterThanOrEqual(4.5);
   });
 
   it("keeps CSS adapters synchronized with every approved value", () => {

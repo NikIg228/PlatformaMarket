@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { DmButton } from "@marketplace/ui";
+import { ActionFeedback, DmButton } from "@marketplace/ui";
 import type { SearchResult, SearchMedia } from "../../catalog-search-types";
 import { marketplaceCatalogUrl, type MarketplaceCatalogState } from "../../catalog/marketplace-url";
 import { CompactProductCard } from "./compact-product-card";
@@ -54,18 +54,20 @@ export function CompactCatalog({ result, state, returnUrl, loading, error, loadi
         onChange={change} onOpenAll={openAll} />
     </div>
     <div className={styles.results}>
+      {error ? <ActionFeedback tone="error" title={result?.items.length ? "Не удалось загрузить ещё товары" : "Не удалось загрузить каталог"} description={result?.items.length ? "Уже загруженные товары остаются доступны." : "Повторите загрузку."} /> : null}
       {active.length ? <div className={filtersStyles.active} aria-label="Выбранные фильтры">
         {active.slice(0, 3).map(filter => <DmButton key={filter.key} appearance="subtle" title={filter.label}
           aria-label={`Убрать ${filter.label}`} onClick={() => change(filter.patch)}><span className={filtersStyles.buttonText}>{filter.label}</span><span aria-hidden="true">×</span></DmButton>)}
         {active.length > 3 ? <DmButton appearance="subtle" onClick={openAll}>Ещё {active.length - 3}</DmButton> : null}
         <DmButton appearance="subtle" onClick={reset}>Сбросить фильтры</DmButton>
       </div> : null}
-      {error ? <div role="alert" className={styles.message}><h2>Не удалось загрузить каталог</h2><p>{error}</p><DmButton onClick={onRetry}>Повторить загрузку</DmButton></div>
+      {error && !result?.items.length ? <div className={styles.message}><h2>Не удалось загрузить каталог</h2><p>{error}</p><DmButton onClick={onRetry}>Повторить загрузку</DmButton></div>
         : loading ? <div role="status" className={styles.message}>Загружаем актуальные предложения…</div>
         : result?.items.length ? <div className={styles.grid}>{result.items.map(product => <CompactProductCard key={product.id} product={product} returnUrl={returnUrl} imageSource={imageSource} />)}</div>
         : <div className={styles.message}><h2>Ничего не найдено</h2><p>Измените запрос или условия поиска. Город доставки меняется в шапке.</p><DmButton onClick={reset}>Сбросить фильтры</DmButton><DmButton onClick={openAll}>Все фильтры</DmButton></div>}
-      {!error && !loading && result && (result.nextOffset ?? result.items.length) < result.total ? <div className={styles.more}>
-        <DmButton onClick={onMore} disabled={loadingMore}>{loadingMore ? "Загружаем…" : "Показать ещё"}</DmButton>
+      {!loading && result && (result.nextOffset ?? result.items.length) < result.total ? <div className={styles.more}>
+        {error ? <p>Не удалось загрузить следующую страницу. Уже загруженные товары сохранены.</p> : null}
+        <DmButton onClick={onMore} disabled={loadingMore}>{loadingMore ? "Загружаем…" : error ? "Повторить загрузку товаров" : "Показать ещё"}</DmButton>
       </div> : null}
     </div>
     {open ? <CatalogFilterDialog initial={{ ...filters, sort: state.sort }} initialOptions={cachedOptions.current?.categoryId === filters.categoryId ? options : undefined}

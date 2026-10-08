@@ -18,7 +18,8 @@ export function ActionFeedback({ tone = "info", title, description, action }: {
     const identity = JSON.stringify([resolvedTone, title, description]);
     if (!available || !description || last.current === identity) return;
     last.current = identity;
-    notify(description, { tone: resolvedTone, title });
+    if (resolvedTone === "error" && !navigator.onLine) notify("Данные могут быть устаревшими.", { tone: "warning", title: "Нет подключения к сети" });
+    else notify(description, { tone: resolvedTone, title });
   }, [available, description, notify, resolvedTone, title]);
   if (!available) return <div className="dm-feedback" role={resolvedTone === "error" ? "alert" : "status"}><strong>{title}</strong><span>{description}</span>{action}</div>;
   return action ? <div className="dm-feedback-recovery">{action}</div> : null;

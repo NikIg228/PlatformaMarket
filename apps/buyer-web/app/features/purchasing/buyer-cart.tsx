@@ -1,5 +1,6 @@
 "use client";
-import { ActionFeedback } from "@marketplace/ui";
+import { ActionFeedback, useToast } from "@marketplace/ui";
+import { cartChangeNotice } from "./cart-notice";
 
 import { useEffect, useRef } from "react";
 import { Spinner } from "@fluentui/react-components";
@@ -69,6 +70,16 @@ export function BuyerCart({
   onCheckout,
 }: BuyerCartProps) {
   const editor = useCartCorrection({ cart, api, onChanged: onCartChanged, onValidated });
+  const notify = useToast();
+  const lastChange = useRef<string | null>(null);
+  useEffect(() => {
+    if (validationLoading || !validation) return;
+    const notice = cartChangeNotice(validation);
+    if (!notice) { lastChange.current = null; return; }
+    if (lastChange.current === notice.key) return;
+    lastChange.current = notice.key;
+    notify(notice.description, { tone: "warning", title: notice.title });
+  }, [validation, validationLoading, notify]);
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!editor.pending && editor.notice === "Позиция удалена из корзины.") root.current?.querySelector<HTMLButtonElement>('[data-cart-refresh]')?.focus();

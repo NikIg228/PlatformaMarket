@@ -8,6 +8,19 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+08.10 STATUS-CARDS-V2 — LOCAL_PASS, baseline main b06a41e + this patch:
+approved shared success/error/info and yellow warning cards; catalog add result,
+unknown write outcome, pagination retry preserving products, filter/offer retry,
+authoritative cart-change notices, deduplicated offline and verified recovery.
+Two modal defects repaired after explicit additional cycle authorization:
+portal specificity keeps close above backdrop; focus stays in the open dialog
+when retry trigger unmounts. Final11 unique browser scenarios PASS (desktop/mobile,
+including3 unchanged consumers with reused evidence); focused unit tests PASS,
+six affected frontend workspace types PASS, scoped ESLint/UI-contract343 PASS,
+go_live web build PASS. Prior failed attempts retained in
+[checkpoint](task-state/PRIMARY-SESSION.md); screenshots/traces in
+`output/playwright/status-cards-v2-*`, logs `.tmp/status-cards-*`.
+No backend/DB/deploy changes or full release certification; R7 remains open.
 08.10 R1.1 — OWNER_SCOPE_ACCEPTED / TRUST_CODE_AUDIT:
 trust обязателен в пилоте, AI только для стандартизатора Excel/CSV; AI-помощники
 вне текущего плана, рекомендации/подписки/реклама отложены. Реализация R3.7/R7.5

@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { errorMessage } from "@marketplace/ui";
 import type { SearchResult } from "../../catalog-search-types";
 import { appendCatalogPage, fetchLiveCatalog, loadCatalogWindow } from "../../catalog/live-search";
 import { marketplaceCatalogUrl, readMarketplaceCatalog } from "../../catalog/marketplace-url";
@@ -43,7 +44,7 @@ export function usePublicCatalog() {
       }, count.current);
       if (!controller.signal.aborted) setResult(next);
     } catch (cause) {
-      if (!controller.signal.aborted) { setResult(null); setError(cause instanceof Error ? cause.message : "Не удалось загрузить каталог. Повторите попытку."); }
+      if (!controller.signal.aborted) { setResult(null); setError(errorMessage(cause)); }
     } finally { if (!controller.signal.aborted) setLoading(false); }
   }, [query]);
   useEffect(() => {
@@ -61,7 +62,7 @@ export function usePublicCatalog() {
     flight.current?.abort();
     const controller = new AbortController(); flight.current = controller;
     const offset = result?.nextOffset ?? result?.items.length ?? 0;
-    setLoadingMore(true);
+    setLoadingMore(true); setError(null);
     try {
       const params = new URLSearchParams(query); params.set("offset", String(offset));
       const next = await fetchLiveCatalog<SearchResult>(params, controller.signal);
@@ -72,7 +73,7 @@ export function usePublicCatalog() {
       });
       setError(null);
     } catch (cause) {
-      if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Не удалось загрузить следующую страницу.");
+      if (!controller.signal.aborted) setError(errorMessage(cause));
     } finally { if (!controller.signal.aborted) setLoadingMore(false); }
   };
   const loadFilterOptions = async (categoryId: string, signal: AbortSignal) => {

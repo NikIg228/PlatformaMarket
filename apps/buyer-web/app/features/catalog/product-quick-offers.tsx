@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { MarketplaceApiClient } from "@marketplace/api-client";
-import { DmButton, DmDialog } from "@marketplace/ui";
+import { ActionFeedback, DmButton, DmDialog } from "@marketplace/ui";
 import { useDeliveryContext } from "../marketplace-header/delivery-context";
 import { productLoginUrl } from "../../public-links";
 import { SupplierOffers, type SupplierOffer } from "./supplier-offers";
@@ -36,8 +36,8 @@ export default function ProductQuickOffers({ productId, name, href, onClose }: {
   return <DmDialog open onOpenChange={open => { if (!open) onClose(); }} title={name}
     description={`Выберите предложение${city ? ` · ${city.nameRu}` : ""}`}
     actions={<a href={href}>Подробнее о товаре →</a>}>
-    {failed ? <div role="alert"><p>Не удалось загрузить предложения.</p><DmButton onClick={() => setRevision(n => n + 1)}>Повторить</DmButton></div>
+    {failed ? <><ActionFeedback tone="error" title="Предложения недоступны" description="Повторите загрузку предложений." /><div><p>Не удалось загрузить предложения.</p><DmButton onClick={() => setRevision(n => n + 1)}>Повторить</DmButton></div></>
       : !ready || !result || result.cityId !== cityId ? <p role="status">Загружаем актуальные предложения…</p>
-      : <SupplierOffers key={`${productId}-${cityId}`} offers={result.offers} compact loginHref={productLoginUrl(href)} />}
+      : <SupplierOffers key={`${productId}-${cityId}`} offers={result.offers} productName={name} compact loginHref={productLoginUrl(href)} />}
   </DmDialog>;
 }

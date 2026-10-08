@@ -1,5 +1,87 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 08.10.2026 — STATUS-CARDS-V2 (LOCAL_PASS / PUBLICATION_PENDING)
+
+Final result after owner-authorized repair cycle: both defects resolved.
+Focused recovery run4 and filter run2 PASS2; final affected run PASS6
+(catalog actions/network desktop/mobile and supplier modal desktop/mobile).
+Three unaffected action-toast/mobile-save consumers reuse previous PASS:
+11 unique browser cases PASS overall. Assertions retained, no forced clicks.
+Final UI/buyer/web/e2e typechecks PASS; supplier/admin prior PASS reused.
+Scoped ESLint and verify:ui-contract PASS343; go_live web build attempt1 PASS.
+Unit evidence below remains applicable. Screenshots inspected desktop/mobile.
+Commands: npm run typecheck --workspace=<affected workspace>; npm exec -- eslint
+<changed source/test paths>; npm run verify:ui-contract; npm run build
+--workspace=@marketplace/web (go_live); npm exec -- playwright test --config
+apps/e2e/playwright.workspaces.config.ts with focused recovery/filter and final
+catalog/network/supplier-modal selection. Logs .tmp/status-cards-*;
+output/playwright/status-cards-v2-* retains screenshots and prior failure traces.
+Build stopped only owned canonical dev tree; ordinary npm run dev restored.
+Historical failed attempts below are superseded by these final results.
+Owner explicitly authorized an additional repair cycle for the two named defects.
+No reset of previous attempts. Trace/source diagnosis: Fluent atomic .f494woh
+sets portal z-index1000000 after our same-specificity class; stronger shared
+selector fixes source-order dependency. Focus fallback uses last containing
+dialog when retry trigger is unmounted. Focused recovery run4 / filter run2 next.
+
+Stopped under AGENTS7.1: catalog recovery browser scenario has3 failed runs.
+Remaining: if a toast already exists before opening quick offers, the later
+"Предложения недоступны" toast close is intercepted by Fluent dialog backdrop.
+Attempt3 added position:relative to dm-toast-portal (z-index1000001), but this
+did NOT fix it. No fourth attempt/build/commit/push. Separate filter/offline
+scenario attempt1 also fails: closing network toast leaves focus outside dialog.
+Next exact step after owner authorizes another cycle: inspect computed stacking
+contexts/portal attachment from retained trace (toast created BEFORE dialog),
+fix shared portal ownership and focus fallback when the originating retry button
+unmounts; rerun only these failures and affected modal consumers. Do not weaken
+click/focus assertions or use force clicks. All changes remain reviewable WIP.
+
+Evidence: new status-cards set1 FAIL5 (3 wrong fixture pagination assumptions,
+2 focus-return failures). Fixed24-row fixture and focus memory: set2 PASS4,
+FAIL1 backdrop interception. Focused recovery attempt3 FAIL same backdrop.
+Existing workspace consumers PASS5: supplier connector modal1440/390,
+clinic/supplier action-toast expiry/retry, mobile save-feedback. Separate new
+filter retry/offline test FAIL1 focus. Total9 browser cases PASS,2 unresolved.
+Screenshots inspected new yellow/mobile modal+offline, no horizontal overflow.
+Unit initial UI: connection3/theme3/component2 PASS; classifier2FAIL/1PASS due
+Node navigator.onLine undefined (fixed explicit===false); classifier retry3PASS.
+Final yellow contrast theme3PASS. Buyer cart/catalog/contacts7PASS.
+Types UI/buyer/web/e2e/supplier/admin PASS before last focus/test changes;
+scoped ESLint PASS before final focus/test changes; UI-contract PASS before
+position:relative adjustment; diff hygiene PASS. Final types/lint/build NOT_RUN.
+Commands: npm run test --workspace=@marketplace/ui -- connection-monitor.test.ts
+feedback-error.test.ts light-theme.test.ts component-contract.test.ts; classifier
+and theme focused reruns; npm run test --workspace=@marketplace/buyer-web --
+cart-view-model.test.ts compact-catalog.test.tsx supplier-contacts.test.tsx;
+npm exec -- playwright test --config apps/e2e/playwright.workspaces.config.ts
+apps/e2e/tests/status-cards.spec.ts (set1/set2); attempt3 --grep 'catalog failures
+retain'; consumers settings-profile+status-cards --grep 'filter retry and offline|
+action-toast|save-feedback mobile|supplier-sources cards request retry'.
+Artifacts output/playwright/status-cards-v2{,-retry,-recovery,-consumers}.
+Launcher preflight1 bad quoting,2 direct launcher correctly refused non-npm;
+3 quoted npm CLI succeeds. Ordinary canonical go_live dev left running wrapper176,
+launcher3568, Next7872; readiness and catalogHTTP200. Log .tmp/status-cards-dev.*.
+No test DB/live writes. Native other task idle/completed at start; HEAD remains
+b06a41e, only this task's changes. No new phase, monitor or handoff started.
+
+Owner primary01a11758-1c55-7e52-bf15-2a04427aaf5d. Explicit owner approval of
+reference and catalog notification matrix, then implementation request. R0
+ACCEPTED/CI_PASS; R1 writer native snapshot idle/completed, no ownership transfer.
+Start main b06a41e, clean. Canonical folder only; no agents/DB/deploy/dependencies.
+Scope: shared success/error/warning/info toasts across app; approved yellow
+warning with dark text, five-second dismissal and close X; network loss/recovery,
+safe error copy, catalog action/loading failures and authoritative cart changes.
+Keep field validation, empty/loading, retry and business-state details contextual.
+Risks: duplicate offline events, unconfirmed writes, hidden recovery, modal focus.
+Checks: focused classifier/connectivity/catalog unit tests; intercepted browser
+desktop/mobile network/dismiss/timer/modal/catalog/recovery and existing workspace
+toast consumers; affected types/lint/UI-contract, one completion web go_live build,
+diff review, scoped commit/push and exact-SHA CI snapshot. No full suite for UI scope.
+Reference passport: market-components-v1/semantic-light-v1; Manrope14/21,
+toast380/pad16/gap12/radius12, desktop inset24/mobile16; success#007A59,
+error#A33B35/info#245E8A white; approved new warning#F4C542/text#17201E.
+Attempts initially0. Historical R1 and R0 records below preserved.
+
 ## 08.10.2026 — R1 ACTIVE / DECISIONS_PENDING
 
 Итог полного опроса08.10: ответы24 групп записаны в профили и карточку R1;

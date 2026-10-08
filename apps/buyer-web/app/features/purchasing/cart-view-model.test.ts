@@ -4,6 +4,7 @@ import {
   cartValidationPresentation,
 } from "./cart-view-model";
 import type { Cart, CartValidation } from "./types";
+import { cartChangeNotice } from "./cart-notice";
 
 const cart: Cart = {
   id: "cart-1",
@@ -73,6 +74,13 @@ const validation: CartValidation = {
 };
 
 describe("buyer cart view model", () => {
+  it("notifies commercial changes without repeating notices on a background poll", () => {
+    expect(cartChangeNotice(validation)?.title).toBe("Условия покупки изменились");
+    const polled = { ...validation, validatedAt: "2026-10-08T00:00:00Z", items: validation.items.map(item => ({ ...item, current: item.current ? { ...item.current, resolvedAt: "2026-10-08T00:00:00Z" } : null })) };
+    expect(cartChangeNotice(polled)?.key).toBe(cartChangeNotice(validation)?.key);
+    expect(cartChangeNotice({ ...validation, hasChanges: false, requiresAcceptance: false })).toBeNull();
+    expect(cartChangeNotice({ ...validation, items: validation.items.map(item => ({ ...item, status: "UNAVAILABLE" })) })?.title).toBe("Предложение больше недоступно");
+  });
   it("uses the revalidated line total without losing money precision", () => {
     expect(cartTotalMinor(cart, validation)).toBe(BigInt(25000));
   });

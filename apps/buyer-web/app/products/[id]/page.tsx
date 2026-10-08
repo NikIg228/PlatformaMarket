@@ -249,7 +249,7 @@ export default async function ProductPage({
               <span className={styles.offerCount}>{product.offers.length}</span>
             </div>
             {frontendFeatures.promotions ? <PromotionsStorefront productId={product.id} /> : null}
-            <SupplierOffers key={JSON.stringify(product.offers)} offers={product.offers} loginHref={loginHref} />
+            <SupplierOffers key={JSON.stringify(product.offers)} offers={product.offers} productName={product.name} loginHref={loginHref} />
           </div>
         </section>
       </main>

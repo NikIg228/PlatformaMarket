@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback, useToast } from "@marketplace/ui";
 import { DmSelect } from "@marketplace/ui/controls";
 import { workspacePath } from "@marketplace/api-client";
 import { catalogMediaSource as mediaSource } from "./catalog/catalog-media-source";
@@ -310,7 +311,7 @@ export default function BuyerWorkspace({
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const setToast = useToast();
   const [reviewDrafts, setReviewDrafts] = useState<Record<string, ReviewDraft>>(
     {},
   );
@@ -561,11 +562,6 @@ export default function BuyerWorkspace({
     // Refresh is the initial page bootstrap. Search and filter changes use
     // loadSearch directly and must not re-run the bootstrap with stale state.
   }, [handoffChecked, catalogUrlReady, catalogHistoryRevision, handoff?.sessionId, deliveryContext.ready, cityFilter]);
-  useEffect(() => {
-    if (!toast) return;
-    const timer = window.setTimeout(() => setToast(null), 3500);
-    return () => window.clearTimeout(timer);
-  }, [toast]);
 
   const submitSearchFor = async (nextQuery: string, nextSort = sort) => {
     setQuery(nextQuery);
@@ -1446,15 +1442,10 @@ export default function BuyerWorkspace({
         />
       ) : (
         <>
-          {error ? <div className={styles.toast}>{error}</div> : null}
+          {error ? <ActionFeedback tone="error" description={error} /> : null}
           {content}
         </>
       )}
-      {toast ? (
-        <div className={styles.toast} role="status">
-          {toast}
-        </div>
-      ) : null}
     </AppShell></>
   );
 }

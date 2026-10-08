@@ -3,6 +3,10 @@ export { DocumentRegistry } from "./document-registry";
 export { DmInfoTip } from "./info-tip";
 export { useSaveToast, useToast, type ToastTone, type ToastOptions } from "./save-toast";
 export { ActionFeedback } from "./action-feedback";
+export { actionFailure } from "./feedback-error";
+export { ToastScope } from "./save-toast";
+import { ToastScope } from "./save-toast";
+import { feedbackErrorMessage } from "./feedback-error";
 import { ActionFeedback } from "./action-feedback";
 export { DmInlineEdit, DmEditableAvatar } from "./inline-edit";
 import { DmAction, DmDismissLayer } from "./controls";
@@ -75,6 +79,7 @@ export function DmDialog({
     <Dialog open={open} onOpenChange={(_, data) => onOpenChange(data.open)} surfaceMotion={onClosed ? { onMotionFinish: (_, data) => { if (data.direction === "exit") onClosed(); } } : undefined}>
       <DialogSurface className="dm-dialog-surface">
         <DialogBody>
+          <ToastScope />
           <DialogTitle
             action={
               <DmButton
@@ -622,8 +627,7 @@ export function formatStatus(value: string | null | undefined) {
 }
 
 export function errorMessage(error: unknown) {
-  if (error instanceof Error) return error.message;
-  return "Произошла неизвестная ошибка";
+  return feedbackErrorMessage(error);
 }
 export { useWorkspaceSession } from "./use-workspace-session";
 

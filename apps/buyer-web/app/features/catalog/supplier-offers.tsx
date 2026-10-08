@@ -3,7 +3,7 @@ import { DmInput } from "@marketplace/ui/controls";
 import type { OrganizationContact } from "@marketplace/schemas";
 import { useRef, useState } from "react";
 import { MarketplaceApiClient, workspacePath } from "@marketplace/api-client";
-import { DmButton, StatusTag, errorMessage } from "@marketplace/ui";
+import { ActionFeedback, DmButton, StatusTag, actionFailure } from "@marketplace/ui";
 import { useVerifiedSession, sessionApiContext } from "../../workspace-session";
 import { formatCatalogMoney } from "../../catalog/catalog-view-model";
 import { OfferDeliverySummary, type DeliverySummary } from "../../catalog/offer-delivery-summary";
@@ -33,37 +33,41 @@ function validQuantity(value: string, offer: SupplierOffer) {
     && Math.abs(n / step - Math.round(n / step)) < 1e-7;
 }
 
-export function SupplierOffers({ offers, loginHref, compact = false }: {
-  offers: SupplierOffer[]; loginHref: string; compact?: boolean;
+export function SupplierOffers({ offers, loginHref, compact = false, productName }: {
+  offers: SupplierOffer[]; loginHref: string; compact?: boolean; productName?: string;
 }) {
   const { session, ready } = useVerifiedSession();
   const [quantities, setQuantities] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const lock = useRef(false);
-  const [feedback, setFeedback] = useState<{ error: boolean; message: string } | null>(null);
+  const [feedback, setFeedback] = useState<{ tone: "success" | "error" | "warning"; title: string; description: string } | null>(null);
   const add = async (offer: SupplierOffer) => {
     const raw = quantities[offer.id] ?? initialQuantity(offer);
     const quantity = Number(raw);
     if (lock.current || !ready || !offer.available || offer.priceMinor == null || !validQuantity(raw, offer)) return;
     if (!session?.organizationId) { window.location.assign(loginHref); return; }
+    if (!navigator.onLine) { setFeedback({ tone: "warning", title: "Нет подключения к сети", description: "Не удалось проверить актуальные цены и наличие." }); return; }
     lock.current = true;
     setBusy(offer.id);
     setFeedback(null);
+    let writing = false;
     try {
       const api = new MarketplaceApiClient(process.env.NEXT_PUBLIC_API_URL ?? "/api", sessionApiContext);
       const carts = await api.listCarts(session.organizationId);
-      const cart = carts.find(item => item.status === "ACTIVE" && item.currency === offer.currency)
-        ?? await api.createCart(session.organizationId, { currency: offer.currency });
+      let cart = carts.find(item => item.status === "ACTIVE" && item.currency === offer.currency);
+      if (!cart) { writing = true; cart = await api.createCart(session.organizationId, { currency: offer.currency }); writing = false; }
+      writing = true;
       await api.addCartItem(cart.id, { offerId: offer.id, quantity });
-      setFeedback({ error: false, message: `${offer.supplier.name}: добавлено в корзину — ${quantity} ед. продажи.` });
-    } catch (cause) { setFeedback({ error: true, message: errorMessage(cause) }); }
+      setFeedback({ tone: "success", title: "Добавлено в корзину", description: `${productName ?? offer.supplier.name} · ${quantity} ед. продажи${offer.packaging?.name ? ` (${offer.packaging.name})` : ""}.` });
+    } catch (cause) {
+      const failure = actionFailure(cause, { write: writing, title: "Не удалось добавить товар" });
+      setFeedback({ ...failure, ...(failure.title === "Результат пока неизвестен" ? { description: "Проверьте корзину перед повторным добавлением." } : {}) });
+    }
     finally { lock.current = false; setBusy(null); }
   };
   return <div className={`${styles.list} ${compact ? styles.compact : ""}`}>
     <p className={styles.hint}>Цена указана за единицу продажи. Окончательные условия доставки и оплаты — при оформлении заказа.</p>
-    {feedback ? <div className={feedback.error ? styles.error : styles.success} role={feedback.error ? "alert" : "status"}>
-      {feedback.message}{!feedback.error ? <a href={workspacePath("BUYER")}>Перейти в корзину</a> : null}
-    </div> : null}
+    {feedback ? <ActionFeedback {...feedback} action={feedback.tone === "success" || feedback.title === "Результат пока неизвестен" ? <a href={workspacePath("BUYER", "/cart")}>Перейти в корзину</a> : undefined} /> : null}
     {!offers.length ? <p>Предложения пока отсутствуют.</p> : offers.map(offer => {
       const { min, step } = quantityRules(offer);
       const quantity = quantities[offer.id] ?? initialQuantity(offer);

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogSurface, DialogBody, DialogTitle, DialogContent, DialogActions } from "@fluentui/react-components";
-import { DmButton, DmCheckbox, DmField, DmSelect } from "@marketplace/ui";
+import { ActionFeedback, ToastScope, DmButton, DmCheckbox, DmField, DmSelect } from "@marketplace/ui";
 import { AttributeFields, FilterChoice, PriceFields } from "./catalog-filter-controls";
 import { activeFilters, emptyFilters, priceError, type CatalogFilters, type FilterOptions, type FilterPatch } from "./catalog-filter-model";
 import styles from "./catalog-filters.module.css";
@@ -69,7 +69,8 @@ export function CatalogFilterDialog({ initial, initialOptions, onLoadOptions, on
             <FilterChoice label="Бренд" value={draft.brandId} items={options?.brands ?? []}
               onChange={brandId => change({ brandId, brand: "" })} disabled={!options} />
             {loading ? <p role="status">Загружаем параметры категории…</p> : null}
-            {error ? <div role="alert"><p>{error}</p><DmButton onClick={() => setRetry(value => value + 1)}>Повторить</DmButton></div> : null}
+            <ToastScope />
+            {error ? <><ActionFeedback tone="error" title="Не удалось загрузить фильтры" description="Повторите попытку." /><div><p>{error}</p><DmButton onClick={() => setRetry(value => value + 1)}>Повторить</DmButton></div></> : null}
             {attributes.length ? <fieldset className={styles.attributeGroup}><legend>Характеристики</legend>
               <AttributeFields filters={draft} attributes={attributes} onChange={change} />
             </fieldset> : !loading && !error ? <p className={styles.hint}>{draft.categoryId ? "Для этой категории дополнительных характеристик нет." : "Выберите категорию в шапке каталога, чтобы уточнить характеристики."}</p> : null}

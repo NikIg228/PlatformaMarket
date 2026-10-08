@@ -24,6 +24,7 @@
     "success.content": "#237A4A",
     "success.soft": "#EEF8F2",
     "warning.content": "#9A5A13",
+    "warning.toast": "#F4C542",
     "warning.soft": "#FFF5E8",
     "danger.content": "#A33B35",
     "danger.soft": "#FFF0EE",
