@@ -2,9 +2,18 @@
 
 Owner decision08.10.2026: target hosting is **Yandex.Cloud Kazakhstan**.
 This records the owner's selection, not verified service availability or a deployed
-environment. Exact domain, cloud resources, account/operator, budget and operational
-acceptance remain open. No cloud purchase or deployment is authorized by this note.
-Choose backup/restore and outage/data-loss targets before production acceptance.
+environment. The owner is responsible for the cloud account, monthly budget,
+hosting/domain/database setup and recovery arrangements. The domain will be supplied
+later; resource sizing and numeric budget/outage/data-loss targets are not specified.
+No cloud purchase or deployment is executed or authorized by this documentation task.
+
+Target launch date: **by 30 October 2026**, with required external integrations.
+Owner acceptance sequence: review locally implemented functionality → connect
+required external services and deploy to live hosting/domain/database → pass the
+applicable checks → accept production readiness. Existing isolated/local checks
+still precede publication/deployment as required; the sequence does not postpone
+them or waive release guards. A date, local PASS or mock integration is not live PASS.
+Choose and verify backup/restore and outage/data-loss targets before acceptance.
 
 Status01.10.2026: configuration now targets api + one apps/web image. Caddy
 serves WEB_DOMAIN with same-origin /api; operator login is /admin/login.
