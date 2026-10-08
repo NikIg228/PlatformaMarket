@@ -1,5 +1,13 @@
 # PlatformaMarket — текущий контекст
 
+Текущая задача08.10 — **R1 ACTIVE / DECISIONS_PENDING**, явное «приступай» владельца.
+Исполнитель01a11795-17a2-7f52-9e7d-b3314bf87ed7; product primary idle, без передачи.
+[Карточка R1](governance/task-state/R1-LAUNCH-SCOPE-2026-10-08.md) содержит основу,
+состав и вопросы. Основной цикл/эквайринг/доставка/ERP/рефералы/акции согласованы.
+Дополнительные модули пока не включать; владелец запросил их объяснение.
+Партнёры, коммерческие условия и критерии запуска ещё открыты.
+Code/env/DB/dev не изменяются, R0 ниже остаётся принятым. Реализация R2–R9 не начата.
+
 R0 полностью ACCEPTED08.10.2026: baseline **R0-2026-10-08**,
 `1e666eef94d9012d0e7a54991e68391b677e7018` опубликован, remote SHA совпал.
 CI37739925051 и Security37739925079 SUCCESS: browser107, full-access3,
@@ -7,7 +15,7 @@ promotions4 и import/rollback7 PASS; PostgreSQL и оба контейнера 
 Исправлен document retry focus, browser assertions приведены к текущим UI-контрактам.
 Dev launcher1516/API1336/web3424 восстановлен, readiness/catalog200.
 Итог и точные границы — [R0 checkpoint](governance/task-state/R0-BASELINE-2026-10-08.md).
-R1 не начат, production UNKNOWN; рабочая DB/deploy не менялись. Финальная
+На момент закрытия R0 R1 не был начат; production UNKNOWN. Рабочая DB/deploy не менялись. Финальная
 публикация receipt docs-only переиспользует CI неизменного кодового baseline.
 Предыдущие промежуточные записи ниже — история, не текущий статус.
 
