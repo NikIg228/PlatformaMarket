@@ -1,6 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
-import { dmLinkButtonProps } from "@marketplace/ui/link-button";
 import styles from "./promotion-preview.module.css";
 
 const cards = [
@@ -16,9 +14,8 @@ export function PromotionPreview() {
   return <div className={styles.preview}>
     <div className={styles.rail} role="region" aria-label="Акции">
       {cards.map(([id, description]) => <Image key={id}
-        className={styles.card} src={`/promotion-preview/${id}.webp`}
-        alt={description} width={608} height={608} unoptimized />)}
+        className={styles.card} src={`/promotion-preview/${id}-landscape.webp`}
+        alt={description} width={1536} height={1024} unoptimized />)}
     </div>
-    <Link href="/promotions" {...dmLinkButtonProps({ className: styles.allPromotions })}>Все акции</Link>
   </div>;
 }

@@ -13,6 +13,6 @@ describe("compact catalogue card", () => {
   it("uses approved display name, actual manufacturer SKU and exact available sale-unit price", () => {
     const offer = { id: "o", supplier: { id: "s", name: "Не показывать поставщика" }, priceMinor: "1700040", currency: "KZT", normalizedPriceMinor: "170", packaging: { name: "Коробка", quantityInBaseUnit: "100", unit: "шт" }, available: true, confirmationMode: "AUTO", deliveryMethods: [] };
     const html = renderToStaticMarkup(<CompactProductCard product={{ ...product, catalogName: "Бренд Модель A2 4 г", manufacturerSku: "REF-25", offers: [offer, { ...offer, available: false, priceMinor: "1" }] }} returnUrl="/" imageSource={() => null} />);
-    expect(html).toContain("Бренд Модель A2 4 г"); expect(html).not.toContain(product.name); expect(html).toContain("REF-25"); expect(html).toContain("от 17 000,4 ₸"); expect(html).not.toContain("Не показывать поставщика"); expect(html).not.toContain("Коробка");
+    expect(html).toContain("Бренд Модель A2 4 г"); expect(html).not.toContain(product.name); expect(html).toContain("REF-25"); expect(html).toContain("от 17 000,4 ₸"); expect(html).not.toContain("Не показывать поставщика"); expect(html).toContain("Коробка"); expect(html).toContain("1 поставщик"); expect(html).toContain("В наличии");
   });
 });

@@ -1,0 +1,2 @@
+.store { min-height: 100vh; background: var(--dm-page-surface); color: var(--dm-text-primary); }
+.main { width: 100%; margin: 0; }

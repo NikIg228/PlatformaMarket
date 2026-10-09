@@ -8,13 +8,13 @@ import { fetchLiveCatalog } from "../../catalog/live-search";
 import type { SearchResult } from "../../catalog-search-types";
 import { MarketplaceHeader } from "../marketplace-header/marketplace-header";
 import { PromotionPreview } from "./promotion-preview";
-import { dmLinkButtonProps } from "@marketplace/ui/link-button";
+import { FeaturedPromotions } from "./featured-promotions";
 
 export function PromotionsStorefront({ featured = false, productId }: { featured?: boolean; productId?: string }) {
   const preview = process.env.NODE_ENV === "development" && featured && !productId;
   const api = useMemo(() => new MarketplaceApiClient(process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4012/api", {}), []);
   const [page, setPage] = useState<PublicPromotionPage | null>(null), [error, setError] = useState<string | null>(null), [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState<Partial<PromotionListQuery>>({ limit: featured ? 4 : 12, offset: 0, featured: featured || undefined });
+  const [query, setQuery] = useState<Partial<PromotionListQuery>>({ limit: featured ? 5 : 12, offset: 0, featured: featured || undefined });
   const [draft, setDraft] = useState(""), [ready, setReady] = useState(featured || Boolean(productId)), [retry, setRetry] = useState(0);
   const [facets, setFacets] = useState<Pick<NonNullable<SearchResult["filterOptions"]>, "categories" | "suppliers"> | null>(null);
   useEffect(() => {
@@ -49,6 +49,8 @@ export function PromotionsStorefront({ featured = false, productId }: { featured
     window.history.pushState(window.history.state, "", `${window.location.pathname}?${params}`);
   }, [query]);
   if (!frontendFeatures.promotions) return null;
+  if (preview) return <PromotionPreview />;
+  if (featured) return <FeaturedPromotions page={page} loading={loading} error={error} onRetry={() => setRetry(value => value + 1)} />;
   return <Section title={productId ? "Акции на этот товар" : "Акции поставщиков"} description="Условия действуют в указанный срок и в пределах доступного количества. При оформлении проверим цену и наличие подарка.">
     <div className="mp-stack">
       {!featured && !productId ? <form className="mp-stack" onSubmit={event => { event.preventDefault(); update({ q: draft }); }}>
@@ -57,14 +59,14 @@ export function PromotionsStorefront({ featured = false, productId }: { featured
         {facets ? <>{([ ["categoryId", "Категория", facets.categories], ["supplierOrganizationId", "Поставщик", facets.suppliers] ] as const).map(([key, label, items]) => <DmField key={key} label={label}><DmSelect value={query[key] ?? ""} onChange={(_, data) => update({ [key]: data.value || undefined })}><option value="">Все</option>{items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</DmSelect></DmField>)}</> : <DmButton onClick={() => setRetry(value => value + 1)}>Загрузить категории и поставщиков</DmButton>}
         <DmField label="Сортировка"><DmSelect value={query.sort ?? "ENDING"} onChange={(_, data) => update({ sort: data.value as PromotionListQuery["sort"] })}><option value="ENDING">Скоро заканчиваются</option><option value="NEWEST">Сначала новые</option></DmSelect></DmField>
       </form> : null}
-      {preview ? <PromotionPreview /> : loading ? <LoadingState label="Загружаем акции" /> : error ? <ErrorState description={error} action={<DmButton onClick={() => setRetry(value => value + 1)}>Повторить загрузку</DmButton>} /> : page?.items.length ? page.items.map(item => <article key={item.id}>
+      {loading ? <LoadingState label="Загружаем акции" /> : error ? <ErrorState description={error} action={<DmButton onClick={() => setRetry(value => value + 1)}>Повторить загрузку</DmButton>} /> : page?.items.length ? page.items.map(item => <article key={item.id}>
         <h3><Link href={`/products/${item.productId}`}>{item.terms.name}</Link></h3>
         <p>{item.offerName} · {item.supplierName}</p><p>{item.terms.description}</p>
         {item.terms.kind === "BUY_X_GET_Y" ? <p>За {item.terms.buyQuantity} — подарок {item.giftName} × {item.terms.giftQuantity}. Цена покупки: {formatMoney(item.unitPriceMinor, item.currency)}.</p> : <p>Обычная цена: <s>{formatMoney(item.baseAmountMinor, item.currency)}</s> · Цена по акции: <strong>{formatMoney(item.unitPriceMinor, item.currency)}</strong></p>}
         <p>От {item.terms.minimumQuantity} · до {formatDate(item.terms.endsAt)}. С другими скидками не суммируется.</p>
         <Link href={`/products/${item.productId}`}>Выбрать предложение</Link>
       </article>) : <EmptyState title="Действующих акций нет" description="Измените фильтры или вернитесь позже." />}
-      {featured ? !preview && <Link href="/promotions" {...dmLinkButtonProps()}>Все акции</Link> : !productId ? <div><DmButton disabled={loading || !query.offset} onClick={() => update({ offset: Math.max(0, (query.offset ?? 0) - 12) })}>Назад</DmButton> <DmButton disabled={loading || !page || (query.offset ?? 0) + page.items.length >= page.total} onClick={() => update({ offset: (query.offset ?? 0) + 12 })}>Далее</DmButton></div> : null}
+      {!productId ? <div><DmButton disabled={loading || !query.offset} onClick={() => update({ offset: Math.max(0, (query.offset ?? 0) - 12) })}>Назад</DmButton> <DmButton disabled={loading || !page || (query.offset ?? 0) + page.items.length >= page.total} onClick={() => update({ offset: (query.offset ?? 0) + 12 })}>Далее</DmButton></div> : null}
     </div>
   </Section>;
 }

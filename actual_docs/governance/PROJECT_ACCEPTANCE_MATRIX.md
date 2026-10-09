@@ -8,6 +8,16 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+09.10 CATALOG-REFERENCE-V3 — LOCAL_PASS: каталог по утверждённому референсу,
+пять desktop колонок, статичные прямоугольные акции, sticky только toolbar,
+сортировка, реальные brand/parameters/price unit/supplier count/availability,
+выбор поставщика через существующий modal. Unit9/browser6 PASS, buyer/web/e2e
+types, scoped lint/UI-contract348, final go_live build PASS. Screenshot и computed
+styles1440/390, scroll/focus, error/empty/retry/cart consumers проверены.
+[Checkpoint и границы](task-state/CATALOG-REFERENCE-V3-2026-10-09.md).
+Это частная приёмка R7; рабочие данные, страница товара и общий R7 не изменены.
+Publication/CI receipt — в checkpoint, локальный PASS не означает CI_PASS.
+
 08.10 STATUS-CARDS-V2 — LOCAL_PASS, baseline main b06a41e + this patch:
 approved shared success/error/info and yellow warning cards; catalog add result,
 unknown write outcome, pagination retry preserving products, filter/offer retry,

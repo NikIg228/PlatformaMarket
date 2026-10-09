@@ -326,6 +326,11 @@ R7 этим не приняты.
 действий во всех кабинетах, сохранение черновиков/повтора и доступность в диалогах.
 [Evidence](governance/PROJECT_ACCEPTANCE_MATRIX.md). Общий R7 остаётся открытым.
 
+09.10: CATALOG-REFERENCE-V3 — частный LOCAL_PASS: каталог по утверждённому
+референсу, desktop/mobile, sticky toolbar, supplier action и данные карточки.
+[Evidence](governance/task-state/CATALOG-REFERENCE-V3-2026-10-09.md).
+Общий R7, качество master data и страница товара этим не принимаются.
+
 - [ ] **R7.1** Консолидировать shared controls/theme и последние UI/Support/
   Orders/Notifications slices после R0; проверить нужные consumers, mobile,
   keyboard/focus, loading/empty/error, черновики и recovery.

@@ -7,8 +7,8 @@ import { attributePatch, readAttributes, type CatalogFilters, type FilterOptions
 import styles from "./catalog-filters.module.css";
 
 type Choice = { id: string; name: string };
-export function FilterChoice({ label, value, items, onChange, disabled = false, hideLabel = false, allLabel = "Все", searchable = true }: {
-  label: string; value: string; items: Choice[]; onChange: (value: string) => void; disabled?: boolean; hideLabel?: boolean; allLabel?: string; searchable?: boolean;
+export function FilterChoice({ label, value, items, onChange, disabled = false, hideLabel = false, allLabel = "Все", searchable = true, includeAll = true }: {
+  label: string; value: string; items: Choice[]; onChange: (value: string) => void; disabled?: boolean; hideLabel?: boolean; allLabel?: string; searchable?: boolean; includeAll?: boolean;
 }) {
   const [query, setQuery] = useState<string | null>(null);
   const selected = items.find(item => item.id === value);
@@ -19,7 +19,7 @@ export function FilterChoice({ label, value, items, onChange, disabled = false, 
       listbox={{ className: styles.choiceList }}
       value={selected?.name ?? (value ? "Выбрано" : allLabel)} selectedOptions={[value]}
       onOptionSelect={(_, data) => { if (data.optionValue !== undefined) onChange(data.optionValue); }}>
-      <Option value="">{allLabel}</Option>
+      {includeAll ? <Option value="">{allLabel}</Option> : null}
       {value && !selected ? <Option value={value}>Выбрано</Option> : null}
       {items.map(item => <Option key={item.id} value={item.id} text={item.name}>{item.name}</Option>)}
     </Dropdown>
@@ -33,7 +33,7 @@ export function FilterChoice({ label, value, items, onChange, disabled = false, 
       onChange={event => setQuery(event.target.value)}
       onOpenChange={(_, data) => setQuery(data.open ? "" : null)}
       onOptionSelect={(_, data) => { if (data.optionValue !== undefined) onChange(data.optionValue); setQuery(null); }}>
-      <Option value="">{allLabel}</Option>
+      {includeAll ? <Option value="">{allLabel}</Option> : null}
       {value && !selected ? <Option value={value}>Выбрано</Option> : null}
       {visible.map(item => <Option key={item.id} value={item.id} text={item.name}>{item.name}</Option>)}
       {!visible.length ? <Option disabled>Ничего не найдено</Option> : null}

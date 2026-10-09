@@ -1,0 +1,7 @@
+.rail { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:var(--dm-space-4); }
+.card { display:flex; flex-direction:column; gap:var(--dm-space-2); padding:var(--dm-space-4); min-width:0; min-height:164px; box-sizing:border-box; border:1px solid var(--dm-border); border-radius:var(--dm-radius-card); background:var(--dm-brand-surface); color:var(--dm-text-primary); text-decoration:none; font-size:var(--dm-font-size-body); line-height:var(--dm-line-body); overflow-wrap:anywhere; }
+.discount { font-size:var(--dm-font-size-page-sm); line-height:var(--dm-line-heading); color:var(--dm-brand-deep); }
+.name { font-size:var(--dm-font-size-body-lg); font-weight:var(--dm-font-weight-semibold); }
+.terms { margin-top:auto; color:var(--dm-text-secondary); }
+@media(max-width:1023px){.rail{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:767px){.rail{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--dm-space-3)}}
