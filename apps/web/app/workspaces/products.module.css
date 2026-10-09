@@ -83,23 +83,10 @@
   min-width: 0;
   min-height: 80px;
   padding: var(--dm-space-3) var(--dm-space-2);
-  border: 1px solid var(--dm-border);
-  border-radius: var(--dm-radius-card);
-  background: var(--dm-surface);
-  color: var(--dm-text-primary);
-  font-size: var(--dm-font-size-body);
-  font-weight: var(--dm-font-weight-semibold);
-  line-height: var(--dm-line-compact);
   text-align: center;
-  text-decoration: none;
   white-space: normal;
 }
 
-.actions > a.card:hover {
-  border-color: var(--dm-brand-primary);
-  background: var(--dm-brand-surface);
-  color: var(--dm-brand-deep);
-}
 
 .icon {
   width: 24px;

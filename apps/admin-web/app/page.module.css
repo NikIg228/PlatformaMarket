@@ -197,32 +197,12 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--dm-space-3);
 }
-.module {
-  min-height: 116px;
-  border: 1px solid var(--dm-border);
-  border-radius: var(--dm-radius-card);
-  padding: var(--dm-space-4);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: var(--dm-surface-subtle);
-  color: inherit;
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-}
+.module { min-height:116px; display:flex; flex-direction:column; justify-content:space-between; text-align:left; }
 .module:global(.dm-button.fui-Button) {
   align-items: stretch;
   justify-content: space-between;
   flex-direction: column;
   white-space: normal;
-}
-.module:hover {
-  border-color: var(--dm-brand-primary);
-  background: var(--dm-brand-surface);
-}
-.module:active {
-  transform: translateY(1px);
 }
 .moduleTop {
   display: flex;

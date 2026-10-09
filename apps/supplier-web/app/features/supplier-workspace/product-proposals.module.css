@@ -10,9 +10,8 @@
 .list { min-width: 0; overflow: hidden; border: 1px solid var(--dm-border); border-radius: var(--dm-radius-card); background: var(--dm-surface); }
 .list th, .list td { padding: var(--dm-space-4) var(--dm-space-4); }
 .list td:nth-child(2) { white-space: nowrap; font-size: var(--dm-font-size-body); }
-.select { display: flex; align-items: center; gap: var(--dm-space-4); text-align: left; border: 0; background: transparent; color: var(--dm-text-primary); padding: 0; font: inherit; cursor: pointer; width: 100%; }
+.select { display:flex; align-items:center; gap:var(--dm-space-4); text-align:left; width:100%; }
 .select > span { min-width: 0; overflow-wrap: anywhere; }
-.select:hover > span { color: var(--dm-brand-deep); }
 .details { display: grid; gap: var(--dm-space-6); min-height: 530px; align-content: start; }
 .details h2 { margin: 0; font-size: var(--dm-font-size-title); line-height: var(--dm-line-compact); }
 .details h3 { margin: 0; font-size: var(--dm-font-size-body-lg); }

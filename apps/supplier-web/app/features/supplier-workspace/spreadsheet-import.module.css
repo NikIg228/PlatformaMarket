@@ -1,13 +1,10 @@
 .upload { border:1px dashed var(--dm-border); border-radius:var(--dm-radius-card); background:var(--dm-surface-subtle); padding:var(--dm-space-12) var(--dm-space-6); display:grid; justify-items:center; text-align:center; gap:var(--dm-space-4); }
 .upload strong { font-size:var(--dm-font-size-subtitle); overflow-wrap:anywhere; }
 .upload span { color:var(--dm-text-secondary); }
-.filters { display:flex; flex-wrap:wrap; gap:0; }
-.filters button { background:var(--dm-surface); border:1px solid var(--dm-border); color:var(--dm-text-secondary); padding:var(--dm-space-3) var(--dm-space-4); font:inherit; font-size:var(--dm-font-size-body); cursor:pointer; margin-right:-1px; }
-.filters button:first-child { border-radius:var(--dm-radius-field) 0 0 var(--dm-radius-field); }
-.filters button:last-child { border-radius:0 var(--dm-radius-field) var(--dm-radius-field) 0; }
-.filters button[aria-pressed="true"] { background:var(--dm-brand-surface); border-color:var(--dm-brand-primary); color:var(--dm-brand-deep); }
+.filters { display:flex; flex-wrap:wrap; gap:var(--dm-space-2); }
+.filters button { white-space:normal; }
 .filters span { margin-left:var(--dm-space-2); padding:var(--dm-space-micro) var(--dm-space-2); border-radius:var(--dm-radius-card); background:var(--dm-surface-subtle); font-variant-numeric:tabular-nums; }
 .filters button[aria-pressed="true"] span { background:var(--dm-brand-surface); color:var(--dm-brand-deep); }
 .filters button:last-child span { background:var(--dm-danger-surface); color:var(--dm-danger-text); }
 .pagination { display:flex; gap:var(--dm-space-3); align-items:center; justify-content:flex-end; flex-wrap:wrap; }
-@media(max-width:760px) { .upload { padding:var(--dm-space-8) var(--dm-space-4); } .filters { gap:var(--dm-space-2); } .filters button { margin:0; border-radius:var(--dm-radius-field) !important; padding:var(--dm-space-2) var(--dm-space-3); } }
+@media(max-width:760px) { .upload { padding:var(--dm-space-8) var(--dm-space-4); } .filters { gap:var(--dm-space-2); } .filters button { white-space:normal; } }

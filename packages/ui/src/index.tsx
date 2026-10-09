@@ -13,7 +13,7 @@ import { DmAction, DmDismissLayer } from "./controls";
 export { SupportFilePicker, SupportAttachmentList } from "./support-files";
 export { DmSearch } from "./dm-search";
 export { WorkflowSteps, ProductThumbnail, useUnsavedChanges, productWorkflowStyles } from "./product-workflow";
-export { DmButton, DmCheckbox, DmField, DmInput, DmTextarea, DmSelect, DmFluentDropdown, DmCombobox, DmSurface, DmAction, DmFileInput, DmTabList } from "./controls";
+export { DmButton, DmCheckbox, DmField, DmInput, DmTextarea, DmSelect, DmFluentDropdown, DmCombobox, DmSurface, DmAction, DmFileInput, DmTabList, DmDisclosureSummary } from "./controls";
 import { DmButton } from "./controls";
 export { DmDropdown } from "./dm-dropdown";
 export { ConversationWorkspace, ConversationCounter } from "./conversation-workspace";

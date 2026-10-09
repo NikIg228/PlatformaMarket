@@ -94,8 +94,8 @@ export function OfferPanel({ offer, onClose, onChanged, initiallyEditing = false
         <section><h3>Условия продажи</h3><dl className={local.orderTerms}><div><dt>Единица продажи</dt><dd>{offer.packaging ? `${offer.packaging.name} (${offer.packaging.quantityInBaseUnit} ${offer.packaging.unit.symbol})` : `1 ${unit}`}</dd></div><div><dt>Минимальный заказ</dt><dd>{offer.minimumOrderQuantity} {unit}</dd></div><div><dt>Шаг заказа</dt><dd>{offer.orderIncrement} {unit}</dd></div></dl></section>
         <nav aria-label="Действия с товаром" className={local.related}>
           {has("delivery.view", "delivery.manage") ? <DmAction ref={deliveryButton} variant="row" type="button" onClick={() => edit("delivery")}><VehicleTruck24Regular aria-hidden /><span>Настроить доставку</span><span aria-hidden>›</span></DmAction> : null}
-          {frontendFeatures.promotions && has("promotion.view", "promotion.manage") ? <Link href={`/supplier/products/promotions?mode=new&offer=${offer.id}`}><Tag24Regular aria-hidden /><span>Создать акцию</span><span aria-hidden>›</span></Link> : null}
-          {has("catalog.product.view", "catalog.offer.edit") ? <Link href={`/supplier/products/corrections?mode=new&offer=${offer.id}`}><DocumentEdit24Regular aria-hidden /><span>Предложить исправление карточки</span><span aria-hidden>›</span></Link> : null}
+          {frontendFeatures.promotions && has("promotion.view", "promotion.manage") ? <Link {...dmLinkButtonProps({ appearance: "subtle" })} href={`/supplier/products/promotions?mode=new&offer=${offer.id}`}><Tag24Regular aria-hidden /><span>Создать акцию</span><span aria-hidden>›</span></Link> : null}
+          {has("catalog.product.view", "catalog.offer.edit") ? <Link {...dmLinkButtonProps({ appearance: "subtle" })} href={`/supplier/products/corrections?mode=new&offer=${offer.id}`}><DocumentEdit24Regular aria-hidden /><span>Предложить исправление карточки</span><span aria-hidden>›</span></Link> : null}
         </nav>
       </>}
     </div> : null}</DrawerBody>

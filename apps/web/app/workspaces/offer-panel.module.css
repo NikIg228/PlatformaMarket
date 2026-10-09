@@ -35,9 +35,8 @@
 .orderTerms dt { color:var(--dm-text-secondary); }
 .orderTerms dd { margin:0; text-align:right; font-weight:var(--dm-font-weight-semibold); }
 .related { display:grid; }
-.related > a, .related > button { display:flex; width:100%; box-sizing:border-box; align-items:center; gap:var(--dm-space-4); min-height:54px; padding:var(--dm-space-3) 0; border:0; border-bottom:1px solid var(--dm-border); background:transparent; text-decoration:none; color:var(--dm-text-secondary); font:inherit; font-size:var(--dm-font-size-body); text-align:left; cursor:pointer; }
+.related > a, .related > button { display:flex; width:100%; box-sizing:border-box; align-items:center; gap:var(--dm-space-4); min-height:54px; padding:var(--dm-space-3) 0; border:0; border-bottom:1px solid var(--dm-border); text-align:left; }
 .related > :last-child { border-bottom:0; }
-.related > :hover { color:var(--dm-brand-deep); background:var(--dm-brand-surface); }
 .related svg { width:24px; height:24px; flex-shrink:0; color:var(--dm-brand-deep); }
 .related span:first-of-type { flex:1; }
 .related span:last-child { font-size:var(--dm-font-size-heading); color:var(--dm-text-primary); }

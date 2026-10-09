@@ -56,5 +56,18 @@
     "--dm-tracking-heading": "-.035em",
     "--dm-tracking-label": ".06em",
     "--dm-tracking-normal": "0"
+  },
+  "controlStates": {
+    "version": "neutral-fill-v1",
+    "rest": "surface.subtle",
+    "hover": "surface.hover",
+    "pressed": "brand.soft",
+    "open": "brand.soft",
+    "selected": "brand.soft",
+    "border": "transparent",
+    "movement": "none",
+    "keyboardFocus": "focus.ring",
+    "invalidBorder": "danger.content",
+    "disabledFill": "disabled.surface"
   }
 }

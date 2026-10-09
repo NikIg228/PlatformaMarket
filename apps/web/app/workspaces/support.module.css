@@ -11,9 +11,7 @@
 .filters { display: grid; gap: var(--dm-space-3); padding: var(--dm-space-2) var(--dm-space-4) var(--dm-space-4); border-bottom: 1px solid var(--dm-border); }
 .search { width: 100% !important; min-width: 0 !important; }
 .rows { display: grid; align-content: start; min-height: 0; overflow: auto; overscroll-behavior: contain; }
-.row { display: grid; gap: var(--dm-space-2); width: 100%; padding: var(--dm-space-4); text-align: left; background: var(--dm-surface); color: var(--dm-text-primary); border: 0; border-bottom: 1px solid var(--dm-border); cursor: pointer; font: inherit; min-width: 0; }
-.row:hover { background: var(--dm-surface-hover); }
-.row[aria-pressed="true"] { background: var(--dm-brand-surface); box-shadow: inset 3px 0 var(--dm-brand-primary); }
+.row { display: grid; gap: var(--dm-space-2); width: 100%; padding: var(--dm-space-4); text-align: left; border: 0; border-bottom: 1px solid var(--dm-border); cursor: pointer; font: inherit; min-width: 0; }
 .row:disabled { cursor: wait; }
 .row strong { min-width: 0; font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rowMeta { display: flex; justify-content: space-between; align-items: center; gap: var(--dm-space-3); }

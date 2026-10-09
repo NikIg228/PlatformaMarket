@@ -48,11 +48,13 @@ for (const width of [390, 1440]) test(`shared theme auth audit ${width}`, async 
   await page.setViewportSize({ width, height: 900 });
   await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
   await page.goto("/login");
+  await expect(page.locator("html")).toHaveAttribute("data-input-modality", /pointer|keyboard/);
   const email = page.locator('input[type="email"]');
   await email.fill("theme-audit@example.test");
   await page.locator('input[type="password"]').fill("Synthetic-password-only!");
+  await expect(email).toHaveValue("theme-audit@example.test");
   await page.mouse.move(0, 0);
-  await expect(email.locator("..")).toHaveCSS("border-top-color", "rgb(131, 152, 141)");
+  await expect(email.locator("..")).toHaveCSS("border-top-color", "rgba(0, 0, 0, 0)");
   await page.keyboard.press("Tab");
   await email.focus();
   await expect(email).toHaveCSS("outline-style", "none");

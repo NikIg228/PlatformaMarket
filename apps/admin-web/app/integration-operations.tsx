@@ -641,11 +641,7 @@ export function IntegrationOperations() {
                     <DmAction variant="row"
 
                       key={connection.id}
-                      className={
-                        connection.id === connectionId
-                          ? styles.connectionActive
-                          : ""
-                      }
+                      aria-pressed={connection.id === connectionId}
                       onClick={() => {
                         setConnectionId(connection.id);
                         void loadDetails(supplierId, connection.id);

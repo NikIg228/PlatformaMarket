@@ -9,8 +9,7 @@
 .lifecycle li:first-child { color:var(--dm-brand-deep); font-weight:var(--dm-font-weight-semibold); }
 .lifecycle li:first-child span { background:var(--dm-brand-primary); color:var(--dm-text-inverse); }
 .mechanics { display:grid; grid-template-columns:1fr 1fr; gap:var(--dm-space-4); }
-.mechanics button { text-align:left; padding:var(--dm-space-6); display:grid; gap:var(--dm-space-2); border:1px solid var(--dm-border); border-radius:var(--dm-radius-field); background:var(--dm-surface); color:var(--dm-text-primary); font:inherit; cursor:pointer; }
-.mechanics button[aria-pressed="true"] { border-color:var(--dm-brand-primary); background:var(--dm-brand-surface); }
+.mechanics button { text-align:left; display:grid; gap:var(--dm-space-2); }
 .mechanics span { font-size:var(--dm-font-size-body); color:var(--dm-text-secondary); }
 .mechanics strong { display:flex; gap:var(--dm-space-3); align-items:center; }
 .mechanics strong::before { content:""; display:block; width:18px; height:18px; flex:0 0 18px; border:2px solid var(--dm-border); border-radius:var(--dm-radius-circle); }

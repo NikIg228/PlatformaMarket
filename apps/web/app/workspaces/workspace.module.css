@@ -105,8 +105,8 @@
   max-width: 1600px;
   margin: 0 auto;
 }
-.main a { color: var(--dm-brand-primary); text-decoration: none; font-weight: var(--dm-font-weight-semibold); }
-.main a:hover { color: var(--dm-brand-primary-hover); }
+.main a:not(:global(.dm-link-button)) { color: var(--dm-brand-primary); text-decoration: none; font-weight: var(--dm-font-weight-semibold); }
+.main a:not(:global(.dm-link-button)):hover { color: var(--dm-brand-primary-hover); }
 .panel h2 { margin: 0 0 var(--dm-space-3); font-size: var(--dm-font-size-subtitle); line-height: var(--dm-line-compact); font-weight: var(--dm-font-weight-semibold); }
 .root[data-authenticated="true"] .main {
   margin-left: var(--workspace-sidebar-width);

@@ -1,6 +1,66 @@
 import { test, expect } from "@playwright/test";
 import { productFixture } from "./supplier-products.fixture";
 
+for (const width of [1440, 390]) test(`component contract and native interactions: neutral states ${width}`, async ({ page }, testInfo) => {
+  await page.setViewportSize({ width, height: 1000 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/dev/ui-kit");
+  const heading = page.getByRole("heading", { name: "Компоненты Market", exact: true });
+  const secondary = page.getByRole("button", { name: "Вторичное действие" });
+  const controls = [
+    secondary,
+    page.getByRole("button", { name: "Контурный вариант" }),
+    page.getByRole("link", { name: "Перейти к полям" }),
+    page.getByRole("textbox", { name: "Организация", exact: true }).locator(".."),
+    page.getByRole("textbox", { name: "Комментарий" }).locator(".."),
+    page.getByRole("combobox", { name: "Нативная форма" }).locator(".."),
+    page.getByRole("combobox", { name: "Выпадающий список" }).locator(".."),
+    page.getByRole("combobox", { name: "Поиск варианта" }).locator(".."),
+  ];
+  for (const control of controls) {
+    await heading.click();
+    await expect(control).toHaveCSS("background-color", "rgb(240, 244, 242)");
+    await expect(control).toHaveCSS("border-top-color", "rgba(0, 0, 0, 0)");
+    await control.hover();
+    await expect(control).toHaveCSS("background-color", "rgb(234, 240, 237)");
+    await page.mouse.down();
+    await expect(control).toHaveCSS("background-color", "rgb(228, 243, 237)");
+    await expect(control).toHaveCSS("border-top-color", "rgba(0, 0, 0, 0)");
+    await expect(control).toHaveCSS("transform", "none");
+    await page.mouse.move(0, 0); await page.mouse.up(); await page.keyboard.press("Escape");
+  }
+  const dropdown = page.getByRole("combobox", { name: "Выпадающий список" });
+  await dropdown.click(); await page.mouse.move(0, 0);
+  await expect(dropdown).toHaveAttribute("aria-expanded", "true");
+  await expect(dropdown.locator("..")).toHaveCSS("background-color", "rgb(228, 243, 237)");
+  await page.keyboard.press("Escape");
+  await expect(dropdown).toBeFocused();
+  const choice = page.getByRole("button", { name: "Выбрать вариант" });
+  await choice.click(); await heading.click();
+  await expect(choice).toHaveAttribute("aria-pressed", "true");
+  await expect(choice).toHaveCSS("background-color", "rgb(228, 243, 237)");
+  await expect(choice).toHaveCSS("border-top-color", "rgba(0, 0, 0, 0)");
+  await choice.click(); await heading.click();
+  await expect(choice).toHaveCSS("background-color", "rgb(240, 244, 242)");
+  for (const disabled of [page.getByRole("button", { name: "Недоступно", exact: true }), page.getByRole("textbox", { name: "Недоступное поле" }).locator(".."), page.getByRole("combobox", { name: "Недоступный список" }).locator("..")]) {
+    await disabled.hover();
+    await expect(disabled).toHaveCSS("background-color", "rgb(238, 241, 239)");
+  }
+  const readonly = page.getByRole("textbox", { name: "Только чтение" });
+  await readonly.hover();
+  await expect(readonly.locator("..")).toHaveCSS("background-color", "rgb(240, 244, 242)");
+  const invalid = page.getByRole("textbox", { name: "Поле с ошибкой" });
+  await invalid.click();
+  await expect(invalid.locator("..")).toHaveCSS("border-top-color", "rgb(163, 59, 53)");
+  await page.keyboard.press("Tab"); await invalid.focus();
+  await expect(invalid.locator("..")).toHaveCSS("outline-style", "solid");
+  await expect(invalid.locator("..")).toHaveCSS("outline-width", "1px");
+  await expect(invalid.locator("..")).toHaveCSS("border-top-color", "rgb(163, 59, 53)");
+  await page.screenshot({ path: testInfo.outputPath(`neutral-${width}.png`), fullPage: true });
+  await page.emulateMedia({ forcedColors: "active" });
+  await expect(invalid.locator("..")).toHaveCSS("outline-style", "solid");
+});
+
 for (const width of [1440, 390]) test(`visual audit public auth and supplier surfaces ${width}`, async ({ page }, testInfo) => {
   await page.setViewportSize({ width, height: 1000 });
   await page.emulateMedia({ reducedMotion: "reduce" });

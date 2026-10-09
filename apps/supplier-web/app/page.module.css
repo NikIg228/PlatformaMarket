@@ -1,9 +1,6 @@
 .switcher { min-width: 210px; }
 .attentionGrid { display:grid; grid-template-columns:1.2fr 1fr 1fr; }
-.attentionGrid button { min-width:0; min-height:148px; display:flex; flex-direction:column; align-items:flex-start; gap:var(--dm-space-3); padding:var(--dm-space-4); border:0; border-right:1px solid var(--dm-border); border-radius:0; background:var(--dm-surface); color:var(--dm-text-primary); text-align:left; cursor:pointer; }
-.attentionGrid button:last-child { border-right:0; }
-.attentionGrid button:hover { background:var(--dm-brand-surface); }
-.attentionGrid button:active { transform:translateY(1px); }
+.attentionGrid button { min-width:0; min-height:148px; display:flex; flex-direction:column; align-items:flex-start; gap:var(--dm-space-3); text-align:left; }
 .attentionGrid .attentionAction { align-items:flex-start; justify-content:flex-start; flex-direction:column; text-align:left; white-space:normal; }
 .attentionGrid strong { font-size:var(--dm-font-size-body); line-height:var(--dm-line-compact); }
 .attentionGrid span:last-child { color:var(--dm-text-muted); font-size:var(--dm-font-size-caption); line-height:var(--dm-line-body); }

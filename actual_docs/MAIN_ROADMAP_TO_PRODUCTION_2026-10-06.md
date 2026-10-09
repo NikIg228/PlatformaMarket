@@ -331,6 +331,11 @@ R7 этим не приняты.
 [Evidence](governance/task-state/CATALOG-REFERENCE-V3-2026-10-09.md).
 Общий R7, качество master data и страница товара этим не принимаются.
 
+09.10: CONTROL-STATES — частный LOCAL_PASS: единое поведение нейтральных
+controls и устранение локальных конфликтов в приложениях; keyboard/error/
+disabled/selected сохранены. [Evidence](governance/task-state/CONTROL-STATES-2026-10-09.md).
+Общий R7 не закрывается.
+
 - [ ] **R7.1** Консолидировать shared controls/theme и последние UI/Support/
   Orders/Notifications slices после R0; проверить нужные consumers, mobile,
   keyboard/focus, loading/empty/error, черновики и recovery.

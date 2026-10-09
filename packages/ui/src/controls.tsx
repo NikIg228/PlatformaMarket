@@ -69,3 +69,8 @@ export function DmFileInput({ className, ...props }: Omit<ComponentPropsWithRef<
 export function DmSurface({ className, variant = "card", ...props }: HTMLAttributes<HTMLDivElement> & { variant?: "card" | "section" | "filters" | "composer" }) {
   return <div {...props} data-dm-surface={variant} className={classes("dm-surface", className)} />;
 }
+
+/** Native disclosure semantics, with shared neutral trigger states. */
+export function DmDisclosureSummary({ className, ...props }: ComponentPropsWithRef<"summary">) {
+  return <summary {...props} className={classes("dm-disclosure-summary", className)} />;
+}

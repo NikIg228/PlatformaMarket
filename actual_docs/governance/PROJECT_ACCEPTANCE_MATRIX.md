@@ -8,6 +8,15 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+09.10 CONTROL-STATES — LOCAL_PASS, baseline85a80758 + this patch: единые
+заливки neutral controls во всех приложениях, без обычных цветных рамок и
+сдвига нажатия; keyboard/error/disabled/selected и primary/danger сохранены.
+Unit5/browser23 unique PASS, affected frontend types, scoped lint/UI-contract348,
+go_live web build PASS. Проверены screenshot/computed styles desktop/mobile,
+каталог, формы авторизации, клиника, поставщик, оператор и support recovery.
+[Checkpoint, команды и история попыток](task-state/CONTROL-STATES-2026-10-09.md).
+Это частный результат R7.1, не общая приёмка R7 и не сертификат production.
+
 09.10 CATALOG-REFERENCE-V3 — LOCAL_PASS: каталог по утверждённому референсу,
 пять desktop колонок, статичные прямоугольные акции, sticky только toolbar,
 сортировка, реальные brand/parameters/price unit/supplier count/availability,

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Option, Spinner } from "@fluentui/react-components";
-import { DmButton, DmCheckbox, DmCombobox, DmField, DmInput, DmSelect, DmSurface, DmTextarea } from "@marketplace/ui/controls";
+import { DmAction, DmButton, DmCheckbox, DmCombobox, DmField, DmFluentDropdown, DmInput, DmSelect, DmSurface, DmTextarea } from "@marketplace/ui/controls";
 import { DmDialog, DmDropdown, DmFeedback, DmSearch } from "@marketplace/ui";
 import styles from "./samples.module.css";
 
@@ -11,6 +11,7 @@ export function ComponentSamples() {
   const [search, setSearch] = useState("");
   const [result, setResult] = useState("");
   const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState(false);
   const dialogTrigger = useRef<HTMLButtonElement>(null);
   return <main className={styles.page}>
     <h1>Компоненты Market</h1>
@@ -21,6 +22,8 @@ export function ComponentSamples() {
         <DmButton appearance="primary">Основное действие</DmButton>
         <DmButton>Вторичное действие</DmButton>
         <DmButton appearance="subtle">Ненавязчивое действие</DmButton>
+        <DmButton appearance="outline">Контурный вариант</DmButton>
+        <DmAction variant="choice" aria-pressed={selected} onClick={() => setSelected(!selected)}>Выбрать вариант</DmAction>
         <DmButton intent="danger">Удалить пример</DmButton>
         <DmButton disabled>Недоступно</DmButton>
         <DmButton disabled icon={<Spinner size="tiny" />}>Сохранение…</DmButton>
@@ -36,6 +39,8 @@ export function ComponentSamples() {
         <DmField label="Организация" required><DmInput name="company" required placeholder="Название организации" /></DmField>
         <DmField label="Поле с ошибкой" validationState="error" validationMessage="Укажите корректное значение"><DmInput defaultValue="Пример" /></DmField>
         <DmField label="Недоступное поле"><DmInput disabled value="Недоступно" /></DmField>
+        <DmField label="Только чтение"><DmInput readOnly value="Сохранённое значение" /></DmField>
+        <DmField label="Недоступный список"><DmFluentDropdown disabled placeholder="Выбор недоступен"><Option>Первый вариант</Option></DmFluentDropdown></DmField>
         <DmField label="Комментарий"><DmTextarea /></DmField>
         <DmField label="Нативная форма"><DmSelect name="native" required><option value="one">Первый вариант</option><option value="two">Второй вариант</option></DmSelect></DmField>
         <DmField label="Выпадающий список"><DmDropdown value={value} onChange={(_, data) => setValue(data.value)}><option value="one">Первый вариант</option><option value="two">Второй вариант</option></DmDropdown></DmField>

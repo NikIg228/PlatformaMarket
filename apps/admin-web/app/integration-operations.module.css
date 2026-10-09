@@ -172,29 +172,9 @@
   font-size: var(--dm-font-size-micro);
 }
 
-.connectionList > :global(.dm-action) {
-  width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--dm-space-2);
-  min-height: 54px;
-  padding: var(--dm-space-3);
-  border: 0;
-  border-top: 1px solid var(--dm-border);
-  border-radius: 0;
-  color: var(--dm-text-primary);
-  background: transparent;
-  text-align: left;
-}
+.connectionList > :global(.dm-action) { width:100%; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--dm-space-2); min-height:54px; text-align:left; }
 
-.connectionList > :global(.dm-action):last-child {
-  border-bottom: 1px solid var(--dm-border);
-}
 
-.connectionList > :global(.dm-action):hover,
-.connectionList > .connectionActive:global(.dm-action) {
-  background: var(--dm-brand-surface);
-}
 
 .connectionList :global(.dm-action) > span:first-child {
   display: grid;

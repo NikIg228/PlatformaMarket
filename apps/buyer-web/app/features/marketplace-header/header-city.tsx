@@ -1,5 +1,5 @@
 "use client";
-import { DmCheckbox } from "@marketplace/ui/controls";
+import { DmCheckbox, DmDisclosureSummary } from "@marketplace/ui/controls";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { DmButton as Button } from "@marketplace/ui/controls";
@@ -21,7 +21,7 @@ export function HeaderCity({ toolbar = false }: { toolbar?: boolean }) {
     };
   }, []);
   return <details ref={root} className={`${styles.city} ${toolbar ? styles.cityToolbar : ""}`} onToggle={e => setOpen(e.currentTarget.open)} onKeyDown={e => { if (e.key === "Escape" && root.current) { root.current.open = false; root.current.querySelector("summary")?.focus(); } }}>
-    <summary className={!delivery.city ? styles.cityUnselected : undefined} aria-label={delivery.city ? `Город: ${delivery.city.nameRu}` : "Выберите город"}><span>{delivery.city?.nameRu ?? "Выберите город"}{delivery.city && delivery.message ? <small className={styles.cityNotice}>Выберите город</small> : null}</span><ChevronDown20Regular aria-hidden="true" className={styles.cityChevron} /></summary>
+    <DmDisclosureSummary aria-label={delivery.city ? `Город: ${delivery.city.nameRu}` : "Выберите город"}><span>{delivery.city?.nameRu ?? "Выберите город"}{delivery.city && delivery.message ? <small className={styles.cityNotice}>Выберите город</small> : null}</span><ChevronDown20Regular aria-hidden="true" className={styles.cityChevron} /></DmDisclosureSummary>
     <div className={styles.cityPanel}><strong>Город доставки</strong>
       <p>Уточняет доступность предложений и условия доставки. Адрес подтвердим при оформлении заказа.</p>
       {!delivery.ready ? <p role="status">Загружаем города…</p> : <>

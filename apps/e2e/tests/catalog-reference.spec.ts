@@ -34,6 +34,29 @@ for (const width of [1440, 390]) test(`catalog reference layout and navigation $
   await expect(cards.first()).toContainText("3 поставщика");
   await expect(cards.first()).toContainText("В наличии");
   await expect(page.getByRole("link", { name: "Все акции" })).toHaveAttribute("href", "/promotions");
+  const city = page.locator('summary[aria-label="Выберите город"]');
+  const toolbarControls = [
+    page.getByRole("combobox", { name: "Поиск по каталогу" }).locator(".."),
+    city,
+    page.getByRole("combobox", { name: "Категория и подкатегория" }).locator(".."),
+    page.getByRole("button", { name: "Все фильтры", exact: true }),
+  ];
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const control of toolbarControls) {
+    await page.mouse.move(0, 0);
+    await expect(control).toHaveCSS("border-top-color", "rgba(0, 0, 0, 0)");
+    await expect(control).toHaveCSS("background-color", "rgb(240, 244, 242)");
+    await control.hover();
+    await expect(control).toHaveCSS("background-color", "rgb(234, 240, 237)");
+  }
+  // Keyboard modality starts with Tab, not Escape after a pointer click.
+  await city.focus(); await page.keyboard.press("Tab"); await page.keyboard.press("Shift+Tab");
+  await city.press("Enter"); await page.mouse.move(0, 0);
+  await expect(city.locator("..")).toHaveAttribute("open", "");
+  await expect(city).toHaveCSS("background-color", "rgb(228, 243, 237)");
+  await city.press("Escape");
+  await expect(city).toBeFocused();
+  await expect(city).toHaveCSS("outline-style", "solid");
   await page.getByRole("combobox", { name: "Сортировка товаров" }).click();
   await page.getByRole("option", { name: "Сначала дешевле", exact: true }).click();
   await expect(page).toHaveURL(/sort=PRICE_ASC/);
