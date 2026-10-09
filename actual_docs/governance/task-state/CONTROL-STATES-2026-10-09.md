@@ -1,6 +1,13 @@
 # CONTROL-STATES — общие состояния элементов управления
 
-09.10.2026. LOCAL_PASS / PUBLICATION_PENDING. Исполнитель UI: `01a11795-17a2-7f52-9e7d-b3314bf87ed7`.
+09.10.2026. LOCAL_PASS / PUBLISHED / CI_PENDING. Исполнитель UI: `01a11795-17a2-7f52-9e7d-b3314bf87ed7`.
+
+Код `28bb54df3b8756e5e9e5e8db8159c28ea9075c32` опубликован в origin/main;
+независимый ls-remote подтвердил SHA. Exact-SHA snapshot после push:
+[CI37955317246](https://github.com/NikIg228/PlatformaMarket/actions/runs/37955317246)
+и [Security37955317309](https://github.com/NikIg228/PlatformaMarket/actions/runs/37955317309)
+QUEUED. CI_PASS не заявляется. Это receipt локально принятого изменения,
+не новая фаза и не автоматический монитор CI.
 Владелец явно поручил распространить согласованный результат анализа каталога
 на подобные компоненты во всём проекте. Primary проверен idle/completed;
 новые исполнители не запускаются, реестр владения не переносится.
@@ -68,5 +75,6 @@ remote SHA и фактический CI status. Не запускать DB/full 
 Canonical dev восстановлен: /catalog и API /health/ready HTTP200, JWT/go_live.
 Diff hygiene, Markdown links и review собственного scope PASS; fetch origin/main
 подтвердил 0/0 divergence перед staging. Next generated next-env вернулся к dev baseline.
-Следующий шаг: финальный staged review и публикация;
-remote SHA/CI receipt фиксируется отдельно после push. Общий R7 остаётся открытым.
+Staged review и публикация выполнены; прежний untracked imagegen output сохранён.
+Локальный результат доступен владельцу для просмотра; CI остаётся pending.
+Общий R7 остаётся открытым. Новые изменения автоматически не запускаются.
