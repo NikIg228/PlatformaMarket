@@ -1,6 +1,12 @@
 # CATALOG-REFERENCE-V3 — каталог по утверждённому референсу
 
-Обновлено: 09.10.2026. LOCAL_PASS / PUBLICATION_PENDING. Исполнитель UI: `01a11795-17a2-7f52-9e7d-b3314bf87ed7`.
+Обновлено: 09.10.2026. LOCAL_PASS / PUBLISHED / CI_PENDING. Исполнитель UI: `01a11795-17a2-7f52-9e7d-b3314bf87ed7`.
+Код `f21880b49903f973e446392c77f69853bd960b0a` опубликован в origin/main;
+независимый ls-remote подтвердил SHA, outgoing range — один проверенный commit.
+Фактический exact-SHA snapshot: [CI37949424202](https://github.com/NikIg228/PlatformaMarket/actions/runs/37949424202)
+и [Security37949424305](https://github.com/NikIg228/PlatformaMarket/actions/runs/37949424305)
+IN_PROGRESS. CI_PASS не заявляется; монитор/следующая фаза не запускаются.
+Ниже сохранена последовательность работы; актуален этот итог.
 Основание: явное поручение владельца реализовать последний catalog-v3.
 Primary проверен idle/completed; реестр владения не переносится.
 Checkout: canonical root, main `262309c553bc9292325f67f8c3070369f0749bf4`.
@@ -63,7 +69,9 @@ Build останавливал только проверенное canonical Mar
 go_live/JWT readiness и catalog HTTP200. Другие проекты и рабочая БД не изменены.
 Review: безопасные API-данные, точная цена из существующего helper, уникальные
 supplier IDs, отсутствие control overrides и посторонних изменений проверены.
-Следующий шаг: scoped commit/push и CI receipt. next-env вернулся к baseline.
+Publication/CI receipt сохранён выше. next-env вернулся к baseline.
+Разрешённая реализация завершена; CI ещё выполняется. Единственный оставшийся
+untracked scope — прежние локальные reference artifacts в output/imagegen.
 
 ## Сопоставление с референсом
 
