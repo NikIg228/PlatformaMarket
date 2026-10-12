@@ -8,8 +8,20 @@ export function productReturnPath(value: unknown): string | undefined {
   const pathname = value.split("?", 1)[0];
   if (!productPath.test(pathname)) return;
   const url = new URL(value, navigationOrigin);
-  if (url.origin !== navigationOrigin || url.pathname !== pathname || url.searchParams.size > 1) return;
-  if ([...url.searchParams.keys()].some(key => key !== "returnTo")) return;
+  if (url.origin !== navigationOrigin || url.pathname !== pathname || url.searchParams.size > 3) return;
+  for (const key of url.searchParams.keys()) {
+    if (!["returnTo", "variant", "packaging"].includes(key) || url.searchParams.getAll(key).length !== 1) return;
+  }
+  const variant = url.searchParams.get("variant");
+  if (variant !== null && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(variant)) return;
+  const packaging = url.searchParams.get("packaging");
+  if (packaging !== null) {
+    if (!variant || packaging.length > 512 || unsafeCharacters.test(packaging)) return;
+    try {
+      const parts: unknown = JSON.parse(packaging);
+      if (!Array.isArray(parts) || parts.length !== 4 || typeof parts[0] !== "string" || typeof parts[1] !== "string" || !/^\d+(?:\.\d+)?$/.test(parts[1]) || (parts[2] !== null && typeof parts[2] !== "string") || typeof parts[3] !== "string" || !/^[A-Z]{3}$/.test(parts[3])) return;
+    } catch { return; }
+  }
   const catalog = url.searchParams.get("returnTo");
   if (catalog !== null) {
     if (!/^\/(?:catalog|clinic(?:\/catalog)?)?(?:\?|$)/.test(catalog) || unsafeCharacters.test(catalog)) return;

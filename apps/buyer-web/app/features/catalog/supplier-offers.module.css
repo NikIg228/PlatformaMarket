@@ -11,3 +11,14 @@
 
 .action .quantity { width: 88px; flex-shrink: 0; }
 .contact { display: grid; gap: var(--dm-space-1); overflow-wrap: anywhere; }
+.quantityRow { display:flex; align-items:center; gap:var(--dm-space-1); }
+.comparison .row,.columnHeadings { grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,.8fr) 360px; }
+.columnHeadings { display:grid; gap:var(--dm-space-6); padding:var(--dm-space-3) 0; color:var(--dm-text-muted); font-size:var(--dm-font-size-caption); }
+.comparison .action { display:grid; grid-template-columns:188px minmax(0,1fr); gap:var(--dm-space-2) var(--dm-space-3); }
+.comparison .quantityRow { justify-content:space-between; }
+.comparison .quantityRow { grid-column:1; grid-row:1; }
+.question { grid-column:2; grid-row:2; }
+.buy { grid-column:2; grid-row:1; }
+.quantityNote { grid-column:1; grid-row:2; }
+@media(max-width:1100px) { .comparison .row { grid-template-columns:minmax(0,1fr) minmax(0,1fr); } .columnHeadings { display:none; } .comparison .action { display:flex; } }
+@media(max-width:600px) { .comparison .row { grid-template-columns:minmax(0,1fr); } .comparison .quantityRow { justify-content:flex-start; } }

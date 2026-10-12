@@ -23,6 +23,14 @@ describe("workspace return allowlist", () => {
   it.each(["//outside.invalid", "/admin", "/documents?organizationId=other", "/catalog?action=buy", "/catalog?session=token", "/catalog?q=a&q=b", "/catalog?q=%0a", "/%2e%2e/documents", "/documents#session=foo"])("rejects authority, action and unsafe paths: %s", value => expect(workspaceReturnPath(value)).toBeUndefined());
 });
 describe("product return intent", () => {
+  it("retains bounded read-only variant/package selection across login and registration", () => {
+    const selection = `${product}?${new URLSearchParams({ returnTo: "/catalog?q=Filtek", variant: "44444444-4444-4444-8444-444444444444", packaging: '["Шприц","4","г","KZT"]' })}`;
+    expect(productReturnPath(selection)).toBe(selection);
+    expect(workspaceReturnPath(selection, "BUYER")).toBe(selection);
+    expect(workspaceReturnPath(selection, "SUPPLIER")).toBeUndefined();
+    expect(new URL(withProductReturn("/login", selection), "https://local.invalid").searchParams.get("returnTo")).toBe(selection);
+    expect(emailRegisterSchema.parse({ email: "test@example.invalid", displayName: "Test", password: "Synthetic-password", returnTo: selection }).returnTo).toBe(selection);
+  });
   it("preserves the product and catalog context without a purchase action", () => {
     expect(productReturnPath(target)).toBe(target);
     const href = withProductReturn("/register?role=buyer", target);
@@ -38,6 +46,9 @@ describe("product return intent", () => {
     product + "?returnTo=%2Fcatalog%5Coutside", product + "?returnTo=%2Fcatalog%0A",
     product + "?returnTo=%2Flogin", product + "?returnTo=%2F&returnTo=%2Fcatalog",
     product + "?returnTo=" + "a".repeat(4096), null,
+    product + "?variant=unknown", product + "?variant=%0a", product + "?packaging=[]",
+    product + "?variant=44444444-4444-4444-8444-444444444444&variant=44444444-4444-4444-8444-444444444444",
+    ...['["Шприц","bad","г","KZT"]', '["Шприц","4","г","KZT","buy"]', '{"action":"buy"}', '["Шприц","4","г","KZT"]' + " ".repeat(513)].map(packaging => `${product}?${new URLSearchParams({ variant: "44444444-4444-4444-8444-444444444444", packaging })}`),
   ])("rejects unsafe or unsupported destinations: %s", value => {
     expect(productReturnPath(value)).toBeUndefined();
     expect(withProductReturn("/login", value)).toBe("/login");

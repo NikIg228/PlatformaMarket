@@ -10,7 +10,7 @@ import { MarketplaceHeader } from "../marketplace-header/marketplace-header";
 import { PromotionPreview } from "./promotion-preview";
 import { FeaturedPromotions } from "./featured-promotions";
 
-export function PromotionsStorefront({ featured = false, productId }: { featured?: boolean; productId?: string }) {
+export function PromotionsStorefront({ featured = false, productId, hideEmpty = false }: { featured?: boolean; productId?: string; hideEmpty?: boolean }) {
   const preview = process.env.NODE_ENV === "development" && featured && !productId;
   const api = useMemo(() => new MarketplaceApiClient(process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4012/api", {}), []);
   const [page, setPage] = useState<PublicPromotionPage | null>(null), [error, setError] = useState<string | null>(null), [loading, setLoading] = useState(true);
@@ -51,6 +51,7 @@ export function PromotionsStorefront({ featured = false, productId }: { featured
   if (!frontendFeatures.promotions) return null;
   if (preview) return <PromotionPreview />;
   if (featured) return <FeaturedPromotions page={page} loading={loading} error={error} onRetry={() => setRetry(value => value + 1)} />;
+  if (hideEmpty && !loading && !error && !page?.items.length) return null;
   return <Section title={productId ? "Акции на этот товар" : "Акции поставщиков"} description="Условия действуют в указанный срок и в пределах доступного количества. При оформлении проверим цену и наличие подарка.">
     <div className="mp-stack">
       {!featured && !productId ? <form className="mp-stack" onSubmit={event => { event.preventDefault(); update({ q: draft }); }}>

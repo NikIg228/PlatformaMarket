@@ -336,6 +336,13 @@ controls и устранение локальных конфликтов в пр
 disabled/selected сохранены. [Evidence](governance/task-state/CONTROL-STATES-2026-10-09.md).
 Общий R7 не закрывается.
 
+12.10: PRODUCT-PAGE-REDESIGN — частный LOCAL_PASS по явному поручению владельца:
+композиция референса, выбор варианта/фасовки, сравнение поставщиков, корзина,
+gallery zoom и вкладки. Сохранение выбора при входе/смене города, защита от
+устаревшего ответа и повторного pending добавления проверены на desktop/mobile.
+[Evidence и публикация](governance/task-state/PRODUCT-PAGE-REDESIGN-2026-10-12.md).
+Общий R7, цены/остатки каталога и production этим не принимаются.
+
 - [ ] **R7.1** Консолидировать shared controls/theme и последние UI/Support/
   Orders/Notifications slices после R0; проверить нужные consumers, mobile,
   keyboard/focus, loading/empty/error, черновики и recovery.

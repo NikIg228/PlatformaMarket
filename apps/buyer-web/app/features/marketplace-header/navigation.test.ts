@@ -1,6 +1,13 @@
 import { expect, it } from "vitest";
 import { catalogContext, deliveryDestination, searchDestination } from "./navigation";
 const city = "50c0440e-7ed2-4b28-870c-02d587c6f17b";
+it("preserves the selected variant and package when the product delivery city changes", () => {
+  const search = new URLSearchParams({ returnTo: "/catalog?q=Filtek", variant: "A2", packaging: '["Шприц","4","г","KZT"]' });
+  const target = new URL(deliveryDestination("/products/example", `?${search}`, city, false), "http://local.invalid");
+  expect(target.searchParams.get("variant")).toBe("A2");
+  expect(target.searchParams.get("packaging")).toBe(search.get("packaging"));
+  expect(target.searchParams.get("returnTo")).toContain(city);
+});
 it("keeps filters through search and product return, resetting only pagination", () => {
   const back = `/catalog?q=old&sort=PRICE_ASC&inStock=true&count=48&deliveryCityId=${city}&inCity=true`;
   const context = catalogContext("/products/example", `?${new URLSearchParams({ returnTo: back })}`);

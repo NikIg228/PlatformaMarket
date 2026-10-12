@@ -8,6 +8,17 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+12.10 PRODUCT-PAGE-REDESIGN — LOCAL_PASS, baseline4096d0b5 + this patch:
+страница товара по согласованной композиции референса и общим DS adapters;
+вариант/сопоставимая фасовка/валюта, zoom, компактные предложения, сортировка,
+количество/предварительная сумма, корзина и вкладки информации. Выбор сохраняется
+после входа и смены города; запоздалый ответ не меняет текущий город, pending
+cart write не дублируется при переключении варианта. Цены/отзывы/документы не
+подставляются из демонстрационных данных. Unit64, browser10 unique PASS;
+affected types/lint/UI-contract351 и final go_live web build PASS.
+[Checkpoint: команды, попытки, screenshot/computed-style evidence и Git/CI receipt](task-state/PRODUCT-PAGE-REDESIGN-2026-10-12.md).
+Это частный результат R7.1, не общий R7, актуализация каталожных цен или deploy.
+
 09.10 CONTROL-STATES — LOCAL_PASS, baseline85a80758 + this patch: единые
 заливки neutral controls во всех приложениях, без обычных цветных рамок и
 сдвига нажатия; keyboard/error/disabled/selected и primary/danger сохранены.

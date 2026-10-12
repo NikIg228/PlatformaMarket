@@ -1,5 +1,16 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 12.10.2026 — PRODUCT-PAGE-REDESIGN / LOCAL_PASS
+
+По новому явному поручению владельца задача PlatformaMarket UI
+`01a11795-17a2-7f52-9e7d-b3314bf87ed7` выполнила отдельный scope страницы товара.
+Предварительно основной исполнитель проверен idle; параллельной записи нет.
+Глобальный primary, generation и процедура передачи не менялись.
+[Checkpoint](PRODUCT-PAGE-REDESIGN-2026-10-12.md) содержит размеры/сопоставление
+референса, реализацию, целевые checks, review и отдельный Git/CI receipt.
+R1 остаётся DECISIONS_PENDING, общий R7 не закрывается. Следующая продуктовая
+задача требует нового поручения; ожидание от09.10 ниже — прежний scope.
+
 ## 09.10.2026 — CABINET-OWNER-REVIEW / AWAITING_OWNER_FEEDBACK
 
 Текущий исполнитель: primary `01a11758-1c55-7e52-bf15-2a04427aaf5d`.

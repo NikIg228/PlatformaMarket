@@ -19,5 +19,12 @@ export function deliveryDestination(pathname: string, search: string, cityId: st
   if (cityId) url.searchParams.set("deliveryCityId", cityId); else url.searchParams.delete("deliveryCityId");
   if (cityId && inCity) url.searchParams.set("inCity", "true"); else url.searchParams.delete("inCity");
   const target = url.pathname + url.search;
-  return pathname.startsWith("/products/") ? `${pathname}?${new URLSearchParams({ returnTo: target })}` : target;
+  if (!pathname.startsWith("/products/")) return target;
+  const selection = new URLSearchParams({ returnTo: target });
+  const previous = new URLSearchParams(search);
+  for (const key of ["variant", "packaging"]) {
+    const value = previous.get(key);
+    if (value) selection.set(key, value);
+  }
+  return `${pathname}?${selection}`;
 }

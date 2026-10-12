@@ -1,7 +1,6 @@
 "use client";
 import { resilientGet } from "../../resilient-get";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
 import { useBuyerSession } from "../../use-buyer-session";
 import { catalogContext, deliveryDestination } from "./navigation";
 
@@ -10,7 +9,6 @@ type Delivery = { cities: City[]; city: City | null; ready: boolean; inCity: boo
 const Context = createContext<Delivery>({ cities: [], city: null, ready: false, inCity: false, message: "", retry() {}, choose() {} });
 export const useDeliveryContext = () => useContext(Context);
 export function DeliveryProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
   const buyer = useBuyerSession();
   const [value, setValue] = useState<Omit<Delivery, "retry" | "choose">>({ cities: [], city: null, ready: false, inCity: false, message: "" });
   const [revision, setRevision] = useState(0);
@@ -40,12 +38,13 @@ export function DeliveryProvider({ children }: { children: ReactNode }) {
       }
       const city = cities.find(c => c.id === id) ?? null;
       if (!controller.signal.aborted && city && window.location.pathname.startsWith("/products/") && !params.get("deliveryCityId")) {
-        router.replace(deliveryDestination(window.location.pathname, window.location.search, city.id, false, false), { scroll: false });
+        window.history.replaceState(window.history.state, "", deliveryDestination(window.location.pathname, window.location.search, city.id, false, false));
+        window.dispatchEvent(new PopStateEvent("popstate"));
       }
       if (!controller.signal.aborted) setValue({ cities, city, ready: true, inCity: Boolean(city && params.get("inCity") === "true"), message: id && !city ? "Сохранённый город больше недоступен. Выберите город заново." : profileMessage });
     })().catch(() => { if (!controller.signal.aborted) setValue({ cities: [], city: null, ready: true, inCity: false, message: "Не удалось загрузить город доставки. Повторите попытку." }); });
     return () => controller.abort();
-  }, [buyer.ready, buyer.session?.organizationId, revision, router]);
+  }, [buyer.ready, buyer.session?.organizationId, revision]);
   useEffect(() => {
     const restore = () => {
       const params = new URL(catalogContext(window.location.pathname, window.location.search), window.location.origin).searchParams;
@@ -68,14 +67,10 @@ export function DeliveryProvider({ children }: { children: ReactNode }) {
     const destination = deliveryDestination(window.location.pathname, window.location.search, id, selectedInCity);
     setValue(current => ({ ...current, city, inCity: selectedInCity, message: "" }));
     if (destination === window.location.pathname + window.location.search) return;
-    if (window.location.pathname.startsWith("/products/")) {
-      // Product offers are server-rendered: refresh them through Next navigation.
-      router.push(destination, { scroll: false });
-    } else {
-      // The catalog already restores filters and reloads results on popstate.
-      window.history.pushState(window.history.state, "", destination);
-      window.dispatchEvent(new PopStateEvent("popstate"));
-    }
+    // Both catalog and product offers reload from delivery context. Synchronous
+    // history avoids an older server navigation overwriting a newer city choice.
+    window.history.pushState(window.history.state, "", destination);
+    window.dispatchEvent(new PopStateEvent("popstate"));
   };
   return <Context.Provider value={{ ...value, choose, retry: () => setRevision(v => v + 1) }}>{children}</Context.Provider>;
 }
