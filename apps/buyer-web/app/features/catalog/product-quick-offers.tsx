@@ -6,8 +6,8 @@ import { useDeliveryContext } from "../marketplace-header/delivery-context";
 import { productLoginUrl } from "../../public-links";
 import { SupplierOffers, type SupplierOffer } from "./supplier-offers";
 
-export default function ProductQuickOffers({ productId, name, href, onClose }: {
-  productId: string; name: string; href: string; onClose: () => void;
+export default function ProductQuickOffers({ productId, name, href, onClose, onProductNavigate }: {
+  productId: string; name: string; href: string; onClose: () => void; onProductNavigate?: () => void;
 }) {
   const { city, ready } = useDeliveryContext();
   const [result, setResult] = useState<{ cityId: string; offers: SupplierOffer[] } | null>(null);
@@ -35,7 +35,7 @@ export default function ProductQuickOffers({ productId, name, href, onClose }: {
   }, [productId, cityId, ready, revision]);
   return <DmDialog open onOpenChange={open => { if (!open) onClose(); }} title={name}
     description={`Выберите предложение${city ? ` · ${city.nameRu}` : ""}`}
-    actions={<a href={href}>Подробнее о товаре →</a>}>
+    actions={<a href={href} onClick={onProductNavigate}>Подробнее о товаре →</a>}>
     {failed ? <><ActionFeedback tone="error" title="Предложения недоступны" description="Повторите загрузку предложений." /><div><p>Не удалось загрузить предложения.</p><DmButton onClick={() => setRevision(n => n + 1)}>Повторить</DmButton></div></>
       : !ready || !result || result.cityId !== cityId ? <p role="status">Загружаем актуальные предложения…</p>
       : <SupplierOffers key={`${productId}-${cityId}`} offers={result.offers} productName={name} compact loginHref={productLoginUrl(href)} />}

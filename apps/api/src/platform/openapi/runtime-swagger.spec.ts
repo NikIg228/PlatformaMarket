@@ -14,5 +14,5 @@ it.each(["development", "test"])("retains shared-contract documentation in %s", 
   const setup = vi.spyOn(SwaggerModule, "setup").mockImplementation(() => undefined);
   const app = {} as never;
   configureRuntimeSwagger(app, env);
-  expect(setup).toHaveBeenCalledWith("docs", app, expect.objectContaining({ openapi: "3.1.0", components: { schemas: expect.objectContaining({ MfaStatus: expect.any(Object), UploadedDocument: expect.any(Object) }) } }));
+  expect(setup).toHaveBeenCalledWith("docs", app, expect.objectContaining({ openapi: "3.1.0", components: { schemas: expect.objectContaining({ MfaStatus: expect.any(Object), UploadedDocument: expect.any(Object), UploadConversationAttachment: expect.any(Object), UploadedConversationAttachment: expect.any(Object) }) } }));
 });

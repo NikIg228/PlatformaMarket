@@ -5,10 +5,10 @@ import { updateSupportTicketSchema } from "./commercial";
 
 const id = "00000000-0000-4000-8000-000000000001";
 describe("internal conversation and operator command contracts", () => {
-  it("rejects forged participants, arbitrary contexts and attachments", () => {
+  it("rejects forged participants, arbitrary contexts and untrusted attachment fields", () => {
     const input = { contextType: "ORDER", contextId: id, body: "Вопрос по заказу", idempotencyKey: id };
     expect(startConversationSchema.safeParse(input).success).toBe(true);
-    for (const extra of [{ buyerOrganizationId: id }, { authorId: id }, { attachments: [] }, { contextType: "ORGANIZATION" }]) expect(startConversationSchema.safeParse({ ...input, ...extra }).success).toBe(false);
+    for (const extra of [{ buyerOrganizationId: id }, { authorId: id }, { attachments: [{ assetId: id, name: "untrusted" }] }, { contextType: "ORGANIZATION" }]) expect(startConversationSchema.safeParse({ ...input, ...extra }).success).toBe(false);
   });
   it("bounds text, paging and read cursors", () => {
     expect(conversationMessageInputSchema.safeParse({ body: " ", idempotencyKey: id }).success).toBe(false);

@@ -17,6 +17,9 @@ export { DmButton, DmCheckbox, DmField, DmInput, DmTextarea, DmSelect, DmFluentD
 import { DmButton } from "./controls";
 export { DmDropdown } from "./dm-dropdown";
 export { ConversationWorkspace, ConversationCounter } from "./conversation-workspace";
+export { ConversationComposer } from "./conversation-composer";
+export { ConversationContext } from "./conversation-context";
+export { emptyConversationDraft, conversationPayload, type ConversationDraft } from "./conversation-draft";
 export { MemberManagement } from "./member-management";
 export { SessionManagement } from "./session-management";
 export { PermissionsProvider, PermissionFields, usePermissions, useAccessMode } from "./permissions";
@@ -66,6 +69,7 @@ export function DmDialog({
   description,
   children,
   actions,
+  mobileFullscreen = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -74,10 +78,11 @@ export function DmDialog({
   description?: string;
   children: ReactNode;
   actions?: ReactNode;
+  mobileFullscreen?: boolean;
 }) {
   return (
     <Dialog open={open} onOpenChange={(_, data) => onOpenChange(data.open)} surfaceMotion={onClosed ? { onMotionFinish: (_, data) => { if (data.direction === "exit") onClosed(); } } : undefined}>
-      <DialogSurface className="dm-dialog-surface">
+      <DialogSurface className={joinClasses("dm-dialog-surface", mobileFullscreen ? "dm-dialog-mobile-fullscreen" : undefined)}>
         <DialogBody>
           <ToastScope />
           <DialogTitle

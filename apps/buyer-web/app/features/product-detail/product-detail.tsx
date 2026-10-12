@@ -117,7 +117,7 @@ export function ProductDetail({ initial, returnTo, description, sourceUrl, image
             : !fresh ? <LoadingState label="Загружаем актуальные предложения" />
             : !offers.length ? <EmptyState title="Предложений пока нет" description="Для этого варианта и города нет предложений с актуальной ценой. Попробуйте другой вариант или город." /> : null}
           {/* Keep the pending-write lock and outcome alive across selection/city changes. */}
-          <SupplierOffers offers={fresh ? offers.map(toSupplierOffer) : []} productName={`${title} · ${variant?.label ?? variant?.sku ?? ""}`} loginHref={loginHref} comparison />
+          <SupplierOffers imageUrl={image?.src} offers={fresh ? offers.map(toSupplierOffer) : []} productName={`${title} · ${variant?.label ?? variant?.sku ?? ""}`} loginHref={loginHref} comparison />
         </div></DmSurface>
       </section>
       <section id="product-information" className={styles.section} aria-label="Информация о товаре">

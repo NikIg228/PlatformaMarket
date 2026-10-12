@@ -1,14 +1,14 @@
 "use client";
 import { ActionFeedback } from "./action-feedback";
 import { DmFileInput } from "./controls";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode, type Dispatch, type SetStateAction } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { Attach20Regular } from "@fluentui/react-icons/svg/attach";
 import { Document20Regular } from "@fluentui/react-icons/svg/document";
 import { Dismiss16Regular } from "@fluentui/react-icons/svg/dismiss";
 import { ArrowDownload20Regular } from "@fluentui/react-icons/svg/arrow-download";
 import { Image20Regular } from "@fluentui/react-icons/svg/image";
-import { SUPPORT_FILE_ACCEPT, SUPPORT_FILE_MAX_BYTES, SUPPORT_FILE_MAX_COUNT, type SupportAttachment, type UploadedSupportAttachment, type UploadSupportAttachmentInput } from "@marketplace/schemas";
+import { CONVERSATION_FILE_ACCEPT, SUPPORT_FILE_ACCEPT, SUPPORT_FILE_MAX_BYTES, SUPPORT_FILE_MAX_COUNT, type SupportAttachment, type UploadedSupportAttachment, type UploadSupportAttachmentInput } from "@marketplace/schemas";
 import { DmButton, DmDialog, errorMessage } from "./index";
 
 type FilesApi = {
@@ -18,6 +18,7 @@ type FilesApi = {
 const useStyles = makeStyles({
   root: { display: "grid", gap: "var(--dm-space-2)", minWidth: 0 },
   toolbar: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--dm-space-2)" },
+  line: { display: "flex", alignItems: "end", gap: "var(--dm-space-2)", minWidth: 0 },
   hint: { color: tokens.colorNeutralForeground3, fontSize: "var(--dm-font-size-caption)", lineHeight: "var(--dm-line-body)" },
   list: { display: "flex", flexWrap: "wrap", gap: "var(--dm-space-2)", padding: 0, margin: 0, listStyleType: "none", minWidth: 0 },
   compact: { flex: 1 },
@@ -36,18 +37,27 @@ const base64 = (file: File) => new Promise<string>((resolve, reject) => {
   reader.onerror = () => reject(new Error("Не удалось прочитать файл. Выберите его повторно."));
   reader.readAsDataURL(file);
 });
-type Queued = { id: string; file: File; error?: string };
+export type SupportQueuedFile = { id: string; file: File; error?: string };
+type Queued = SupportQueuedFile;
 
 /** Uploads are private until an authorized message claims them. */
-export function SupportFilePicker({ api, value, onChange, disabled, onBusyChange, onErrorChange, compact = false }: {
+export function SupportFilePicker({ api, value, onChange, disabled, onBusyChange, onErrorChange, compact = false, policy = "support", inlineContent, queue: savedQueue, onQueueChange }: {
   api: FilesApi; value: UploadedSupportAttachment[]; onChange: (value: UploadedSupportAttachment[]) => void;
   compact?: boolean; disabled?: boolean; onBusyChange: (busy: boolean) => void; onErrorChange?: (invalid: boolean) => void;
+  policy?: "support" | "conversation"; inlineContent?: ReactNode;
+  queue?: Queued[]; onQueueChange?: Dispatch<SetStateAction<Queued[]>>;
 }) {
   const styles = useStyles(), hintId = useId();
   const input = useRef<HTMLInputElement>(null), active = useRef(false), mounted = useRef(true);
   const current = useRef(value); current.current = value;
-  const [queue, setQueue] = useState<Queued[]>([]), [error, setError] = useState("");
+  const [localQueue, setLocalQueue] = useState<Queued[]>([]), [error, setError] = useState("");
+  const queue = savedQueue ?? localQueue, setQueue = onQueueChange ?? setLocalQueue;
+  const formats = policy === "conversation" ? "PNG, JPG, PDF" : "PNG, JPG, PDF, DOCX, XLSX";
   const [uploading, setUploading] = useState(false);
+  const resumeQueue = useRef(onQueueChange);
+  useEffect(() => {
+    resumeQueue.current?.(items => items.map(item => item.error ? item : { ...item, error: "Загрузка была прервана. Повторите её." }));
+  }, []);
   const invalid = queue.some(entry => Boolean(entry.error));
   useEffect(() => { onErrorChange?.(invalid); }, [invalid, onErrorChange]);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; onBusyChange(false); }; }, [onBusyChange]);
@@ -73,16 +83,17 @@ export function SupportFilePicker({ api, value, onChange, disabled, onBusyChange
     if (disabled || active.current) return;
     setError("");
     if (files.length + value.length + queue.length > SUPPORT_FILE_MAX_COUNT) { setError(`Можно прикрепить не более ${SUPPORT_FILE_MAX_COUNT} файлов.`); return; }
-    const invalid = files.find(file => !/\.(png|jpe?g|pdf|docx|xlsx)$/i.test(file.name) || !file.size || file.size > SUPPORT_FILE_MAX_BYTES);
-    if (invalid) { setError(`«${invalid.name}»: выберите PNG, JPG, PDF, DOCX или XLSX размером до 10 МБ. Пустые файлы не принимаются.`); return; }
+    const extension = policy === "conversation" ? /\.(png|jpe?g|pdf)$/i : /\.(png|jpe?g|pdf|docx|xlsx)$/i;
+    const invalid = files.find(file => !extension.test(file.name) || !file.size || file.size > SUPPORT_FILE_MAX_BYTES);
+    if (invalid) { setError(`«${invalid.name}»: выберите ${formats} размером до 10 МБ. Пустые файлы не принимаются.`); return; }
     const entries = files.map(file => ({ id: crypto.randomUUID(), file }));
     setQueue(items => [...items, ...entries]); void upload(entries);
   };
   return <div className={`${styles.root} ${compact ? styles.compact : ""}`}>
-    <DmFileInput ref={input}  multiple accept={SUPPORT_FILE_ACCEPT} hidden aria-label="Файлы обращения" disabled={disabled || uploading}
+    <DmFileInput ref={input} multiple accept={policy === "conversation" ? CONVERSATION_FILE_ACCEPT : SUPPORT_FILE_ACCEPT} hidden aria-label={policy === "conversation" ? "Файлы сообщения" : "Файлы обращения"} disabled={disabled || uploading}
       onChange={event => { select(Array.from(event.currentTarget.files ?? [])); event.currentTarget.value = ""; }} />
-    <div className={styles.toolbar}><DmButton type="button" appearance="subtle" icon={<Attach20Regular />} aria-label="Прикрепить файл" title="Прикрепить файл · PNG, JPG, PDF, DOCX, XLSX · до 10 МБ · до 10 файлов" aria-describedby={hintId} disabled={disabled || uploading || value.length + queue.length >= SUPPORT_FILE_MAX_COUNT} onClick={() => input.current?.click()}>{compact ? null : "Прикрепить файл"}</DmButton>
-      <span id={hintId} className={compact ? styles.hiddenHint : styles.hint}>PNG, JPG, PDF, DOCX, XLSX · до 10 МБ · до 10 файлов</span></div>
+    <div className={inlineContent ? styles.line : undefined}><div className={styles.toolbar}><DmButton type="button" appearance="subtle" icon={<Attach20Regular />} aria-label="Прикрепить файл" title={`Прикрепить файл · ${formats} · до 10 МБ · до 10 файлов`} aria-describedby={hintId} disabled={disabled || uploading || value.length + queue.length >= SUPPORT_FILE_MAX_COUNT} onClick={() => input.current?.click()}>{compact ? null : "Прикрепить файл"}</DmButton>
+      <span id={hintId} className={compact ? styles.hiddenHint : styles.hint}>{formats} · до 10 МБ · до 10 файлов</span></div>{inlineContent}</div>
     {value.length || queue.length ? <ul className={`${styles.list} ${styles.queue}`} aria-label="Прикреплённые файлы">
       {value.map(file => <li className={styles.card} key={file.assetId}><Document20Regular aria-hidden="true" /><div className={styles.identity}><span className={styles.name}>{file.name}</span><span className={styles.hint}>{size(file.sizeBytes)}</span></div><DmButton type="button" appearance="subtle" size="small" icon={<Dismiss16Regular />} aria-label={`Убрать ${file.name}`} disabled={disabled || uploading} onClick={() => onChange(value.filter(item => item.assetId !== file.assetId))} /></li>)}
       {queue.map(entry => <li className={styles.card} key={entry.id}><Document20Regular aria-hidden="true" /><div className={styles.identity}><span className={styles.name}>{entry.file.name}</span>{entry.error ? <span className={styles.problem} role="alert">{entry.error}</span> : <span className={styles.hint} role="status">Загружаем и проверяем…</span>}</div>

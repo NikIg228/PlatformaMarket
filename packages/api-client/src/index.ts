@@ -157,7 +157,13 @@ export class MarketplaceApiClient {
   updateSupportTicket(id: string, input: import("@marketplace/schemas").UpdateSupportTicketInput) { return this.patch<import("@marketplace/schemas").SupportTicketSummary>(`/support/tickets/${encodeURIComponent(id)}`, input); }
   supportTicketHistory(id: string) { return this.get<import("@marketplace/schemas").OperationHistory>(`/support/tickets/${encodeURIComponent(id)}/history`); }
   addSupportMessage(id: string, input: import("@marketplace/schemas").AddSupportMessageInput) { return this.post<import("@marketplace/schemas").SupportTicketDetail["messages"][number]>(`/support/tickets/${encodeURIComponent(id)}/messages`, input); }
-  conversationContext(contextType: "OFFER" | "ORDER", contextId: string) { return this.get<{ conversationId: string | null }>(`/conversations/context?contextType=${contextType}&contextId=${encodeURIComponent(contextId)}`); }
+  conversationContext(contextType: "OFFER" | "ORDER", contextId: string) { return this.get<import("@marketplace/schemas").ConversationLookup>(`/conversations/context?contextType=${contextType}&contextId=${encodeURIComponent(contextId)}`); }
+  uploadConversationAttachment(input: import("@marketplace/schemas").UploadConversationAttachmentInput) {
+    return this.post<import("@marketplace/schemas").UploadedConversationAttachment>("/conversations/attachments", input);
+  }
+  downloadConversationAttachment(conversationId: string, messageId: string, assetId: string) {
+    return this.download(`/conversations/${encodeURIComponent(conversationId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(assetId)}`);
+  }
   operationWorkQueue(offset = 0) { return this.get<import("@marketplace/schemas").OperationWorkQueue>(`/operations/work-queue?offset=${offset}`); }
   operationAssignees() { return this.get<{ id: string; displayName: string }[]>("/operations/work-queue/assignees"); }
   assignOperation(type: import("@marketplace/schemas").OperationQueueType, id: string, input: import("@marketplace/schemas").OperationAssignment) { return this.post<import("@marketplace/schemas").OperationAssignmentResult>(`/operations/work-queue/${type}/${encodeURIComponent(id)}/assignment`, input); }

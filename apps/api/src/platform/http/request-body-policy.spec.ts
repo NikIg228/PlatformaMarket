@@ -50,6 +50,9 @@ describe("HTTP request body resource boundary", () => {
     expect(requestBodyPolicy("POST", "/API/SUPPORT/ATTACHMENTS/").limit).toBe(DOCUMENT_JSON_MAX_BYTES);
     expect(requestBodyPolicy("POST", "/api/support/attachments/other").limit).toBe(DEFAULT_JSON_MAX_BYTES);
     expect(requestBodyPolicy("PATCH", "/api/support/attachments").limit).toBe(DEFAULT_JSON_MAX_BYTES);
+    expect(requestBodyPolicy("POST", "/api/conversations/attachments").limit).toBe(DOCUMENT_JSON_MAX_BYTES);
+    expect(requestBodyPolicy("POST", "/api/conversations/attachments/other").limit).toBe(DEFAULT_JSON_MAX_BYTES);
+    expect(requestBodyPolicy("PATCH", "/api/conversations/attachments").limit).toBe(DEFAULT_JSON_MAX_BYTES);
     expect(requestBodyPolicy("POST", "/api/compliance/organizations/org/credentials").limit).toBe(DOCUMENT_JSON_MAX_BYTES);
     expect(requestBodyPolicy("POST", "/api/suppliers/org/import-batches").limit).toBe(IMPORT_JSON_MAX_BYTES);
     for (const path of ["/api/documents/upload/extra", "/api/documents/uploaded", "/api/suppliers/org/import-batches/id/process"]) {
@@ -69,6 +72,7 @@ describe("HTTP request body resource boundary", () => {
     ["/api/auth/profile/avatar", AVATAR_MAX_BYTES],
     ["/api/documents/upload", DOCUMENT_UPLOAD_MAX_BYTES],
     ["/api/support/attachments", DOCUMENT_UPLOAD_MAX_BYTES],
+    ["/api/conversations/attachments", DOCUMENT_UPLOAD_MAX_BYTES],
     ["/api/compliance/organizations/org/credentials", DOCUMENT_UPLOAD_MAX_BYTES],
     ["/api/suppliers/org/import-batches", IMPORT_UPLOAD_MAX_BYTES],
   ] as const)("accepts a maximum legitimate upload at %s", async (path, maxBytes) => {

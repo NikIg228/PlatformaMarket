@@ -1,7 +1,20 @@
 import { test, expect } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "node:crypto";
+import { readFile, unlink } from "node:fs/promises";
+import { resolve, sep } from "node:path";
 import { installPilotWorkspace, workspaceFixture } from "../fixtures/workspace-session";
+
+async function cleanupConversationFiles(db: PrismaClient, actorId: string) {
+  const storageRoot = resolve(process.env.LOCAL_STORAGE_PATH ?? resolve(__dirname, "../../api/.local-storage"));
+  const files = await db.uploadAsset.findMany({ where: { uploadedById: actorId, purpose: "conversation", deletedAt: null } });
+  for (const file of files) {
+    const path = resolve(storageRoot, file.storageKey);
+    if (!path.startsWith(storageRoot + sep)) throw new Error("Synthetic attachment cleanup escaped storage");
+    await unlink(path).catch(error => { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; });
+    await db.uploadAsset.update({ where: { id: file.id }, data: { status: "REJECTED", deletedAt: new Date(), rejectionReason: "Synthetic browser fixture finished" } });
+  }
+}
 
 test.use({ trace: "off", screenshot: "off" });
 test("CORE06: buyer, mobile supplier and operator conversation workflow", async ({ page, browser }) => {
@@ -26,6 +39,9 @@ test("CORE06: buyer, mobile supplier and operator conversation workflow", async 
     await operatorPage.addInitScript(({ session, actorId }) => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ ...session, actorId, user: { id: actorId }, activeOrganizationId: session.organizationId })), { session, actorId: user.id });
     await page.goto(`/clinic/messages?contextType=OFFER&contextId=${offer.id}`);
     const chat = page.getByRole("region", { name: "Сообщения", exact: true });
+    await expect(chat.locator(".dm-conversation-context")).toContainText(supplier.displayName);
+    await chat.getByLabel("Файлы сообщения").setInputFiles({ name: "Комплектация.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.7\nSynthetic attachment") });
+    await expect(chat.getByRole("button", { name: "Убрать Комплектация.pdf" })).toBeEnabled();
     await chat.getByLabel("Сообщение", { exact: true }).fill(`Вопрос покупателя ${key}`);
     await chat.getByRole("button", { name: "Отправить", exact: true }).focus(); await page.keyboard.press("Enter");
     await expect(chat.getByRole("list", { name: "История сообщений" }).getByText(`Вопрос покупателя ${key}`)).toBeVisible();
@@ -33,11 +49,19 @@ test("CORE06: buyer, mobile supplier and operator conversation workflow", async 
     await supplierPage.goto(`/supplier/messages?conversationId=${conversation.id}`);
     const supplierChat = supplierPage.getByRole("region", { name: "Сообщения", exact: true });
     await expect(supplierChat.getByText(`Вопрос покупателя ${key}`, { exact: true }).last()).toBeVisible();
+    const fileResponse = supplierPage.waitForResponse(response => response.url().includes("/attachments/") && response.request().method() === "GET");
+    const fileDownload = supplierPage.waitForEvent("download");
+    await supplierChat.getByRole("button", { name: "Скачать Комплектация.pdf" }).click();
+    const downloaded = await fileResponse;
+    expect(downloaded.status()).toBe(200); expect(downloaded.headers()["cache-control"]).toBe("private, no-store");
+    const savedDownload = await fileDownload;
+    expect(await savedDownload.failure()).toBeNull();
+    expect((await readFile((await savedDownload.path())!)).toString()).toBe("%PDF-1.7\nSynthetic attachment");
     await supplierChat.getByLabel("Сообщение", { exact: true }).fill(`Ответ поставщика ${key}`);
     let failSend = true;
     await supplierPage.route(`**/conversations/${conversation.id}/messages`, async route => { if (failSend) { failSend = false; await route.abort("failed"); } else await route.continue(); });
     await supplierChat.getByRole("button", { name: "Отправить", exact: true }).click();
-    await expect(supplierPage.locator('.dm-save-toast[role="alert"]')).toContainText("Введённый текст сохранён");
+    await expect(supplierPage.locator('.dm-save-toast').filter({ hasText: "Результат пока неизвестен" })).toContainText("Текст и файлы сохранены");
     await expect(supplierChat.getByLabel("Сообщение", { exact: true })).toHaveValue(`Ответ поставщика ${key}`);
     await supplierChat.getByRole("button", { name: "Отправить", exact: true }).click();
     await expect(supplierChat.getByRole("list", { name: "История сообщений" }).getByText(`Ответ поставщика ${key}`)).toBeVisible();
@@ -46,12 +70,14 @@ test("CORE06: buyer, mobile supplier and operator conversation workflow", async 
     expect(await supplierPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.reload();
     await expect(chat.getByRole("list", { name: "История сообщений" }).getByText(`Ответ поставщика ${key}`)).toBeVisible();
-    await chat.getByRole("button", { name: "Вопрос решён", exact: true }).click();
-    await expect(chat.getByText("Вопрос решён. Новое сообщение откроет его снова.")).toBeVisible();
-    await chat.getByRole("button", { name: "Обратиться к оператору" }).click();
+    await chat.getByRole("button", { name: "Действия с диалогом" }).click();
+    await page.getByRole("menuitem", { name: "Вопрос решён", exact: true }).click();
+    await expect(chat.locator(".dm-conversation-status")).toContainText("Вопрос решён");
+    await chat.getByRole("button", { name: "Действия с диалогом" }).click();
+    await page.getByRole("menuitem", { name: "Обратиться к оператору" }).click();
     await chat.getByLabel("Причина обращения (не менее 10 символов)").fill(`Нужна помощь оператора ${key}`);
     await chat.getByRole("button", { name: "Создать обращение" }).click();
-    await expect(chat.getByText("К диалогу подключён оператор площадки.")).toBeVisible();
+    await expect(chat.locator(".dm-conversation-status")).toContainText("Подключён оператор");
     await operatorPage.goto("/admin?section=overview");
     const queue = operatorPage.getByRole("region", { name: "Операционная очередь" });
     const assignmentOpener = queue.getByRole("button", { name: "Назначение и история" }).first();
@@ -80,6 +106,7 @@ test("CORE06: buyer, mobile supplier and operator conversation workflow", async 
     await dialog.getByRole("button", { name: "Открыть связанный диалог" }).click();
     await expect(support).toBeFocused();
     const operatorChat = operatorPage.getByRole("region", { name: "Сообщения", exact: true });
+    await expect(operatorChat.getByRole("button", { name: "Скачать Комплектация.pdf" })).toBeVisible();
     await operatorChat.getByLabel("Сообщение", { exact: true }).fill(`Ответ оператора ${key}`);
     await operatorChat.getByRole("button", { name: "Отправить", exact: true }).click();
     await expect(operatorChat.getByRole("list", { name: "История сообщений" }).getByText(`Ответ оператора ${key}`)).toBeVisible();
@@ -111,6 +138,7 @@ test("CORE06: buyer, mobile supplier and operator conversation workflow", async 
     await Promise.allSettled([page.goto("about:blank"), supplierContext.close(), operatorContext.close()]);
     await buyer.dispose(); await supplier.dispose();
     if (operatorId) await db.authSession.updateMany({ where: { userId: operatorId }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "core06_browser_finished" } });
+    await cleanupConversationFiles(db, buyer.userId);
     await db.$disconnect();
   }
 });

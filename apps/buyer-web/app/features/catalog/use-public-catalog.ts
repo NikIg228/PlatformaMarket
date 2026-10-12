@@ -6,6 +6,7 @@ import { appendCatalogPage, fetchLiveCatalog, loadCatalogWindow } from "../../ca
 import { marketplaceCatalogUrl, readMarketplaceCatalog } from "../../catalog/marketplace-url";
 import { publicCatalogQuery } from "../../catalog/public-catalog-query";
 import { useDeliveryContext } from "../marketplace-header/delivery-context";
+import { restoreCatalogPosition } from "./catalog-position";
 
 export function usePublicCatalog() {
   const delivery = useDeliveryContext();
@@ -56,6 +57,11 @@ export function usePublicCatalog() {
   useEffect(() => {
     if (location.ready && delivery.ready && !loading) window.history.replaceState(window.history.state, "", returnUrl);
   }, [returnUrl, location.ready, delivery.ready, loading]);
+  useEffect(() => {
+    if (loading || !result || !location.ready || !delivery.ready) return;
+    const frame = requestAnimationFrame(() => restoreCatalogPosition(returnUrl));
+    return () => cancelAnimationFrame(frame);
+  }, [loading, result, returnUrl, location.ready, delivery.ready]);
 
   const more = async () => {
     if (loading || loadingMore) return;

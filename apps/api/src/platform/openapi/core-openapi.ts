@@ -7,7 +7,7 @@ import { operationObjectSchema, operationWorkQueueQuerySchema } from "@marketpla
 import { uploadedDocumentSchema } from "@marketplace/schemas";
 import { emailLoginSchema, emailTokenSchema, emailResetPasswordSchema, authEmailSessionSchema, authEmailVerifiedSchema, authPasswordResetResultSchema, mfaCodeSchema, mfaStatusSchema, mfaEnrollmentSchema, mfaVerificationResultSchema, mfaChallengeResultSchema, mfaDisabledSchema, uploadDocumentSchema } from "@marketplace/schemas";
 import { createSupportTicketSchema, addSupportMessageSchema, updateSupportTicketSchema, supportTicketSummarySchema, supportTicketListSchema, supportTicketQuerySchema, supportTicketDetailSchema, supportMessageQuerySchema, supportMessageResponseSchema, uploadSupportAttachmentSchema, uploadedSupportAttachmentSchema } from "@marketplace/schemas";
-import { conversationContextSchema, conversationLookupSchema } from "@marketplace/schemas";
+import { conversationContextSchema, conversationLookupSchema, uploadConversationAttachmentSchema, uploadedConversationAttachmentSchema } from "@marketplace/schemas";
 import { operationAssignmentSchema, operationAssignmentResultSchema, operationHistorySchema, operationAssigneesSchema, operationWorkQueueSchema } from "@marketplace/schemas";
 import { startConversationSchema, conversationMessageInputSchema, conversationQuerySchema, conversationReadSchema, conversationEscalationSchema, conversationResolveSchema, conversationPageSchema, conversationDetailSchema, conversationMessageQuerySchema, conversationResultSchema, conversationReadResultSchema, conversationEscalationResultSchema } from "@marketplace/schemas";
 import { workspaceCorrectionOfferPageSchema, workspaceInventoryPageSchema, workspaceLotPageSchema, workspaceReservationPageSchema, workspaceOverridePageSchema } from "@marketplace/schemas";
@@ -141,6 +141,8 @@ const coreZodSchemas = {
   UploadedSupportAttachment: uploadedSupportAttachmentSchema,
   ConversationContext: conversationContextSchema,
   ConversationLookup: conversationLookupSchema,
+  UploadConversationAttachment: uploadConversationAttachmentSchema,
+  UploadedConversationAttachment: uploadedConversationAttachmentSchema,
   OperationAssignment: operationAssignmentSchema,
   OperationAssignmentResult: operationAssignmentResultSchema,
   OperationHistory: operationHistorySchema,

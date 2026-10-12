@@ -30,7 +30,9 @@ export async function verifyConversations({ prisma, offer, supplierId, createBuy
   const Notifications = domain("notifications/notifications.service", "NotificationsService");
   const notificationService = new Notifications(prisma, { resolve() { throw new Error("External delivery must not be called in projection verification"); } }, {}, {});
   const permissionService = new Permissions(prisma);
-  const conversations = new Conversations(prisma, permissionService);
+  const Attachments = domain("support/conversation-attachments.service", "ConversationAttachmentsService");
+  const { MediaAccessService } = require("../../apps/api/dist/src/platform/storage/media-access.service.js");
+  const conversations = new Conversations(prisma, permissionService, new Attachments(prisma, {}, {}), new MediaAccessService());
   assert(await prisma.supportTicket.count({ where: { version: { lt: 1 } } }) === 0, "Existing tickets received invalid migration version");
   const empty = await call("/conversations");
   assert(empty.items.length === 0 && empty.unreadCount === 0, "Empty conversations must not appear");

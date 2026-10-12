@@ -2,6 +2,7 @@
 
 import { Button, Checkbox, Combobox, Dropdown, Field, Input, Select, TabList, Textarea } from "@fluentui/react-components";
 import type { ComponentPropsWithRef, HTMLAttributes } from "react";
+import { useLayoutEffect, useRef } from "react";
 
 type Density = { density?: "default" | "compact" };
 const classes = (...values: Array<string | undefined>) => values.filter(Boolean).join(" ");
@@ -20,8 +21,14 @@ export function DmInput({ className, density, ...props }: ComponentPropsWithRef<
   return <Input {...props} data-dm-density={densityFor(density, props.size)} className={classes("dm-control", "dm-input", props.readOnly && props.appearance === "filled-darker" ? "dm-input-readonly" : undefined, className)} />;
 }
 
-export function DmTextarea({ className, density, variant = "default", ...props }: ComponentPropsWithRef<typeof Textarea> & Density & { variant?: "default" | "composer" }) {
-  return <Textarea {...props} data-dm-density={densityFor(density, props.size)} className={classes("dm-control", "dm-textarea", variant === "composer" ? "dm-textarea-composer" : undefined, className)} />;
+export function DmTextarea({ className, density, variant = "default", autoGrow = false, ...props }: ComponentPropsWithRef<typeof Textarea> & Density & { variant?: "default" | "composer"; autoGrow?: boolean }) {
+  const input = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    if (!autoGrow || !input.current) return;
+    input.current.style.height = "auto";
+    input.current.style.height = `${input.current.scrollHeight}px`;
+  }, [autoGrow, props.value]);
+  return <Textarea {...props} textarea={autoGrow ? { ref: input, rows: 1 } : props.textarea} data-dm-density={densityFor(density, props.size)} className={classes("dm-control", "dm-textarea", variant === "composer" ? "dm-textarea-composer" : undefined, className)} />;
 }
 
 /** Native form compatibility: preserves name, required, ref and change events. */

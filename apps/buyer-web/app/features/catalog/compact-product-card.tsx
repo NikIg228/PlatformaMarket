@@ -7,6 +7,7 @@ import { formatCatalogMoney, selectCatalogOffer } from "../../catalog/catalog-vi
 import { catalogCardPresentation } from "./catalog-card-presentation";
 import { compactProductTitle } from "../../catalog/product-title";
 import { catalogPromotionMark } from "./catalog-promotion-mark";
+import { rememberCatalogPosition } from "./catalog-position";
 import styles from "./compact-catalog.module.css";
 const ProductQuickOffers = dynamic(() => import("./product-quick-offers"), { ssr: false, loading: () => <span role="status">Открываем предложения…</span> });
 export function CompactProductCard({ product, returnUrl, imageSource }: { product: SearchProduct; returnUrl: string; imageSource: (media?: SearchMedia) => string | null }) {
@@ -26,7 +27,7 @@ export function CompactProductCard({ product, returnUrl, imageSource }: { produc
     const timer = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(timer);
   }, [hasPromotion]);
-  return <article className={styles.frame} data-testid="product-card"><a className={styles.card} aria-label={`Открыть карточку: ${title}`} href={`/products/${product.id}?returnTo=${encodeURIComponent(returnUrl)}`}>
+  return <article className={styles.frame} data-testid="product-card" data-catalog-product={product.id}><a className={styles.card} aria-label={`Открыть карточку: ${title}`} href={`/products/${product.id}?returnTo=${encodeURIComponent(returnUrl)}`} onClick={event => { if (!event.metaKey && !event.ctrlKey && !event.shiftKey && event.button === 0) rememberCatalogPosition(returnUrl, product.id, event.currentTarget.closest("article")!); }}>
     <div className={styles.photo}>{image && !failed ? <img src={image} alt={title} loading="lazy" onError={() => setFailed(true)} /> : <span>Фото пока нет</span>}</div>
     {promotion ? <div className={styles.promotionMark} title={promotion.description}><StatusTag tone="success">{promotion.label}</StatusTag></div> : null}
     {presentation.brand ? <p className={styles.brand}>{presentation.brand}</p> : null}
@@ -39,6 +40,7 @@ export function CompactProductCard({ product, returnUrl, imageSource }: { produc
       onClick={event => { trigger.current = event.currentTarget; setQuickOpen(true); }}>Выбрать поставщика</DmButton>
   </div>
   {quickOpen ? <ProductQuickOffers productId={product.id} name={title} href={href}
+    onProductNavigate={() => { const card = trigger.current?.closest("article"); if (card) rememberCatalogPosition(returnUrl, product.id, card); }}
     onClose={() => { setQuickOpen(false); requestAnimationFrame(() => trigger.current?.focus({ preventScroll: true })); }} /> : null}
   </article>;
 }

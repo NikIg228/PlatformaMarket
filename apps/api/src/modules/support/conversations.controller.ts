@@ -1,7 +1,8 @@
-import { BadRequestException, Body, Controller, Get, Headers, Param, Post, Query, UseGuards } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import { BadRequestException, Body, Controller, Get, Headers, Param, Post, Query, Res, StreamableFile, UseGuards } from "@nestjs/common";
+import { ApiProduces, ApiResponse, ApiTags } from "@nestjs/swagger";
+import type { Response } from "express";
 import { z } from "zod";
-import { conversationContextSchema, conversationEscalationSchema, conversationMessageInputSchema, conversationMessageQuerySchema, conversationQuerySchema, conversationReadSchema, conversationResolveSchema, startConversationSchema } from "@marketplace/schemas";
+import { conversationContextSchema, conversationEscalationSchema, conversationMessageInputSchema, conversationMessageQuerySchema, conversationQuerySchema, conversationReadSchema, conversationResolveSchema, startConversationSchema, uploadConversationAttachmentSchema } from "@marketplace/schemas";
 import { ApiCoreBody, ApiCoreErrors, ApiCoreProtected, ApiCoreQuery, ApiCoreResponse, ApiUuidParam } from "../../platform/openapi/core-openapi";
 import { PermissionsGuard } from "../access-control/permissions.guard";
 import { RequirePermissions } from "../access-control/require-permissions.decorator";
@@ -32,6 +33,26 @@ export class ConversationsController {
   @Post() @RequirePermissions("support.ticket.create")
   @ApiCoreBody("StartConversation") @ApiCoreResponse("ConversationResult", 201)
   start(@Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { return this.conversations.start(parse(startConversationSchema, body), { actorId, organizationId }); }
+
+  @Post("attachments") @RequirePermissions("support.ticket.create")
+  @ApiCoreBody("UploadConversationAttachment") @ApiCoreResponse("UploadedConversationAttachment", 201) @ApiCoreResponse("ErrorResponse", 413)
+  upload(@Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+    return this.conversations.uploadAttachment(parse(uploadConversationAttachmentSchema, body), { actorId, organizationId });
+  }
+
+  @Get(":id/messages/:messageId/attachments/:assetId") @RequirePermissions("support.ticket.view")
+  @ApiUuidParam("id", "Conversation") @ApiUuidParam("messageId", "Conversation message") @ApiUuidParam("assetId", "Conversation attachment")
+  @ApiProduces("application/octet-stream") @ApiResponse({ status: 200, schema: { type: "string", format: "binary" } })
+  async download(@Param() params: { id: string; messageId: string; assetId: string }, @Headers("x-user-id") actorId: string,
+    @Headers("x-organization-id") organizationId: string, @Res({ passthrough: true }) response: Response) {
+    if (!Object.values(params).every(id => z.uuid().safeParse(id).success)) throw new BadRequestException("Invalid attachment identifier");
+    const result = await this.conversations.downloadAttachment(params.id, params.messageId, params.assetId, { actorId, organizationId });
+    response.setHeader("Content-Type", result.attachment.contentType);
+    response.setHeader("Content-Disposition", `attachment; filename*=UTF-8''${encodeURIComponent(result.attachment.name)}`);
+    response.setHeader("Cache-Control", "private, no-store");
+    response.setHeader("X-Content-Type-Options", "nosniff");
+    return new StreamableFile(result.body);
+  }
 
   @Get(":id") @RequirePermissions("support.ticket.view")
   @ApiUuidParam("id", "Conversation") @ApiCoreQuery("ConversationMessageQuery") @ApiCoreResponse("ConversationDetail")

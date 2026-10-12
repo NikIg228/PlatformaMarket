@@ -12,6 +12,7 @@ import styles from "./supplier-offers.module.css";
 import { saleTotal } from "../product-detail/model";
 import { Add24Regular } from "@fluentui/react-icons/svg/add";
 import { Subtract24Regular } from "@fluentui/react-icons/svg/subtract";
+import { SupplierQuestion } from "./supplier-question";
 
 export type SupplierOffer = {
   id: string; supplier: { name: string; publicContact?: OrganizationContact | null }; priceMinor: string | null;
@@ -36,13 +37,15 @@ function validQuantity(value: string, offer: SupplierOffer) {
     && Math.abs(n / step - Math.round(n / step)) < 1e-7;
 }
 
-export function SupplierOffers({ offers, loginHref, compact = false, productName, comparison = false }: {
-  offers: SupplierOffer[]; loginHref: string; compact?: boolean; productName?: string; comparison?: boolean;
+export function SupplierOffers({ offers, loginHref, compact = false, productName, comparison = false, imageUrl }: {
+  offers: SupplierOffer[]; loginHref: string; compact?: boolean; productName?: string; comparison?: boolean; imageUrl?: string;
 }) {
   const { session, ready } = useVerifiedSession();
   const [quantities, setQuantities] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const lock = useRef(false);
+  const [question, setQuestion] = useState<SupplierOffer | null>(null);
+  const questionTrigger = useRef<HTMLElement | null>(null);
   const [feedback, setFeedback] = useState<{ tone: "success" | "error" | "warning"; title: string; description: string } | null>(null);
   const add = async (offer: SupplierOffer) => {
     const raw = quantities[offer.id] ?? initialQuantity(offer);
@@ -69,6 +72,7 @@ export function SupplierOffers({ offers, loginHref, compact = false, productName
     finally { lock.current = false; setBusy(null); }
   };
   return <div className={`${styles.list} ${compact ? styles.compact : ""} ${comparison ? styles.comparison : ""}`}>
+    <SupplierQuestion key={session?.organizationId ?? "guest"} offer={question} productName={productName} imageUrl={imageUrl} onClose={() => setQuestion(null)} onClosed={() => questionTrigger.current?.focus({ preventScroll: true })} />
     {!comparison || offers.length ? <p className={styles.hint}>Цена указана за единицу продажи. Окончательные условия доставки и оплаты — при оформлении заказа.</p> : null}
     {comparison && offers.length ? <div className={styles.columnHeadings} aria-hidden="true"><span>Поставщик</span><span>Наличие и доставка</span><span>Цена за единицу</span><span>Количество и покупка</span></div> : null}
     {feedback ? <ActionFeedback {...feedback} action={feedback.tone === "success" || feedback.title === "Результат пока неизвестен" ? <a href={workspacePath("BUYER", "/cart")}>Перейти в корзину</a> : undefined} /> : null}
@@ -103,7 +107,7 @@ export function SupplierOffers({ offers, loginHref, compact = false, productName
           {offer.normalizedPriceMinor && offer.packaging?.unit && !(offer.packaging.quantityInBaseUnit === "1" && offer.normalizedPriceMinor === offer.priceMinor) ? <small>{formatCatalogMoney(offer.normalizedPriceMinor, offer.currency)} / {offer.packaging.unit}</small> : null}
         </div>
         <div className={styles.action}>
-          {session?.organizationId && !comparison ? <DmButton as="a" href={`/clinic/messages?contextType=OFFER&contextId=${offer.id}`}>Задать вопрос поставщику</DmButton> : null}
+          {session?.organizationId && !comparison ? <DmButton onClick={event => { questionTrigger.current = event.currentTarget; setQuestion(offer); }}>Задать вопрос поставщику</DmButton> : null}
           <div className={styles.quantityRow}>
           {comparison ? <DmButton icon={<Subtract24Regular />} aria-label={`Уменьшить количество у ${offer.supplier.name}`} disabled={busy !== null || !offer.available || !valid || Number(quantity) <= Number(initialQuantity(offer))} onClick={() => changeQuantity(-1)} /> : null}
           <label>{comparison ? null : "Количество"}<DmInput className={styles.quantity} type="number" min={min} step={step} max="1000000" value={quantity} disabled={busy !== null || !offer.available}
@@ -116,7 +120,7 @@ export function SupplierOffers({ offers, loginHref, compact = false, productName
           <DmButton className={comparison ? styles.buy : undefined} appearance="primary" disabled={!ready || busy !== null || !valid || !offer.available || offer.priceMinor == null} onClick={() => void add(offer)}>
             {!ready ? "Проверяем вход…" : busy === offer.id ? "Добавляем…" : !offer.available ? comparison ? "Недоступно" : "Под заказ" : offer.priceMinor == null ? "Нет цены" : session ? "В корзину" : "Войти и купить"}
           </DmButton>
-          {session?.organizationId && comparison ? <DmButton as="a" appearance="subtle" className={styles.question} href={`/clinic/messages?contextType=OFFER&contextId=${offer.id}`}>Задать вопрос</DmButton> : null}
+          {session?.organizationId && comparison ? <DmButton appearance="subtle" className={styles.question} onClick={event => { questionTrigger.current = event.currentTarget; setQuestion(offer); }}>Задать вопрос</DmButton> : null}
         </div>
       </article>;
     })}

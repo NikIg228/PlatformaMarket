@@ -14,7 +14,7 @@
 .workspace :global(.dm-conversations-list),
 .workspace :global(.dm-conversations-detail) {
   min-height: 0;
-  overflow-y: auto;
+
   overscroll-behavior: contain;
 }
 .workspace :global(.dm-conversations-list) > * { flex-shrink: 0; }
@@ -23,7 +23,7 @@
   width: 100%;
 }
 .workspace :global(.dm-conversations-list-end) { min-height: 1px; }
-.workspace :global(.dm-conversations-list-end .mp-state) { min-height: 0; padding: var(--dm-space-3); }
+
 .workspace :global(.dm-conversations-detail > .mp-empty) {
   height: 100%;
   min-height: 0;

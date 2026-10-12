@@ -5,6 +5,7 @@ import { ConversationsController } from "./conversations.controller";
 import { ConversationsService } from "./conversations.service";
 import { SupportAttachmentsController } from "./support-attachments.controller";
 import { SupportAttachmentsService } from "./support-attachments.service";
+import { ConversationAttachmentsService } from "./conversation-attachments.service";
 
-@Module({ controllers: [SupportController, ConversationsController, SupportAttachmentsController], providers: [SupportService, ConversationsService, SupportAttachmentsService], exports: [SupportService] })
+@Module({ controllers: [SupportController, ConversationsController, SupportAttachmentsController], providers: [SupportService, ConversationsService, SupportAttachmentsService, ConversationAttachmentsService], exports: [SupportService] })
 export class SupportModule {}

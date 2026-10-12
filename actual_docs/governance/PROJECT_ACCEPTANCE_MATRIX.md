@@ -8,6 +8,17 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+14.10 CATALOG-PROMOTIONS-MESSAGES / Messages-question — LOCAL_PASS,
+baseline c251bc1 + this patch: тихое обновление/полная история, закреплённый composer,
+модальный вопрос с контекстом товара/поставщика, черновики/повторы/фокус и возврат
+в глубокий каталог. PNG/JPG/PDF до10МБ/10 файлов: tenant/participant authorization,
+точный context/actor claim в транзакции, replay/races/rollback и защищённое чтение.
+Targeted UI browser10 + support3, isolated PostgreSQL и HTTP CORE06 PASS;
+schema/backend/dependent/UI/client units, affected types/lint/UI contract,
+runtime split/API build/go_live web build PASS. Без изменения рабочей DB/schema.
+[Checkpoint с командами, всеми попытками и Git/CI receipt](task-state/CATALOG-PROMOTIONS-MESSAGES-2026-10-12.md).
+Это частный результат R7, не общая production-приёмка.
+
 12.10 PRODUCT-PAGE-PREVIEW-DATA — LOCAL_PASS, baseline954be51 + this patch:
 по отдельному поручению владельца пять товаров со скрина получили тестовые
 варианты, две фасовки, по3 поставщика, характеристики/описания и10 PDF.
