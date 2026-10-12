@@ -3,7 +3,8 @@ import { useRef, useState, type ReactNode } from "react";
 import { ActionFeedback, DmButton } from "@marketplace/ui";
 import type { SearchResult, SearchMedia } from "../../catalog-search-types";
 import { marketplaceCatalogUrl, type MarketplaceCatalogState } from "../../catalog/marketplace-url";
-import { CompactProductCard } from "./compact-product-card";
+import { CatalogProductGrid } from "./catalog-product-grid";
+import { frontendFeatures } from "@marketplace/api-client";
 import { activeFilters, catalogFilters, emptyFilters, type FilterOptions, type FilterPatch } from "./catalog-filter-model";
 import { CatalogFilterToolbar } from "./catalog-filter-toolbar";
 import { CatalogFilterDialog, type LoadFilterOptions } from "./catalog-filter-dialog";
@@ -59,7 +60,7 @@ export function CompactCatalog({ result, state, returnUrl, loading, error, loadi
   return <section ref={catalogRef} className={styles.catalog} aria-label="Каталог товаров">
     <div className={filtersStyles.toolbar} aria-label="Поиск и фильтрация">
       <CatalogFilterToolbar filters={filters} options={options} count={active.length}
-        showPromotions={Boolean(promotions)}
+        showPromotions={frontendFeatures.promotions}
         onChange={change} onOpenAll={openAll} />
     </div>
     {promotions}
@@ -78,7 +79,7 @@ export function CompactCatalog({ result, state, returnUrl, loading, error, loadi
       </div> : null}
       {error && !result?.items.length ? <div className={styles.message}><h2>Не удалось загрузить каталог</h2><p>{error}</p><DmButton onClick={onRetry}>Повторить загрузку</DmButton></div>
         : loading ? <div role="status" className={styles.message}>Загружаем актуальные предложения…</div>
-        : result?.items.length ? <div className={styles.grid}>{result.items.map(product => <CompactProductCard key={product.id} product={product} returnUrl={returnUrl} imageSource={imageSource} />)}</div>
+        : result?.items.length ? <CatalogProductGrid products={result.items} state={state} returnUrl={returnUrl} imageSource={imageSource} />
         : <div className={styles.message}><h2>Ничего не найдено</h2><p>Измените запрос или условия поиска. Город доставки меняется в шапке.</p><DmButton onClick={reset}>Сбросить фильтры</DmButton><DmButton onClick={openAll}>Все фильтры</DmButton></div>}
       {!loading && result && (result.nextOffset ?? result.items.length) < result.total ? <div className={styles.more}>
         {error ? <p>Не удалось загрузить следующую страницу. Уже загруженные товары сохранены.</p> : null}

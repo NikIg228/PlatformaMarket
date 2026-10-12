@@ -29,6 +29,13 @@ export function packageKey(offer: Offer) {
 export function packageLabel(offer: Offer) {
   return `${offer.packaging.name}${offer.packaging.unit ? ` · ${offer.packaging.quantityInBaseUnit} ${offer.packaging.unit}` : ""} · ${offer.price.currency}`;
 }
+export function selectionFromQuery(comparison: Comparison, query: URLSearchParams) {
+  const offer = comparison.offers.find(item => item.offerId === query.get("offer"));
+  return {
+    variant: query.get("variant") ?? offer?.variantId ?? "",
+    packaging: query.get("packaging") ?? (offer ? packageKey(offer) : ""),
+  };
+}
 export function offerAvailable(offer: Offer) {
   return offer.availability.some(item => compareDecimal(item.quantityAvailable, "0") > 0);
 }

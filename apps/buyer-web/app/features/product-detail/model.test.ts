@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { compareDecimal, packageKey, productAttributes, saleTotal, selectedOffers, type Comparison, type Offer } from "./model";
+import { compareDecimal, packageKey, productAttributes, saleTotal, selectedOffers, selectionFromQuery, type Comparison, type Offer } from "./model";
 
 const offer = (id: string, variantId: string, price: string, quantity = "4", available = true): Offer => ({
   offerId: id, variantId, supplier: { organizationId: id, name: id }, supplierSku: null,
@@ -9,6 +9,14 @@ const offer = (id: string, variantId: string, price: string, quantity = "4", ava
   delivery: [], markers: { verifiedDocuments: false, complianceRisk: null, officialDistributor: false, supplierWarranty: false, requiresConfirmation: false },
 });
 const comparison = { product: { id: "p", name: "Товар", brand: null, manufacturer: null, baseUnit: null }, reviewSummary: { count: 0, averageRating: null }, variants: [], selectedVariantId: null, offers: [], comparisonAttributes: [] } as Comparison;
+
+it("opens the promoted offer's variant and package, preserves explicit choices and rejects unknown offers", () => {
+  const promoted = offer("promotion-offer", "A3", "100", "2");
+  const data = { ...comparison, offers: [offer("default", "A2", "50"), promoted] };
+  expect(selectionFromQuery(data, new URLSearchParams("offer=promotion-offer"))).toEqual({ variant: "A3", packaging: packageKey(promoted) });
+  expect(selectionFromQuery(data, new URLSearchParams("offer=unknown"))).toEqual({ variant: "", packaging: "" });
+  expect(selectionFromQuery(data, new URLSearchParams("offer=promotion-offer&variant=A2&packaging=chosen"))).toEqual({ variant: "A2", packaging: "chosen" });
+});
 
 it("compares decimal minor units and multiplies beyond safe Number precision", () => {
   expect(compareDecimal("9007199254740993.1", "9007199254740993.09")).toBe(1);

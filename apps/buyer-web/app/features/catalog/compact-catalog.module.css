@@ -9,7 +9,7 @@
 @media(max-width:1279px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.catalog{grid-template-columns:minmax(0,1fr);padding:var(--dm-space-6);gap:var(--dm-space-6)}.toolbar{align-items:flex-start;flex-direction:column}}
 @media(max-width:1023px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:767px){.catalog{display:block;padding:var(--dm-space-4)}.sidebar{display:none}.controls .mobileFilters{display:inline-flex}.toolbar{gap:var(--dm-space-3)}.controls{width:100%;justify-content:space-between}.toolbar h1{font-size:var(--dm-font-size-heading)}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--dm-space-3)}.card{padding:var(--dm-space-3)}.message{padding:var(--dm-space-6)}.controls select{width:180px}.more{flex-wrap:wrap}}
-@media(max-width:479px){.grid{grid-template-columns:minmax(0,1fr)}.photo{height:auto}}
+@media(max-width:479px){.photo{height:auto}}
 
 /* Catalogue owns search/navigation; only the global header and filter panel stick. */
 .catalog{width:100%;min-width:0}
@@ -46,3 +46,7 @@
 .stockLine span+span{border-left:1px solid var(--dm-border);padding-left:var(--dm-space-2)}
 .stockLine [data-available=true]{color:var(--dm-success-text)}
 @media(max-width:767px){.resultsHeading{flex-wrap:wrap}.resultsTitle{gap:var(--dm-space-3)}}
+.campaignSlot { grid-column:1/-1; min-width:0; }
+.promotionError { display:flex; gap:var(--dm-space-3); align-items:center; flex-wrap:wrap; font-size:var(--dm-font-size-body); margin-bottom:var(--dm-space-4); }
+
+.promotionMark { min-width:0; display:flex; flex-wrap:wrap; padding-top:var(--dm-space-2); }

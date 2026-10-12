@@ -13,7 +13,7 @@ import { productLoginUrl } from "../../public-links";
 import { safeCatalogReturn } from "../../catalog/marketplace-url";
 import { compactProductTitle } from "../../catalog/product-title";
 import { ProductGallery } from "./product-gallery";
-import { compareDecimal, offerAvailable, packageKey, packageLabel, productAttributes, selectedOffers, toSupplierOffer, type Comparison } from "./model";
+import { compareDecimal, offerAvailable, packageKey, packageLabel, productAttributes, selectedOffers, selectionFromQuery, toSupplierOffer, type Comparison } from "./model";
 import styles from "./product-detail.module.css";
 
 export type ProductDetailProps = {
@@ -36,10 +36,10 @@ export function ProductDetail({ initial, returnTo, description, sourceUrl, image
   const [loadedCity, setLoadedCity] = useState<string | null>(null);
   const title = compactProductTitle(comparison.product.name, displayName);
   useEffect(() => {
-    const restore = () => { const params = new URLSearchParams(window.location.search); setVariantId(params.get("variant") ?? ""); setPackaging(params.get("packaging") ?? ""); };
+    const restore = () => { const selection = selectionFromQuery(initial, new URLSearchParams(window.location.search)); setVariantId(selection.variant); setPackaging(selection.packaging); };
     restore(); window.addEventListener("popstate", restore);
     return () => window.removeEventListener("popstate", restore);
-  }, []);
+  }, [initial]);
   useEffect(() => {
     if (!delivery.ready) return;
     let active = true;
@@ -62,6 +62,7 @@ export function ProductDetail({ initial, returnTo, description, sourceUrl, image
   const choose = (nextVariant: string, nextPackage: string) => {
     setVariantId(nextVariant); setPackaging(nextPackage);
     const url = new URL(window.location.href);
+    url.searchParams.delete("offer");
     url.searchParams.set("variant", nextVariant);
     if (nextPackage) url.searchParams.set("packaging", nextPackage); else url.searchParams.delete("packaging");
     window.history.pushState(window.history.state, "", url.pathname + url.search);

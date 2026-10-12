@@ -1,11 +1,12 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { DmButton } from "@marketplace/ui";
+import { DmButton, StatusTag } from "@marketplace/ui";
 import type { SearchMedia, SearchProduct } from "../../catalog-search-types";
 import { formatCatalogMoney, selectCatalogOffer } from "../../catalog/catalog-view-model";
 import { catalogCardPresentation } from "./catalog-card-presentation";
 import { compactProductTitle } from "../../catalog/product-title";
+import { catalogPromotionMark } from "./catalog-promotion-mark";
 import styles from "./compact-catalog.module.css";
 const ProductQuickOffers = dynamic(() => import("./product-quick-offers"), { ssr: false, loading: () => <span role="status">Открываем предложения…</span> });
 export function CompactProductCard({ product, returnUrl, imageSource }: { product: SearchProduct; returnUrl: string; imageSource: (media?: SearchMedia) => string | null }) {
@@ -17,8 +18,17 @@ export function CompactProductCard({ product, returnUrl, imageSource }: { produc
   const offer = selectCatalogOffer(product);
   const presentation = catalogCardPresentation(product);
   const title = compactProductTitle(product.name, product.catalogName);
+  const [now, setNow] = useState(() => Date.now());
+  const promotion = catalogPromotionMark(product, now);
+  const hasPromotion = Boolean(promotion);
+  useEffect(() => {
+    if (!hasPromotion) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(timer);
+  }, [hasPromotion]);
   return <article className={styles.frame} data-testid="product-card"><a className={styles.card} aria-label={`Открыть карточку: ${title}`} href={`/products/${product.id}?returnTo=${encodeURIComponent(returnUrl)}`}>
     <div className={styles.photo}>{image && !failed ? <img src={image} alt={title} loading="lazy" onError={() => setFailed(true)} /> : <span>Фото пока нет</span>}</div>
+    {promotion ? <div className={styles.promotionMark} title={promotion.description}><StatusTag tone="success">{promotion.label}</StatusTag></div> : null}
     {presentation.brand ? <p className={styles.brand}>{presentation.brand}</p> : null}
     <h2>{title}</h2>
     {presentation.parameters ? <p className={styles.parameters}>{presentation.parameters}</p> : null}

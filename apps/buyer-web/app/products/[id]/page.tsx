@@ -11,6 +11,7 @@ import ProductLoadError from "./product-load-error";
 import { safeCatalogReturn } from "../../catalog/marketplace-url";
 import { compactProductTitle } from "../../catalog/product-title";
 import { localProductPreview, previewDocumentLinks } from "../../features/product-detail/local-preview";
+import { selectionFromQuery } from "../../features/product-detail/model";
 
 const API_URL = process.env.INTERNAL_API_URL ?? (process.env.NEXT_PUBLIC_API_URL?.startsWith("http") ? process.env.NEXT_PUBLIC_API_URL : "http://127.0.0.1:4012/api");
 const getProduct = cache(async (id: string) => {
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 export default async function ProductPage({ params, searchParams }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ returnTo?: string; variant?: string; packaging?: string }>;
+  searchParams: Promise<{ returnTo?: string; variant?: string; packaging?: string; offer?: string }>;
 }) {
   const { id } = await params;
   const query = await searchParams;
@@ -36,12 +37,13 @@ export default async function ProductPage({ params, searchParams }: {
   catch { return <ProductLoadError returnTo={returnTo} />; }
   if (!comparison) notFound();
   const product = comparison.product;
+  const selection = selectionFromQuery(comparison, new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string")));
   const reference = catalog.products.find(item => item.id === product.id && item.name === product.name);
   const researched = findResearchedDescription(product);
   const preview = localProductPreview(product);
   const media = findFallbackCatalogMedia(product) ?? (reference?.sourceUrl ? mediaCatalog.entries[reference.sourceUrl as keyof typeof mediaCatalog.entries] : undefined);
   return <ProductDetail key={product.id} initial={comparison} returnTo={returnTo}
-    initialVariant={query.variant} initialPackage={query.packaging}
+    initialVariant={selection.variant} initialPackage={selection.packaging}
     displayName={preview?.title}
     documents={preview ? previewDocumentLinks(preview) : []}
     description={preview?.description ?? researched?.description ?? reference?.description ?? null}

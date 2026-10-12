@@ -6,7 +6,6 @@ import type { PromotionListQuery, PublicPromotionPage } from "@marketplace/schem
 import { DmButton, DmField, DmSearch, DmSelect, EmptyState, ErrorState, LoadingState, Section, errorMessage, formatDate, formatMoney } from "@marketplace/ui";
 import { fetchLiveCatalog } from "../../catalog/live-search";
 import type { SearchResult } from "../../catalog-search-types";
-import { MarketplaceHeader } from "../marketplace-header/marketplace-header";
 import { PromotionPreview } from "./promotion-preview";
 import { FeaturedPromotions } from "./featured-promotions";
 
@@ -71,6 +70,4 @@ export function PromotionsStorefront({ featured = false, productId, hideEmpty = 
     </div>
   </Section>;
 }
-export default function PromotionsPage() {
-  return <><MarketplaceHeader showCity={false} /><main aria-label="Акции" /></>;
-}
+export { default } from "./promotions-page";
