@@ -11,6 +11,7 @@ import { PromotionsStorefront } from "../catalog/promotions-storefront";
 import { formatCatalogMoney } from "../../catalog/catalog-view-model";
 import { productLoginUrl } from "../../public-links";
 import { safeCatalogReturn } from "../../catalog/marketplace-url";
+import { compactProductTitle } from "../../catalog/product-title";
 import { ProductGallery } from "./product-gallery";
 import { compareDecimal, offerAvailable, packageKey, packageLabel, productAttributes, selectedOffers, toSupplierOffer, type Comparison } from "./model";
 import styles from "./product-detail.module.css";
@@ -19,9 +20,11 @@ export type ProductDetailProps = {
   initial: Comparison; returnTo: string; description: string | null;
   sourceUrl: string | null; image: { src: string; alt: string } | null;
   initialVariant?: string; initialPackage?: string;
+  displayName?: string;
+  documents?: Array<{ name: string; description: string; format: string; href: string }>;
 };
 
-export function ProductDetail({ initial, returnTo, description, sourceUrl, image, initialVariant = "", initialPackage = "" }: ProductDetailProps) {
+export function ProductDetail({ initial, returnTo, description, sourceUrl, image, initialVariant = "", initialPackage = "", displayName, documents = [] }: ProductDetailProps) {
   const delivery = useDeliveryContext();
   const [comparison, setComparison] = useState(initial);
   const [variantId, setVariantId] = useState(initialVariant);
@@ -31,6 +34,7 @@ export function ProductDetail({ initial, returnTo, description, sourceUrl, image
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [revision, setRevision] = useState(0);
   const [loadedCity, setLoadedCity] = useState<string | null>(null);
+  const title = compactProductTitle(comparison.product.name, displayName);
   useEffect(() => {
     const restore = () => { const params = new URLSearchParams(window.location.search); setVariantId(params.get("variant") ?? ""); setPackaging(params.get("packaging") ?? ""); };
     restore(); window.addEventListener("popstate", restore);
@@ -74,10 +78,10 @@ export function ProductDetail({ initial, returnTo, description, sourceUrl, image
     <main className={styles.shell}>
       <nav aria-label="Навигация по каталогу"><Link className={styles.back} href={currentReturn}>← Каталог</Link></nav>
       <section className={styles.hero} aria-label="Товар">
-        <ProductGallery image={image} name={comparison.product.name} />
+        <ProductGallery image={image} name={title} />
         <div className={styles.identity}>
           {comparison.product.brand ? <p className={styles.brand}>{comparison.product.brand}</p> : null}
-          <h1>{comparison.product.name}</h1>
+          <h1>{title}</h1>
           <dl className={styles.facts}>{facts.map(([name, value], index) => <div key={`${name}-${index}`}><dt>{name}</dt><dd>{value}</dd></div>)}</dl>
           <div className={styles.choiceGroup}>
             <strong>Вариант товара</strong>
@@ -112,7 +116,7 @@ export function ProductDetail({ initial, returnTo, description, sourceUrl, image
             : !fresh ? <LoadingState label="Загружаем актуальные предложения" />
             : !offers.length ? <EmptyState title="Предложений пока нет" description="Для этого варианта и города нет предложений с актуальной ценой. Попробуйте другой вариант или город." /> : null}
           {/* Keep the pending-write lock and outcome alive across selection/city changes. */}
-          <SupplierOffers offers={fresh ? offers.map(toSupplierOffer) : []} productName={`${comparison.product.name} · ${variant?.label ?? variant?.sku ?? ""}`} loginHref={loginHref} comparison />
+          <SupplierOffers offers={fresh ? offers.map(toSupplierOffer) : []} productName={`${title} · ${variant?.label ?? variant?.sku ?? ""}`} loginHref={loginHref} comparison />
         </div></DmSurface>
       </section>
       <section id="product-information" className={styles.section} aria-label="Информация о товаре">
@@ -123,7 +127,7 @@ export function ProductDetail({ initial, returnTo, description, sourceUrl, image
           <div id="product-tab-panel" role="tabpanel" aria-labelledby={`${tab}-tab`} tabIndex={0} className={styles.tabPanel}>
             {tab === "attributes" ? <><h2>Характеристики товара</h2>{facts.length ? <dl className={`${styles.facts} ${styles.detailsFacts}`}>{[...facts.slice(0, facts.length - Math.min(attributes.length, 3)), ...attributes].map(([name, value], index) => <div key={`${name}-${index}`}><dt>{name}</dt><dd>{value}</dd></div>)}</dl> : <p className={styles.muted}>Характеристики пока не добавлены.</p>}</>
               : tab === "description" ? <><h2>Описание товара</h2><p className={styles.description}>{description || "Описание пока не добавлено."}</p>{description ? <p className={styles.caption}>Описание относится к линейке товара. Исполнение и комплектацию уточняйте по выбранному артикулу.</p> : null}{sourceUrl ? <a href={sourceUrl} target="_blank" rel="noreferrer">Источник описания ↗</a> : null}</>
-              : <><h2>Документы на товар</h2><p className={styles.muted}>Файлы документов пока не опубликованы. Запросите документы на выбранный товар у поставщика перед покупкой.</p></>}
+              : <><h2>Документы на товар</h2>{documents.length ? <div className={styles.stack}>{documents.map(document => <div className={styles.document} key={document.href}><div className={styles.choiceGroup}><strong>{document.name}</strong><p className={styles.caption}>{document.description} · {document.format}</p></div><DmButton as="a" href={document.href} download aria-label={`Скачать: ${document.name}`}>Скачать PDF</DmButton></div>)}</div> : <p className={styles.muted}>Файлы документов пока не опубликованы. Запросите документы на выбранный товар у поставщика перед покупкой.</p>}</>}
           </div>
         </div></DmSurface>
       </section>

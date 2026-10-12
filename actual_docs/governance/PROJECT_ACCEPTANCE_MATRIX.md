@@ -8,6 +8,16 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+12.10 PRODUCT-PAGE-PREVIEW-DATA — LOCAL_PASS, baseline954be51 + this patch:
+по отдельному поручению владельца пять товаров со скрина получили тестовые
+варианты, две фасовки, по3 поставщика, характеристики/описания и10 PDF.
+Локальная DB подготовка ограничена точными IDs, transactional/idempotent,
+с backup и предварительной rollback-проверкой в test DB. Исходные названия
+сохранены, короткие заголовки показаны в каталоге. Документы доступны только
+в development. Unit15 + UI-policy4, browser8 unique, native пять страниц1440/390,
+типы/lint/UI-contract и go_live web build PASS. [Полное evidence](task-state/PRODUCT-PAGE-PREVIEW-DATA-2026-10-12.md).
+Это тестовое наполнение, не приёмка реальных коммерческих данных или production.
+
 12.10 PRODUCT-PAGE-REDESIGN — LOCAL_PASS, baseline4096d0b5 + this patch:
 страница товара по согласованной композиции референса и общим DS adapters;
 вариант/сопоставимая фасовка/валюта, zoom, компактные предложения, сортировка,

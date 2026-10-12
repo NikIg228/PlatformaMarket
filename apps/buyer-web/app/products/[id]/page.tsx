@@ -9,6 +9,8 @@ import { findResearchedDescription } from "../../features/catalog/researched-pro
 import { ProductDetail } from "../../features/product-detail/product-detail";
 import ProductLoadError from "./product-load-error";
 import { safeCatalogReturn } from "../../catalog/marketplace-url";
+import { compactProductTitle } from "../../catalog/product-title";
+import { localProductPreview, previewDocumentLinks } from "../../features/product-detail/local-preview";
 
 const API_URL = process.env.INTERNAL_API_URL ?? (process.env.NEXT_PUBLIC_API_URL?.startsWith("http") ? process.env.NEXT_PUBLIC_API_URL : "http://127.0.0.1:4012/api");
 const getProduct = cache(async (id: string) => {
@@ -20,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const comparison = await getProduct(decodeURIComponent(id)).catch(() => null);
   const description = comparison ? findResearchedDescription(comparison.product)?.description
     ?? catalog.products.find(item => item.id === comparison.product.id && item.name === comparison.product.name)?.description : undefined;
-  return { title: comparison ? `${comparison.product.name} | PlatformaMarket` : "Карточка товара | PlatformaMarket", description };
+  return { title: comparison ? `${compactProductTitle(comparison.product.name, localProductPreview(comparison.product)?.title)} | PlatformaMarket` : "Карточка товара | PlatformaMarket", description };
 }
 export default async function ProductPage({ params, searchParams }: {
   params: Promise<{ id: string }>;
@@ -36,10 +38,13 @@ export default async function ProductPage({ params, searchParams }: {
   const product = comparison.product;
   const reference = catalog.products.find(item => item.id === product.id && item.name === product.name);
   const researched = findResearchedDescription(product);
+  const preview = localProductPreview(product);
   const media = findFallbackCatalogMedia(product) ?? (reference?.sourceUrl ? mediaCatalog.entries[reference.sourceUrl as keyof typeof mediaCatalog.entries] : undefined);
   return <ProductDetail key={product.id} initial={comparison} returnTo={returnTo}
     initialVariant={query.variant} initialPackage={query.packaging}
-    description={researched?.description ?? reference?.description ?? null}
-    sourceUrl={researched?.sourceUrl ?? reference?.sourceUrl ?? null}
+    displayName={preview?.title}
+    documents={preview ? previewDocumentLinks(preview) : []}
+    description={preview?.description ?? researched?.description ?? reference?.description ?? null}
+    sourceUrl={preview ? null : researched?.sourceUrl ?? reference?.sourceUrl ?? null}
     image={media?.securePath ? { src: media.securePath, alt: media.altText ?? product.name } : null} />;
 }

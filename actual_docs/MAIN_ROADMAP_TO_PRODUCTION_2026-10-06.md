@@ -343,6 +343,12 @@ gallery zoom и вкладки. Сохранение выбора при вхо�
 [Evidence и публикация](governance/task-state/PRODUCT-PAGE-REDESIGN-2026-10-12.md).
 Общий R7, цены/остатки каталога и production этим не принимаются.
 
+12.10: PRODUCT-PAGE-PREVIEW-DATA — отдельное поручение владельца выполнено в
+локальном каталоге: пять карточек со скрина, варианты/фасовки/предложения,
+характеристики/описания/документы; короткие заголовки без импортного описания.
+Это данные для просмотра интерфейса, не real-data/production acceptance.
+[Проверки и статус публикации](governance/task-state/PRODUCT-PAGE-PREVIEW-DATA-2026-10-12.md).
+
 - [ ] **R7.1** Консолидировать shared controls/theme и последние UI/Support/
   Orders/Notifications slices после R0; проверить нужные consumers, mobile,
   keyboard/focus, loading/empty/error, черновики и recovery.

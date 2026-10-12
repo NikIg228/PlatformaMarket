@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { DmButton, DmDialog, DmSurface } from "@marketplace/ui";
-import { ZoomIn24Regular } from "@fluentui/react-icons";
+import { ZoomIn24Regular } from "@fluentui/react-icons/svg/zoom-in";
 import styles from "./product-detail.module.css";
 
 export function ProductGallery({ image, name }: { image: { src: string; alt: string } | null; name: string }) {

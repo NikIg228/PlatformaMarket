@@ -1,4 +1,23 @@
-# PRODUCT-PAGE-REDESIGN-2026-10-12 — LOCAL_PASS / PUBLICATION_PENDING
+# PRODUCT-PAGE-REDESIGN-2026-10-12 — LOCAL_PASS / PUBLISHED / CI_FAILED
+
+## Publication receipt — 12.10.2026
+
+Implementation `954be515f0fdf7bef1dd232805d0ca53a7eac485` committed and pushed to
+origin/main. `git ls-remote origin refs/heads/main` independently matches that SHA.
+All20 staged files were reviewed; staged diff hygiene and task links PASS.
+Only this post-publication receipt remains a local documentation change; original
+untracked reference-image directories are preserved. No source WIP remains.
+Exact-SHA GitHub Actions snapshot via GitHub connector:
+[CI38279333762](https://github.com/NikIg228/PlatformaMarket/actions/runs/38279333762)
+and [Security38279333668](https://github.com/NikIg228/PlatformaMarket/actions/runs/38279333668)
+final snapshot: Security SUCCESS, CI FAILURE in verify → Run npm test.
+Postgres integration and both API/web container builds SUCCESS. The failing test
+and cause have not been investigated; no automatic repair or CI_PASS/deploy claim.
+Canonical dev3924 was not stopped; live page verified after production build.
+Generated next-env build change restored to its pre-task dev baseline.
+UI implementation/local acceptance complete; full pipeline acceptance is blocked
+by the failed npm test gate. Next separate step: inspect that gate's failure log.
+No next product phase, automatic repair, monitor, rollover or new agent authorized.
 
 Owner explicitly approved implementation of the proposed product page/reference-v2,
 including a fresh geometry audit and project design-system rules. Sole writer for

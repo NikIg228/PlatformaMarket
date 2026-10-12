@@ -1,5 +1,14 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 12.10.2026 — PRODUCT-PAGE-PREVIEW-DATA
+
+Новое поручение владельца: тестовое наполнение пяти карточек именно со скрина
+и короткие заголовки каталога. Исполнитель PlatformaMarket UI01a11795,
+primary01a11758 проверен idle, глобальная передача не выполняется.
+Локальная подготовка данных явно разрешена этим запросом; точные IDs, backup,
+проверки и попытки — [checkpoint](PRODUCT-PAGE-PREVIEW-DATA-2026-10-12.md).
+R7 выбран только в этой границе; R1/production/следующие задачи не открываются.
+
 ## 12.10.2026 — PRODUCT-PAGE-REDESIGN / LOCAL_PASS
 
 По новому явному поручению владельца задача PlatformaMarket UI

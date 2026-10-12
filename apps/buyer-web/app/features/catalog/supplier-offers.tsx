@@ -10,7 +10,8 @@ import { OfferDeliverySummary, type DeliverySummary } from "../../catalog/offer-
 import { deliveryLabel } from "../../catalog-ranking";
 import styles from "./supplier-offers.module.css";
 import { saleTotal } from "../product-detail/model";
-import { Add24Regular, Subtract24Regular } from "@fluentui/react-icons";
+import { Add24Regular } from "@fluentui/react-icons/svg/add";
+import { Subtract24Regular } from "@fluentui/react-icons/svg/subtract";
 
 export type SupplierOffer = {
   id: string; supplier: { name: string; publicContact?: OrganizationContact | null }; priceMinor: string | null;
