@@ -1,9 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { spawn, type ChildProcess } from "node:child_process";
-import { createRequire } from "node:module";
 import { randomBytes } from "node:crypto";
 import path from "node:path";
-const { generateTotp } = createRequire(path.resolve("package.json"))(path.resolve("../api/dist/src/platform/security/totp.js")) as { generateTotp(secret: string): string };
 test.skip(process.env.E2E_LOCAL_AUTH_LIVE !== "true", "Explicit isolated DB and production landing/admin artifacts required");
 type Account = { email: string; password: string; organizationId: string };
 let child: ChildProcess, apiUrl: string, runId: string, counter = 0;
@@ -77,53 +75,28 @@ test("mobile registration acknowledges actual local file; reset uses delivered p
   expect((await request.post(`${apiUrl}/auth/login`, { data: { email, password: nextPassword } })).status()).toBe(201);
 });
 
-test("desktop operator password requires actual MFA, then mobile re-login uses challenge", async ({ page, context, request }) => {
+test("operator password opens the cabinet on desktop and mobile without a second factor", async ({ page, context, request }) => {
   const operator = await fixture<Account>("account", { index: 11 });
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("http://127.0.0.1:3100/login");
-  await expect(page.getByText("Локальный тестовый вход", { exact: true })).toBeVisible();
-  await page.screenshot({ path: test.info().outputPath("local-operator-login-desktop-1440.png") });
-  await page.getByLabel("Email оператора").fill(operator.email); await page.getByLabel("Пароль оператора").fill(operator.password);
-  await page.getByRole("button", { name: "Войти с паролем и MFA" }).focus(); await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: "Подключите двухфакторную проверку" })).toBeVisible();
-  expect(await page.evaluate(() => sessionStorage.getItem("dentmarket_admin_session"))).toBeNull();
-  const secretNote = page.getByRole("note", { name: "Данные для настройки MFA" });
-  const secret = (await secretNote.locator("code").textContent())!;
-  await page.screenshot({ path: test.info().outputPath("local-operator-mfa-desktop-1440.png"), mask: [secretNote] });
-  await page.getByLabel("Код подтверждения").fill(generateTotp(secret));
-  await page.getByRole("button", { name: "Продолжить", exact: true }).click();
-  await page.waitForURL("http://127.0.0.1:3100/");
-  const stored = await page.evaluate(() => JSON.parse(sessionStorage.getItem("dentmarket_admin_session") ?? "null"));
-  expect(Boolean(stored?.accessToken)).toBe(true);
-  expect(stored.activeOrganizationId).toBe(operator.organizationId);
-  expect(stored.authenticationMethods).toContain("totp");
-  expect((await request.get(`${apiUrl}/organizations`, { headers: { authorization: `Bearer ${stored.accessToken}` } })).status()).toBe(200);
-  await test.info().attach("operator-readback", { body: JSON.stringify({ operatorOrganizationMatches: stored.activeOrganizationId === operator.organizationId, elevated: stored.authenticationMethods.includes("totp"), protectedApiStatus: 200 }), contentType: "application/json" });
-  await page.evaluate(() => sessionStorage.clear()); await context.clearCookies();
-  await page.setViewportSize({ width: 390, height: 844 }); await page.goto("http://127.0.0.1:3100/login");
-  await page.getByLabel("Email оператора").fill(operator.email); await page.getByLabel("Пароль оператора").fill(operator.password);
-  await page.getByRole("button", { name: "Войти с паролем и MFA" }).tap();
-  await expect(page.getByRole("heading", { name: "Подтвердите вход" })).toBeVisible();
-  await expect(page.getByRole("note")).toHaveCount(0);
-  await page.getByLabel("Код подтверждения").fill("XXXX-XXXX-XXXX"); await page.getByRole("button", { name: "Продолжить", exact: true }).tap();
-  await expect(page.getByRole("alert")).toBeVisible();
-  expect(await page.evaluate(() => sessionStorage.getItem("dentmarket_admin_session"))).toBeNull();
-  await page.getByLabel("Код подтверждения").fill("");
-  await page.screenshot({ path: test.info().outputPath("local-operator-mfa-error-mobile-390.png") });
-  await page.getByLabel("Код подтверждения").fill(generateTotp(secret)); await page.getByRole("button", { name: "Продолжить", exact: true }).tap();
-  await page.waitForURL("http://127.0.0.1:3100/");
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 }); await page.goto("http://127.0.0.1:3100/login");
+    await page.evaluate(() => sessionStorage.clear()); await context.clearCookies(); await page.reload();
+    await page.getByLabel("Email оператора").fill(operator.email); await page.getByLabel("Пароль оператора").fill(operator.password);
+    await page.getByRole("button", { name: "Войти", exact: true }).click();
+    await page.waitForURL("http://127.0.0.1:3100/");
+    const stored = await page.evaluate(() => JSON.parse(sessionStorage.getItem("dentmarket_admin_session") ?? "null"));
+    expect(stored.activeOrganizationId).toBe(operator.organizationId);
+    expect((await request.get(apiUrl + "/organizations", { headers: { authorization: "Bearer " + stored.accessToken } })).status()).toBe(200);
+    await expect(page.getByLabel("Код подтверждения")).toHaveCount(0);
+  }
 });
 
-test("tenant cannot use operator login; unavailable capability hides local form", async ({ page }) => {
+test("tenant cannot use operator sign-in; failed credentials retain the form", async ({ page }) => {
   const tenant = await fixture<Account>("account", { index: 12, capability: "BUYER" });
   await page.goto("http://127.0.0.1:3100/login");
   await page.getByLabel("Email оператора").fill(tenant.email); await page.getByLabel("Пароль оператора").fill(tenant.password);
-  await page.getByRole("button", { name: "Войти с паролем и MFA" }).click();
-  await expect(page.getByRole("alert")).toBeVisible();
+  await page.getByRole("button", { name: "Войти", exact: true }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Вход не выполнен" })).toBeVisible();
+  await expect(page.getByLabel("Email оператора")).toHaveValue(tenant.email);
   await expect(page.getByLabel("Код подтверждения")).toHaveCount(0);
   expect(await page.evaluate(() => sessionStorage.getItem("dentmarket_admin_session"))).toBeNull();
-  // Explicit UI-only unavailable-server simulation; API guards have independent tests.
-  await page.route("**/auth/client-options", route => route.fulfill({ status: 503, body: "{}", contentType: "application/json" }));
-  await page.reload(); await expect(page.getByLabel("Пароль оператора")).toHaveCount(0);
-  await expect(page.getByText("Корпоративный вход пока недоступен", { exact: true })).toBeVisible();
 });

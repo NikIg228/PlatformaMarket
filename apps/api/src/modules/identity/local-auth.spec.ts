@@ -44,6 +44,23 @@ it("missing mail config fails before registration or reset account lookup", asyn
   await expect(service.forgotPassword(user.email)).rejects.toThrow("Unconfigured");
   expect(db.user.findUnique).not.toHaveBeenCalled();
 });
+it("staff password sign-in works without the legacy flag and restricts the session to the operator organization", async () => {
+  config.LOCAL_OPERATOR_PASSWORD_LOGIN_ENABLED = false;
+  const result = await service.loginOperator({ email: user.email, password }, {});
+  expect(result.activeOrganizationId).toBe("operator");
+  expect(result.organizationIds).toEqual(["operator"]);
+  expect(db.authSession.create.mock.calls[0][0].data.authMethods).toEqual(["password", "operator_password"]);
+});
+it.each(["tenant", "inactive", "unverified", "locked", "wrong-password", "revoked-membership", "authority-revoked"])("staff password sign-in denies %s without issuing a session", async variant => {
+  if (variant === "tenant") db.organizationMembership.findFirst.mockResolvedValue(null);
+  if (variant === "inactive") user.status = "BLOCKED";
+  if (variant === "unverified") user.emailVerifiedAt = null;
+  if (variant === "locked") user.lockedUntil = new Date(Date.now() + 60000);
+  if (variant === "revoked-membership") db.organizationMembership.findMany.mockResolvedValue([]);
+  if (variant === "authority-revoked") authority.assertPlatformOperator.mockRejectedValue(new Error("Revoked"));
+  await expect(service.loginOperator({ email: user.email, password: variant === "wrong-password" ? "wrong" : password }, {})).rejects.toThrow();
+  expect(db.authSession.create).not.toHaveBeenCalled();
+});
 it("includes a validated product return in the verification email for a new tab", async () => {
   config.AUTH_EMAIL_VERIFICATION_TTL_HOURS = 1;
   db.user.findUnique.mockResolvedValue(null);

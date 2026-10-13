@@ -13,12 +13,14 @@ test("enabled promotions keep permission denial before business reads", async ({
 });
 
 test("shared promotion workspace keeps operator review and keyboard filtering", async ({ page }) => {
-  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "admin-ui-fixture" })));
+  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "admin-ui-fixture", activeOrganizationId: "00000000-0000-4000-8000-000000000001" })));
   let approved = false;
   const filters: string[] = [];
   const writes: Array<Record<string, unknown>> = [];
   await page.route("**/api/**", async route => {
     const request = route.request(), path = new URL(request.url()).pathname.replace(/^\/api/, "");
+    if (path === "/organizations") return route.fulfill({ json: [{ id: "00000000-0000-4000-8000-000000000001", capabilities: [{ capability: "MARKETPLACE_OPERATOR" }] }] });
+    if (path.startsWith("/notifications/")) return route.fulfill({ json: { items: [], nextCursor: null, unreadCount: 0, asOf: new Date().toISOString() } });
     if (path === "/promotions") {
       filters.push(new URL(request.url()).searchParams.get("moderationStatus") ?? "");
       return route.fulfill({ json: { items: [{ ...samplePromotion, moderationStatus: approved ? "APPROVED" : "PENDING", temporalStatus: approved ? "ACTIVE" : "DRAFT" }], total: 1, offset: 0, limit: 10 } });

@@ -317,6 +317,11 @@ concurrent checkout и release/return доказаны целевыми contract
 backend/isolated PostgreSQL/UI/HTTP проверки и сборки PASS; подробные попытки,
 ограничения и отдельный Git/CI receipt — в той же карточке.
 Проверки и progress — [карточка](governance/task-state/CATALOG-PROMOTIONS-MESSAGES-2026-10-12.md).
+Следующее явное поручение13.10 — ADMIN_REBUILD_LOCAL_PASS: password-only вход оператора,
+локальный тестовый аккаунт, переработка admin и исправление пяти результатов аудита
+Messages/support. Auth/PG/runtime/build/types/UI и реальные трёхсторонние сценарии
+PASS, созданным оператором выполнен локальный вход. Попытки/evidence и отдельный
+Git/CI receipt в той же карточке; общий R7 не закрыт.
 Это разрешение выбранной последовательности, не закрытие общего R7/R1.
 
 Статус: PLANNED. Частные UI slices уже имеют evidence; не делать общий redesign.

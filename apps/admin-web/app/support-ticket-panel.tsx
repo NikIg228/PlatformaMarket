@@ -25,12 +25,13 @@ export function SupportTicketPanel({ id, api, assignees, canManage, canWrite, on
   const [internal, setInternal] = useState(false);
   const lock = useRef(false);
   const pending = useRef(new Map<string, { json: string; key: string }>());
-  const load = useCallback(async (initialize = false) => {
+  const formDirty = useRef(false);
+  const load = useCallback(async () => {
     const [result, events] = await Promise.all([api.supportTicket(id), canManage ? api.supportTicketHistory(id) : Promise.resolve([])]);
-    setTicket(result); setHistory(events);
-    if (initialize) { setStatus(result.status); setPriority(result.priority); setAssigneeId(result.assigneeId ?? ""); setDueAt(result.slaDueAt ? localDate(result.slaDueAt) : ""); }
+    setTicket(result); setHistory(events); setError("");
+    if (!formDirty.current) { setStatus(result.status); setPriority(result.priority); setAssigneeId(result.assigneeId ?? ""); setDueAt(result.slaDueAt ? localDate(result.slaDueAt) : ""); }
   }, [api, id, canManage]);
-  useEffect(() => { void load(true).catch(cause => setError(errorMessage(cause))); }, [load]);
+  useEffect(() => { void load().catch(cause => setError(errorMessage(cause))); }, [load]);
   const key = (action: string, input: unknown) => { const json = JSON.stringify(input); let current = pending.current.get(action); if (!current || current.json !== json) { current = { json, key: crypto.randomUUID() }; pending.current.set(action, current); } return current.key; };
   const run = async (action: () => Promise<void>, refreshAfter = true) => { if (lock.current) return; lock.current = true; setBusy(true); setError(""); setFeedback(""); try { await action(); if (refreshAfter) { await load(); await onChanged(); } } catch (cause) { setError(errorMessage(cause)); } finally { lock.current = false; setBusy(false); } };
   const needsDecision = Boolean(ticket?.links.some(link => link.entityType === "BusinessConversation") && !["RESOLVED", "CLOSED"].includes(ticket.status) && ["RESOLVED", "CLOSED"].includes(status));
@@ -38,8 +39,8 @@ export function SupportTicketPanel({ id, api, assignees, canManage, canWrite, on
     {error ? <ActionFeedback tone="error" description={`${error} Ввод сохранён.`} action={<DmButton disabled={busy} onClick={() => void load().catch(cause => setError(errorMessage(cause)))}>Обновить обращение</DmButton>} /> : null}{feedback ? <ActionFeedback tone="success" description={feedback} /> : null}
     {!ticket ? <LoadingState label="Загружаем обращение" /> : <>
       <p>{ticket.description}</p>{ticket.links.filter(link => link.entityType === "BusinessConversation").map(link => <DmButton key={link.id} disabled={busy} onClick={() => { destination.current = link.entityId; setOpen(false); }}>Открыть связанный диалог</DmButton>)}
-      {canManage ? <form className="mp-stack" onSubmit={event => { event.preventDefault(); void run(async () => { const input = { expectedVersion: ticket.version, status: status as UpdateSupportTicketInput["status"], priority: priority as UpdateSupportTicketInput["priority"], assigneeId: assigneeId || null, slaDueAt: dueAt ? new Date(dueAt).toISOString() : null, reason: reason.trim(), ...(needsDecision ? { decision: decision.trim() } : {}) }; await api.updateSupportTicket(id, { ...input, idempotencyKey: key("update", input) }); setReason(""); setDecision(""); setFeedback("Изменение обращения сохранено."); }); }}>
-        <fieldset disabled={busy} style={{ border: 0, padding: 0 }}><DmField label="Статус"><DmSelect value={status} onChange={event => setStatus(event.target.value)}>{Object.entries(ticketStatuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</DmSelect></DmField>
+      {canManage ? <form className="mp-stack" onSubmit={event => { event.preventDefault(); void run(async () => { const input = { expectedVersion: ticket.version, status: status as UpdateSupportTicketInput["status"], priority: priority as UpdateSupportTicketInput["priority"], assigneeId: assigneeId || null, slaDueAt: dueAt ? new Date(dueAt).toISOString() : null, reason: reason.trim(), ...(needsDecision ? { decision: decision.trim() } : {}) }; await api.updateSupportTicket(id, { ...input, idempotencyKey: key("update", input) }); formDirty.current = false; setReason(""); setDecision(""); setFeedback("Изменение обращения сохранено."); }); }}>
+        <fieldset disabled={busy} onChange={() => { formDirty.current = true; }} style={{ border: 0, padding: 0 }}><DmField label="Статус"><DmSelect value={status} onChange={event => setStatus(event.target.value)}>{Object.entries(ticketStatuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</DmSelect></DmField>
           <DmField label="Приоритет"><DmSelect value={priority} onChange={event => setPriority(event.target.value)}><option value="LOW">Низкий</option><option value="NORMAL">Обычный</option><option value="HIGH">Высокий</option><option value="URGENT">Срочный</option></DmSelect></DmField>
           <DmField label="Ответственный"><DmSelect value={assigneeId} onChange={event => setAssigneeId(event.target.value)}><option value="">Не назначен</option>{assignees.map(member => <option key={member.id} value={member.id}>{member.displayName}</option>)}</DmSelect></DmField>
           <DmField label="Срок (местное время)"><DmInput type="datetime-local" value={dueAt} onChange={event => setDueAt(event.target.value)} /></DmField>

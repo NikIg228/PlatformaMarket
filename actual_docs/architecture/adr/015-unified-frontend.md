@@ -21,7 +21,10 @@ build-time consistency и серверные границы сохраняютс
 BUYER/SUPPLIER sessions, HttpOnly cookies, CSRF/refresh/revocation и серверная
 проверка membership сохраняются на первом этапе совместимости. Это не новая
 универсальная роль и не слияние разрешений разных организаций. Операторская
-сессия остаётся отдельной привилегированной областью с существующим MFA.
+сессия остаётся отдельной привилегированной областью. Изменение13.10.2026:
+по явному решению владельца `/admin/login` использует email/пароль без MFA и
+social providers; сервер ограничивает сессию активной операторской организацией.
+Роли, permissions, проверка активного членства и отзыв сессий сохраняются.
 Рекомендация единой identity не разрешает ослаблять серверные проверки ради
 одного cookie. Полная замена session API требует отдельного контрактного этапа.
 
@@ -41,7 +44,7 @@ state предыдущей области; session/organization проверяю
 | buyer личный кабинет / | /clinic | BUYER session + org gate |
 | buyer /documents, /orders/[id] | /clinic/documents, /clinic/orders/[id] | Те же permission/tenant checks |
 | supplier /, /documents, /orders/[id], /legal/[code] | /supplier, /supplier/documents, /supplier/orders/[id], /supplier/legal/[code] | SUPPLIER session/admission |
-| admin /, /login | /admin, /admin/login | Operator permissions/MFA |
+| admin /, /login | /admin, /admin/login | Operator password session/permissions; решение13.10 |
 | landing /login, /register, /register/resume, /verify-email, /reset-password, /legal/* | те же пути | Прежние auth contracts/return validation |
 | buyer /catalog-search, /catalog-fallback | те же handlers | Прежние server-only upstreams |
 | browser /api/* | fixed INTERNAL_API_URL | Без client-selectable upstream |

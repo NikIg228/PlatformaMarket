@@ -2,7 +2,7 @@
 import { DmAction } from "@marketplace/ui/controls";
 
 import { IdentitySettings } from "./identity-settings";
-import { workspacePath } from "@marketplace/api-client";
+
 
 import { BuildingShop24Regular } from "@fluentui/react-icons/svg/building-shop";
 import { Cart24Regular } from "@fluentui/react-icons/svg/cart";
@@ -10,10 +10,9 @@ import { Cube24Regular } from "@fluentui/react-icons/svg/cube";
 import { Database24Regular } from "@fluentui/react-icons/svg/database";
 import { DocumentTable24Regular } from "@fluentui/react-icons/svg/document-table";
 import { PeopleTeam24Regular } from "@fluentui/react-icons/svg/people-team";
-import { Search24Regular } from "@fluentui/react-icons/svg/search";
 import { Settings24Regular } from "@fluentui/react-icons/svg/settings";
 import { ShieldLock24Regular } from "@fluentui/react-icons/svg/shield-lock";
-import { AppShell, DmButton, DmInput, DmSelect } from "@marketplace/ui";
+import { AppShell, DmButton, ActionFeedback } from "@marketplace/ui";
 import { frontendFeatures } from "@marketplace/api-client";
 import { useEffect, useState, type ReactNode } from "react";
 import styles from "./page.module.css";
@@ -42,7 +41,10 @@ import {
 } from "./admin-section-components";
 import { LiveMetrics } from "./live-metrics";
 import { OperationQueue } from "./operation-queue";
-import { clearAdminSession, isLocalAdminDevelopment, readAdminSession } from "./admin-auth";
+import { logoutAdmin, readAdminSession } from "./admin-auth";
+
+import { useAdminAccess } from "./use-admin-access";
+import { OperatorNotifications } from "./operator-notifications";
 
 type SectionId =
   | "analytics"
@@ -109,6 +111,8 @@ const sectionMeta: Record<SectionId, { title: string; description: string }> = {
 };
 
 const modules: Array<{ id: SectionId; title: string; description: string; icon: ReactNode }> = [
+  { id: "support", title: "Обращения", description: "Вопросы участников и переписка", icon: <PeopleTeam24Regular /> },
+  { id: "orders", title: "Заказы", description: "Исполнение, договоры и исключения", icon: <Cart24Regular /> },
   { id: "organizations", title: "Организации", description: "Юридические профили и участники", icon: <BuildingShop24Regular /> },
   { id: "access", title: "Доступ", description: "Пользователи и права", icon: <ShieldLock24Regular /> },
   { id: "catalog", title: "Каталог", description: "Карточки и предложения", icon: <Cube24Regular /> },
@@ -116,19 +120,21 @@ const modules: Array<{ id: SectionId; title: string; description: string; icon: 
 ];
 
 export default function OperationsWorkspace() {
-  const [authorized, setAuthorized] = useState(false);
+  const access = useAdminAccess();
+  const [actionError, setActionError] = useState("");
+  const [logoutPending, setLogoutPending] = useState(false);
   const [active, setActive] = useState<SectionId>("overview");
 
+  const navigate = (id: SectionId) => {
+    setActive(id); const url = new URL(window.location.href);
+    url.searchParams.set("section", id); url.searchParams.delete("ticketId"); url.searchParams.delete("conversationId");
+    window.history.pushState(null, "", url.pathname + url.search);
+  };
   useEffect(() => {
-    const section = new URLSearchParams(window.location.search).get("section");
-    if (navigation.some(item => item.id === section)) setActive(section as SectionId);
-    if (readAdminSession() || isLocalAdminDevelopment()) setAuthorized(true);
-    else window.location.replace(workspacePath("ADMIN", "/login"));
+    const sync = () => { const section = new URLSearchParams(window.location.search).get("section"); setActive(navigation.some(item => item.id === section) ? section as SectionId : "overview"); };
+    sync(); window.addEventListener("popstate", sync); return () => window.removeEventListener("popstate", sync);
   }, []);
-
-  if (!authorized) {
-    return <main className={styles.authLoading}>Проверяем вход...</main>;
-  }
+  if (!access.ready) return <main className={styles.authLoading}>{access.error ? <ActionFeedback tone="error" description={access.error} action={<DmButton onClick={access.retry}>Повторить проверку</DmButton>} /> : "Проверяем вход…"}</main>;
 
   const meta = sectionMeta[active];
 
@@ -136,10 +142,10 @@ export default function OperationsWorkspace() {
     <>
       <section className={styles.statusPanel} aria-label="Состояние PlatformaMarket">
         <div>
-          <div className={styles.statusTitle}>Магазин работает</div>
-          <div className={styles.statusText}>Поиск, корзина, заказы и документы доступны.</div>
+          <div className={styles.statusTitle}>Рабочая очередь</div>
+          <div className={styles.statusText}>Обращения участников, заказы и задачи площадки.</div>
         </div>
-        <DmButton className={styles.buttonOutline} appearance="outline" onClick={() => setActive("orders")}>Открыть очередь</DmButton>
+        <DmButton className={styles.buttonOutline} appearance="outline" onClick={() => navigate("orders")}>Открыть очередь</DmButton>
       </section>
 
       <div className={styles.grid}>
@@ -150,7 +156,7 @@ export default function OperationsWorkspace() {
           </div>
           <div className={styles.moduleGrid}>
             {modules.map((module) => (
-              <DmAction variant="choice"  className={styles.module} key={module.id} type="button" onClick={() => setActive(module.id)}>
+              <DmAction variant="choice"  className={styles.module} key={module.id} type="button" onClick={() => navigate(module.id)}>
                 <span className={styles.moduleTop}><strong>{module.title}</strong>{module.icon}</span>
                 <span className={styles.moduleDescription}>{module.description}</span>
               </DmAction>
@@ -158,22 +164,7 @@ export default function OperationsWorkspace() {
           </div>
         </section>
 
-        <section className={styles.panel}>
-          <div className={styles.panelHeader}><h2 className={styles.panelTitle}>Путь заказа</h2></div>
-          <div className={styles.checklist}>
-            {[
-              ["Цена сохранена", "Условия поставщика фиксируются в корзине"],
-              ["Заказ разделён", "Каждый поставщик получает свою часть"],
-              ["Исполнение подтверждено", "Количество и срок проходят проверку"],
-              ["Документы готовы", "Клиника и поставщик видят их в заказе"],
-            ].map(([title, description]) => (
-              <div className={styles.checkRow} key={title}>
-                <div className={styles.checkMark}>✓</div>
-                <div className={styles.checkCopy}><strong>{title}</strong><span className={styles.checkMeta}>{description}</span></div>
-              </div>
-            ))}
-          </div>
-        </section>
+
       </div>
 
       <LiveMetrics />
@@ -191,7 +182,7 @@ export default function OperationsWorkspace() {
     imports: <><CatalogImportReviewQueue /><SupplierOperations /><IntegrationOperations /><ConnectorReadinessRegistry /></>,
     orders: <><OperationQueue /><AgreementOperations /></>,
     security: <>{frontendFeatures.trust && <TrustOperations />}<AuditOperations /></>,
-    settings: <><PlatformSettings onNavigate={setActive} /><IdentitySettings /></>,
+    settings: <><PlatformSettings onNavigate={navigate} /><IdentitySettings /></>,
   };
 
   return (
@@ -199,27 +190,21 @@ export default function OperationsWorkspace() {
       productName="PlatformaMarket"
       productMark="PM"
       workspaceLabel="Операторский кабинет"
-      userName="Команда PlatformaMarket"
+      userName={readAdminSession()?.user?.displayName ?? "Команда PlatformaMarket"}
       userMeta="Оператор"
       navigation={navigation}
       activeNavigation={active}
-      onNavigate={(id) => setActive(id as SectionId)}
-      onLogout={() => { clearAdminSession(); window.location.assign(workspacePath("ADMIN", "/login")); }}
+      onNavigate={(id) => navigate(id as SectionId)}
+      logoutPending={logoutPending}
+      onLogout={() => { if (logoutPending) return; setLogoutPending(true); setActionError(""); void logoutAdmin().catch(() => { setLogoutPending(false); setActionError("Не удалось выйти. Повторите выход после восстановления соединения."); }); }}
       actions={
         <>
-          <DmSelect
-            className={styles.mobileSection}
-            value={active}
-            onChange={(_, data) => setActive(data.value as SectionId)}
-            aria-label="Раздел админки"
-          >
-            {navigation.map((item) => <option value={item.id} key={item.id}>{item.label}</option>)}
-          </DmSelect>
-          <DmInput className={styles.search} contentBefore={<Search24Regular />} placeholder="Поиск" aria-label="Поиск" />
+
+          <OperatorNotifications onSupport={() => navigate("support")} />
         </>
       }
     >
-      <div className={styles.content}>
+      <div className={styles.content}>{actionError ? <ActionFeedback tone="error" description={actionError} /> : null}
         <div className={styles.heading}>
           <div className={styles.headingCopy}>
             <h1 className={styles.pageTitle}>{meta.title}</h1>

@@ -105,8 +105,8 @@ export class ConversationsService {
     const author = await tx.user.findUniqueOrThrow({ where: { id: context.actorId }, select: { displayName: true } });
     const updated = await tx.businessConversation.update({ where: { id: conversation.id }, data: { latestSequence: { increment: 1 }, version: { increment: 1 }, resolved: ticket ? reviewFinished(ticket.status) : false } });
     const authorRole = context.organizationId === conversation.buyerOrganizationId ? "BUYER" : context.organizationId === conversation.supplierOrganizationId ? "SUPPLIER" : "OPERATOR";
-    if (ticket && !reviewFinished(ticket.status) && ((authorRole === "OPERATOR" && !ticket.firstResponseAt) || ticket.status === "WAITING_CUSTOMER" && authorRole !== "OPERATOR")) {
-      await tx.supportTicket.update({ where: { id: ticket.id }, data: { status: "IN_PROGRESS", ...(authorRole === "OPERATOR" ? { firstResponseAt: new Date() } : {}), version: { increment: 1 } } });
+    if (ticket && !reviewFinished(ticket.status) && ((authorRole === "OPERATOR" && (!ticket.firstResponseAt || ticket.status === "OPEN")) || ticket.status === "WAITING_CUSTOMER" && authorRole !== "OPERATOR")) {
+      await tx.supportTicket.update({ where: { id: ticket.id }, data: { status: "IN_PROGRESS", ...(authorRole === "OPERATOR" && !ticket.firstResponseAt ? { firstResponseAt: new Date() } : {}), version: { increment: 1 } } });
     }
     const message = await tx.conversationMessage.create({ data: { conversationId: conversation.id, sequence: updated.latestSequence, authorId: context.actorId, authorOrganizationId: context.organizationId, authorName: author.displayName, authorRole, body: input.body, idempotencyKey: input.idempotencyKey } });
     await this.attachments.link(tx, input.attachments ?? [], context, conversation, conversation.id, message.id);

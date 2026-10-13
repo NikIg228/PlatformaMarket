@@ -22,7 +22,31 @@ PostgreSQL остаётся source of truth. Redis/BullMQ выполняет ф�
 
 ## Health и диагностика
 
-### Локальные auth-письма и операторский вход (AUD-FIX-03.3)
+### Вход оператора — решение владельца13.10.2026
+
+Страница `/admin/login` использует email и пароль. Google/Apple, настройка MFA и
+challenge убраны с этой страницы по явному решению владельца. Это штатный
+`POST /api/auth/operator/login`, не legacy local flag. Сервер проверяет пароль,
+verified email, active user, активное членство и `MARKETPLACE_OPERATOR`; кабинет
+дополнительно проверяет защищённый `GET /organizations` (`organization.view`).
+Публичная регистрация не предоставляет операторские права.
+
+Операторская password-сессия ограничена единственной операторской организацией;
+её методы `password,operator_password` подписываются сервером. Отзыв сессии,
+пользователя или операторского членства проверяется на каждом запросе. Обычные
+password/social сессии сохраняют требование MFA при `JWT_REQUIRE_MFA=true`.
+Отдельные `mp_refresh_admin` HttpOnly и `mp_csrf_admin` cookies не подменяют
+сессии клиники/поставщика. `GET /api/auth/operator/current` восстанавливает
+сессию; `POST /api/auth/operator/logout` требует CSRF и отзывает её.
+
+Для явно разрешённого локального просмотра: `node scripts/prepare-local-operator.mjs --apply`.
+Скрипт допускает только canonical loopback5432/marketplace и существующую
+операторскую организацию/роль; транзакционно создаёт отдельный тестовый аккаунт
+и audit. Повтор не меняет пароль и чужие записи. Данные входа сохраняются в ignored
+`.tmp/local-runtime/OPERATOR-LOGIN.md`, не в Git/логе. Это data provision без
+изменения Prisma schema и без reseed каталога. Production-данные этим не создаются.
+
+### Локальные auth-письма и прежний opt-in endpoint (AUD-FIX-03.3)
 
 Это отдельный opt-in режим development/test, не email/SMS-интеграция и не
 production-способ входа. `AUTH_LOCAL_MAIL_ENABLED=true` сохраняет verification,
@@ -52,13 +76,13 @@ password-reset и registration-resume письма как JSON в `.tmp/auth-mai
 Оператор заранее имеет verified email/password, active user и membership в
 active организации с `MARKETPLACE_OPERATOR`; для входа в кабинет требуется
 роль с `organization.view`. Публичная регистрация таких прав не выдаёт.
-Admin login: пароль → настройка TOTP или challenge → elevated token → проверка
-существующим защищённым `GET /organizations` → кабинет. На staging/production
-этот локальный способ запрещён; принятую social-auth процедуру он не заменяет.
+Сохранённый legacy `/auth/local-operator/login` выдаёт первичную сессию для
+изолированных MFA-проверок. Страница `/admin/login` его больше не использует;
+её актуальный контракт описан выше. На staging/production legacy flag запрещён.
 
 **Не включать эти параметры автоматически в уже работающем основном API.**
-JWT_REQUIRE_MFA применяется ко всем защищённым маршрутам и всем ролям API;
-локальную проверку оператора проводят отдельным стендом. Для проверки только
+JWT_REQUIRE_MFA применяется к обычным сессиям всех ролей API; штатная ограниченная
+operator_password сессия — описанное выше исключение. Legacy MFA проверяют отдельным стендом. Для проверки только
 почты operator flag не нужен. Стабильные JWT/encryption keys стенда задаются
 в его private environment: смена APP_SECURITY_ENCRYPTION_KEY ломает расшифровку
 уже сохранённого MFA. Audit harness выдаёт случайные ключи и новые synthetic

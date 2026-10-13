@@ -323,6 +323,9 @@ export class MarketplaceApiClient {
   listSessions() { return this.get<IdentitySession[]>("/auth/sessions"); }
   revokeSession(sessionId: string) { return this.post<IdentitySessionRevoked>(`/auth/sessions/${encodeURIComponent(sessionId)}/revoke`, { reason: "user_security_settings" }); }
   loginLocalOperator(input: LocalOperatorLogin) { return this.post<LocalOperatorSession>("/auth/local-operator/login", input); }
+  loginOperator(input: import("@marketplace/schemas").OperatorLogin) { return this.request<import("@marketplace/schemas").OperatorSession>("/auth/operator/login", { method: "POST", body: JSON.stringify(input), credentials: "include" }); }
+  currentOperatorSession() { return this.request<import("@marketplace/schemas").OperatorSession | null>("/auth/operator/current", { credentials: "include" }); }
+  logoutOperator(csrfToken: string) { return this.request<{ ok: true }>("/auth/operator/logout", { method: "POST", credentials: "include", headers: { "x-csrf-token": csrfToken } }); }
   inspectRegistrationResume(input: RegistrationResumeProof) {
     return this.post<RegistrationResumeDetails>("/auth/registration/resume/inspect", input);
   }

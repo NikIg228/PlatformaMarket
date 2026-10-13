@@ -1,6 +1,15 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { MarketplaceApiClient } from "./index.js";
 afterEach(() => vi.unstubAllGlobals());
+it("uses separate operator endpoints and CSRF-protected logout with cookies", async () => {
+  const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => Response.json(null)); vi.stubGlobal("fetch", fetcher);
+  const client = new MarketplaceApiClient("http://localhost/api", {});
+  await client.loginOperator({ email: "operator@example.invalid", password: "Synthetic-password" });
+  await client.currentOperatorSession(); await client.logoutOperator("synthetic-csrf");
+  expect(fetcher.mock.calls.map(call => call[0])).toEqual(["login", "current", "logout"].map(p => `http://localhost/api/auth/operator/${p}`));
+  expect(fetcher.mock.calls[0][1]).toMatchObject({ method: "POST", credentials: "include", body: JSON.stringify({ email: "operator@example.invalid", password: "Synthetic-password" }) });
+  expect(fetcher.mock.calls[2][1]).toMatchObject({ method: "POST", credentials: "include", headers: expect.objectContaining({ "x-csrf-token": "synthetic-csrf" }) });
+});
 it("uses explicit local capabilities and POST-only credentials, never query strings", async () => {
   const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => Response.json({ ok: true })); vi.stubGlobal("fetch", fetcher);
   const client = new MarketplaceApiClient("http://localhost/api", {});

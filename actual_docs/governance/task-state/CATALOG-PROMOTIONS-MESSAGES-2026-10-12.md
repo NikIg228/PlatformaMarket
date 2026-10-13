@@ -1,6 +1,217 @@
-# CATALOG-PROMOTIONS-MESSAGES — LOCAL_PASS / PUBLISHED / CI_PENDING
+# CATALOG-PROMOTIONS-MESSAGES — ADMIN_REBUILD_LOCAL_PASS / CI_PENDING
 
-## 13.10 Compact header and operator review — LOCAL_PASS / PUBLICATION_PENDING
+## 13.10 Admin rebuild — LOCAL_PASS, публикация/CI отдельно
+
+Последнее явное поручение владельца: переработать admin UI/UX и вход на email/пароль
+без Google/Apple/MFA; подготовить тестового оператора в локальной рабочей БД;
+затем исправить MA-01/03/04/05. Это новое разрешение после завершённого аудита.
+Единственный исполнитель UI01a11795; primary01a11758 проверен idle. Checkout
+canonical/main `64784c2`; исходный dirty — audit Matrix/эта карточка,
+PRODUCT-PAGE-PREVIEW-DATA receipt и четыре output/imagegen каталога, сохраняются.
+
+План: контракт штатного operator login → серверная проверка пароля/операторской
+организации и ограниченная операторская сессия → целевые auth regressions;
+затем login UI, рабочая навигация/очередь admin, восстановление формы и статусы,
+URL выбранного диалога → целевые regressions и browser обеих сторон/оператора.
+Риск высокий в auth: не менять проверки ролей/tenant/revocation, не отменять MFA
+для обычных сессий; операторский password flow — явное решение владельца.
+Тестовый аккаунт — отдельная идемпотентная локальная data provision, без reseed
+каталога и пароля в Git; Prisma schema migration нужна только при изменении схемы.
+UI: общие Dm adapters/Manrope/tokens, 44px controls, compact32 на desktop,
+одна шапка раздела, компактная очередь с видимым обновлением, keyboard/mobile.
+Проверки: focused auth/session/schema/client и support после каждого поведения;
+completion — types, API/web build в isolated output, lint/UI contract, PostgreSQL,
+runtime split и targeted browser с реальным API/изолированной БД; локальный вход
+созданным аккаунтом. Скриншоты/computed styles. Review/diff, commit/push и CI receipt
+по постоянному разрешению. Прежний CI FAIL сохраняется, не объявлять зелёным.
+DoD: доступный password login, тестовые credentials переданы владельцу локально,
+исправлены пять замечаний, admin пригоден для просмотра и работы; нет deploy.
+
+Промежуточный результат: `/auth/operator/login|current|logout`, отдельные admin
+cookies, password-сессия с единственной операторской организацией; capability и
+активное членство проверяются также на каждом запросе. Обычные password/social
+сессии сохраняют прежнее MFA-требование. Новый login UI, проверка доступа/обновление
+сессии, рабочий URL раздела, logout/retry, уведомления поддержки, таблица очереди
+с поиском/сортировкой/poll/focus и сохранением формы. MA-03 исправлен в обоих
+write paths, firstResponseAt сохраняется. MA-05 URL/Back/Forward/drafts исправлены.
+
+Проверки этого этапа: schemas build PASS; API/admin/web types PASS (до последних
+UI/tests, completion ещё нужен); API nest build PASS с неизменным generated Prisma.
+Auth108 PASS, schemas3/client2/admin5 PASS; support unit23 PASS; PostgreSQL
+conversation-attachments1 PASS с новыми manual OPEN regressions для обоих ответов.
+Первый auth subset35 PASS/1 FAIL — точное ожидание расширенного select в старом
+session-verifier тесте; обновлён assertion и добавлен отзыв операторского членства,
+повтор5 PASS, затем зависимый auth108 PASS. UI attempt1:8 PASS/2 FAIL — locator
+alert захватывал Next route announcer; конкретизирован только locator, attempt2
+login2 PASS. Восемь PASS включают MA-01/04, URL/drafts обеих ролей и старые operator
+reply/attachment regressions. Logs `.tmp/admin-rebuild-2026-10-13/`.
+Real auth attempt1: desktop login/cookie restore/CSRF/revoke прошли, harness navigation
+гонялась с ожидаемым редиректом после ручного logout API. Исправлен тест: штатная
+кнопка выхода; также до повторного запуска исправлено имя Prisma userMfaFactor.
+Attempt2 PASS: реальный password login desktop/mobile, cookie restore, tenant denial,
+CSRF/logout/revocation при JWT_REQUIRE_MFA=true и отключённом legacy local flag.
+
+Completion evidence13.10: mandatory isolated PostgreSQL integration PASS (upgrade,
+auth/tenant/permissions, CORE06 и dependent scenarios), runtime split и production
+auth contract PASS. API/admin/E2E/web types и final web build PASS.
+Lint всех изменённых TS/TSX/mjs PASS; UI contract4 tests/364 files PASS.
+Real messages attempt1 FAIL2: fixture искал description через subject-search и
+создавал второй ACTIVE cart; исправлены только fixtures (ticket number и CHECKED_OUT).
+Attempt2 PASS2: clinic/supplier → новая очередь/notification → конкретное обращение,
+private-note isolation, общий диалог и публичное решение обеим сторонам.
+Messages regression13 PASS, соседние admin consumers2 PASS; mobile queue1 PASS
+(390px, отсутствие overflow, menu keyboard/focus, Manrope/44px/radius8).
+Скриншоты desktop реальной очереди и mobile проверены визуально; evidence
+`output/playwright/admin-messages-live/` и `output/playwright/admin-rebuild-mobile/`.
+Логи всех попыток `.tmp/admin-rebuild-2026-10-13/`; прошлые FAIL не скрыты.
+
+Рабочая БД: явно разрешённый local provision выполнен один раз скриптом
+`node scripts/prepare-local-operator.mjs --apply`; только новый пользователь
+601e21fd-4b29-49c5-a7da-c1c9fce7cb54 + membership существующей operator org/role и audit.
+Цель проверена SQL current_database=marketplace, loopback5432. Каталог/чужие роли
+не менялись, Prisma schema прежняя. Credentials в ignored `.tmp/local-runtime/OPERATOR-LOGIN.md`
+и operator-preview.json; пароль в Git/логи не выводился. Повтор provision подтвердил
+created=false и тот же userId, без дубликатов. Canonical dev перезапущен через
+`npm run dev`, go_live/marketplace; штатная подготовка schemas/Prisma/API PASS.
+Local browser attempt1 CONNECTION_REFUSED: запуск раньше readiness, данные не
+отправлялись. После HTTP200 attempt2 PASS: настоящий вход созданным оператором,
+очередь200, восстановление cookie, desktop/mobile и logout. Скриншоты
+`output/playwright/admin-local-preview-{desktop,mobile}.png` проверены.
+Backend/UI/schema изменены совместно; MA-01–05 закрыты целевыми regressions.
+Review проверил auth/tenant/revocation, отсутствие refresh/password в ответах/Git,
+dirty-form recovery, URL/drafts и соседние admin consumers. Изменения остальных
+доменных модулей и общий redesign всего проекта не выполнялись. Публикация
+и фактический CI ещё не подтверждены; прежний CI FAIL не превращён в PASS.
+
+## 13.10 Messages comprehensive audit — COMPLETE_WITH_FINDINGS
+
+**Результат:** основной сквозной сценарий работает, полную функциональную
+готовность Messages/support/operator подтвердить нельзя. Найдены пять проблем
+ниже; продуктовый код не исправлялся. Snapshot `64784c2` остаётся неизменным.
+
+### Подтверждённые проблемы
+
+| ID / важность | Воспроизведение и влияние | Основание / исправление для следующего scope |
+| --- | --- | --- |
+| MA-01 / P1 | Карточка оператора не загрузилась; после «Обновить обращение» сохранённая CLOSED/HIGH/назначенный оператор показана как OPEN/NORMAL/не назначен. Сохранение формы отправляет значения по умолчанию, включая пустой SLA, и может незаметно переоткрыть заявку и стереть назначение. | `apps/admin-web/app/support-ticket-panel.tsx:28–38`: initial load и retry используют разные режимы инициализации. Browser `operator-recovery-2.log` FAIL; проверено также выполнение PATCH после восстановления. При первом успешном получении данных заполнять форму сохранёнными значениями; отделить это от сохранения пользовательского черновика при поздних ошибках. |
+| MA-02 / блокер локального входа | `/admin/login` существует, но на текущем dev нет доступного способа входа: Google/Apple не настроены, `localOperatorPasswordEnabled=false`. Отображается «Корпоративный вход пока недоступен». | Read-only GET `/api/auth/client-options` + browser/screenshot `operator-login.png`, `ui-final.log` FAIL. Это конфигурационный блокер стенда, не доказательство отсутствия кабинета или дефекта MFA. Штатный production-вход: настроенный social provider, операторская организация/роль и MFA. Локальный password/MFA режим — отдельный стенд по `actual_docs/operations/operations.md`, не включать глобально в рабочем API. |
+| MA-03 / P2 | RESOLVED → оператор вручную ставит OPEN → пишет в общий чат. Статус остаётся OPEN/«Передано в поддержку», хотя оператор уже ответил; ожидается IN_PROGRESS/«На рассмотрении». | Реальная audit DB + compiled domain services: `backend-1.log` и `backend-results.json` FAIL. `support.service.ts:101` сохраняет старый firstResponseAt, `conversations.service.ts:108` переводит OPEN только при отсутствии firstResponseAt; аналогичная зависимость в support replies. Отделить переход OPEN → IN_PROGRESS от однократной записи времени первого ответа. В конце синтетическая заявка снова завершена. |
+| MA-04 / P2 | Открытая очередь оператора не показывает новую заявку сама: после61с, focus/visibility нет нового GET и новой карточки. «Обновить» сразу показывает заявку. В операторском shell нет inbox/колокольчика уведомлений. | `operator-1.log` FAIL; `support-operations.tsx:33` загружает только при mount/смене фильтра/ручном обновлении. Backend создаёт outbox и операторское IN_APP-уведомление, но это не даёт видимого оповещения в текущем кабинете. Нужны фоновая актуализация/индикация нового обращения с сохранением рабочего контекста. |
+| MA-05 / P2 | Открыть Messages по ссылке на A, выбрать B, обновить страницу: снова открыт A. Воспроизведено и в клинике, и у поставщика. | `ui-1.log`: две FAIL-проверки; `conversation-workspace.tsx:60,149` меняет selected только в React state, URL остаётся прежним. Согласовать выбранный conversationId с навигацией/Back/Reload, сохраняя нужные черновики. |
+
+Отдельное UI/UX наблюдение: операторский экран уступает кабинетам участников
+по рабочей плотности: дублируется заголовок, длинные карточки с UUID-номерами,
+много вертикального скролла; поле «Поиск» в `apps/admin-web/app/page.tsx:218`
+не подключено к поиску. Это статический/визуальный вывод, не дополнительные
+автоматические FAIL и не поручение на редизайн.
+
+### Что проверено и работает
+
+- Два новых real-HTTP browser сценария PASS: клиника начинает OFFER, поставщик
+  начинает ORDER; другая сторона получает новый чат через настоящий30s polling,
+  отвечает, отправитель видит корпоративное прочтение. До эскалации оператору404.
+- Обе стороны могут инициировать поддержку; общие статусы OPEN → IN_PROGRESS →
+  RESOLVED совпадают у клиники/поставщика/оператора. Попытка стороны завершить
+  рассмотрение отклоняется403. Оператор видит заявку и всю общую историю, пишет
+  уточнение и обязательное публичное решение. Приватная заметка не видна сторонам.
+- Проекция реального SupportTicketCreated создаёт IN_APP-уведомление операторской
+  организации; повторная проекция не создаёт дубль. Фоновый worker и внешняя
+  доставка не запускались: проверялся сохранённый event и его штатный projector.
+- Sidebar unread и персональное снятие непрочитанного, сохранение отдельных
+  черновиков при переключении чатов — новые UI PASS для обоих кабинетов.
+- Весь существующий support UI набор PASS17: создание, валидация, роли, фильтры,
+  пагинация, мобильная навигация, восстановление/повтор, фоновые сообщения,
+  вложения/предпросмотр/скачивание, ошибки сканера и операторские ответы/скачивание.
+- Геометрия/клавиатура диалога дополнительно PASS834/390: Manrope, radius16,
+  controls44, возврат фокуса и отсутствие горизонтального переполнения.
+- REUSED_PASS неизменённых входов: Messages/question browser13 + final dialog4;
+  schema6/client3/backend29, PostgreSQL lifecycle/attachments и интеграционный
+  CORE06. Последний доказывает отдельные cursors сотрудников, монотонность read,
+  tenant/role denial, отозванный доступ, replay/races, bounded history,
+  offer/order separation и неизменность коммерческого заказа. PG attachments
+  дополнительно покрывает claims/чужие файлы/rollback/cleanup. Точные прежние
+  команды и логи находятся в разделе реализации ниже.
+
+Новые уникальные browser-проверки: **23 PASS / 5 FAIL** (две FAIL для одного
+дефекта MA-05). Дополнительно одна целевая backend-проверка **FAIL MA-03**.
+Итого пять проблем, а не шесть независимых дефектов. Это не полный release/WCAG
+сертификат: не проверялись реальные аккаунты/MFA-вход, screen reader, production,
+нагрузка и внешние email/SMS. Операторские E2E использовали обычные изолированные
+JWT fixtures; проверки auth/tenant/permissions API не подменялись.
+
+### Команды, попытки и артефакты
+
+Harness root `.tmp/messages-audit-2026-10-13`, screenshots
+`output/playwright/messages-audit`. Product source and working DB unchanged.
+
+1. `npm exec -- playwright test --config .tmp/messages-audit-2026-10-13/ui.config.ts`
+   → `ui-1.log`:19 PASS/4 FAIL. Две FAIL — MA-05; две геометрические проверки
+   измеряли controls во время scale-анимации. После стабилизации screenshot
+   focused `--grep 'keyboard dialog|current local operator login'` → `ui-final.log`:
+   geometry2 PASS/login1 FAIL. CSS не изменялся.
+2. `npm run db:test -- exec -- playwright test --config .tmp/messages-audit-2026-10-13/real.config.ts`
+   → `real-1.log`: harness import.meta/CJS error, tests NOT_RUN; исправлен только
+   импорт в audit harness. `real-2.log`: **2 PASS**, 1.6m. Approved audit DB,
+   owned API4412/pilot/API-only; current dev UI3000/go_live. Browser API routing
+   менял только origin на4412, все ответы получены от реального тестового API.
+   Dev API4012 не использовался для этих записей. Сессии fixtures отозваны,
+   тестовый API остановлен штатным runner; synthetic rows остаются только в test DB.
+3. `npm exec -- playwright test --config .tmp/messages-audit-2026-10-13/operator.config.ts`
+   → `operator-1.log`: MA-04 FAIL. Затем focused `--grep 'ticket recovery'`:
+   `operator-recovery-1.log` PASS не воспроизвёл устойчивый initial-load failure
+   из-за второго успешного эффекта в Strict Mode; controlled failure до ручного
+   retry в `operator-recovery-2.log` → MA-01 FAIL. Продукт не изменялся.
+4. `npm run db:test -- exec -- node .tmp/messages-audit-2026-10-13/backend.mjs`
+   → `backend-1.log`: MA-03 FAIL на точном synthetic ORDER текущего аудита.
+
+Кабинет: `/admin`; вход: `/admin/login`; поддержка: `/admin?section=support`.
+Внутри: «Обращения» → открыть карточку → статус/приоритет/ответственный/SLA,
+ответы и приватные заметки, история решений; «Открыть связанный диалог» переводит
+в общий чат, где доступны сообщения, защищённые файлы и публичное завершение.
+Для текущего dev пользовательский вход пока BLOCKED MA-02. Авторизация не
+включалась, роли/пароли рабочей БД не изменялись и не раскрывались.
+
+### Отдельный CI статус того же SHA
+
+Security38423711524 SUCCESS; CI38423711212 FAILURE. Postgres и оба containers
+SUCCESS. Canonical pilot browser:100 PASS/7 FAIL в public-catalog,
+settings-profile и unified-application (в т.ч. ожидание прежнего текста
+«← Вернуться в каталог» и mobile profile focus). Это сохранённый отдельный
+незелёный gate, не объявлен PASS и не исправлялся автоматически в Messages audit.
+Новый commit/push для аудита не выполнялся; findings/evidence сохранены в этой
+существующей карточке. Следующий scope — отдельное решение владельца по fixes.
+
+Owner requests UI/E2E and backend audit across clinic, supplier and operator:
+chat list/sidebar unread, reciprocal messages/files, support escalation from
+either party, status transitions, operator queue/interface and login guidance.
+Snapshot64784c2, sole audit executor UI01a11795; primary idle. Prior receipts and
+image references preserved. Product code stays unchanged; audit harnesses and
+synthetic artifacts are isolated under `.tmp/messages-audit-2026-10-13`/output.
+Plan: trace contracts and all three consumers; reuse unchanged passing lifecycle,
+file authorization/rollback and CORE06 evidence, add missing scenario coverage.
+Browser checks use current canonical frontend with API mocks for UI edge states;
+real multi-role checks relay browser `/api` requests to a separate test API4412
+backed only by approved audit DB, preserving real JWT/tenant/permission checks.
+No working-DB writes, dev restart, new agents or product fixes. Risks audited:
+lost/unread messages, cross-role status divergence, hidden operator requests,
+notification navigation, access denial, repeat commands, recovery and responsive UI.
+Record each PASS/FAIL/coverage limit and reproducible findings; stop after report
+and operator access instructions, not automatic repair or full-project release.
+
+## 13.10 Compact header and operator review — LOCAL_PASS / PUBLISHED / CI_PENDING
+
+Publication: `64784c2e27669f599c54b301468fd0b70f5611cd`
+`feat: synchronize conversation operator review workflow`, origin/main matched
+exact SHA after successful push. Scoped30-file staged review/diff hygiene PASS;
+prior product-preview receipt, generated next-env and image references excluded.
+[CI38423711212](https://github.com/NikIg228/PlatformaMarket/actions/runs/38423711212)
+and [Security38423711524](https://github.com/NikIg228/PlatformaMarket/actions/runs/38423711524)
+observed IN_PROGRESS, conclusion null. This is not CI PASS; no auto-repair scope.
+During dev restoration another canonical launcher11512 was already starting;
+stopped only this task's duplicate wrapper14324 and left that launcher untouched.
+Primary task is concurrently reading design documentation, no product edits seen.
+Final readiness: canonical API19300:4012 `/api/health/ready` HTTP200 and
+Next20104:3000 homepage HTTP200. Local site available; no further task operations.
 
 Owner approved references `messages-header-operator/01-compact-header-v2.png`
 and `02-operator-dialog.png`, then explicitly requested implementation. Same UI
@@ -61,8 +272,8 @@ escalation and supplier-question browser PASS4, including keyboard/focus/recover
 Resumed on explicit request without rerunning unchanged passing gates. Completion
 go_live web build PASS after the radius fix; UI contract PASS362. Logs:
 `.tmp/conversation-review-{web-build-final,ui-contract-final}.log`.
-No schema/migration/live-data changes. Remaining only scoped Git publication,
-remote/CI receipt and final dev readiness; full release suite is outside this scope.
+No schema/migration/live-data changes. Publication and remote/CI receipt recorded
+above; full release suite is outside this scope.
 
 ## Owner-reported keyboard regression — LOCAL_PASS / PUBLISHED / CI_PENDING
 

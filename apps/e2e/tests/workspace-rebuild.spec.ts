@@ -2,11 +2,13 @@ import { test, expect, type Page } from "@playwright/test";
 import { writeFile } from "node:fs/promises";
 
 test("performance admin supplier loads once and preserves operations", async ({ page }, testInfo) => {
-  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "admin-ui-fixture" })));
+  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "admin-ui-fixture", activeOrganizationId: "00000000-0000-4000-8000-000000000001" })));
   const supplierId = "44444444-4444-4444-8444-444444444444";
   const reads: string[] = [];
   await page.route("**/api/**", async route => {
     const path = new URL(route.request().url()).pathname.replace(/^\/api/, "");
+    if (path === "/organizations") return route.fulfill({ json: [{ id: "00000000-0000-4000-8000-000000000001", capabilities: [{ capability: "MARKETPLACE_OPERATOR" }] }] });
+    if (path.startsWith("/notifications/")) return route.fulfill({ json: { items: [], nextCursor: null, unreadCount: 0, asOf: new Date().toISOString() } });
     reads.push(path);
     if (path !== "/suppliers" && !path.startsWith(`/suppliers/${supplierId}/`) && path !== "/catalog/products" && path !== "/moderation/import-reviews")
       return route.fulfill({ status: 503, json: { message: "Виджет не участвует в измерении" } });

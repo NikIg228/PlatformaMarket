@@ -16,3 +16,9 @@ export type AuthForgotAccepted = z.infer<typeof authForgotAcceptedSchema>;
 export type LocalOperatorLogin = z.infer<typeof localOperatorLoginSchema>;
 export type LocalOperatorSession = z.infer<typeof localOperatorSessionSchema>;
 export type AuthEmailRegistration = z.input<typeof emailRegisterSchema>;
+// Staff sign-in uses the same credential envelope; the server selects the operator organization.
+export const operatorLoginSchema = localOperatorLoginSchema;
+export const operatorSessionSchema = localOperatorSessionSchema;
+export const currentOperatorSessionSchema = operatorSessionSchema.nullable();
+export type OperatorLogin = z.infer<typeof operatorLoginSchema>;
+export type OperatorSession = z.infer<typeof operatorSessionSchema>;

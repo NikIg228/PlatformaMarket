@@ -71,7 +71,7 @@ export class AuthSessionsService {
     if (!refreshToken || !csrfToken || csrfToken.length < 24) return null;
     const session = await this.prisma.authSession.findFirst({ where: { refreshTokenHash: hash(refreshToken), status: "ACTIVE", expiresAt: { gt: new Date() } },
       include: { user: { select: { id: true, email: true, displayName: true, status: true } } } });
-    if (!session || session.user.status !== "ACTIVE" || !session.activeOrganizationId) return null;
+    if (!session || session.user.status !== "ACTIVE" || !session.activeOrganizationId || session.authMethods.includes("operator_password")) return null;
     const workspaces = await this.workspaceChoices(session.userId);
     const active = workspaces.find(item => item.organizationId === session.activeOrganizationId);
     // Losing membership never silently selects a different organization.
@@ -162,12 +162,12 @@ export class AuthSessionsService {
     return { ...result, ...(onboarding ?? {}), verified: true };
   }
 
-  private async passwordSession(user: { id: string; email: string; displayName: string }, metadata: RequestMetadata, preferredOrganizationId?: string) {
+  private async passwordSession(user: { id: string; email: string; displayName: string }, metadata: RequestMetadata, preferredOrganizationId?: string, operatorPassword = false) {
     const memberships = await this.memberships(user.id);
     const organizationIds = memberships.map(({ organizationId }) => organizationId);
     if (preferredOrganizationId && !organizationIds.includes(preferredOrganizationId)) throw new UnauthorizedException("Активное членство недоступно");
     const activeOrganizationId = preferredOrganizationId ?? memberships.find(({ isPrimary }) => isPrimary)?.organizationId ?? organizationIds[0] ?? null;
-    const session = await this.createSession(user.id, organizationIds, activeOrganizationId, ["password"], metadata);
+    const session = await this.createSession(user.id, operatorPassword && preferredOrganizationId ? [preferredOrganizationId] : organizationIds, activeOrganizationId, operatorPassword ? ["password", "operator_password"] : ["password"], metadata);
     await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
     return { user: { id: user.id, email: user.email, displayName: user.displayName }, ...session };
   }
@@ -177,7 +177,22 @@ export class AuthSessionsService {
     return this.loginEmail(input, metadata, true);
   }
 
-  async loginEmail(input: { email: string; password: string }, metadata: RequestMetadata, operatorOnly = false) {
+  async loginOperator(input: { email: string; password: string }, metadata: RequestMetadata) {
+    return this.loginEmail(input, metadata, true, true);
+  }
+
+  async currentOperatorSession(refreshToken: string | undefined, csrfToken: string | undefined) {
+    if (!refreshToken || !csrfToken || csrfToken.length < 24) return null;
+    const session = await this.prisma.authSession.findFirst({ where: { refreshTokenHash: hash(refreshToken), status: "ACTIVE", expiresAt: { gt: new Date() }, authMethods: { has: "operator_password" } }, include: { user: { select: { id: true, email: true, displayName: true, status: true } } } });
+    if (!session || session.user.status !== "ACTIVE" || !session.activeOrganizationId) return null;
+    try { await this.authority.assertPlatformOperator({ actorId: session.userId, organizationId: session.activeOrganizationId }); }
+    catch (error) { if (error instanceof ForbiddenException) return null; throw error; }
+    const { id, email, displayName } = session.user;
+    const { refreshToken: _refresh, ...payload } = this.sessionPayload({ ...session, organizationIds: [session.activeOrganizationId] }, refreshToken);
+    return { ...payload, refreshTokenExpiresAt: session.expiresAt.toISOString(), user: { id, email, displayName }, csrfToken };
+  }
+
+  async loginEmail(input: { email: string; password: string }, metadata: RequestMetadata, operatorOnly = false, operatorPassword = false) {
     const user = await this.prisma.user.findUnique({ where: { email: input.email } });
     if (user?.lockedUntil && user.lockedUntil > new Date()) throw new UnauthorizedException("Слишком много попыток. Попробуйте позже");
     if (!user || !passwordMatches(input.password, user.passwordHash)) {
@@ -202,7 +217,7 @@ export class AuthSessionsService {
       operatorOrganizationId = membership.organizationId;
     }
     await this.prisma.user.update({ where: { id: user.id }, data: { failedLoginAttempts: 0, lockedUntil: null } });
-    return this.passwordSession(user, metadata, operatorOrganizationId);
+    return this.passwordSession(user, metadata, operatorOrganizationId, operatorPassword);
   }
 
   async forgotPassword(email: string) {
@@ -320,9 +335,10 @@ export class AuthSessionsService {
     const now = new Date();
     if (session.status !== "ACTIVE" || session.expiresAt <= now) throw new UnauthorizedException("Refresh session is revoked or expired");
     const memberships = await this.memberships(session.userId);
-    const organizationIds = memberships.map(({ organizationId }) => organizationId);
+    const organizationIds = memberships.map(({ organizationId }) => organizationId).filter(id => !session.authMethods.includes("operator_password") || id === session.activeOrganizationId);
     const activeOrganizationId = session.activeOrganizationId;
     if (!activeOrganizationId || !organizationIds.includes(activeOrganizationId)) throw new UnauthorizedException("Активное членство недоступно. Войдите заново.");
+    if (session.authMethods.includes("operator_password")) await this.authority.assertPlatformOperator({ actorId: session.userId, organizationId: activeOrganizationId });
     const next = randomBytes(48).toString("base64url");
     const claimed = await this.prisma.authSession.updateMany({
       where: {
@@ -366,6 +382,7 @@ export class AuthSessionsService {
       ? await this.prisma.authSession.findFirst({ where: { id: sessionId, userId, status: "ACTIVE", expiresAt: { gt: now }, organizationIds: { has: organizationId } } })
       : await this.prisma.authSession.findFirst({ where: { userId, status: "ACTIVE", expiresAt: { gt: now }, organizationIds: { has: organizationId } }, orderBy: { lastUsedAt: "desc" } });
     if (!session) throw new UnauthorizedException("Authentication session is not available for handoff");
+    if (session.authMethods.includes("operator_password")) throw new UnauthorizedException("Для кабинета участника войдите отдельно.");
     const membership = await this.prisma.organizationMembership.findFirst({ where: { userId, organizationId, status: "ACTIVE", organization: { status: "ACTIVE", capabilities: { some: { capability } } } }, include: { organization: true } });
     if (!membership) throw new UnauthorizedException("Organization capability is not available for handoff");
     const code = randomBytes(32).toString("base64url");

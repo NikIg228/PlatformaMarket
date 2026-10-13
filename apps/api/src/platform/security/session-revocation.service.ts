@@ -22,11 +22,17 @@ export class SessionRevocationService {
 
     const session = await this.prisma.authSession.findUnique({
       where: { id: sessionId, user: { status: "ACTIVE" } },
-      select: { userId: true, status: true, expiresAt: true },
+      select: { userId: true, status: true, expiresAt: true, authMethods: true, activeOrganizationId: true },
     });
     if (!session || session.userId !== userId || session.status !== "ACTIVE" || session.expiresAt.getTime() <= now) {
       this.rememberRevoked(sessionId, now);
       throw new UnauthorizedException("Authentication session is revoked or expired");
+    }
+    if (session.authMethods?.includes("operator_password")) {
+      const membership = session.activeOrganizationId && await this.prisma.organizationMembership.findFirst({
+        where: { userId, organizationId: session.activeOrganizationId, status: "ACTIVE", organization: { status: "ACTIVE", capabilities: { some: { capability: "MARKETPLACE_OPERATOR" } } } }, select: { id: true },
+      });
+      if (!membership) throw new UnauthorizedException("Доступ оператора отозван. Войдите заново.");
     }
   }
 

@@ -8,6 +8,28 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+13.10 ADMIN_REBUILD — LOCAL_PASS на `64784c2` + scoped patch. Штатный вход оператора
+email/пароль без Google/Apple/MFA, отдельная cookie/session и постоянная проверка
+operator membership; рабочая очередь/уведомления, исправления MA-01–05.
+Auth108, support23, schemas/client/admin10, isolated PostgreSQL integration,
+runtime split, production auth, affected types/build/lint/UI contract PASS.
+Real auth1 и messages2 PASS; targeted UI/regression/consumer checks PASS.
+Canonical local operator login/cookie recovery/mobile/logout PASS. Локальный
+аккаунт подготовлен по явному разрешению, credentials ignored. Git/CI отдельно;
+общей production-приёмки нет. [Попытки и evidence](task-state/CATALOG-PROMOTIONS-MESSAGES-2026-10-12.md).
+
+13.10 Messages/support/operator audit на `64784c2` — COMPLETE_WITH_FINDINGS,
+не полная функциональная приёмка: новые browser23 PASS/5 FAIL + backend1 FAIL.
+Пять findings MA-01–05: восстановление операторской формы неверными defaults,
+недоступный локальный operator login, OPEN после ответа при ручном переоткрытии,
+только ручное обновление очереди, устаревший conversationId после выбора чата.
+Два реальных трёхсторонних сценария и support UI17 PASS; неизменённые backend/
+PG/Message evidence переиспользованы с указанными границами. Product code/live DB
+не изменялись. [Полный отчёт и команды](task-state/CATALOG-PROMOTIONS-MESSAGES-2026-10-12.md).
+Тот же SHA: Security SUCCESS; CI FAILURE (canonical browser100 PASS/7 FAIL
+в catalog/profile/unified, Postgres и оба containers SUCCESS). Общая production
+готовность и закрытие R7 не заявляются; automatic fixes не разрешены аудитом.
+
 13.10 CATALOG-PROMOTIONS-MESSAGES / operator review — LOCAL_PASS,
 baseline2f25ed8 + scoped patch: compact header/status chips, escalation modal,
 ticket-authoritative lifecycle, operator-only completion with public decision,

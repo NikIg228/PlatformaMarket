@@ -72,4 +72,16 @@ export async function verifyConversationReview(db: PrismaClient, chat: Conversat
   const closed = await db.supportTicket.findUniqueOrThrow({ where: { id: ticketId } });
   await support.update(ticketId, { expectedVersion: closed.version, status: "IN_PROGRESS", reason: "Дополнительная проверка обращения", idempotencyKey: randomUUID() }, operator);
   expect((await chat.get(id, buyer)).conversation).toEqual(expect.objectContaining({ supportStatus: "IN_PROGRESS", resolved: false }));
+  // Administrative reopening preserves the first-response metric, but a new
+  // public operator answer must still move OPEN into IN_PROGRESS in both paths.
+  for (const path of ["conversation", "ticket"] as const) {
+    const before = await db.supportTicket.findUniqueOrThrow({ where: { id: ticketId } });
+    await support.update(ticketId, { expectedVersion: before.version, status: "OPEN", reason: "Повторная проверка", idempotencyKey: randomUUID() }, operator);
+    if (path === "conversation") await chat.send(id, { body: "Повторно рассматриваем", idempotencyKey: randomUUID() }, operator);
+    else await support.addMessage(ticketId, { body: "Ответ после переоткрытия", isInternal: false, attachments: [], idempotencyKey: randomUUID() }, operator);
+    const after = await db.supportTicket.findUniqueOrThrow({ where: { id: ticketId } });
+    expect(after.status).toBe("IN_PROGRESS");
+    expect(after.firstResponseAt).toEqual(before.firstResponseAt);
+    expect((await chat.get(id, buyer)).conversation.supportStatus).toBe("IN_PROGRESS");
+  }
 }

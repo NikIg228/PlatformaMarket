@@ -76,7 +76,7 @@ export class SupportService {
       const messageId = crypto.randomUUID();
       const attachments = input.attachments.length ? await this.attachments.link(tx, input.attachments, context, ticketId, messageId) : [];
       const message = await tx.supportMessage.create({ data: { id: messageId, ticketId, authorId: context.actorId, body: input.body, isInternal: input.isInternal, attachments } });
-      const patch = operator && !input.isInternal && !current.firstResponseAt ? { firstResponseAt: new Date(), ...(current.status === "OPEN" ? { status: "IN_PROGRESS" as const } : {}) } : !operator && current.status === "WAITING_CUSTOMER" ? { status: "IN_PROGRESS" as const } : {};
+      const patch = operator && !input.isInternal ? { ...(!current.firstResponseAt ? { firstResponseAt: new Date() } : {}), ...(current.status === "OPEN" ? { status: "IN_PROGRESS" as const } : {}) } : !operator && current.status === "WAITING_CUSTOMER" ? { status: "IN_PROGRESS" as const } : {};
       const updated = await tx.supportTicket.update({ where: { id: ticketId }, data: { ...patch, ...(terminal && input.reopen ? { status: "IN_PROGRESS", resolvedAt: null, closedAt: null, slaDueAt: new Date(Date.now() + slaHours[current.priority] * 3_600_000) } : {}), version: { increment: 1 } } });
       await syncConversationReview(tx, conversation, current, updated, context);
       await tx.auditLog.create({ data: { ...context, action: input.isInternal ? "support.note.added" : "support.message.added", entityType: "SupportTicket", entityId: ticketId, after: { messageId: message.id, attachmentCount: input.attachments.length } } });

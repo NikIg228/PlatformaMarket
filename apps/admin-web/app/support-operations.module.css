@@ -1,0 +1,19 @@
+.toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--dm-space-4); }
+.updated { color: var(--dm-text-muted); font-size: var(--dm-font-size-caption); }
+.filters { display: flex; flex-wrap: wrap; align-items: end; gap: var(--dm-space-3); }
+.filters > :first-child { flex: 1 1 240px; }
+.tableWrap { min-width: 0; overflow-x: auto; padding: var(--dm-space-1); }
+.table { width: 100%; border-collapse: collapse; font-size: var(--dm-font-size-body); }
+.table th, .table td { padding: var(--dm-space-4) var(--dm-space-3); text-align: left; border-bottom: 1px solid var(--dm-border); vertical-align: top; }
+.table th { color: var(--dm-text-muted); font-size: var(--dm-font-size-caption); font-weight: var(--dm-font-weight-semibold); }
+.table td:first-child { width: 35%; overflow-wrap: anywhere; }
+.table small { display: block; margin-top: var(--dm-space-1); color: var(--dm-text-muted); font-size: var(--dm-font-size-caption); }
+@media (max-width: 900px) {
+  .table thead { display: none; }
+  .table, .table tbody, .table tr { display: block; }
+  .table tr { padding-block: var(--dm-space-4); border-bottom: 1px solid var(--dm-border); }
+  .table td, .table td:first-child { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dm-space-1); width: auto; padding: var(--dm-space-2) var(--dm-space-1); border: 0; }
+  .table td[data-label]::before { content: attr(data-label); font-size: var(--dm-font-size-caption); color: var(--dm-text-muted); }
+  .filters { align-items: stretch; }
+  .filters > * { flex: 1 1 180px; min-width: 0; }
+}

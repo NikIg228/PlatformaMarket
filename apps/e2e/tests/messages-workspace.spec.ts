@@ -241,3 +241,38 @@ test("catalog return restores deep loaded window, query and card position with b
   await original.getByRole("link").click(); await page.getByRole("link", { name: "← Каталог", exact: true }).click();
   await expect(cards).toHaveCount(48); await expect(page).toHaveURL(/q=/); await expect.poll(async () => Math.abs((await original.boundingBox())!.y - top)).toBeLessThan(5);
 });
+
+for (const role of ['clinic', 'supplier'] as const) {
+  test(`${role}: sidebar unread count, row identity, draft and read-only history`, async ({ page }) => {
+    const state = await messagesFixture(page, role);
+    state.rows.splice(3);
+    await page.goto(`/${role}/messages`);
+    const navigation = page.getByRole('link', { name: /Сообщения, непрочитанных диалогов:/ }).first();
+    await expect(navigation).toHaveAttribute('aria-label', 'Сообщения, непрочитанных диалогов: 3');
+    const rows = page.locator('.dm-conversations-item');
+    await rows.nth(0).click();
+    await expect(navigation).toHaveAttribute('aria-label', 'Сообщения, непрочитанных диалогов: 2');
+    await page.getByRole('textbox', { name: 'Сообщение', exact: true }).fill('Незавершённый вопрос первому собеседнику');
+    await rows.nth(1).click();
+    await expect(navigation).toHaveAttribute('aria-label', 'Сообщения, непрочитанных диалогов: 1');
+    await expect(page.getByRole('textbox', { name: 'Сообщение', exact: true })).toHaveValue('');
+    await rows.nth(0).click();
+    await expect(page.getByRole('textbox', { name: 'Сообщение', exact: true })).toHaveValue('Незавершённый вопрос первому собеседнику');
+    expect(state.unexpected).toEqual([]);
+  });
+
+  test(`${role}: selected chat survives reload of a deep link`, async ({ page }, info) => {
+    const state = await messagesFixture(page, role); state.rows.splice(3);
+    await page.goto(`/${role}/messages?conversationId=${id(10)}`);
+    const rows = page.locator('.dm-conversations-item');
+    await rows.nth(1).click();
+    await expect(rows.nth(1)).toHaveAttribute('aria-pressed', 'true');
+    await info.attach('selected-before-reload', { body: JSON.stringify({ url: page.url(), expected: id(11) }), contentType: 'application/json' });
+    await expect(page).toHaveURL(new RegExp("conversationId=" + id(11)));
+    await page.goBack(); await expect(rows.nth(0)).toHaveAttribute("aria-pressed", "true");
+    await page.goForward(); await expect(rows.nth(1)).toHaveAttribute("aria-pressed", "true");
+    await page.reload();
+    await expect(rows.nth(1)).toHaveAttribute('aria-pressed', 'true');
+  });
+
+}

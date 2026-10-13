@@ -56,8 +56,9 @@ export function ConversationCounter({ api, href, icon, showLabel = false, onClic
   </DmButton>;
 }
 
-export function ConversationWorkspace({ api, organizationId, initialId, context, canWrite = true, operator = false, contextHref, hideHeading = false, hideRefresh = false, compactList = false }: { api: ConversationApi; organizationId: string; initialId?: string; context?: Context; canWrite?: boolean; operator?: boolean; contextHref?: (type: "OFFER" | "ORDER", id: string) => string | undefined; hideHeading?: boolean; hideRefresh?: boolean; compactList?: boolean }) {
+export function ConversationWorkspace({ api, organizationId, initialId, context, canWrite = true, operator = false, contextHref, hideHeading = false, hideRefresh = false, compactList = false, onSelect }: { api: ConversationApi; organizationId: string; initialId?: string; context?: Context; canWrite?: boolean; operator?: boolean; contextHref?: (type: "OFFER" | "ORDER", id: string) => string | undefined; hideHeading?: boolean; hideRefresh?: boolean; compactList?: boolean; onSelect?: (id?: string) => void }) {
   const [selected, setSelected] = useState(initialId);
+  useEffect(() => { setSelected(initialId); }, [initialId]);
   const [filter, setFilter] = useState<ConversationQuery["filter"]>("ALL");
   const [offset, setOffset] = useState(0);
   const listEnd = useRef<HTMLDivElement>(null);
@@ -144,9 +145,9 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
     if (!result) return;
     setDrafts(value => ({ ...value, [draftId]: emptyConversationDraft() })); messageKeys.current.delete(draftId);
     setSent(value => value + 1);
-    if (selected === result.conversationId) await refresh(); else setSelected(result.conversationId);
+    if (selected === result.conversationId) await refresh(); else { setSelected(result.conversationId); onSelect?.(result.conversationId); }
   });
-  const choose = (id?: string) => { setSelected(id); setDetail(null); setFeedback(""); setActionError(null); };
+  const choose = (id?: string) => { setSelected(id); onSelect?.(id); setDetail(null); setFeedback(""); setActionError(null); };
   const markRead = useCallback((sequence: number) => {
     if (!selected || document.visibilityState !== "visible" || sequence <= (readThrough.current.get(selected) ?? 0)) return;
     const id = selected; readThrough.current.set(id, sequence);

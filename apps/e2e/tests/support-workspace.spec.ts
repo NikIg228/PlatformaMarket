@@ -24,6 +24,7 @@ async function fixture(page: Page, role: "supplier" | "clinic" = "supplier", per
     if (write) state.writes.push({ path, body: input });
     const fail = (message: string, status = 503) => route.fulfill({ status, json: { code: "UNAVAILABLE", message } });
     let body: unknown;
+    if (path === "/organizations") return route.fulfill({ json: [{ id: organizationId, capabilities: [{ capability: "MARKETPLACE_OPERATOR" }] }] });
     if (path === "/auth/workspace-context") body = { organizationId, organizationDisplayName: "Тестовая организация", capabilities: [capability] };
     else if (path === "/auth/current") body = null;
     else if (path === "/access-control/permissions") body = permissions;
@@ -278,7 +279,7 @@ test("support attachments: invalid input, scanner recovery, remove and download 
 
 test("support operator toast preserves failed reply and announces recovery", async ({ page }) => {
   const state = await fixture(page, "supplier", [...rights, "support.ticket.manage"]); state.failReply = true;
-  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "operator-support-fixture" })));
+  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "operator-support-fixture", activeOrganizationId: "00000000-0000-4000-8000-000000000001" })));
   await page.goto("/admin?section=support");
   await page.getByRole("button", { name: "Открыть обращение", exact: true }).first().click();
   const dialog = page.getByRole("dialog", { name: /SUP-10/ }); const field = dialog.getByRole("textbox", {name:"Ответ", exact:true});
@@ -296,7 +297,7 @@ test("support attachments: operator can download customer files", async ({ page 
   const state = await fixture(page, "supplier", [...rights, "support.ticket.manage"]);
   const asset = { assetId: id(999), name: "Документ.pdf", contentType: "application/pdf" as const, sizeBytes: 8, expiresAt: new Date(Date.now() + 3_600_000).toISOString() };
   state.assets.set(asset.assetId, asset); state.tickets[0].messages[0].attachments = [asset];
-  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "operator-support-fixture" })));
+  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "operator-support-fixture", activeOrganizationId: "00000000-0000-4000-8000-000000000001" })));
   await page.goto("/admin?section=support");
   await page.getByRole("button", { name: "Открыть обращение", exact: true }).first().click();
   const dialog = page.getByRole("dialog", { name: /SUP-10/ }); await expect(dialog).toBeVisible();

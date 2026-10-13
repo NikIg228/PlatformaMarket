@@ -22,7 +22,10 @@ export function resolveJwtActor(token: string, requestedOrganizationId: string |
   const organizationId = requestedOrganizationId ?? claims.organization_id ?? (allowedOrganizations.length === 1 ? allowedOrganizations[0] : undefined);
   if (!organizationId || !allowedOrganizations.includes(organizationId)) throw new UnauthorizedException("Active organization is not allowed by the bearer token");
   const methods = Array.isArray(claims.amr) ? claims.amr : claims.amr ? [claims.amr] : [];
-  if (config.JWT_REQUIRE_MFA && !allowMfaBootstrap && !methods.some((method) => ["mfa", "otp", "totp"].includes(method.toLowerCase()))) throw new UnauthorizedException("Multi-factor authentication is required");
+  // Issued only by the password + active operator membership flow. This session
+  // is bound to one organization; ordinary password/social sessions still require MFA.
+  const operatorPassword = methods.includes("operator_password") && methods.includes("password") && allowedOrganizations.length === 1 && claims.organization_id === organizationId && typeof claims.jti === "string";
+  if (config.JWT_REQUIRE_MFA && !allowMfaBootstrap && !operatorPassword && !methods.some((method) => ["mfa", "otp", "totp"].includes(method.toLowerCase()))) throw new UnauthorizedException("Multi-factor authentication is required");
   return { actorId: claims.sub, organizationId, authenticationMethods: methods, sessionId: typeof claims.jti === "string" ? claims.jti : undefined };
 }
 

@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, Header, Headers, Param, Post, Query, Req, Res, UnauthorizedException } from "@nestjs/common";
-import { currentSessionQuerySchema, localOperatorLoginSchema, workspaceHandoffRequestSchema, workspaceExchangeRequestSchema } from "@marketplace/schemas";
+import { currentSessionQuerySchema, localOperatorLoginSchema, operatorLoginSchema, workspaceHandoffRequestSchema, workspaceExchangeRequestSchema } from "@marketplace/schemas";
 import { ApiCoreBody, ApiCoreErrors, ApiCoreProtected, ApiCoreResponse } from "../../platform/openapi/core-openapi";
 import { demoSessionSchema, emailForgotPasswordSchema, emailLoginSchema, emailRegisterSchema, emailResetPasswordSchema, emailTokenSchema, refreshSessionSchema, revokeSessionSchema, socialExchangeSchema, switchSessionOrganizationSchema, unlinkExternalIdentitySchema } from "@marketplace/schemas";
 import { ApiQuery, ApiTags } from "@nestjs/swagger";
@@ -18,7 +18,7 @@ const equal = (left: string, right: string) => { const a = Buffer.from(left); co
 export class AuthSessionsController {
   constructor(private readonly sessions: AuthSessionsService) {}
   private metadata(request: Request) { return { ipAddress: request.ip, userAgent: request.header("user-agent"), correlationId: request.header("x-request-id") }; }
-  private setCookies(response: Response, refreshToken: string, csrfToken: string, expiresAt: Date | string, workspace?: "BUYER" | "SUPPLIER") {
+  private setCookies(response: Response, refreshToken: string, csrfToken: string, expiresAt: Date | string, workspace?: "BUYER" | "SUPPLIER" | "ADMIN") {
     const config = environment();
     const common = { secure: config.NODE_ENV === "production", sameSite: "lax" as const, domain: config.AUTH_COOKIE_DOMAIN, path: "/api/auth", expires: new Date(expiresAt) };
     const suffix = workspace ? `_${workspace.toLowerCase()}` : "";
@@ -143,6 +143,41 @@ export class AuthSessionsController {
     const csrfToken = randomBytes(32).toString("base64url");
     this.setCookies(response, result.refreshToken, csrfToken, result.refreshTokenExpiresAt, result.capability);
     return { ...result, refreshToken: undefined, csrfToken };
+  }
+
+  @Post("operator/login") @Header("Cache-Control", "no-store")
+  @ApiCoreBody("OperatorLoginRequest") @ApiCoreResponse("OperatorSessionResponse", 201) @ApiCoreErrors()
+  async operatorLogin(@Body() body: unknown, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    const parsed = operatorLoginSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException("Проверьте email и пароль");
+    const result = await this.sessions.loginOperator(parsed.data, this.metadata(request));
+    const csrfToken = randomBytes(32).toString("base64url");
+    this.setCookies(response, result.refreshToken, csrfToken, result.refreshTokenExpiresAt, "ADMIN");
+    return { ...result, refreshToken: undefined, csrfToken };
+  }
+
+  @Get("operator/current") @Header("Cache-Control", "no-store")
+  @Throttle({ ip: { limit: () => environment().RATE_LIMIT_REQUESTS, ttl: () => environment().RATE_LIMIT_TTL_MS }, user: { limit: () => environment().RATE_LIMIT_REQUESTS * 2, ttl: () => environment().RATE_LIMIT_TTL_MS }, tenant: { limit: () => environment().RATE_LIMIT_REQUESTS * 5, ttl: () => environment().RATE_LIMIT_TTL_MS } })
+  @ApiCoreResponse("CurrentOperatorSessionResponse") @ApiCoreErrors()
+  async currentOperator(@Req() request: Request, @Res() response: Response) {
+    const cookie = cookies(request.header("cookie"));
+    return response.json(await this.sessions.currentOperatorSession(cookie.mp_refresh_admin, cookie.mp_csrf_admin));
+  }
+
+  @Post("operator/logout") @Header("Cache-Control", "no-store")
+  @ApiCoreResponse("AuthPasswordResetResult", 201) @ApiCoreErrors()
+  async operatorLogout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    const cookie = cookies(request.header("cookie"));
+    if (cookie.mp_refresh_admin) {
+      const csrf = request.header("x-csrf-token");
+      if (!csrf || !cookie.mp_csrf_admin || !equal(csrf, cookie.mp_csrf_admin)) throw new UnauthorizedException("CSRF validation failed");
+      await this.sessions.revokeByRefreshToken(cookie.mp_refresh_admin, undefined, "operator_logout");
+    }
+    const config = environment();
+    const common = { secure: config.NODE_ENV === "production", sameSite: "lax" as const, domain: config.AUTH_COOKIE_DOMAIN };
+    response.clearCookie("mp_refresh_admin", { ...common, path: "/api/auth", httpOnly: true });
+    response.clearCookie("mp_csrf_admin", { ...common, path: "/", httpOnly: false });
+    return { ok: true as const };
   }
 
   @Post("refresh")
