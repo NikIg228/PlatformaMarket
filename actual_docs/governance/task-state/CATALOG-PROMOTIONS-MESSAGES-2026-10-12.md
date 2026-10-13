@@ -1,4 +1,4 @@
-# CATALOG-PROMOTIONS-MESSAGES — ADMIN_REBUILD_LOCAL_PASS / CI_PENDING
+# CATALOG-PROMOTIONS-MESSAGES — ADMIN_REBUILD_LOCAL_PASS / CI_FAILURE
 
 ## 13.10 Admin rebuild — LOCAL_PASS, публикация/CI отдельно
 
@@ -82,6 +82,21 @@ Review проверил auth/tenant/revocation, отсутствие refresh/pas
 dirty-form recovery, URL/drafts и соседние admin consumers. Изменения остальных
 доменных модулей и общий redesign всего проекта не выполнялись. Публикация
 и фактический CI ещё не подтверждены; прежний CI FAIL не превращён в PASS.
+
+Git receipt13.10: `55744ff217d26ca0253d61744be0a66254dbf984` опубликован в
+origin/main, remote SHA совпал. Commit содержит только проверенный scope50 files;
+PRODUCT-PAGE-PREVIEW-DATA receipt и output/imagegen не включены. Dev API8200/
+frontend13588 слушают4012/3000 из canonical checkout. Security38436274407 SUCCESS;
+CI38436274373 FAILURE: обе контейнерные сборки и PostgreSQL SUCCESS, lint/types/
+npm test/extended API PASS, canonical browser100 PASS/7 FAIL. Шесть FAIL относятся
+к прежним public-catalog/unified сценариям; ещё один — старый locator article в
+conversations.spec.ts после перехода очереди на table/row. Locator исправлен;
+сквозной CORE06 повторён на отдельном API4412 и audit DB. Local attempt2 FAIL:
+page route.continue обходил retarget в тестовом harness при retry и попадал на
+другой API. Только временный harness заменён на fallback; attempt3 PASS1 (1.4m),
+включая keyboard/focus, обе стороны, operator/public resolution и повторную
+эскалацию. В durable test изменён только article → row. Lint/diff PASS.
+Общий CI остаётся красным; очередной push и CI фиксируются отдельным receipt.
 
 ## 13.10 Messages comprehensive audit — COMPLETE_WITH_FINDINGS
 

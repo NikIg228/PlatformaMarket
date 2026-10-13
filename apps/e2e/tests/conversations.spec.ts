@@ -93,7 +93,7 @@ test("CORE06: buyer, mobile supplier and operator conversation workflow", async 
     await expect(support).toBeVisible();
     const updated = await db.businessConversation.findUniqueOrThrow({ where: { id: conversation.id } });
     const ticket = await db.supportTicket.findUniqueOrThrow({ where: { id: updated.supportTicketId! } });
-    const opener = support.getByRole("article").filter({ hasText: ticket.number }).getByRole("button", { name: "Открыть обращение" });
+    const opener = support.getByRole("row").filter({ hasText: ticket.number }).getByRole("button", { name: "Открыть обращение" });
     await opener.focus(); await operatorPage.keyboard.press("Enter");
     const dialog = operatorPage.getByRole("dialog");
     await expect(dialog).toBeVisible();
