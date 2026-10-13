@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { conversationMessageInputSchema, conversationReadSchema, startConversationSchema, conversationQuerySchema } from "./conversations";
+import { conversationMessageInputSchema, conversationReadSchema, startConversationSchema, conversationQuerySchema, conversationResolveSchema } from "./conversations";
 import { operationAssignmentSchema } from "./operations-workflow";
 import { updateSupportTicketSchema } from "./commercial";
 
@@ -23,5 +23,13 @@ describe("internal conversation and operator command contracts", () => {
     expect(operationAssignmentSchema.safeParse({ ...assignment, reason: "" }).success).toBe(false);
     expect(updateSupportTicketSchema.safeParse({ status: "CLOSED" }).success).toBe(false);
     expect(updateSupportTicketSchema.safeParse({ expectedVersion: 1, reason: "Вопрос решён оператором", idempotencyKey: id }).success).toBe(false);
+  });
+  it("bounds public operator decisions while retaining ordinary conversation resolution", () => {
+    expect(conversationResolveSchema.safeParse({ expectedVersion: 2 }).success).toBe(true);
+    expect(conversationResolveSchema.safeParse({ expectedVersion: 2, decision: "Решение видно обеим сторонам" }).success).toBe(true);
+    for (const decision of ["short", " ", "x".repeat(2_001)]) {
+      expect(conversationResolveSchema.safeParse({ expectedVersion: 2, decision }).success).toBe(false);
+      expect(updateSupportTicketSchema.safeParse({ expectedVersion: 2, reason: "Internal audit reason", status: "RESOLVED", idempotencyKey: id, decision }).success).toBe(false);
+    }
   });
 });

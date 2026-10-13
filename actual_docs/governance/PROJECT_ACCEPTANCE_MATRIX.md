@@ -8,6 +8,18 @@
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+13.10 CATALOG-PROMOTIONS-MESSAGES / operator review — LOCAL_PASS,
+baseline2f25ed8 + scoped patch: compact header/status chips, escalation modal,
+ticket-authoritative lifecycle, operator-only completion with public decision,
+explicit repeat escalation, support notifications and private-note isolation.
+Focused schema/client/backend tests, isolated PostgreSQL lifecycle/race/rollback,
+dependent support attachment tests and real HTTP CORE06 PASS. Affected types,
+scoped lint, UI contract362, runtime split, PostgreSQL integration and API/go_live
+web builds PASS. Messages/question browser13 plus final shared-dialog regression4
+PASS; screenshots/computed styles inspected at1440/390. No live data or migration.
+[Exact attempts, commands and publication receipt](task-state/CATALOG-PROMOTIONS-MESSAGES-2026-10-12.md).
+This is a scoped R7 result; publication/CI tracked separately, no production claim.
+
 14.10 CATALOG-PROMOTIONS-MESSAGES / Messages-question — LOCAL_PASS,
 baseline c251bc1 + this patch: тихое обновление/полная история, закреплённый composer,
 модальный вопрос с контекстом товара/поставщика, черновики/повторы/фокус и возврат

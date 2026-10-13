@@ -165,6 +165,7 @@ export const addSupportMessageSchema = z.object({
 
 export const updateSupportTicketSchema = z.object({
   expectedVersion: z.number().int().positive(),
+  decision: z.string().trim().min(10).max(2_000).optional(),
   reason: z.string().trim().min(10).max(1_000),
   idempotencyKey: z.uuid(),
   slaDueAt: z.iso.datetime().nullable().optional(),

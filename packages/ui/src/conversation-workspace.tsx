@@ -3,11 +3,11 @@ import { ActionFeedback } from "./action-feedback";
 import { DmAction } from "./controls";
 
 import { useCallback, useEffect, useRef, useState, type ReactElement } from "react";
-import { Menu, MenuTrigger, MenuPopover, MenuList, MenuItem, Option } from "@fluentui/react-components";
+import { Option } from "@fluentui/react-components";
 import { DmFluentDropdown as Dropdown } from "./controls";
 import { conversationPages, conversationPageSize } from "./conversation-pages";
 import type { ConversationDetail, ConversationEscalation, ConversationMessageInput, ConversationPage, ConversationQuery, StartConversation, ConversationLookup, ConversationContextInfo } from "@marketplace/schemas";
-import { DmButton, DmField, DmSelect, DmTextarea, EmptyState, DmInfoTip, errorMessage, actionFailure, dmDropdownPositioning } from "./index";
+import { DmButton, DmField, DmSelect, EmptyState, errorMessage, actionFailure, dmDropdownPositioning } from "./index";
 
 export type ConversationApi = ConversationFilesApi & {
   conversations(query?: Partial<ConversationQuery>): Promise<ConversationPage>;
@@ -16,10 +16,10 @@ export type ConversationApi = ConversationFilesApi & {
   startConversation(input: StartConversation): Promise<{ conversationId: string }>;
   sendConversationMessage(id: string, input: ConversationMessageInput): Promise<{ conversationId: string }>;
   readConversation(id: string, sequence: number): Promise<{ throughSequence: number }>;
-  resolveConversation(id: string, version: number): Promise<{ conversationId: string }>;
+  resolveConversation(id: string, version: number, decision?: string): Promise<{ conversationId: string }>;
   escalateConversation(id: string, input: ConversationEscalation): Promise<{ ticketId: string }>;
 };
-import { MoreHorizontal24Regular } from "@fluentui/react-icons/svg/more-horizontal";
+import { ConversationActions } from "./conversation-actions";
 import { ConversationComposer, type ConversationFilesApi } from "./conversation-composer";
 import { ConversationHistory } from "./conversation-history";
 import { ConversationContext } from "./conversation-context";
@@ -72,12 +72,9 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, ConversationDraft>>({});
-  const [reason, setReason] = useState("");
-  const [escalating, setEscalating] = useState(false);
   const request = useRef(0);
   const lock = useRef(false);
   const messageKeys = useRef(new Map<string, { body: string; key: string }>());
-  const escalationKey = useRef<{ reason: string; key: string } | null>(null);
   const draftId = selected ?? `${context?.contextType}:${context?.contextId}`;
   const draft = drafts[draftId] ?? emptyConversationDraft();
   const [lookupContext, setLookupContext] = useState<ConversationContextInfo>();
@@ -149,7 +146,7 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
     setSent(value => value + 1);
     if (selected === result.conversationId) await refresh(); else setSelected(result.conversationId);
   });
-  const choose = (id?: string) => { setSelected(id); setDetail(null); setReason(""); setEscalating(false); setFeedback(""); setActionError(null); };
+  const choose = (id?: string) => { setSelected(id); setDetail(null); setFeedback(""); setActionError(null); };
   const markRead = useCallback((sequence: number) => {
     if (!selected || document.visibilityState !== "visible" || sequence <= (readThrough.current.get(selected) ?? 0)) return;
     const id = selected; readThrough.current.set(id, sequence);
@@ -185,11 +182,7 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
           <DmButton className="dm-conversations-back" disabled={busy} as={context ? "a" : undefined} href={context ? "?" : undefined} onClick={context ? undefined : () => choose(undefined)}>← К списку</DmButton>
           <header className="dm-conversation-header">
             {identity ? <ConversationContext key={identity.productId ?? draftId} context={identity} href={href ?? (identity.productId ? "/products/" + identity.productId : undefined)} /> : <div aria-busy="true" className="dm-conversations-placeholder" />}
-            {current && canWrite ? <Menu><MenuTrigger disableButtonEnhancement><DmButton appearance="subtle" icon={<MoreHorizontal24Regular />} aria-label="Действия с диалогом" disabled={busy} /></MenuTrigger><MenuPopover><MenuList>
-              <MenuItem disabled={current.resolved} onClick={() => void run(async () => { await api.resolveConversation(current.id, current.version); setFeedback("Вопрос отмечен решённым."); await refresh(); })}>Вопрос решён</MenuItem>
-              {!operator && !current.supportTicketId ? <MenuItem onClick={() => setEscalating(true)}>Обратиться к оператору</MenuItem> : null}
-            </MenuList></MenuPopover></Menu> : null}
-            <div className="dm-conversation-status"><span>{current?.resolved ? "Вопрос решён" : "Открытый вопрос"}{current?.supportTicketId ? " · Подключён оператор" : ""}</span><span>Переписка не изменяет условия заказа</span><DmInfoTip label="Об условиях заказа">Сообщение не подтверждает заказ и не изменяет цену, оплату или условия доставки. Новое сообщение откроет решённый вопрос снова.</DmInfoTip></div>
+            <ConversationActions api={api} conversation={current} operator={operator} canWrite={canWrite} busy={busy} run={run} refresh={refresh} feedback={setFeedback} />
           </header>
           <ConversationHistory key={`history:${draftId}`} api={api} detail={detail} organizationId={organizationId} busy={busy} sent={sent} onRead={markRead} onOlder={() => void run(async () => {
             if (!selected || !detail?.messages.length) return;
@@ -197,7 +190,6 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
             setDetail(value => value && value.conversation.id === older.conversation.id ? { ...value, hasOlder: older.hasOlder, messages: [...older.messages, ...value.messages] } : value);
           })} />
           {canWrite && messageContext ? <ConversationComposer key={`composer:${draftId}`} api={api} context={messageContext} draft={draft} onChange={updateDraft} disabled={!lookupReady || Boolean(selected && !detail)} busy={busy} onSubmit={() => void send()} /> : <p>У вашей роли нет права отправлять сообщения.</p>}
-          {escalating && current ? <form onSubmit={event => { event.preventDefault(); void run(async () => { if (!escalationKey.current || escalationKey.current.reason !== reason.trim()) escalationKey.current = { reason: reason.trim(), key: crypto.randomUUID() }; await api.escalateConversation(current.id, { reason: reason.trim(), idempotencyKey: escalationKey.current.key }); setEscalating(false); setReason(""); setFeedback("Обращение создано. Оператор получил доступ к этому диалогу."); await refresh(); }); }}><DmField label="Причина обращения (не менее 10 символов)"><DmTextarea value={reason} disabled={busy} maxLength={2_000} onChange={event => setReason(event.target.value)} /></DmField><DmButton type="submit" disabled={busy || reason.trim().length < 10}>Создать обращение</DmButton><DmButton type="button" disabled={busy} onClick={() => setEscalating(false)}>Отмена</DmButton></form> : null}
         </> : <EmptyState title="Выберите диалог" description="Здесь появится история переписки по предложению или заказу." />}
       </div>
     </div>

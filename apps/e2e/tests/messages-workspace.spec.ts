@@ -1,6 +1,60 @@
 import { expect, test } from "@playwright/test";
 import { id, messagesFixture, pngFile, productId } from "./messages.fixture";
 
+for (const width of [1440, 390]) test(`conversation review dialog, retained reason and status ${width}`, async ({ page }, info) => {
+  const state = await messagesFixture(page, width === 390 ? "supplier" : "clinic");
+  await page.setViewportSize({ width, height: 900 });
+  await page.goto(`/${width === 390 ? "supplier" : "clinic"}/messages?conversationId=${id(10)}`);
+  const chat = page.getByRole("region", { name: "Сообщения", exact: true });
+  const status = chat.locator(".dm-conversation-status .mp-status");
+  await expect(status).toHaveText("Активен");
+  await expect(chat.getByText("Переписка не изменяет условия заказа")).toHaveCount(0);
+  await expect(chat.getByRole("button", { name: "Об условиях заказа" })).toHaveCount(0);
+  const menu = chat.getByRole("button", { name: "Действия с диалогом" });
+  await menu.focus(); await page.keyboard.press("Enter");
+  await page.getByRole("menuitem", { name: "Обратиться к оператору", exact: true }).click();
+  const modal = page.getByRole("dialog", { name: "Обратиться к оператору", exact: true });
+  await expect(modal).toBeVisible();
+  const reason = modal.getByRole("textbox", { name: "Причина обращения" });
+  const submit = modal.getByRole("button", { name: "Создать обращение", exact: true });
+  await expect(submit).toBeDisabled(); await reason.click();
+  await reason.pressSequentially("Please review this delivery", { delay: 15 });
+  await expect(reason).toBeFocused(); await expect(submit).toBeEnabled();
+  await page.keyboard.press("Escape"); await expect(modal).toBeHidden(); await expect(menu).toBeFocused();
+  await menu.click(); await page.getByRole("menuitem", { name: "Обратиться к оператору", exact: true }).click();
+  await expect(reason).toHaveValue("Please review this delivery");
+  await page.screenshot({ path: info.outputPath(`operator-dialog-${width}.png`), fullPage: true, animations: "disabled" });
+  state.failEscalate = true; await submit.click();
+  await expect(page.locator(".dm-save-toast").filter({ hasText: "Результат пока неизвестен" })).toBeVisible();
+  await expect(modal).toBeVisible(); await expect(reason).toHaveValue("Please review this delivery");
+  state.failEscalate = false; await submit.click();
+  await expect(modal).toBeHidden(); await expect(menu).toBeFocused();
+  await expect(status).toHaveText("Передано в поддержку");
+  const writes = state.writes.filter(row => row.path.endsWith("/escalate"));
+  expect(writes).toHaveLength(2); expect(writes[0].input).toEqual(writes[1].input);
+  await expect(chat.getByRole("textbox", { name: "Сообщение", exact: true })).toBeEnabled();
+  await menu.click(); await expect(page.getByRole("menuitem", { name: "Рассмотрение завершает оператор" })).toBeDisabled();
+  await expect(page.getByRole("menuitem", { name: "Вопрос решён", exact: true })).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  state.details.get(id(10))!.conversation.supportStatus = "IN_PROGRESS";
+  await page.reload(); await expect(status).toHaveText("На рассмотрении");
+  await page.screenshot({ path: info.outputPath(`review-header-${width}.png`), fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  if (width === 1440) {
+    const aligned = await chat.locator(".dm-conversation-header").evaluate(header => {
+      const context = header.querySelector(".dm-conversation-context")!.getBoundingClientRect();
+      const chip = header.querySelector(".mp-status")!.getBoundingClientRect();
+      return chip.top >= context.top && chip.bottom <= context.bottom;
+    });
+    expect(aligned).toBe(true);
+  }
+  Object.assign(state.details.get(id(10))!.conversation, { supportStatus: "RESOLVED", resolved: true });
+  await page.reload(); await expect(status).toHaveText("Вопрос решён");
+  await menu.click(); await page.getByRole("menuitem", { name: "Повторно обратиться к оператору" }).click();
+  await expect(modal).toBeVisible(); await expect(reason).toHaveValue("");
+  expect(state.unexpected).toEqual([]);
+});
+
 test("question and messages retain keyboard input and component identity", async ({ page }) => {
   const errors: string[] = [];
   page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });

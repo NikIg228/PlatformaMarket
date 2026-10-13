@@ -15,4 +15,8 @@ it.each(["development", "test"])("retains shared-contract documentation in %s", 
   const app = {} as never;
   configureRuntimeSwagger(app, env);
   expect(setup).toHaveBeenCalledWith("docs", app, expect.objectContaining({ openapi: "3.1.0", components: { schemas: expect.objectContaining({ MfaStatus: expect.any(Object), UploadedDocument: expect.any(Object), UploadConversationAttachment: expect.any(Object), UploadedConversationAttachment: expect.any(Object) }) } }));
+  const document = setup.mock.calls[0][2];
+  const schemas = (typeof document === "function" ? document() : document).components!.schemas!;
+  expect(schemas.ConversationResolve).toEqual(expect.objectContaining({ properties: expect.objectContaining({ decision: expect.objectContaining({ minLength: 10, maxLength: 2000 }) }) }));
+  expect(schemas.UpdateSupportTicket).toEqual(expect.objectContaining({ properties: expect.objectContaining({ decision: expect.any(Object) }) }));
 });

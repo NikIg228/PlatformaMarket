@@ -1,6 +1,76 @@
 # CATALOG-PROMOTIONS-MESSAGES — LOCAL_PASS / PUBLISHED / CI_PENDING
 
-## Owner-reported keyboard regression — LOCAL_PASS / publication pending
+## 13.10 Compact header and operator review — LOCAL_PASS / PUBLICATION_PENDING
+
+Owner approved references `messages-header-operator/01-compact-header-v2.png`
+and `02-operator-dialog.png`, then explicitly requested implementation. Same UI
+writer01a11795; primary01a11758 verified idle. Canonical main2f25ed8; prior two
+receipt edits and four image-reference folders preserved. No agents/worktrees.
+Scope: compact header with shared status chips, remove order disclaimer/info,
+controlled escalation dialog; linked ticket is authoritative for review state.
+Parties may submit evidence during review; only an authorized operator finishes
+it with a public decision visible to both parties. Synchronize ticket/chat,
+notify support on escalation and new review messages. Preserve private notes.
+Terminal review stays terminal on ordinary messages; explicit repeat escalation
+reopens it. Non-escalated resolved conversations retain existing message-reopen.
+Risks: role denial, stale updates, concurrent message/decision/escalation, replay,
+private-note leakage and inconsistent status. No database schema change planned.
+Checks: focused schema/client/backend tests after each coherent transition;
+isolated PostgreSQL lifecycle/rollback/concurrency and notification checks;
+targeted desktop/mobile dialog, keyboard, recovery and operator UI; affected
+types/lint/UI guard, API/web build and applicable runtime/OpenAPI checks.
+Finish with reviewed scoped commit/push and exact-SHA CI receipt. No live writes.
+Implemented schemas/client and shared lifecycle helper, escalation/reopen outbox,
+operator-only completion with separate public decision, ticket/chat synchronization
+and authoritative reads for pre-existing tickets. Compact StatusTag header and
+controlled DmDialog implemented; admin ticket form separates private audit reason
+from public decision. No migration or working-data edit.
+Focused backend1 PASS25; after legacy-state/first-response/notification refinements,
+backend final PASS29 including Swagger properties. PostgreSQL1 PASS2; final PASS3
+adds dependent support attachment coverage. Exact commands/logs:
+`npm run test --workspace=@marketplace/api -- conversations.service.spec.ts conversation-review.spec.ts support.service.spec.ts support-notifications.spec.ts runtime-swagger.spec.ts`
+and `npm run db:test -- run test --workspace=@marketplace/api -- conversation-attachments.postgres.spec.ts support-workflow.postgres.spec.ts support-attachments.postgres.spec.ts`.
+Logs `.tmp/conversation-review-{unit-final,pg-final}.log`; isolated audit DB only.
+Schemas tests PASS6; client tests PASS3. API types1 FAIL stale schema dist; rebuilt
+schemas once, API types2 PASS. UI/client/buyer/supplier/admin/e2e types PASS.
+Focused browser1 PASS2 desktop/mobile modal keyboard/retention/retry/status/role;
+full affected Messages/question regression PASS13, `.tmp/conversation-review-ui-final.log`.
+Initial modal screenshots caught entry motion; final screenshots use disabled
+animations and are visually inspected. No product opacity defect. Scoped lint1
+and UI contract1 PASS362 before latest backend/test refinements (final lint pending).
+Completion: source/self-review, affected types and scoped lint PASS. API build1
+failed on Swagger test union typing; explicit type narrowing fixed it, build2
+PASS, final build PASS after the reviewed backend refinement. The additional
+PG review run passed conversation/attachment tests but failed support fixture
+creation on a timestamp BIN collision; random synthetic BINs fixed the fixture,
+focused support-workflow rerun PASS. These failures remain in
+`.tmp/conversation-review-{api-build-1,pg-review}.log`; successful evidence in
+`{api-build-final,pg-fixture-fix,api-types-final,e2e-types-final-2,lint-final}.log`.
+Runtime split and isolated PostgreSQL integration gate PASS using existing fresh
+build prerequisites (`node scripts/verify-runtime-split.mjs` and
+`npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs`).
+Real HTTP CORE06 PASS1: buyer/supplier escalation, operator decision via chat,
+explicit repeat escalation, closure via admin ticket form, shared decision/status
+for both parties and private rationale exclusion. Command:
+`npm run db:test -- exec -- node scripts/run-canonical-browser.mjs --config playwright.unified.config.ts conversations.spec.ts --output ../../output/playwright/conversation-review-core-1`.
+Screenshot/computed inspection caught Fluent overriding the shared dialog radius;
+adapter selector now preserves the existing16px contract. Buttons44px/8px and
+Manrope verified; mobile fullscreen question remains intact. Final desktop/mobile
+escalation and supplier-question browser PASS4, including keyboard/focus/recovery
+(`.tmp/conversation-review-dialog-final.log`), completed before the owner's pause.
+Resumed on explicit request without rerunning unchanged passing gates. Completion
+go_live web build PASS after the radius fix; UI contract PASS362. Logs:
+`.tmp/conversation-review-{web-build-final,ui-contract-final}.log`.
+No schema/migration/live-data changes. Remaining only scoped Git publication,
+remote/CI receipt and final dev readiness; full release suite is outside this scope.
+
+## Owner-reported keyboard regression — LOCAL_PASS / PUBLISHED / CI_PENDING
+
+Fix `2f25ed88923f0a956d7d635e4c96c505321a3165` published to origin/main;
+remote SHA matched. [CI38368712727](https://github.com/NikIg228/PlatformaMarket/actions/runs/38368712727)
+and [Security38368712656](https://github.com/NikIg228/PlatformaMarket/actions/runs/38368712656)
+observed IN_PROGRESS, not PASS. Dev wrapper11436 restored, API14384:4012 and
+Next13840:3000 both HTTP200. Post-publication receipt only remains unstaged.
 
 Owner reports invisible keyboard input in the supplier-question modal and three
 Next errors. Same authorized UI writer; primary native snapshot idle, canonical

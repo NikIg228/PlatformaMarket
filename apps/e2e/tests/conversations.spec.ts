@@ -75,9 +75,11 @@ test("CORE06: buyer, mobile supplier and operator conversation workflow", async 
     await expect(chat.locator(".dm-conversation-status")).toContainText("Вопрос решён");
     await chat.getByRole("button", { name: "Действия с диалогом" }).click();
     await page.getByRole("menuitem", { name: "Обратиться к оператору" }).click();
-    await chat.getByLabel("Причина обращения (не менее 10 символов)").fill(`Нужна помощь оператора ${key}`);
-    await chat.getByRole("button", { name: "Создать обращение" }).click();
-    await expect(chat.locator(".dm-conversation-status")).toContainText("Подключён оператор");
+    const escalationDialog = page.getByRole("dialog", { name: "Обратиться к оператору", exact: true });
+    await escalationDialog.getByRole("textbox", { name: "Причина обращения" }).fill(`Нужна помощь оператора ${key}`);
+    await escalationDialog.getByRole("button", { name: "Создать обращение" }).click();
+    await expect(escalationDialog).toBeHidden();
+    await expect(chat.locator(".dm-conversation-status")).toContainText("Передано в поддержку");
     await operatorPage.goto("/admin?section=overview");
     const queue = operatorPage.getByRole("region", { name: "Операционная очередь" });
     const assignmentOpener = queue.getByRole("button", { name: "Назначение и история" }).first();
@@ -110,10 +112,55 @@ test("CORE06: buyer, mobile supplier and operator conversation workflow", async 
     await operatorChat.getByLabel("Сообщение", { exact: true }).fill(`Ответ оператора ${key}`);
     await operatorChat.getByRole("button", { name: "Отправить", exact: true }).click();
     await expect(operatorChat.getByRole("list", { name: "История сообщений" }).getByText(`Ответ оператора ${key}`)).toBeVisible();
+    await expect(operatorChat.locator(".dm-conversation-status")).toContainText("На рассмотрении");
     await operatorPage.screenshot({ path: test.info().outputPath("conversation-operator-1440.png"), fullPage: true });
     await page.reload();
     await expect(chat.getByRole("listitem").filter({ hasText: `Ответ оператора ${key}` }).getByText("Synthetic operator · Оператор площадки")).toBeVisible();
     await page.screenshot({ path: test.info().outputPath("conversation-buyer-1440.png"), fullPage: true });
+    await operatorChat.getByRole("button", { name: "Действия с диалогом" }).click();
+    await operatorPage.getByRole("menuitem", { name: "Завершить рассмотрение" }).click();
+    const resolution = operatorPage.getByRole("dialog", { name: "Решение оператора", exact: true });
+    await expect(resolution.getByRole("button", { name: "Опубликовать решение" })).toBeDisabled();
+    await resolution.getByRole("textbox", { name: "Решение для участников" }).fill(`Подтверждена замена ${key}`);
+    await operatorPage.screenshot({ path: test.info().outputPath("conversation-decision-1440.png"), fullPage: true, animations: "disabled" });
+    const styles = await resolution.evaluate(surface => {
+      const input = surface.querySelector("textarea")!, button = Array.from(surface.querySelectorAll("button")).find(item => item.textContent?.includes("Опубликовать решение"))!;
+      return { dialogRadius: getComputedStyle(surface).borderRadius, dialogWidth: surface.getBoundingClientRect().width,
+        font: getComputedStyle(input).fontFamily, buttonRadius: getComputedStyle(button).borderRadius, buttonHeight: button.getBoundingClientRect().height, background: getComputedStyle(surface).backgroundColor };
+    });
+    await test.info().attach("operator-dialog-computed-styles", { body: JSON.stringify(styles), contentType: "application/json" });
+    expect(styles.font).toContain("Manrope"); expect(styles.buttonHeight).toBeGreaterThanOrEqual(44); expect(styles.buttonRadius).toBe("8px");
+    await resolution.getByRole("button", { name: "Опубликовать решение" }).click();
+    await expect(resolution).toBeHidden();
+    await expect(operatorChat.locator(".dm-conversation-status")).toContainText("Вопрос решён");
+    expect((await db.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status).toBe("RESOLVED");
+    for (const target of [page, supplierPage]) {
+      await target.reload();
+      const partyChat = target.getByRole("region", { name: "Сообщения", exact: true });
+      await expect(partyChat.locator(".dm-conversation-status")).toContainText("Вопрос решён");
+      await expect(partyChat.getByRole("list", { name: "История сообщений" })).toContainText(`Решение оператора: Подтверждена замена ${key}`);
+    }
+    await supplierChat.getByRole("button", { name: "Действия с диалогом" }).click();
+    await supplierPage.getByRole("menuitem", { name: "Повторно обратиться к оператору" }).click();
+    const reopenDialog = supplierPage.getByRole("dialog", { name: "Обратиться к оператору", exact: true });
+    await reopenDialog.getByRole("textbox", { name: "Причина обращения" }).fill(`Нужна повторная проверка ${key}`);
+    await reopenDialog.getByRole("button", { name: "Создать обращение" }).click();
+    await expect(supplierChat.locator(".dm-conversation-status")).toContainText("Передано в поддержку");
+    await operatorPage.goto("/admin?section=support");
+    await opener.click();
+    await dialog.getByLabel("Статус", { exact: true }).selectOption("CLOSED");
+    await dialog.getByLabel("Причина изменения", { exact: true }).fill(`Private rationale ${key}`);
+    await expect(dialog.getByRole("button", { name: "Сохранить решение" })).toBeDisabled();
+    await dialog.getByRole("textbox", { name: "Решение для участников" }).fill(`Повторная проверка завершена ${key}`);
+    await dialog.getByRole("button", { name: "Сохранить решение" }).click();
+    await expect(operatorPage.locator('.dm-save-toast[role="status"]')).toContainText("Изменение обращения сохранено.");
+    for (const target of [page, supplierPage]) {
+      await target.reload();
+      const partyChat = target.getByRole("region", { name: "Сообщения", exact: true });
+      await expect(partyChat.locator(".dm-conversation-status")).toContainText("Вопрос решён");
+      await expect(partyChat.getByRole("list", { name: "История сообщений" })).toContainText(`Решение оператора: Повторная проверка завершена ${key}`);
+      await expect(partyChat.getByText(`Private rationale ${key}`, { exact: true })).toHaveCount(0);
+    }
     // The supported create route is stable both for an empty inbox and for
     // an organization that already has tickets from other isolated fixtures.
     await supplierPage.goto("/supplier/support?mode=new");

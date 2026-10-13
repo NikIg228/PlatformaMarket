@@ -68,7 +68,7 @@ export class ConversationsController {
 
   @Post(":id/resolve") @RequirePermissions("support.ticket.create")
   @ApiUuidParam("id", "Conversation") @ApiCoreBody("ConversationResolve") @ApiCoreResponse("ConversationResult", 201)
-  resolve(@Param("id") id: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { return this.conversations.resolve(parse(z.uuid(), id), parse(conversationResolveSchema, body).expectedVersion, { actorId, organizationId }); }
+  resolve(@Param("id") id: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { const input = parse(conversationResolveSchema, body); return this.conversations.resolve(parse(z.uuid(), id), input.expectedVersion, { actorId, organizationId }, input.decision); }
 
   @Post(":id/escalate") @RequirePermissions("support.ticket.create")
   @ApiUuidParam("id", "Conversation") @ApiCoreBody("ConversationEscalation") @ApiCoreResponse("ConversationEscalationResult", 201)

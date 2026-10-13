@@ -7,6 +7,7 @@ function fixture(operator = false, status = "OPEN") {
   const record = { id: "record", requestHash: "", responseCode: null as number | null, responseBody: null as unknown };
   const db = {
     organizationCapability: { findUnique: vi.fn().mockResolvedValue(operator ? {} : null), findMany: vi.fn().mockResolvedValue([{ organizationId: "operator-org" }]) },
+    businessConversation: { findUnique: vi.fn().mockResolvedValue(null) },
     organizationMembership: { findMany: vi.fn().mockResolvedValue([{ userId: "coworker" }]) },
     supportTicket: { findFirst: vi.fn().mockResolvedValue(ticket), findUniqueOrThrow: vi.fn().mockResolvedValue(ticket), findMany: vi.fn().mockResolvedValue([]), create: vi.fn().mockResolvedValue(ticket), update: vi.fn().mockResolvedValue(ticket) },
     supportMessage: { create: vi.fn().mockResolvedValue({ id: "message" }), findMany: vi.fn().mockResolvedValue([]) },

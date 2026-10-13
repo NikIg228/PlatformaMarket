@@ -12,7 +12,7 @@ export const conversationOfferSelection = {
   saleUnit: { select: { nameRu: true, symbol: true } }, baseUnitsPerSaleUnit: true,
 } satisfies Prisma.SupplierOfferSelect;
 type ContextOffer = Prisma.SupplierOfferGetPayload<{ select: typeof conversationOfferSelection }>;
-export const conversationRelations = { offer: { select: conversationOfferSelection }, buyer: { select: { displayName: true } }, supplier: { select: { displayName: true } } } as const;
+export const conversationRelations = { supportTicket: { select: { status: true } }, offer: { select: conversationOfferSelection }, buyer: { select: { displayName: true } }, supplier: { select: { displayName: true } } } as const;
 export type ConversationWithParties = Prisma.BusinessConversationGetPayload<{ include: typeof conversationRelations }>;
 
 export function conversationContextInfo(title: string, counterpartyName: string, offer: ContextOffer | null, media: MediaAccessService): ConversationContextInfo {

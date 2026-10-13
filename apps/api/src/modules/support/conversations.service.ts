@@ -7,6 +7,8 @@ import type { SupplierActorContext } from "../suppliers/supplier-access.service"
 import { MediaAccessService } from "../../platform/storage/media-access.service";
 import { ConversationAttachmentsService } from "./conversation-attachments.service";
 import { conversationContextInfo, conversationOfferSelection, conversationRelations as withParties, type ConversationWithParties as WithParties } from "./conversation-context";
+import { operatorAudience, requirePublicDecision, reviewFinished, syncConversationReview } from "./conversation-review";
+import { workflowCommand } from "./workflow-command";
 
 @Injectable()
 export class ConversationsService {
@@ -89,7 +91,7 @@ export class ConversationsService {
     return this.prisma.$transaction(tx => this.append(tx, conversation, input, context));
   }
 
-  private async append(tx: Prisma.TransactionClient, conversation: BusinessConversation, input: ConversationMessageInput, context: SupplierActorContext) {
+  private async append(tx: Prisma.TransactionClient, conversation: BusinessConversation, input: ConversationMessageInput, context: SupplierActorContext, notifyOperators = true) {
     // Serialize sequence allocation, resolve/reopen and replay checks on the conversation row.
     await tx.$queryRaw`SELECT id FROM "BusinessConversation" WHERE id = ${conversation.id}::uuid FOR UPDATE`;
     const previous = await tx.conversationMessage.findUnique({ where: { conversationId_authorId_idempotencyKey: { conversationId: conversation.id, authorId: context.actorId, idempotencyKey: input.idempotencyKey } } });
@@ -98,19 +100,24 @@ export class ConversationsService {
         !await this.attachments.sameReferences(tx, conversation.id, previous.id, input.attachments ?? [])) throw new ConflictException("Message key was already used with different content");
       return { conversationId: conversation.id };
     }
+    const current = await tx.businessConversation.findUniqueOrThrow({ where: { id: conversation.id } });
+    const ticket = current.supportTicketId ? await tx.supportTicket.findUniqueOrThrow({ where: { id: current.supportTicketId } }) : null;
     const author = await tx.user.findUniqueOrThrow({ where: { id: context.actorId }, select: { displayName: true } });
-    const updated = await tx.businessConversation.update({ where: { id: conversation.id }, data: { latestSequence: { increment: 1 }, version: { increment: 1 }, resolved: false } });
+    const updated = await tx.businessConversation.update({ where: { id: conversation.id }, data: { latestSequence: { increment: 1 }, version: { increment: 1 }, resolved: ticket ? reviewFinished(ticket.status) : false } });
     const authorRole = context.organizationId === conversation.buyerOrganizationId ? "BUYER" : context.organizationId === conversation.supplierOrganizationId ? "SUPPLIER" : "OPERATOR";
+    if (ticket && !reviewFinished(ticket.status) && ((authorRole === "OPERATOR" && !ticket.firstResponseAt) || ticket.status === "WAITING_CUSTOMER" && authorRole !== "OPERATOR")) {
+      await tx.supportTicket.update({ where: { id: ticket.id }, data: { status: "IN_PROGRESS", ...(authorRole === "OPERATOR" ? { firstResponseAt: new Date() } : {}), version: { increment: 1 } } });
+    }
     const message = await tx.conversationMessage.create({ data: { conversationId: conversation.id, sequence: updated.latestSequence, authorId: context.actorId, authorOrganizationId: context.organizationId, authorName: author.displayName, authorRole, body: input.body, idempotencyKey: input.idempotencyKey } });
     await this.attachments.link(tx, input.attachments ?? [], context, conversation, conversation.id, message.id);
     await tx.auditLog.create({ data: { ...context, action: "conversation.message.saved", entityType: "BusinessConversation", entityId: conversation.id, after: { messageId: message.id, sequence: message.sequence, authorRole } } });
-    await tx.outboxEvent.create({ data: { aggregateType: "BusinessConversation", aggregateId: conversation.id, eventType: "ConversationMessageSaved", payload: { conversationId: conversation.id, messageId: message.id, authorOrganization: context.organizationId, buyerOrganizationId: conversation.buyerOrganizationId, supplierOrganizationId: conversation.supplierOrganizationId } } });
+    await tx.outboxEvent.create({ data: { aggregateType: "BusinessConversation", aggregateId: conversation.id, eventType: "ConversationMessageSaved", payload: { conversationId: conversation.id, messageId: message.id, authorOrganization: context.organizationId, buyerOrganizationId: conversation.buyerOrganizationId, supplierOrganizationId: conversation.supplierOrganizationId, ...(notifyOperators && ticket && !reviewFinished(ticket.status) ? await operatorAudience(tx) : {}) } } });
     return { conversationId: conversation.id };
   }
 
   private summary(conversation: WithParties, context: SupplierActorContext, lastMessage: string, unread: boolean): ConversationSummary {
     const counterpartyName = context.organizationId === conversation.buyerOrganizationId ? conversation.supplier.displayName : context.organizationId === conversation.supplierOrganizationId ? conversation.buyer.displayName : `${conversation.buyer.displayName} / ${conversation.supplier.displayName}`;
-    return { id: conversation.id, productId: conversation.offer?.productVariant.productId ?? null, contextType: conversation.contextType as "OFFER" | "ORDER", contextId: conversation.contextId, title: conversation.title, buyerOrganizationId: conversation.buyerOrganizationId, supplierOrganizationId: conversation.supplierOrganizationId, counterpartyName, resolved: conversation.resolved, version: conversation.version, latestSequence: conversation.latestSequence, lastMessage, updatedAt: conversation.updatedAt.toISOString(), unread, supportTicketId: conversation.supportTicketId,
+    return { id: conversation.id, productId: conversation.offer?.productVariant.productId ?? null, contextType: conversation.contextType as "OFFER" | "ORDER", contextId: conversation.contextId, title: conversation.title, buyerOrganizationId: conversation.buyerOrganizationId, supplierOrganizationId: conversation.supplierOrganizationId, counterpartyName, resolved: conversation.supportTicket ? reviewFinished(conversation.supportTicket.status) : conversation.resolved, version: conversation.version, latestSequence: conversation.latestSequence, lastMessage, updatedAt: conversation.updatedAt.toISOString(), unread, supportTicketId: conversation.supportTicketId, supportStatus: conversation.supportTicket?.status ?? null,
       context: conversationContextInfo(conversation.title, counterpartyName, conversation.offer, this.media) };
   }
 
@@ -148,9 +155,24 @@ export class ConversationsService {
     return rows[0];
   }
 
-  async resolve(id: string, expectedVersion: number, context: SupplierActorContext) {
+  async resolve(id: string, expectedVersion: number, context: SupplierActorContext, decision?: string) {
     await this.requireConversation(id, context, true);
+    const operator = await this.operator(context);
     return this.prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "BusinessConversation" WHERE id = ${id}::uuid FOR UPDATE`;
+      const current = await tx.businessConversation.findUniqueOrThrow({ where: { id } });
+      if (current.version !== expectedVersion) throw new ConflictException("Conversation changed; refresh before resolving");
+      if (current.supportTicketId) {
+        if (!operator) throw new ForbiddenException("Рассмотрение завершает оператор поддержки.");
+        const ticket = await tx.supportTicket.findUniqueOrThrow({ where: { id: current.supportTicketId } });
+        if (reviewFinished(ticket.status)) return { conversationId: id };
+        requirePublicDecision(current, ticket.status, "RESOLVED", decision);
+        const updated = await tx.supportTicket.update({ where: { id: ticket.id }, data: { status: "RESOLVED", resolvedAt: new Date(), closedAt: null, firstResponseAt: ticket.firstResponseAt ?? new Date(), version: { increment: 1 } } });
+        await syncConversationReview(tx, current, ticket, updated, context, decision);
+        await tx.auditLog.create({ data: { ...context, action: "support.ticket.updated", entityType: "SupportTicket", entityId: ticket.id, before: { status: ticket.status }, after: { status: updated.status, decision } } });
+        await tx.outboxEvent.create({ data: { aggregateType: "SupportTicket", aggregateId: ticket.id, eventType: "SupportTicketUpdated", payload: { organizationId: ticket.organizationId, ticketId: ticket.id, status: updated.status } } });
+        return { conversationId: id };
+      }
       const result = await tx.businessConversation.updateMany({ where: { id, version: expectedVersion }, data: { resolved: true, version: { increment: 1 } } });
       if (result.count !== 1) throw new ConflictException("Conversation changed; refresh before resolving");
       await tx.auditLog.create({ data: { ...context, action: "conversation.resolved", entityType: "BusinessConversation", entityId: id, after: { expectedVersion } } });
@@ -161,17 +183,27 @@ export class ConversationsService {
   async escalate(id: string, input: ConversationEscalation, context: SupplierActorContext) {
     const conversation = await this.requireConversation(id, context, true);
     if (![conversation.buyerOrganizationId, conversation.supplierOrganizationId].includes(context.organizationId)) throw new ForbiddenException("Only a conversation party can request operator support");
-    return this.prisma.$transaction(async tx => {
+    return this.prisma.$transaction(async tx => workflowCommand(tx, `conversation.escalate:${context.organizationId}:${context.actorId}`, input.idempotencyKey, { id, ...input }, async () => {
       await tx.$queryRaw`SELECT id FROM "BusinessConversation" WHERE id = ${id}::uuid FOR UPDATE`;
       const current = await tx.businessConversation.findUniqueOrThrow({ where: { id } });
-      if (current.supportTicketId) return { ticketId: current.supportTicketId };
+      if (current.supportTicketId) {
+        const ticket = await tx.supportTicket.findUniqueOrThrow({ where: { id: current.supportTicketId } });
+        if (!reviewFinished(ticket.status)) return { ticketId: ticket.id };
+        const slaHours = { LOW: 72, NORMAL: 24, HIGH: 8, URGENT: 2 }[ticket.priority];
+        const updated = await tx.supportTicket.update({ where: { id: ticket.id }, data: { status: "OPEN", resolvedAt: null, closedAt: null, firstResponseAt: null, slaDueAt: new Date(Date.now() + slaHours * 3_600_000), version: { increment: 1 } } });
+        await syncConversationReview(tx, current, ticket, updated, context);
+        await this.append(tx, current, { body: `Повторное обращение к оператору: ${input.reason}`, idempotencyKey: input.idempotencyKey }, context, false);
+        await tx.outboxEvent.create({ data: { aggregateType: "SupportTicket", aggregateId: ticket.id, eventType: "SupportTicketUpdated", payload: { ticketId: ticket.id, status: "OPEN", action: "REOPEN", ...await operatorAudience(tx) } } });
+        return { ticketId: ticket.id };
+      }
       const ticket = await tx.supportTicket.create({ data: { number: `SUP-${crypto.randomUUID()}`, organizationId: context.organizationId, requesterId: context.actorId, subject: conversation.title, description: input.reason, category: "CONVERSATION", priority: "NORMAL", slaDueAt: new Date(Date.now() + 86_400_000) } });
       await tx.supportLink.create({ data: { ticketId: ticket.id, entityType: "BusinessConversation", entityId: id, label: conversation.title } });
       await tx.supportMessage.create({ data: { ticketId: ticket.id, authorId: context.actorId, body: input.reason } });
       await tx.businessConversation.update({ where: { id }, data: { supportTicketId: ticket.id, version: { increment: 1 } } });
-      await this.append(tx, conversation, { body: `Обращение к оператору: ${input.reason}`, idempotencyKey: input.idempotencyKey }, context);
+      await this.append(tx, conversation, { body: `Обращение к оператору: ${input.reason}`, idempotencyKey: input.idempotencyKey }, context, false);
       await tx.auditLog.create({ data: { ...context, action: "conversation.escalated", entityType: "BusinessConversation", entityId: id, after: { ticketId: ticket.id, reason: input.reason } } });
+      await tx.outboxEvent.create({ data: { aggregateType: "SupportTicket", aggregateId: ticket.id, eventType: "SupportTicketCreated", payload: { ticketId: ticket.id, number: ticket.number, organizationId: context.organizationId, priority: ticket.priority, ...await operatorAudience(tx) } } });
       return { ticketId: ticket.id };
-    });
+    }));
   }
 }

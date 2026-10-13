@@ -20,4 +20,6 @@ it("keeps offer context and exact message retry payload, and downloads files wit
   expect(String(fetcher.mock.calls[4][0])).toBe("http://localhost/api/conversations/conversation/messages/message/attachments/file");
   expect(new Headers(fetcher.mock.calls[4][1]?.headers).get("authorization")).toBe("Bearer synthetic-token");
   expect(result.fileName).toBe("document.pdf"); expect(await result.blob.text()).toBe("%PDF-1.7");
+  await api.resolveConversation("conversation", 7, "Публичное решение оператора");
+  expect(JSON.parse(String(fetcher.mock.calls[5][1]?.body))).toEqual({ expectedVersion: 7, decision: "Публичное решение оператора" });
 });

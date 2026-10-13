@@ -7,6 +7,7 @@ import { AccessControlService } from "../access-control/access-control.service";
 import { workflowCommand } from "./workflow-command";
 import { SupportAttachmentsService } from "./support-attachments.service";
 import { supportAttachmentSchema } from "@marketplace/schemas";
+import { lockTicketConversation, requirePublicDecision, reviewFinished, syncConversationReview } from "./conversation-review";
 
 const slaHours = { LOW: 72, NORMAL: 24, HIGH: 8, URGENT: 2 } as const;
 
@@ -66,6 +67,7 @@ export class SupportService {
     if (input.isInternal && !operator) throw new ForbiddenException("Internal notes are available only to support operators");
     if (input.reopen && operator && !await this.access.hasAll(context.actorId, context.organizationId, ["support.ticket.manage"])) throw new ForbiddenException("Для повторного открытия оператору требуется право управления поддержкой.");
     return this.prisma.$transaction(async (tx) => workflowCommand(tx, `support.message:${context.organizationId}:${context.actorId}`, input.idempotencyKey, { ticketId, ...input }, async () => {
+      const conversation = await lockTicketConversation(tx, ticketId);
       await tx.$queryRaw`SELECT id FROM "SupportTicket" WHERE id = ${ticketId}::uuid FOR UPDATE`;
       const current = await tx.supportTicket.findUniqueOrThrow({ where: { id: ticketId } });
       const terminal = current.status === "RESOLVED" || current.status === "CLOSED";
@@ -75,7 +77,8 @@ export class SupportService {
       const attachments = input.attachments.length ? await this.attachments.link(tx, input.attachments, context, ticketId, messageId) : [];
       const message = await tx.supportMessage.create({ data: { id: messageId, ticketId, authorId: context.actorId, body: input.body, isInternal: input.isInternal, attachments } });
       const patch = operator && !input.isInternal && !current.firstResponseAt ? { firstResponseAt: new Date(), ...(current.status === "OPEN" ? { status: "IN_PROGRESS" as const } : {}) } : !operator && current.status === "WAITING_CUSTOMER" ? { status: "IN_PROGRESS" as const } : {};
-      await tx.supportTicket.update({ where: { id: ticketId }, data: { ...patch, ...(terminal && input.reopen ? { status: "IN_PROGRESS", resolvedAt: null, closedAt: null, slaDueAt: new Date(Date.now() + slaHours[current.priority] * 3_600_000) } : {}), version: { increment: 1 } } });
+      const updated = await tx.supportTicket.update({ where: { id: ticketId }, data: { ...patch, ...(terminal && input.reopen ? { status: "IN_PROGRESS", resolvedAt: null, closedAt: null, slaDueAt: new Date(Date.now() + slaHours[current.priority] * 3_600_000) } : {}), version: { increment: 1 } } });
+      await syncConversationReview(tx, conversation, current, updated, context);
       await tx.auditLog.create({ data: { ...context, action: input.isInternal ? "support.note.added" : "support.message.added", entityType: "SupportTicket", entityId: ticketId, after: { messageId: message.id, attachmentCount: input.attachments.length } } });
       if (terminal && input.reopen) await tx.auditLog.create({ data: { ...context, action: "support.ticket.reopened", entityType: "SupportTicket", entityId: ticketId, before: { status: current.status }, after: { status: "IN_PROGRESS", messageId: message.id } } });
       if (!input.isInternal) await tx.outboxEvent.create({ data: { aggregateType: "SupportTicket", aggregateId: ticketId, eventType: "SupportTicketUpdated", payload: { ticketId, number: current.number, messageId: message.id, action: terminal && input.reopen ? "REOPEN" : "MESSAGE", ...(operator ? { organizationId: current.organizationId } : await this.operatorAudience(tx)) } } });
@@ -85,16 +88,23 @@ export class SupportService {
 
   async update(ticketId: string, input: UpdateSupportTicketInput, context: SupplierActorContext) {
     const ticket = await this.requireTicket(ticketId, context);
-    if (!(await this.isOperator(context.organizationId))) throw new ForbiddenException("Only support operators can manage ticket workflow");
+    if (!(await this.isOperator(context.organizationId)) || !await this.access.hasAll(context.actorId, context.organizationId, ["support.ticket.manage"])) throw new ForbiddenException("Only support operators can manage ticket workflow");
     if (input.assigneeId && !await this.access.hasAll(input.assigneeId, context.organizationId, ["support.ticket.manage"])) throw new ConflictException("Assignee must be an active support operator in your organization");
-    const { expectedVersion, reason, idempotencyKey, slaDueAt, ...patch } = input;
+    const { expectedVersion, reason, decision, idempotencyKey, slaDueAt, ...patch } = input;
     return this.prisma.$transaction(tx => workflowCommand(tx, `support.update:${context.organizationId}:${context.actorId}`, idempotencyKey, { ticketId, ...input }, async () => {
+      const conversation = await lockTicketConversation(tx, ticketId);
+      await tx.$queryRaw`SELECT id FROM "SupportTicket" WHERE id = ${ticketId}::uuid FOR UPDATE`;
+      const current = await tx.supportTicket.findUniqueOrThrow({ where: { id: ticketId } });
+      requirePublicDecision(conversation, current.status, input.status ?? current.status, decision);
       const now = new Date();
-      const changed = await tx.supportTicket.updateMany({ where: { id: ticketId, version: expectedVersion }, data: { ...patch, version: { increment: 1 }, ...(slaDueAt !== undefined ? { slaDueAt: slaDueAt ? new Date(slaDueAt) : null } : {}), resolvedAt: input.status === "RESOLVED" ? now : input.status && input.status !== "CLOSED" ? null : ticket.resolvedAt, closedAt: input.status === "CLOSED" ? now : input.status ? null : ticket.closedAt } });
+      const publicResolution = conversation && !reviewFinished(current.status) && input.status && reviewFinished(input.status);
+      const changed = await tx.supportTicket.updateMany({ where: { id: ticketId, version: expectedVersion }, data: { ...patch, ...(publicResolution && !current.firstResponseAt ? { firstResponseAt: now } : {}), version: { increment: 1 }, ...(slaDueAt !== undefined ? { slaDueAt: slaDueAt ? new Date(slaDueAt) : null } : {}), resolvedAt: input.status === "RESOLVED" ? now : input.status && input.status !== "CLOSED" ? null : ticket.resolvedAt, closedAt: input.status === "CLOSED" ? now : input.status ? null : ticket.closedAt } });
       if (changed.count !== 1) throw new ConflictException("Ticket changed; refresh before updating");
+      const updated = await tx.supportTicket.findUniqueOrThrow({ where: { id: ticketId } });
+      await syncConversationReview(tx, conversation, current, updated, context, decision);
       await tx.auditLog.create({ data: { ...context, action: "support.ticket.updated", entityType: "SupportTicket", entityId: ticketId, before: { status: ticket.status, priority: ticket.priority, assigneeId: ticket.assigneeId }, after: { ...input, reason } as Prisma.InputJsonValue } });
       await tx.outboxEvent.create({ data: { aggregateType: "SupportTicket", aggregateId: ticketId, eventType: "SupportTicketUpdated", payload: { organizationId: ticket.organizationId, ticketId, status: input.status ?? ticket.status } } });
-      return tx.supportTicket.findUniqueOrThrow({ where: { id: ticketId } });
+      return updated;
     }));
   }
 

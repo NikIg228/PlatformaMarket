@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import { PrismaClient, type Prisma } from "@prisma/client";
 import { expect, it } from "vitest";
 import type { PrismaService } from "../../platform/prisma/prisma.service";
@@ -18,7 +18,7 @@ it.skipIf(!process.env.POSTGRES_TEST_DATABASE_URL)("support PostgreSQL: tenant, 
   const created: string[] = [];
   try {
     expect((await db.$queryRaw<{ name: string }[]>`SELECT current_database() AS name`)[0].name).toBe("dentmarket_audit_20260914");
-    await db.organization.createMany({ data: [customerOrg, operatorOrg, otherOrg].map((id, index) => ({ id, legalName: "Support synthetic fixture", displayName: "Support synthetic fixture", bin: `${Date.now()}`.slice(-11) + index })) });
+    await db.organization.createMany({ data: [customerOrg, operatorOrg, otherOrg].map(id => ({ id, legalName: "Support synthetic fixture", displayName: "Support synthetic fixture", bin: String(randomInt(100_000_000_000, 999_999_999_999)) })) });
     await db.organizationCapability.create({ data: { organizationId: operatorOrg, capability: "MARKETPLACE_OPERATOR" } });
     const input = { idempotencyKey: randomUUID(), subject: "Support fixture", description: "Synthetic support description", category: "GENERAL", priority: "NORMAL" as const, links: [] };
     const ticket = await service.create(input, customer); created.push(ticket.id);

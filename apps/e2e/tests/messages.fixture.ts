@@ -15,7 +15,7 @@ export async function messagesFixture(page: Page, role: "clinic" | "supplier" = 
   const rights = ["support.ticket.view", "notification.view", ...(canWrite ? ["support.ticket.create"] : [])];
   const capability = role === "clinic" ? "BUYER" : "SUPPLIER", organizationId = id(role === "clinic" ? 1 : 2);
   const rows = Array.from({ length: 36 }, (_, i) => summary(10 + i, role));
-  const state = { rows, details: new Map(rows.map(row => [row.id, history(row)])), writes: [] as { path: string; input: Record<string, unknown> }[], reads: [] as string[], unexpected: [] as string[], listCalls: 0, failList: false, failLookup: false, failUpload: false, failDownload: false, failSend: false, holdList: false, releaseList: () => {}, slowId: "", releaseDetail: () => {}, assets: new Map<string, UploadedConversationAttachment>(), startId: null as string | null };
+  const state = { rows, details: new Map(rows.map(row => [row.id, history(row)])), writes: [] as { path: string; input: Record<string, unknown> }[], reads: [] as string[], unexpected: [] as string[], listCalls: 0, failList: false, failLookup: false, failUpload: false, failDownload: false, failSend: false, failEscalate: false, holdList: false, releaseList: () => {}, slowId: "", releaseDetail: () => {}, assets: new Map<string, UploadedConversationAttachment>(), startId: null as string | null };
   const replay = new Map<string, { conversationId: string }>(), contents = new Map<string, Buffer>();
   await page.addInitScript(({ capability, organizationId }) => sessionStorage.setItem(`dentmarket:${capability.toLowerCase()}-session`, JSON.stringify({ capability, organizationId, sessionId: "22222222-2222-4222-8222-222222222222", accessToken: "ui-fixture-not-real", accessTokenExpiresAt: Date.now() + 3_600_000 })), { capability, organizationId });
   await page.route("**/api/**", async route => {
@@ -72,7 +72,7 @@ export async function messagesFixture(page: Page, role: "clinic" | "supplier" = 
       if (!detail) return fail("Диалог не найден", 404);
       if (path.endsWith("/read")) { detail.conversation.unread = false; body = { throughSequence: input.throughSequence }; }
       else if (path.endsWith("/resolve")) { detail.conversation.resolved = true; detail.conversation.version++; body = { conversationId: detail.conversation.id }; }
-      else if (path.endsWith("/escalate")) { detail.conversation.supportTicketId = id(500); body = { ticketId: id(500) }; }
+      else if (path.endsWith("/escalate")) { detail.conversation.supportTicketId = id(500); detail.conversation.supportStatus = "OPEN"; detail.conversation.resolved = false; if (state.failEscalate) return fail("Подтверждение обращения не получено"); body = { ticketId: id(500) }; }
       else {
         if (state.slowId === detail.conversation.id) await new Promise<void>(resolve => { state.releaseDetail = resolve; });
         body = url.searchParams.has("beforeSequence") ? { ...detail, hasOlder: false, messages: [{ ...detail.messages[0], id: id(999), sequence: 1, body: "Самое раннее сообщение" }] } : detail;

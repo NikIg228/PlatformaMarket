@@ -263,6 +263,8 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
   background: var(--dm-surface);
   box-shadow: var(--dm-shadow-overlay);
 }
+/* Preserve the dialog contract when Fluent atomic radius styles load later. */
+.dm-dialog-surface.fui-DialogSurface { border-radius: var(--dm-radius-dialog); }
 .dm-dialog-content { display: grid; gap: var(--dm-space-4); }
 .dm-dialog-description { margin: 0; color: var(--dm-text-secondary); font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); }
 
@@ -416,13 +418,14 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
 .dm-conversations-placeholder { min-height:var(--dm-space-16); }
 .dm-conversations-list-end { min-height:1px; }
 .dm-conversations-detail { display:flex; flex-direction:column; padding:var(--dm-space-4); gap:var(--dm-space-3); }
-.dm-conversation-header { display:flex; flex-wrap:wrap; align-items:start; gap:var(--dm-space-2); padding-bottom:var(--dm-space-3); border-bottom:1px solid var(--dm-border); }
+.dm-conversation-header { display:flex; flex-wrap:wrap; align-items:center; gap:var(--dm-space-2); padding-bottom:var(--dm-space-3); border-bottom:1px solid var(--dm-border); }
 .dm-conversation-context { display:flex; align-items:center; gap:var(--dm-space-3); min-width:0; flex:1; }
 .dm-conversation-context>img { width:var(--dm-space-14); height:var(--dm-space-14); object-fit:contain; border-radius:var(--dm-radius-field); }
 .dm-conversation-context>div { display:grid; min-width:0; gap:var(--dm-space-micro); overflow-wrap:anywhere; }
 .dm-conversation-context strong { font-size:var(--dm-font-size-body-lg); }
 .dm-conversation-context small { color:var(--dm-text-secondary); font-size:var(--dm-font-size-caption); }
-.dm-conversation-status { display:flex; flex-wrap:wrap; gap:var(--dm-space-2); align-items:center; width:100%; color:var(--dm-text-muted); font-size:var(--dm-font-size-caption); }
+.dm-conversation-actions { display:flex; align-items:center; gap:var(--dm-space-2); }
+.dm-conversation-status { display:flex; align-items:center; }
 .dm-conversation-reading { flex:1; min-height:0; position:relative; }
 .dm-conversation-scroll { height:100%; overflow-y:auto; overscroll-behavior:contain; padding:var(--dm-space-1); }
 .dm-conversations-history { display:flex; flex-direction:column; list-style:none; gap:var(--dm-space-3); padding:0; margin:0; }

@@ -7,6 +7,7 @@ import { FileUploadPolicyService } from "../../platform/security/file-upload-pol
 import { MediaAccessService } from "../../platform/storage/media-access.service";
 import { ConversationAttachmentsService } from "./conversation-attachments.service";
 import { ConversationsService } from "./conversations.service";
+import { verifyConversationReview } from "./conversation-review.postgres-fixture";
 
 it.skipIf(!process.env.POSTGRES_TEST_DATABASE_URL)("conversation files: parties, context, replay, races, rollback, read and operator access", async () => {
   const target = new URL(process.env.POSTGRES_TEST_DATABASE_URL!);
@@ -108,7 +109,7 @@ it.skipIf(!process.env.POSTGRES_TEST_DATABASE_URL)("conversation files: parties,
     await expect(service.downloadAttachment(id, message.id, uploaded.assetId, buyer)).rejects.toThrow("permission");
     await expect(service.uploadAttachment({ ...scope, fileName: "x.pdf", contentBase64: "JVBERi0=" }, buyer)).rejects.toThrow("permission");
     await db.organizationMembership.update({ where: { userId_organizationId: { userId: buyer.actorId, organizationId: buyer.organizationId } }, data: { status: "ACTIVE" } });
-    await service.escalate(id, { reason: "Synthetic operator assistance", idempotencyKey: randomUUID() }, buyer);
+    await verifyConversationReview(db, service, id, buyer, supplier, operator);
     await service.downloadAttachment(id, message.id, uploaded.assetId, operator);
     const operatorRole = await db.role.findFirstOrThrow({ where: { organizationId: operator.organizationId } });
     await db.rolePermission.deleteMany({ where: { roleId: operatorRole.id, permission: { code: "support.ticket.manage" } } });
@@ -126,6 +127,7 @@ it.skipIf(!process.env.POSTGRES_TEST_DATABASE_URL)("conversation files: parties,
     await db.supportTicket.deleteMany({ where: { id: { in: tickets } } });
     await db.outboxEvent.deleteMany({ where: { aggregateId: { in: [...ids, ...tickets] } } });
     await db.auditLog.deleteMany({ where: { organizationId: { in: organizations } } });
+    await db.idempotencyRecord.deleteMany({ where: { OR: users.map(user => ({ scope: { contains: user } })) } });
     await db.uploadAsset.deleteMany({ where: { organizationId: { in: organizations } } });
     await db.supplierOffer.deleteMany({ where: { id: offerId } });
     await db.product.deleteMany({ where: { id: productId } });

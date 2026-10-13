@@ -176,7 +176,7 @@ export class MarketplaceApiClient {
   startConversation(input: import("@marketplace/schemas").StartConversation) { return this.post<{ conversationId: string }>("/conversations", input); }
   sendConversationMessage(id: string, input: import("@marketplace/schemas").ConversationMessageInput) { return this.post<{ conversationId: string }>(`/conversations/${encodeURIComponent(id)}/messages`, input); }
   readConversation(id: string, throughSequence: number) { return this.post<{ throughSequence: number }>(`/conversations/${encodeURIComponent(id)}/read`, { throughSequence }); }
-  resolveConversation(id: string, expectedVersion: number) { return this.post<{ conversationId: string }>(`/conversations/${encodeURIComponent(id)}/resolve`, { expectedVersion }); }
+  resolveConversation(id: string, expectedVersion: number, decision?: string) { return this.post<{ conversationId: string }>(`/conversations/${encodeURIComponent(id)}/resolve`, { expectedVersion, ...(decision ? { decision } : {}) }); }
   escalateConversation(id: string, input: import("@marketplace/schemas").ConversationEscalation) { return this.post<{ ticketId: string }>(`/conversations/${encodeURIComponent(id)}/escalate`, input); }
   listPromotions(query: Partial<PromotionListQuery> = {}) { return this.get<PromotionPage>(`/promotions?${new URLSearchParams(Object.entries(query).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)]))}`); }
   listPublicPromotions(query: Partial<PromotionListQuery> = {}) { return this.get<PublicPromotionPage>(`/promotions/storefront?${new URLSearchParams(Object.entries(query).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)]))}`); }
