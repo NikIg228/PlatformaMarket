@@ -1,5 +1,48 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 13.10.2026 — ROADMAP-DOCUMENTS-ADMIN / ACTIVE DOCS
+
+Поручение владельца: проанализировать Admin roadmap, document workflow и фактическую
+стадию проекта, затем интегрировать оба крупных направления в глобальный roadmap.
+Scope только документационный; код, права, БД, UI, runtime и внешние подключения
+не изменяются. Writer primary01a11758; ранее подтверждённая владельцем остановка
+другой задачи дополнительно проверена native wait: UI01a11795 idle, turn01a13682
+completed. Передачи нет. Canonical main `d4e1db86f9450343184b824c18e2790ae704b03f`.
+
+План до изменений: сверить три документа, текущий Git и целевые evidence/code;
+сохранить R0 и частные PASS, явно показать незакрытый R1/CI/live; выделить крупные
+R7.6 (документооборот) и R7.7 (Admin) с зависимостями, пакетами и совместным DoD,
+без перенумерации R0–R9 и конкурирующего backlog. Синхронизировать профильные
+источники/входы и summary. Риск — потеря старых обязательств, двойной учёт работ,
+ложная готовность и скрытое расширение полномочий. Проверки: links/IDs/coverage,
+согласованность решений, diff/staged review; docs-only без app/build/DB/browser.
+
+Admin roadmap был untracked, получен от владельца для анализа/интеграции;
+его проверенная редакция входит в эту документальную публикацию. Чужие dirty
+Matrix, CATALOG-PROMOTIONS-MESSAGES, PRODUCT-PAGE-PREVIEW-DATA и output сохраняются.
+Выборочная сверка на d4e1db8 подтвердила ограничение GENERATED-счёта источником
+UPLOADED, счётчик подписей вместо плана сторон, первые6 организаций, LiveMetrics
+по длине ответа, статичное «Выключено» и tenant-scoped audit. Это не полный аудит
+реализации и не новый PASS продукта.
+
+Результат: глобальный план актуализирован по состоянию d4e1db8; сохранены42 прежних
+checkbox/их статусы, добавлены16 пакетов R7.6.1–8/R7.7.1–8. Все DWF-01–11 и
+ADM-00–11 сопоставлены, выделены пересечения/решения/порядок/приёмка R7.3/R8/R9.
+Адресные дополнения внесены в11 docs: основной roadmap, два источника, приоритетная
+карта, overview, admin code map, индекс/README, документы, handoff и этот checkpoint.
+R0 ACCEPTED, R1 DECISIONS_PENDING и общий R7 NOT_ACCEPTED сохранены; срок30.10
+требует переоценки. Новая реализация не начата.
+
+Проверки13.10: PowerShell проверка359 локальных ссылок в11 файлах — PASS; сравнение
+execution IDs с git show HEAD —42 прежних неизменны/16 новых unchecked, PASS;
+`git diff --check` — PASS. Хеши трёх чужих dirty docs совпали с preflight.
+Review источников/границ/покрытия выполнен с development-toolkit и Technical Writer;
+старый auth/MFA текст admin code map приведён к уже опубликованному решению13.10.
+Build/types/DB/browser NOT_RUN (docs-only). Точный CI d4e1db8 теперь FAILURE
+38447139522, шаг Canonical pilot browser; PG/containers/Security38447139476 SUCCESS.
+Новый разбор browser failures/исправление не выполнялись. Следующий шаг —
+финальный staged review/hygiene, commit/push11 собственных docs и CI receipt.
+
 ## 13.10.2026 — MARKET-DOCUMENT-WORKFLOW / DOCS
 
 Владелец поручил сохранить согласованный документальный workflow и прямо подтвердил,
