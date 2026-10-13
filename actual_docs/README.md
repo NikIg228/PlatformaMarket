@@ -17,6 +17,8 @@
 | Переработка всех разделов Admin, API и операторских прав | [Admin roadmap](applications/admin-roadmap.md), исполнение R7.7 |
 | Как выполнять задачу и выбирать проверки | [AGENTS](../AGENTS.md), [Workflow](governance/DEVELOPMENT_WORKFLOW.md) |
 | Что принято на конкретной версии | [Acceptance Matrix](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
+| Краткие технические результаты этапов | [Admin](applications/admin-implementation-log.md), [документооборот](domains/document-workflow-implementation-log.md) |
+| Возникшие вопросы и принятые варианты | [Журнал вопросов и решений](governance/ROADMAP-QUESTIONS-AND-DECISIONS.md) |
 | Текущее владение и состояние выбранной задачи | [Реестр сессии](../.codex/project-session.json), [primary](governance/task-state/PRIMARY-SESSION.md), актуальная карточка задачи |
 | Классификация всех материалов | [Documentation index](DOCUMENTATION_INDEX.md) |
 

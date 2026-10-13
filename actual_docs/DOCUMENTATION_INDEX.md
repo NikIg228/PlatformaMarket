@@ -26,6 +26,9 @@
 | [Корневой README](../README.md) | CURRENT | Краткий вход |
 | [AGENTS](../AGENTS.md) | CURRENT | Границы и порядок работы |
 | [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) | CURRENT | Рабочий источник по назначению |
+| [applications/admin-implementation-log.md](applications/admin-implementation-log.md) | EXECUTION | Краткие результаты Admin по R7.7 с границами проверок |
+| [domains/document-workflow-implementation-log.md](domains/document-workflow-implementation-log.md) | EXECUTION | Краткие результаты документооборота по R7.6 |
+| [governance/ROADMAP-QUESTIONS-AND-DECISIONS.md](governance/ROADMAP-QUESTIONS-AND-DECISIONS.md) | EXECUTION | Вопросы, рекомендации и самостоятельные решения; не второй backlog |
 | [MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md) | CURRENT | Рабочий источник по назначению |
 | [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) | EXECUTION | Читать только для выбранного scope/владения |
 | [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) | CURRENT | Рабочий источник по назначению |
