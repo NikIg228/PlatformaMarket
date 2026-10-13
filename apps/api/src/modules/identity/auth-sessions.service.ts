@@ -13,6 +13,8 @@ import { PlatformAuthorityPolicy } from "../access-control/platform-authority.po
 import { authMailMode, deliverAuthMail, requireAuthMail } from "./auth-mail.delivery";
 import { setTimeout as delay } from "node:timers/promises";
 import { verifyProfileEmailChange } from "./profile-email-verification";
+import { lockSessionRows, logoutTargetSession } from "./session-logout";
+import type { SessionLogoutRequest } from "@marketplace/schemas";
 
 type RequestMetadata = { ipAddress?: string; userAgent?: string; correlationId?: string };
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -85,9 +87,9 @@ export class AuthSessionsService {
       refreshTokenExpiresAt: session.expiresAt.toISOString() };
   }
 
-  async workspaceContext(userId?: string, organizationId?: string): Promise<WorkspaceContext> {
+  async workspaceContext(userId?: string, organizationId?: string, client: Prisma.TransactionClient = this.prisma): Promise<WorkspaceContext> {
     if (!userId || !organizationId) throw new UnauthorizedException("Войдите в аккаунт с активной организацией");
-    const membership = await this.prisma.organizationMembership.findFirst({
+    const membership = await client.organizationMembership.findFirst({
       where: { userId, organizationId, status: "ACTIVE", user: { status: "ACTIVE" }, organization: { status: "ACTIVE" } },
       select: { organization: { select: { id: true, displayName: true, capabilities: { select: { capability: true } } } } },
     });
@@ -100,10 +102,11 @@ export class AuthSessionsService {
     };
   }
 
-  private async createSession(userId: string, organizationIds: string[], activeOrganizationId: string | null, authMethods: string[], metadata: RequestMetadata) {
+  private async createSession(userId: string, organizationIds: string[], activeOrganizationId: string | null, authMethods: string[], metadata: RequestMetadata, origin?: { client: Prisma.TransactionClient; loginSessionId: string | null }) {
     const refreshToken = randomBytes(48).toString("base64url");
     const config = environment();
-    const session = await this.prisma.authSession.create({ data: { userId, familyId: randomUUID(), refreshTokenHash: hash(refreshToken), organizationIds, activeOrganizationId, authMethods, ipAddress: metadata.ipAddress, userAgent: metadata.userAgent, lastUsedAt: new Date(), expiresAt: new Date(Date.now() + config.AUTH_REFRESH_TOKEN_TTL_DAYS * 86_400_000) } });
+    const id = randomUUID();
+    const session = await (origin?.client ?? this.prisma).authSession.create({ data: { id, originLoginSessionId: origin ? origin.loginSessionId : id, userId, familyId: randomUUID(), refreshTokenHash: hash(refreshToken), organizationIds, activeOrganizationId, authMethods, ipAddress: metadata.ipAddress, userAgent: metadata.userAgent, lastUsedAt: new Date(), expiresAt: new Date(Date.now() + config.AUTH_REFRESH_TOKEN_TTL_DAYS * 86_400_000) } });
     return { ...this.sessionPayload(session, refreshToken), refreshToken };
   }
 
@@ -315,7 +318,8 @@ export class AuthSessionsService {
     const refreshToken = randomBytes(48).toString("base64url");
     const config = environment();
     const session = await this.prisma.$transaction(async (tx) => {
-      const created = await tx.authSession.create({ data: { userId: user!.id, familyId: randomUUID(), refreshTokenHash: hash(refreshToken), organizationIds, activeOrganizationId, authMethods: [input.provider.toLowerCase()], ipAddress: metadata.ipAddress, userAgent: metadata.userAgent, lastUsedAt: new Date(), expiresAt: new Date(Date.now() + config.AUTH_REFRESH_TOKEN_TTL_DAYS * 86_400_000) } });
+      const id = randomUUID();
+      const created = await tx.authSession.create({ data: { id, originLoginSessionId: id, userId: user!.id, familyId: randomUUID(), refreshTokenHash: hash(refreshToken), organizationIds, activeOrganizationId, authMethods: [input.provider.toLowerCase()], ipAddress: metadata.ipAddress, userAgent: metadata.userAgent, lastUsedAt: new Date(), expiresAt: new Date(Date.now() + config.AUTH_REFRESH_TOKEN_TTL_DAYS * 86_400_000) } });
       await tx.user.update({ where: { id: user!.id }, data: { lastLoginAt: new Date(), emailVerifiedAt: user!.emailVerifiedAt ?? new Date() } });
       await tx.externalIdentity.update({ where: { provider_subject: { provider: input.provider, subject: verified.subject } }, data: { lastLoginAt: new Date(), profile: verified.profile as Prisma.InputJsonValue } });
       return created;
@@ -392,21 +396,32 @@ export class AuthSessionsService {
   }
 
   async exchangeHandoff(code: string, metadata: RequestMetadata = {}) {
-    const record = await this.prisma.idempotencyRecord.findUnique({ where: { scope_key: { scope: "session-handoff", key: hash(code) } } });
+    return this.prisma.$transaction(async tx => {
+    const record = await tx.idempotencyRecord.findUnique({ where: { scope_key: { scope: "session-handoff", key: hash(code) } } });
     if (!record || record.expiresAt <= new Date() || record.responseCode !== 200) throw new UnauthorizedException("Session handoff is invalid or expired");
-    const consumed = await this.prisma.idempotencyRecord.updateMany({ where: { id: record.id, responseCode: 200, expiresAt: { gt: new Date() } }, data: { responseCode: 410 } });
+    const consumed = await tx.idempotencyRecord.updateMany({ where: { id: record.id, responseCode: 200, expiresAt: { gt: new Date() } }, data: { responseCode: 410 } });
     if (consumed.count !== 1) throw new UnauthorizedException("Session handoff has already been used");
     const payload = record.responseBody && typeof record.responseBody === "object" && !Array.isArray(record.responseBody) ? record.responseBody as { sessionId?: string; userId?: string; organizationId?: string; capability?: "BUYER" | "SUPPLIER" } : {};
     if (!payload.sessionId || !payload.userId || !payload.organizationId || !payload.capability) throw new UnauthorizedException("Session handoff payload is invalid");
-    const session = await this.prisma.authSession.findFirst({ where: { id: payload.sessionId, userId: payload.userId, status: "ACTIVE", expiresAt: { gt: new Date() }, organizationIds: { has: payload.organizationId } } });
+    const source = await tx.authSession.findUnique({ where: { id: payload.sessionId } });
+    if (!source || source.userId !== payload.userId) throw new UnauthorizedException("Authentication session is revoked or expired");
+    await lockSessionRows(tx, [source.id, ...(source.originLoginSessionId ? [source.originLoginSessionId] : [])]);
+    const session = await tx.authSession.findFirst({ where: { id: payload.sessionId, userId: payload.userId, status: "ACTIVE", expiresAt: { gt: new Date() }, organizationIds: { has: payload.organizationId } } });
     if (!session) throw new UnauthorizedException("Authentication session is revoked or expired");
-    const workspace = await this.workspaceContext(payload.userId, payload.organizationId);
+    if (session.originLoginSessionId && session.originLoginSessionId !== session.id) {
+      const root = await tx.authSession.findFirst({ where: { id: session.originLoginSessionId, userId: session.userId, status: "ACTIVE", expiresAt: { gt: new Date() } } });
+      if (!root || root.originLoginSessionId !== root.id) throw new UnauthorizedException("Authentication session is revoked or expired");
+    }
+    const workspace = await this.workspaceContext(payload.userId, payload.organizationId, tx);
     if (!workspace.capabilities.includes(payload.capability)) throw new UnauthorizedException("Organization capability is no longer available");
-    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: payload.userId }, select: { id: true, email: true, displayName: true } });
+    const user = await tx.user.findUniqueOrThrow({ where: { id: payload.userId }, select: { id: true, email: true, displayName: true } });
     // The destination owns its refresh cookie; no access/refresh token travels in the URL.
-    const destination = await this.createSession(user.id, [workspace.organizationId], workspace.organizationId, session.authMethods, metadata);
+    const destination = await this.createSession(user.id, [workspace.organizationId], workspace.organizationId, session.authMethods, metadata, { client: tx, loginSessionId: session.originLoginSessionId ?? null });
     return { ...destination, user, capability: payload.capability, organizationId: workspace.organizationId, organizationDisplayName: workspace.organizationDisplayName };
+    });
   }
+
+  logoutSession(input: SessionLogoutRequest) { return logoutTargetSession(this.prisma, input); }
 
   async revoke(sessionId: string, userId: string, reason: string) {
     if (!userId) throw new UnauthorizedException("Войдите в аккаунт");

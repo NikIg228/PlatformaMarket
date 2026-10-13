@@ -8,6 +8,7 @@ import { randomBytes, timingSafeEqual } from "node:crypto";
 import { environment } from "../../platform/config/environment";
 import { AuthSessionsService } from "./auth-sessions.service";
 import { Throttle } from "@nestjs/throttler";
+import { sessionLogoutRequestSchema } from "@marketplace/schemas";
 
 const cookies = (header: string | undefined) => Object.fromEntries((header ?? "").split(";").map((part) => part.trim().split("=")).filter(([key, value]) => key && value).map(([key, value]) => [key, decodeURIComponent(value)]));
 const equal = (left: string, right: string) => { const a = Buffer.from(left); const b = Buffer.from(right); return a.length === b.length && timingSafeEqual(a, b); };
@@ -178,6 +179,14 @@ export class AuthSessionsController {
     response.clearCookie("mp_refresh_admin", { ...common, path: "/api/auth", httpOnly: true });
     response.clearCookie("mp_csrf_admin", { ...common, path: "/", httpOnly: false });
     return { ok: true as const };
+  }
+
+  @Post("session-logout") @Header("Cache-Control", "no-store")
+  @ApiCoreBody("SessionLogoutRequest") @ApiCoreResponse("SessionLogoutResponse", 201) @ApiCoreErrors()
+  logoutSession(@Body() body: unknown) {
+    const parsed = sessionLogoutRequestSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException("Проверьте данные целевой сессии выхода.");
+    return this.sessions.logoutSession(parsed.data);
   }
 
   @Post("refresh")

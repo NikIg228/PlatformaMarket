@@ -1,7 +1,8 @@
 import type { ApiContext } from "@marketplace/api-client";
 import { unifiedFrontend } from "@marketplace/api-client";
-import { MarketplaceApiClient, workspacePath } from "@marketplace/api-client";
+import { MarketplaceApiClient, revokeWorkspaceSession, workspacePath } from "@marketplace/api-client";
 import { currentOperatorSessionSchema, type OperatorSession } from "@marketplace/schemas";
+import { adminLoginUrl } from "./admin-navigation";
 
 const SESSION_KEY = "dentmarket_admin_session";
 const DEV_ACTOR = process.env.NEXT_PUBLIC_DEV_USER_ID ?? "00000000-0000-4000-8000-000000000002";
@@ -10,8 +11,25 @@ type AdminSession = { accessToken: string; sessionId?: string; activeOrganizatio
 let restoring: Promise<AdminSession | null> | null = null;
 let generation = 0;
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "/api";
+export const ADMIN_SESSION_ENDED = "dentmarket:admin-session-ended";
+
+function sameIdentity(left: AdminSession | null, right: AdminSession | null) {
+  return Boolean(left?.sessionId && right?.sessionId && left.sessionId === right.sessionId &&
+    left.user?.id && left.user.id === right.user?.id &&
+    (left.activeOrganizationId ?? left.organizationId) === (right.activeOrganizationId ?? right.organizationId));
+}
+
+function sessionChanged(expected: AdminSession) {
+  if (clearAdminSession(expected)) {
+    const url = new URL(adminLoginUrl(window.location), window.location.origin);
+    url.searchParams.set("notice", "session-changed");
+    window.location.replace(url.pathname + url.search);
+  }
+  return new Error("Аккаунт изменён в другой вкладке. Войдите снова, чтобы продолжить.");
+}
 
 export function saveAdminSession(session: OperatorSession) {
+  generation += 1;
   const stored = { ...session, expiresAt: Date.now() + session.accessTokenExpiresIn * 1000 };
   window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(stored));
   return stored;
@@ -20,29 +38,33 @@ export function saveAdminSession(session: OperatorSession) {
 export function restoreAdminSession() {
   if (!restoring) {
     const started = generation;
+    const expected = readAdminSession();
     restoring = new MarketplaceApiClient(apiUrl, {}).currentOperatorSession().then(payload => {
-      if (started !== generation) return null;
+      if (started !== generation) throw new Error("Состояние входа изменилось. Повторите проверку.");
       const session = currentOperatorSessionSchema.parse(payload);
+      if (expected && session && !sameIdentity(expected, session)) throw sessionChanged(expected);
       if (session) return saveAdminSession(session);
-      clearAdminSession(); return null;
+      clearAdminSession(expected ?? undefined); return null;
     }).finally(() => { restoring = null; });
   }
   return restoring;
 }
 
-async function adminAccessToken(force = false) {
+async function adminAccessToken(expected: AdminSession, force = false) {
   const session = readAdminSession();
+  if (!sameIdentity(expected, session)) throw sessionChanged(expected);
   if (!force && session && (!session.expiresAt || session.expiresAt > Date.now() + 60_000)) return session.accessToken;
   const restored = await restoreAdminSession();
-  if (!restored) { window.location.assign(workspacePath("ADMIN", "/login")); throw new Error("Сессия завершена. Войдите снова."); }
+  if (!restored) { window.location.assign(adminLoginUrl(window.location)); throw new Error("Сессия завершена. Войдите снова."); }
+  if (!sameIdentity(expected, restored)) throw sessionChanged(expected);
   return restored.accessToken;
 }
 
 export async function logoutAdmin() {
   const session = readAdminSession();
-  await new MarketplaceApiClient(apiUrl, {}).logoutOperator(session?.csrfToken ?? "");
-  clearAdminSession();
-  window.location.assign(workspacePath("ADMIN", "/login"));
+  if (!session) throw new Error("Не удалось определить сессию. Войдите снова.");
+  await revokeWorkspaceSession(apiUrl, session, () => adminAccessToken(session, true));
+  if (clearAdminSession(session)) window.location.assign(workspacePath("ADMIN", "/login"));
 }
 
 export function readAdminSession(): AdminSession | null {
@@ -63,7 +85,11 @@ export function isLocalAdminDevelopment() {
 
 export function adminApiContext(): ApiContext {
   const session = readAdminSession();
-  return session?.accessToken ? { accessToken: session.accessToken, getAccessToken: adminAccessToken, onUnauthorized: () => { clearAdminSession(); window.location.assign(workspacePath("ADMIN", "/login")); } } : isLocalAdminDevelopment() ? { actorId: DEV_ACTOR, organizationId: DEV_ORGANIZATION } : {};
+  return session?.accessToken ? {
+    accessToken: session.accessToken,
+    getAccessToken: force => adminAccessToken(session, force),
+    onUnauthorized: () => { if (clearAdminSession(session)) window.location.assign(adminLoginUrl(window.location)); },
+  } : isLocalAdminDevelopment() ? { actorId: DEV_ACTOR, organizationId: DEV_ORGANIZATION } : {};
 }
 
 export function adminAuthHeaders(contentType = true): Record<string, string> {
@@ -74,7 +100,12 @@ export function adminAuthHeaders(contentType = true): Record<string, string> {
   return headers;
 }
 
-export function clearAdminSession() {
+export function clearAdminSession(expected?: AdminSession) {
+  if (expected && !sameIdentity(expected, readAdminSession())) return false;
   generation += 1;
-  if (typeof window !== "undefined") window.sessionStorage.removeItem(SESSION_KEY);
+  if (typeof window !== "undefined") {
+    window.sessionStorage.removeItem(SESSION_KEY);
+    window.dispatchEvent(new Event(ADMIN_SESSION_ENDED));
+  }
+  return true;
 }

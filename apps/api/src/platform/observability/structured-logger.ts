@@ -12,7 +12,7 @@ export const structuredLogger = pino({
   base: { service: "marketplace-api", release: process.env.APP_RELEASE ?? "local" },
   redact: {
     // Node normalizes HTTP header names; redact the whole cookie array, not one token.
-    paths: ["req.headers.authorization", "req.headers.cookie", 'req.headers["x-csrf-token"]', 'res.headers["set-cookie"]', "password", "token", "secret", "credentials"],
+    paths: ["req.headers.authorization", "req.headers.cookie", 'req.headers["x-csrf-token"]', 'res.headers["set-cookie"]', "req.body.accessToken", "accessToken", "password", "token", "secret", "credentials"],
     censor: "[REDACTED]",
   },
 });

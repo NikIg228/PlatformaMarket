@@ -27,7 +27,6 @@ import {
 import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
 import * as clinic from "../../../buyer-web/app/workspace-session";
 import * as supplier from "../../../supplier-web/app/workspace-session";
-import { logoutPrimarySession } from "../../../buyer-web/app/logout-primary-session";
 import { Grid24Regular } from "@fluentui/react-icons/svg/grid";
 import { Cart24Regular } from "@fluentui/react-icons/svg/cart";
 import { ClipboardTaskListLtr24Regular } from "@fluentui/react-icons/svg/clipboard-task-list-ltr";
@@ -82,10 +81,6 @@ const navigationIcons: Record<string, ReactNode> = {
   Товары: <Box24Regular />,
 };
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "/api";
-async function logoutSupplier() {
-  await logoutPrimarySession(API_URL);
-  await supplier.logoutSession();
-}
 
 export function Workspace({
   role,
@@ -126,7 +121,7 @@ export function Workspace({
   const logout = useSessionLogout({
     sessionKey: `dentmarket:${role === "clinic" ? "buyer" : "supplier"}-session`,
     sessionId: session?.sessionId,
-    revoke: role === "clinic" ? clinic.logoutSession : logoutSupplier,
+    revoke: adapter.logoutSession,
     redirectUrl: "/login",
   });
   const label = role === "clinic" ? "Кабинет клиники" : "Кабинет поставщика";

@@ -6,17 +6,39 @@ let db: any, service: AuthSessionsService;
 beforeEach(() => {
   db = {
     idempotencyRecord: { findUnique: vi.fn().mockResolvedValue({ id: "code", expiresAt: new Date(Date.now() + 60000), responseCode: 200, responseBody: { sessionId: "source", userId: "user", organizationId: "org", capability: "SUPPLIER" } }), updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
-    authSession: { findFirst: vi.fn().mockResolvedValue({ id: "source", userId: "user", status: "ACTIVE", activeOrganizationId: "org", expiresAt: new Date(Date.now()+60000), organizationIds: ["org"], authMethods: ["password"] }), create: vi.fn().mockImplementation(async ({ data }) => ({ id: "destination", ...data })), updateMany: vi.fn() },
+    authSession: { findFirst: vi.fn().mockResolvedValue({ id: "source", originLoginSessionId: "source", userId: "user", status: "ACTIVE", activeOrganizationId: "org", expiresAt: new Date(Date.now()+60000), organizationIds: ["org"], authMethods: ["password"] }), findUnique: vi.fn().mockResolvedValue({ id: "source", originLoginSessionId: "source", userId: "user" }), create: vi.fn().mockImplementation(async ({ data }) => data), updateMany: vi.fn() },
     organizationMembership: { findFirst: vi.fn().mockResolvedValue({ organization: { id: "org", displayName: "Test", capabilities: [{ capability: "SUPPLIER" }] } }), findMany: vi.fn().mockResolvedValue([{ organizationId: "other" }]) },
     user: { findUniqueOrThrow: vi.fn().mockResolvedValue({ id: "user", displayName: "Test", email: "test@example.invalid" }) },
   };
+  db.$transaction = vi.fn(async callback => callback(db));
+  db.$queryRaw = vi.fn().mockResolvedValue([]);
   service = new AuthSessionsService(db, {} as never, {} as never, {} as never);
 });
 describe("workspace session boundaries", () => {
+  it("inherits the original login from a derived source", async () => {
+    db.authSession.findUnique.mockResolvedValue({ id: "source", originLoginSessionId: "root", userId: "user" });
+    db.authSession.findFirst.mockResolvedValueOnce({ id: "source", originLoginSessionId: "root", userId: "user", authMethods: ["password"] })
+      .mockResolvedValueOnce({ id: "root", originLoginSessionId: "root", userId: "user" });
+    await service.exchangeHandoff("synthetic-code");
+    expect(db.authSession.findFirst.mock.calls[1][0].where).toMatchObject({ id: "root", userId: "user", status: "ACTIVE", expiresAt: { gt: expect.any(Date) } });
+    expect(db.authSession.create).toHaveBeenCalledWith({ data: expect.objectContaining({ originLoginSessionId: "root" }) });
+  });
+  it.each([null, { id: "root", originLoginSessionId: "different" }])("denies an unavailable or non-root origin (%j)", async root => {
+    db.authSession.findUnique.mockResolvedValue({ id: "source", originLoginSessionId: "root", userId: "user" });
+    db.authSession.findFirst.mockResolvedValueOnce({ id: "source", originLoginSessionId: "root", userId: "user", authMethods: ["password"] }).mockResolvedValueOnce(root);
+    await expect(service.exchangeHandoff("synthetic-code")).rejects.toMatchObject({ status: 401 });
+    expect(db.authSession.create).not.toHaveBeenCalled();
+  });
+  it("preserves an unknown origin for a legacy source", async () => {
+    db.authSession.findUnique.mockResolvedValue({ id: "source", originLoginSessionId: null, userId: "user" });
+    db.authSession.findFirst.mockResolvedValue({ id: "source", originLoginSessionId: null, userId: "user", authMethods: ["password"] });
+    await service.exchangeHandoff("synthetic-code");
+    expect(db.authSession.create).toHaveBeenCalledWith({ data: expect.objectContaining({ originLoginSessionId: null }) });
+  });
   it("creates a destination session only after one-time consumption and current membership validation", async () => {
     const result = await service.exchangeHandoff("synthetic-code");
-    expect(result.sessionId).toBe("destination"); expect(result.refreshToken.length).toBeGreaterThan(32);
-    expect(db.authSession.create).toHaveBeenCalledWith({ data: expect.objectContaining({ userId: "user", organizationIds: ["org"], activeOrganizationId: "org", authMethods: ["password"] }) });
+    expect(result.sessionId).not.toBe("source"); expect(result.refreshToken.length).toBeGreaterThan(32);
+    expect(db.authSession.create).toHaveBeenCalledWith({ data: expect.objectContaining({ userId: "user", originLoginSessionId: "source", organizationIds: ["org"], activeOrganizationId: "org", authMethods: ["password"] }) });
     expect(db.organizationMembership.findFirst.mock.calls[0][0].where).toMatchObject({ userId: "user", organizationId: "org", status: "ACTIVE", user: { status: "ACTIVE" }, organization: { status: "ACTIVE" } });
   });
   it("does not exchange a consumed code or one whose membership has been removed", async () => {

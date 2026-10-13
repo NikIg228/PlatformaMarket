@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export function useSessionLogout({ sessionKey, sessionId, revoke, redirectUrl }: {
   sessionKey: string;
   sessionId?: string;
-  revoke: () => Promise<void>;
+  revoke: (expectedSessionId?: string) => Promise<void>;
   redirectUrl: string;
 }) {
   const [logoutPending, setPending] = useState(false);
@@ -20,7 +20,9 @@ export function useSessionLogout({ sessionKey, sessionId, revoke, redirectUrl }:
       if (stored && JSON.parse(stored)?.sessionId !== sessionId) return;
     } catch { return; }
     window.sessionStorage.removeItem(sessionKey);
-    window.location.replace(redirectUrl);
+    const destination = new URL(redirectUrl, window.location.origin);
+    destination.searchParams.set("signedOut", "1");
+    window.location.replace(destination.href);
   }, [sessionKey, sessionId, redirectUrl]);
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export function useSessionLogout({ sessionKey, sessionId, revoke, redirectUrl }:
     setPending(true);
     setError(null);
     try {
-      await revoke();
+      await revoke(sessionId);
       channel.current?.postMessage({ type: "revoked", sessionId });
       clearConfirmedSession();
     } catch (cause) {

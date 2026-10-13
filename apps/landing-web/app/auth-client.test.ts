@@ -6,9 +6,26 @@ import {
   pickCapability,
   workspaceHandoffUrl,
   openWorkspace,
+  workspaceOptions,
 } from "./auth-client";
 
 describe("landing auth contract", () => {
+  const organizations = [
+    { organizationId: "buyer", organizationDisplayName: "Clinic", capabilities: ["BUYER" as const] },
+    { organizationId: "dual", organizationDisplayName: "Both", capabilities: ["BUYER" as const, "SUPPLIER" as const] },
+  ];
+  it("offers only organizations with the explicitly requested workspace", () => {
+    expect(workspaceOptions(organizations, "/supplier")).toEqual([
+      { organizationId: "dual", organizationDisplayName: "Both", capability: "SUPPLIER" },
+    ]);
+    expect(workspaceOptions(organizations.slice(0, 1), "/supplier/documents")).toEqual([]);
+    expect(workspaceOptions(organizations, "/clinic/orders")).toHaveLength(2);
+  });
+  it("keeps ordinary login and public browsing separate from a requested workspace role", () => {
+    expect(workspaceOptions(organizations)).toHaveLength(3);
+    expect(workspaceOptions(organizations, "/catalog?q=test")).toHaveLength(3);
+    expect(workspaceOptions(organizations, "https://outside.invalid/supplier")).toHaveLength(3);
+  });
   it("preserves backend validation messages and request id", () => {
     expect(apiErrorMessage({ message: ["Email неверен", "Пароль слишком короткий"] }, 400)).toBe(
       "Email неверен. Пароль слишком короткий",

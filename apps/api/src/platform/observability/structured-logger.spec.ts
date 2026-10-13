@@ -108,12 +108,13 @@ describe("structured HTTP logger credential boundary", () => {
       role: "worker",
       password: "synthetic-password",
       token: "synthetic-token",
+      accessToken: "synthetic-logout-proof",
       secret: "synthetic-secret",
       credentials: { password: "synthetic-nested-password" },
     });
     expect(JSON.parse(capture.lines[0])).toMatchObject({
       event: "runtime.ready", role: "worker",
-      password: "[REDACTED]", token: "[REDACTED]", secret: "[REDACTED]", credentials: "[REDACTED]",
+      password: "[REDACTED]", token: "[REDACTED]", accessToken: "[REDACTED]", secret: "[REDACTED]", credentials: "[REDACTED]",
     });
     expect(capture.lines.join("")).not.toContain("synthetic-");
   });

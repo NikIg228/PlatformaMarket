@@ -17,7 +17,7 @@ async function pressLogout(page: Page, width: number) {
 
 async function loginDestination(page: Page) {
   // Only the destination screen is synthetic, not logout or server auth.
-  await page.route("**/login", route => route.fulfill({ contentType: "text/html", body: "<h1>Login destination (test)</h1>" }));
+  await page.route(/\/login(?:\?.*)?$/, route => route.fulfill({ contentType: "text/html", body: "<h1>Login destination (test)</h1>" }));
 }
 
 for (const app of apps) for (const width of [1440, 390]) {
@@ -26,7 +26,7 @@ for (const app of apps) for (const width of [1440, 390]) {
     // Browser-only fixtures: all API requests below are mocked. These tests
     // prove UI behavior, not authorization, persistence, or session revocation.
     await page.addInitScript(({ key, role }) => {
-      sessionStorage.setItem(key, JSON.stringify({ sessionId: "ui-session", accessToken: "synthetic", accessTokenExpiresAt: Date.now() + 900000, organizationId: "00000000-0000-4000-8000-000000000020", capability: role }));
+      sessionStorage.setItem(key, JSON.stringify({ sessionId: "00000000-0000-4000-8000-000000000023", accessToken: "synthetic-access-proof", accessTokenExpiresAt: Date.now() + 900000, organizationId: "00000000-0000-4000-8000-000000000020", capability: role }));
     }, app);
     await loginDestination(page);
     let calls = 0;
@@ -42,12 +42,12 @@ for (const app of apps) for (const width of [1440, 390]) {
         organization: { id: "00000000-0000-4000-8000-000000000020", legalName: "Synthetic supplier", bin: "000000000000", version: 1, representativeName: "Test" },
         bundle: { hash: "0".repeat(64), available: false, documents: [] }, acceptance: null, contractAccepted: false, admitted: false, legacyAgreementActive: false,
       } });
-      if (route.request().url().endsWith("/revoke")) {
+      if (route.request().url().endsWith("/auth/session-logout")) {
         calls++;
         if (mode === "network") return route.abort("failed");
         if (mode === "unauthorized") return route.fulfill({ status: 401, json: { message: "internal-details-not-for-user" } });
         await new Promise<void>(resolve => { release = resolve; });
-        return route.fulfill({ json: { id: "ui-session", status: "REVOKED" } });
+        return route.fulfill({ json: { sessionId: "00000000-0000-4000-8000-000000000023", status: "REVOKED", loginStatus: "NOT_LINKED" } });
       }
       return route.fulfill({ json: route.request().url().includes("summary") ? null : { items: [], nextCursor: null } });
     });
@@ -64,7 +64,7 @@ for (const app of apps) for (const width of [1440, 390]) {
     expect(calls).toBe(1);
     mode = "unauthorized";
     await page.getByRole("button", { name: "Повторить выход" }).click();
-    await expect(page.getByRole("main").getByRole("alert")).toContainText("доступ к сессии истёк или уже отозван");
+    await expect(page.getByRole("main").getByRole("alert")).toContainText("Сервер не подтвердил выход");
     await expect(page.getByRole("main").getByRole("alert")).not.toContainText("internal-details");
     expect(await page.evaluate(key => sessionStorage.getItem(key), app.key)).not.toBeNull();
     mode = "pending";
@@ -77,7 +77,7 @@ for (const app of apps) for (const width of [1440, 390]) {
     // Capture only this synthetic failure/pending state, no session material.
     await page.screenshot({ path: test.info().outputPath(`${app.role}-${width}-pending.png`) });
     release?.();
-    await expect(page).toHaveURL(/\/login$/);
+    await expect(page).toHaveURL(/\/login\?signedOut=1$/);
     expect(calls).toBe(3);
   });
 }
@@ -109,7 +109,6 @@ test.describe("real isolated JWT session logout", () => {
         const handoff = await handoffResponse.json();
         const width = index === 0 ? 1440 : 390;
         await page.setViewportSize({ width, height: 900 });
-        await loginDestination(page);
         await page.goto(`${app.url}/documents#session=${encodeURIComponent(JSON.stringify({ organizationId: handoff.organizationId, capability: app.role, handoffCode: handoff.handoffCode }))}`);
         // Normal server handoff exchange must have completed; no DB tokens or injected identity.
         await expect.poll(() => page.evaluate(key => Boolean(JSON.parse(sessionStorage.getItem(key) ?? "null")?.accessToken), app.key)).toBe(true);
@@ -117,13 +116,14 @@ test.describe("real isolated JWT session logout", () => {
         const siblingPromise = page.waitForEvent("popup");
         await page.evaluate(() => { window.open("/documents", "_blank"); });
         const sibling = await siblingPromise;
-        await loginDestination(sibling);
         await expect.poll(() => sibling.evaluate(key => Boolean(JSON.parse(sessionStorage.getItem(key) ?? "null")?.accessToken), app.key)).toBe(true);
         await expect(sibling.getByRole("button", { name: "Выйти", exact: true })).toBeAttached();
         await page.screenshot({ path: test.info().outputPath(`${app.role}-authenticated-documents.png`) });
         await pressLogout(page, width);
-        await expect(page).toHaveURL(/\/login$/);
-        await expect(sibling).toHaveURL(/\/login$/);
+        await expect(page).toHaveURL(/\/login\?signedOut=1$/);
+        await expect(sibling).toHaveURL(/\/login\?signedOut=1$/);
+        await expect(page.getByLabel("Рабочий email")).toBeVisible();
+        await expect(sibling.getByLabel("Рабочий email")).toBeVisible();
         // Return to same-origin synthetic blank to inspect storage without mounting
         // the app/demo fallback after logout. This is not a navigation acceptance.
         for (const tab of [page, sibling]) {
@@ -135,7 +135,7 @@ test.describe("real isolated JWT session logout", () => {
         expect((await client.get(`${apiUrl}/auth/sessions`, { headers: { authorization: destinationAuthorization } })).status()).toBe(401);
         expect((await page.context().request.post(`${apiUrl}/auth/refresh`, { headers: { "x-csrf-token": destination.csrfToken }, data: { workspace: app.role, expectedSessionId: destination.sessionId } })).status()).toBe(401);
         expect((await client.post(`${apiUrl}/auth/sessions/${destination.sessionId}/revoke`, { headers: { authorization: destinationAuthorization }, data: { reason: "user_logout" } })).status()).toBe(401);
-        expect((await client.get(`${apiUrl}/auth/sessions`, { headers: { authorization } })).status()).toBe(200);
+        expect((await client.get(`${apiUrl}/auth/sessions`, { headers: { authorization } })).status()).toBe(401);
         await sibling.close();
       } finally {
         // Scoped API cleanup only; never delete/reseed audit records. A revoked

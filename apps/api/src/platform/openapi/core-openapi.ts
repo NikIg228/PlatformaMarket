@@ -1,4 +1,5 @@
 import { personalProfileSchema, updatePersonalProfileSchema, requestProfileEmailSchema, profileEmailRequestedSchema, uploadProfileAvatarSchema, profileAvatarSchema } from "@marketplace/schemas";
+import { sessionLogoutRequestSchema, sessionLogoutResponseSchema } from "@marketplace/schemas";
 import { notificationInboxQuerySchema, notificationInboxSchema, notificationReadAllSchema, notificationReadAllResultSchema } from "@marketplace/schemas";
 import { commerceAnalyticsQuerySchema, commerceAnalyticsResponseSchema, supplierImportPreviewInputSchema, supplierImportPreviewSchema } from "@marketplace/schemas";
 import { accessPolicySchema } from "@marketplace/schemas";
@@ -236,6 +237,8 @@ const coreZodSchemas = {
   OperatorLoginRequest: operatorLoginSchema,
   OperatorSessionResponse: operatorSessionSchema,
   CurrentOperatorSessionResponse: currentOperatorSessionSchema,
+  SessionLogoutRequest: sessionLogoutRequestSchema,
+  SessionLogoutResponse: sessionLogoutResponseSchema,
   AuthEmailRegisterRequest: emailRegisterSchema,
   AuthForgotRequest: emailForgotPasswordSchema,
   RegistrationResumeRequest: registrationResumeRequestSchema,

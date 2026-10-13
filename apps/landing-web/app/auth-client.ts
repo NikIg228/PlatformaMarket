@@ -1,5 +1,5 @@
 import { currentSessionSchema, workspaceContextSchema, workspaceChoicesSchema, type WorkspaceContext, type AuthEmailSession, type AuthEmailVerified } from "@marketplace/schemas";
-import { workspaceReturnPath } from "@marketplace/schemas/product-navigation";
+import { requestedWorkspaceCapability, workspaceReturnPath } from "@marketplace/schemas/product-navigation";
 import { unifiedFrontend, workspacePath } from "@marketplace/api-client";
 export type AuthCapability = "BUYER" | "SUPPLIER";
 
@@ -227,8 +227,9 @@ export async function availableWorkspaces(session: AuthSession, capability?: Aut
 }
 
 export type WorkspaceChoice = { organizationId: string; organizationDisplayName: string; capability: AuthCapability };
-export function workspaceOptions(contexts: WorkspaceContext[]): WorkspaceChoice[] {
-  return contexts.flatMap(item => item.capabilities.map(capability => ({ organizationId: item.organizationId, organizationDisplayName: item.organizationDisplayName, capability })));
+export function workspaceOptions(contexts: WorkspaceContext[], returnTo?: string): WorkspaceChoice[] {
+  const requested = requestedWorkspaceCapability(returnTo);
+  return contexts.flatMap(item => item.capabilities.filter(capability => !requested || capability === requested).map(capability => ({ organizationId: item.organizationId, organizationDisplayName: item.organizationDisplayName, capability })));
 }
 
 let resuming: Promise<AuthSession | null> | undefined;

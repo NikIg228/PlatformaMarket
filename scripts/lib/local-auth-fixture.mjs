@@ -1,7 +1,7 @@
 // Test harness only: approved isolated DB, owned processes, actual local mail files.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, createHmac } from 'node:crypto';
 import { mkdir, readdir, readFile, unlink } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -9,7 +9,7 @@ import path from 'node:path';
 import { PrismaClient } from '@prisma/client';
 import { auditEnvironment, root } from './registration-resume-fixture.mjs';
 
-export async function startLocalAuthFixture({ web = false, operator = true, webApps = ['landing', 'admin'], publicCatalog = false } = {}) {
+export async function startLocalAuthFixture({ web = false, operator = true, webApps = ['landing', 'admin'], publicCatalog = false, apiPort } = {}) {
   const webPorts = { landing: 3103, admin: 3100, buyer: 3101, supplier: 3102 };
   assert.ok(webApps.every(name => Object.hasOwn(webPorts, name)) && new Set(webApps).size === webApps.length, 'Known distinct owned applications only');
   const env = auditEnvironment();
@@ -36,7 +36,7 @@ export async function startLocalAuthFixture({ web = false, operator = true, webA
     const chosen = probe.address().port;
     await new Promise(resolve => probe.close(resolve)); return chosen;
   }
-  const port = await free(web ? 4112 : 0);
+  const port = await free(apiPort ?? (web ? 4112 : 0));
   if (web) for (const name of webApps) await free(webPorts[name]);
   Object.assign(env, { API_HOST: '127.0.0.1', API_PORT: String(port), AUTH_LOCAL_MAIL_ENABLED: 'true', LOCAL_OPERATOR_PASSWORD_LOGIN_ENABLED: String(operator), JWT_REQUIRE_MFA: String(operator), AUTH_EMAIL_BASE_URL: 'http://127.0.0.1:3103', CORS_ORIGINS: webApps.map(name => `http://127.0.0.1:${webPorts[name]}`).join(','), LOCAL_STORAGE_PATH: path.join(runtime, 'storage') });
   const apiUrl = `http://127.0.0.1:${port}/api`;
@@ -117,6 +117,17 @@ export async function startLocalAuthFixture({ web = false, operator = true, webA
     }
     await db.$disconnect();
   }
+  async function sessionProof(sessionId, { expired = false } = {}) {
+    const session = await db.authSession.findUniqueOrThrow({ where: { id: sessionId } });
+    assert.ok(issuedUsers.includes(session.userId), 'Only this run owns the proof subject');
+    const now = Math.floor(Date.now() / 1000);
+    const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+    const payload = { sub: session.userId, jti: session.id, organization_id: session.activeOrganizationId,
+      organization_ids: session.organizationIds, amr: session.authMethods, iss: 'dentmarket-kz', aud: 'dentmarket-web',
+      iat: now - 1200, exp: expired ? now - 600 : now + 600 };
+    const unsigned = `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode(payload)}`;
+    return `${unsigned}.${createHmac('sha256', env.JWT_SECRET).update(unsigned).digest('base64url')}`;
+  }
   try {
     const api = launch([path.join(root,'apps/api/dist/src/main.js')], runtime);
     await ready(apiUrl + '/health/ready', api);
@@ -127,6 +138,6 @@ export async function startLocalAuthFixture({ web = false, operator = true, webA
         await ready(`http://127.0.0.1:${port}${name === 'landing' || name === 'admin' ? '/login' : '/'}`, child);
       }
     }
-    return { db, apiUrl, runId, runtime, mail, request, account, stop };
+    return { db, apiUrl, runId, runtime, mail, request, account, sessionProof, stop };
   } catch (error) { await stop(); throw error; }
 }

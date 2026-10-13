@@ -1,4 +1,5 @@
 import { parseSessionHandoff, type SessionHandoffEnvelope } from "./session-handoff";
+import { revokeWorkspaceSession } from "./session-logout";
 
 type Capability = "BUYER" | "SUPPLIER";
 export type WorkspaceSessionSnapshot = { session: SessionHandoffEnvelope | null; ready: boolean; error: string | null };
@@ -10,6 +11,7 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
   let snapshot = initial;
   let initialization: Promise<void> | undefined;
   let refreshing: Promise<string> | undefined;
+  let generation = 0;
   const listeners = new Set<() => void>();
   const publish = (session: SessionHandoffEnvelope | null, error: string | null = null) => {
     snapshot = { session, ready: true, error };
@@ -20,13 +22,15 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
     snapshot = { session, ready, error: null };
     for (const notify of listeners) notify();
   };
-  const invalidate = () => { window.sessionStorage.removeItem(key); publish(null, loginAgain); };
+  const invalidate = () => { generation += 1; window.sessionStorage.removeItem(key); publish(null, loginAgain); };
   async function call(path: string, init: RequestInit) {
     try {
       return await fetch(`${apiUrl.replace(/\/$/, "")}${path}`, { ...init, cache: "no-store", signal: AbortSignal.timeout(15_000) });
     } catch { throw new Error("Сервер не ответил. Проверьте соединение и повторите вход."); }
   }
   async function refresh(current: SessionHandoffEnvelope): Promise<string> {
+    const started = generation;
+    if (snapshot.session?.sessionId !== current.sessionId) throw new Error(loginAgain);
     if (!current.csrfToken || !current.sessionId) { invalidate(); throw new Error(loginAgain); }
     let csrfToken = current.csrfToken;
     // Another tab can have rotated the cookie while this tab was idle.
@@ -37,10 +41,12 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
     }
     const response = await call("/auth/refresh", { method: "POST", credentials: "include",
       headers: { "content-type": "application/json", "x-csrf-token": csrfToken }, body: JSON.stringify({ workspace: capability, expectedSessionId: current.sessionId }) });
+    if (started !== generation || snapshot.session?.sessionId !== current.sessionId) throw new Error(loginAgain);
     if (response.status === 401 || response.status === 403) { invalidate(); throw new Error(loginAgain); }
     if (!response.ok) throw new Error("Не удалось продлить сессию. Повторите попытку после восстановления сервера.");
     const { workspaceRefreshResponseSchema } = await import("@marketplace/schemas/workspace-session");
     const result = workspaceRefreshResponseSchema.safeParse(await response.json());
+    if (started !== generation || snapshot.session?.sessionId !== current.sessionId) throw new Error(loginAgain);
     if (!result.success || result.data.sessionId !== current.sessionId || result.data.activeOrganizationId !== current.organizationId) {
       invalidate(); throw new Error(loginAgain);
     }
@@ -60,16 +66,20 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
     return refreshing;
   }
   async function initialize() {
+    const started = ++generation;
     try {
       const fromHash = window.location.hash.startsWith("#session=");
       const serialized = fromHash ? decodeURIComponent(window.location.hash.slice(9)) : window.sessionStorage.getItem(key);
       let session = parseSessionHandoff(serialized, capability);
       if (!session && !fromHash) {
         const response = await call(`/auth/current?workspace=${capability}`, { credentials: "include" });
+        if (started !== generation) return;
         if (!response.ok) throw new Error("Не удалось восстановить вход. Повторите проверку после восстановления сервера.");
         const raw: unknown = await response.json();
+        if (started !== generation) return;
         if (raw === null) { publish(null); return; }
         const { currentSessionSchema } = await import("@marketplace/schemas/workspace-session");
+        if (started !== generation) return;
         const result = currentSessionSchema.safeParse(raw);
         const workspace = result.success ? result.data.workspaces.find(value => value.organizationId === result.data.activeOrganizationId && value.capabilities.includes(capability)) : undefined;
         if (!result.success || !workspace) { invalidate(); return; }
@@ -78,11 +88,14 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
       }
       if (!session) { publish(null); return; }
       const { workspaceContextSchema, workspaceSessionSchema } = await import("@marketplace/schemas/workspace-session");
+      if (started !== generation) return;
       if (session.handoffCode) {
         const response = await call("/auth/handoff/exchange", { method: "POST", credentials: "include",
           headers: { "content-type": "application/json" }, body: JSON.stringify({ handoffCode: session.handoffCode }) });
+        if (started !== generation) return;
         if (!response.ok) throw new Error("Не удалось завершить переход в кабинет. Вернитесь на страницу входа и войдите заново.");
         const result = workspaceSessionSchema.safeParse(await response.json());
+        if (started !== generation) return;
         if (!result.success || result.data.capability !== capability || result.data.organizationId !== session.organizationId) throw new Error(loginAgain);
         session = { ...result.data, actorId: result.data.user.id, displayName: result.data.user.displayName,
           accessTokenExpiresAt: Date.now() + result.data.accessTokenExpiresIn * 1000 };
@@ -94,16 +107,28 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
       let token = session.accessToken;
       if (session.accessTokenExpiresAt && session.accessTokenExpiresAt <= Date.now() + 30_000) token = await getAccessToken();
       let response = await call("/auth/workspace-context", { headers: { authorization: `Bearer ${token}` } });
+      if (started !== generation) return;
       if (response.status === 401) {
         token = await getAccessToken(true);
         response = await call("/auth/workspace-context", { headers: { authorization: `Bearer ${token}` } });
+        if (started !== generation) return;
       }
       if (response.status === 401 || response.status === 403) { invalidate(); return; }
       if (!response.ok) throw new Error("Не удалось проверить доступ. Сервер временно недоступен — повторите попытку.");
       const context = workspaceContextSchema.safeParse(await response.json());
+      if (started !== generation) return;
       if (!context.success || context.data.organizationId !== session.organizationId || !context.data.capabilities.includes(capability)) { invalidate(); return; }
       save({ ...snapshot.session, ...context.data, capability, accessToken: token });
-    } catch (error) { publish(null, error instanceof Error ? error.message : "Не удалось проверить вход. Войдите заново."); }
+    } catch (error) { if (started === generation) publish(null, error instanceof Error ? error.message : "Не удалось проверить вход. Войдите заново."); }
+  }
+  async function logout(expectedSessionId?: string) {
+    const captured = snapshot.session;
+    if (!captured?.sessionId || (expectedSessionId && captured.sessionId !== expectedSessionId)) throw new Error("Аккаунт изменился. Проверьте выбранную сессию перед выходом.");
+    await revokeWorkspaceSession(apiUrl, captured, async () => {
+      if (snapshot.session?.sessionId !== captured.sessionId) throw new Error("Аккаунт изменился. Выход прежней сессии не подтверждён.");
+      return getAccessToken(true);
+    });
+    if (snapshot.session?.sessionId === captured.sessionId) invalidate();
   }
   return {
     sessionKey: key,
@@ -113,7 +138,7 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
     // A shared promise survives React StrictMode's effect setup/cleanup/setup.
     start: () => { initialization ??= initialize(); return initialization; },
     retry: () => { initialization = initialize(); return initialization; },
-    getAccessToken, invalidate,
+    getAccessToken, invalidate, logout,
   };
 }
 

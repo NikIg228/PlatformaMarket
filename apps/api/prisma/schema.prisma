@@ -3578,6 +3578,9 @@ model ExternalIdentity {
 model AuthSession {
   id                   String            @id @default(uuid()) @db.Uuid
   userId               String            @db.Uuid
+  originLoginSessionId String?           @db.Uuid
+  originLoginSession   AuthSession?      @relation("SessionOriginLogin", fields: [originLoginSessionId], references: [id], onDelete: SetNull)
+  derivedSessions      AuthSession[]     @relation("SessionOriginLogin")
   familyId             String            @db.Uuid
   refreshTokenHash     String            @unique
   previousTokenHash    String?
@@ -3597,6 +3600,7 @@ model AuthSession {
 
   @@index([userId, status, expiresAt])
   @@index([familyId, status])
+  @@index([originLoginSessionId])
 }
 
 model SecurityEvent {

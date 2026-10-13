@@ -1,5 +1,29 @@
 # PlatformaMarket — текущий контекст
 
+## Активно14.10 — R7.2.1, авторизация
+
+Primary — единственный writer; PlatformaMarket UI готовит и проверяет read-only.
+Уточнения журналов/UI не отменяют постоянное исполнение roadmap. После отдельного
+BLOCKED R7.2 (6 попыток) начат независимый R7.2.1: destination, Admin identity/
+safe return, exact self logout и persistent origin login. Реализация и локальные
+unit/API/PG/runtime/core/types/build/browser gates PASS; публикация/CI pending.
+Основной browser5 групп PASS, дополнительно identity3/lifecycle2 PASS. Рабочая БД
+и пользовательские процессы не менялись; активация migration — отдельный scope.
+Детали, команды/попытки и remaining checks —
+[PRIMARY-SESSION](governance/task-state/PRIMARY-SESSION.md).
+
+## Исполнение14.10.2026 — постоянное поручение roadmap
+
+Владелец назначил primary и PlatformaMarket UI последовательными исполнителями
+всего [roadmap](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md), без дедлайна и без нового
+подтверждения после каждого проверенного подшага. Роли могут меняться, writer
+в каждый момент один; второй готовит следующие пакеты строго read-only.
+Сейчас primary выполняет адресный R7.2 CI; UI подготовил R7.7.1 и ожидает
+назначения writer. Проверки пропорциональны риску; галочки только по DoD/evidence,
+автоматический CI отдельно. Неизвестные решения/доступы не подменять догадками;
+продолжать независимые пакеты. Рабочие данные/deploy не разрешены автоматически.
+Активный scope и попытки — [PRIMARY-SESSION](governance/task-state/PRIMARY-SESSION.md).
+
 ## Текущий результат14.10.2026 — представление исполнения roadmap
 
 После повторного анализа владелец поручил сделать прогресс наблюдаемым.

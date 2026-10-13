@@ -1,13 +1,15 @@
 "use client";
 import { authForgotAcceptedSchema } from "@marketplace/schemas";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
 import { useProductReturn } from "../use-product-return";
 import styles from "../auth-split.module.css";
 import { LoginHeading } from "./login-heading";
+import { LoginWorkspaceChoice } from "./workspace-choice";
 
 import Script from "next/script";
-import { DmButton, DmField, DmInput, DmSelect } from "@marketplace/ui";
+import { DmButton, DmField, DmInput } from "@marketplace/ui";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { AuthBrand, AuthNotice } from "../auth-components";
 import {
@@ -55,6 +57,7 @@ type BusyAction = "email" | "forgot" | "workspace" | "social" | null;
 
 export default function LoginPage() {
   const returnTo = useProductReturn();
+  const signedOut = useSearchParams().get("signedOut") === "1";
   const [busyAction, setBusyAction] = useState<BusyAction>(null);
   const [feedback, setFeedback] = useState<AuthFeedback | null>(null);
   const [email, setEmail] = useState("");
@@ -62,26 +65,55 @@ export default function LoginPage() {
   const [pendingSession, setPendingSession] = useState<AuthSession | null>(null);
   const [choices, setChoices] = useState<WorkspaceChoice[]>([]);
   const [choiceIndex, setChoiceIndex] = useState(0);
+  const [unavailable, setUnavailable] = useState(false);
+  const [fallback, setFallback] = useState(false);
+  const continuation = useRef(0);
   const googleButton = useRef<HTMLDivElement>(null);
   const busy = busyAction !== null;
   const hasGoogle = Boolean(googleClientId);
   const hasApple = Boolean(appleClientId && appleRedirectUri);
   const hasSocialLogin = hasGoogle || hasApple;
 
-  const continueSession = async (session: AuthSession) => {
-    const workspaces = workspaceOptions(await availableWorkspaces(session));
+  const continueSession = async (session: AuthSession, expected = continuation.current) => {
+    const contexts = await availableWorkspaces(session);
+    if (expected !== continuation.current) return;
+    const workspaces = workspaceOptions(contexts, returnTo);
     if (workspaces.length === 1) return openWorkspace(session, workspaces[0].capability, workspaces[0].organizationId, returnTo);
-    setPendingSession(session); setChoices(workspaces); setChoiceIndex(0);
+    setPendingSession(session); setChoices(workspaces.length ? workspaces : workspaceOptions(contexts)); setChoiceIndex(0);
+    setUnavailable(workspaces.length === 0); setFallback(false);
   };
 
   useEffect(() => {
+    if (signedOut) return;
     let active = true;
+    const expected = ++continuation.current;
     setBusyAction("workspace");
-    void resumeAuthSession().then(session => { if (active && session) return continueSession(session); })
+    void resumeAuthSession().then(session => { if (active && session) return continueSession(session, expected); })
       .catch(cause => { if (active) setFeedback(feedbackFromError(cause, "Не удалось восстановить вход")); })
       .finally(() => { if (active) setBusyAction(null); });
-    return () => { active = false; };
-  }, [returnTo]);
+    return () => { active = false; continuation.current += 1; };
+  }, [returnTo, signedOut]);
+
+  const chooseWorkspace = async () => {
+    const session = pendingSession;
+    if (!session) return;
+    // Leaving the requested role is always explicit; multiple organizations still need a choice.
+    const useFallback = fallback || unavailable;
+    if (unavailable && choices.length > 1) { setUnavailable(false); setFallback(true); return; }
+    setBusyAction("workspace"); setFeedback(null);
+    try {
+      const choice = choices[choiceIndex];
+      if (choice) await openWorkspace(session, choice.capability, choice.organizationId, useFallback ? undefined : returnTo);
+    } catch (cause) { setFeedback(feedbackFromError(cause, "Не удалось открыть кабинет")); }
+    finally { setBusyAction(null); }
+  };
+
+  const switchAccount = () => {
+    continuation.current += 1;
+    setPendingSession(null); setChoices([]); setUnavailable(false); setFallback(false);
+    setEmail(""); setPassword(""); setFeedback(null);
+    // Keep the destination and existing sessions; this explicit form does not auto-resume.
+  };
 
   const exchange = async (provider: "GOOGLE" | "APPLE", idToken: string) => {
     setBusyAction("social");
@@ -200,8 +232,8 @@ export default function LoginPage() {
       </section>
       <section className={`loginPanel ${styles.loginPanel}`} aria-labelledby="login-title">
         <div className="loginCard">
-          <h2 id="login-title">Войдите в аккаунт</h2>
-          <form className="emailLoginForm" onSubmit={emailLogin}>
+          <h2 id="login-title">{pendingSession ? "Выберите кабинет" : "Войдите в аккаунт"}</h2>
+          {!pendingSession ? <form className="emailLoginForm" onSubmit={emailLogin}>
             <DmField label="Рабочий email" required>
               <DmInput
                 type="email"
@@ -242,8 +274,8 @@ export default function LoginPage() {
                 </Link>
               </p>
             </div>
-          </form>
-          {hasSocialLogin ? (
+          </form> : null}
+          {hasSocialLogin && !pendingSession ? (
             <>
               <div className="divider">
                 <span>или</span>
@@ -266,19 +298,8 @@ export default function LoginPage() {
               </div>
             </>
           ) : null}
-          {pendingSession ? <div>
-            <DmField label="Организация и кабинет">
-              <DmSelect value={String(choiceIndex)} disabled={busy} onChange={(_, data) => setChoiceIndex(Number(data.value))}>
-                {choices.map((item, index) => <option key={`${item.organizationId}:${item.capability}`} value={index}>{item.organizationDisplayName} · {item.capability === "BUYER" ? "Клиника" : "Поставщик"}</option>)}
-              </DmSelect>
-            </DmField>
-            <DmButton disabled={busy} onClick={async () => {
-              setBusyAction("workspace"); setFeedback(null);
-              try { const choice = choices[choiceIndex]; if (choice) await openWorkspace(pendingSession, choice.capability, choice.organizationId, returnTo); }
-              catch (cause) { setFeedback(feedbackFromError(cause, "Не удалось открыть кабинет")); }
-              finally { setBusyAction(null); }
-            }}>Открыть выбранную организацию</DmButton>
-          </div> : null}
+          {pendingSession ? <LoginWorkspaceChoice choices={choices} selected={choiceIndex} unavailable={unavailable}
+            busy={busy} onSelect={setChoiceIndex} onContinue={() => void chooseWorkspace()} onSwitchAccount={switchAccount} /> : null}
           {feedback ? <AuthNotice feedback={feedback} /> : null}
         </div>
       </section>

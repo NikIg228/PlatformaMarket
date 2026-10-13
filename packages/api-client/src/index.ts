@@ -95,38 +95,7 @@ export type ApiContext = {
 export { parseSessionHandoff, type SessionHandoffEnvelope } from "./session-handoff";
 export { createWorkspaceSession, workspaceSessionStore } from "./workspace-session";
 
-/** Revoke the handoff's session, never an unrelated refresh-cookie session. */
-export async function revokeWorkspaceSession(
-  apiUrl: string,
-  session: { sessionId?: string; accessToken?: string } | null,
-): Promise<void> {
-  if (!session?.sessionId || !session.accessToken) {
-    throw new Error("Не удалось определить серверную сессию. Выход не подтверждён.");
-  }
-  let response: Response;
-  try {
-    response = await fetch(`${apiUrl.replace(/\/$/, "")}/auth/sessions/${encodeURIComponent(session.sessionId)}/revoke`, {
-      method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${session.accessToken}` },
-      // Existing bearer endpoint: no identity headers, refresh cookies or
-      // fallback to logout of a potentially different cookie-bound session.
-      credentials: "omit",
-      body: JSON.stringify({ reason: "user_logout" }),
-      signal: AbortSignal.timeout(10_000),
-    });
-  } catch {
-    throw new Error("Не удалось связаться с сервером. Выход не подтверждён — проверьте соединение и повторите.");
-  }
-  if (!response.ok) {
-    throw new Error(response.status === 401
-      ? "Сервер не подтвердил выход: доступ к сессии истёк или уже отозван. Повторите попытку; при повторной ошибке обратитесь в поддержку."
-      : "Сервер не подтвердил выход. Повторите попытку.");
-  }
-  const result = await response.json().catch(() => null) as { id?: string; status?: string } | null;
-  if (result?.id !== session.sessionId || result.status !== "REVOKED") {
-    throw new Error("Сервер не подтвердил отзыв текущей сессии. Повторите попытку.");
-  }
-}
+export { revokeWorkspaceSession } from "./session-logout";
 
 export class MarketplaceApiError extends Error {
   constructor(

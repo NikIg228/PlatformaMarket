@@ -1,5 +1,222 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 14.10.2026 — R7.2.1 / ACTIVE, авторизация и навигация
+
+ИТОГ ЛОКАЛЬНОГО ЭТАПА01:48: обязательные gates LOCAL_PASS, publication/CI pending.
+Все owned процессы завершены, command sessions завершены. Frontend production
+build PASS; exact next-env backup восстановлен, файл clean. UI/browser base5 groups
+PASS на попытке3 (1:required-password exact label;2:Next route announcer ambiguity),
+новые identity3/lifecycle2 groups PASS с первой попытки, без rerun зелёных групп.
+Реальные screenshots просмотрены, computed controls1440/390 Manrope14/600/44/8.
+Refresh/logout separate realHTTP race PASS (оба порядка + конкуренция).
+Core-contract попытка1 FAIL35/50: preflight500 expired audit inventory balances;
+официальный pilot seed ТОЛЬКО audit DB обновил freshness, попытка2 PASS50/500,
+340 operations/60 core/216 schemas. Старый catalog browser BLOCKED6 неизменён.
+Final API types/UI-contract4+366files/targeted lint/logger5 PASS. Все commands,
+границы и попытки сведены в applications/auth-session-navigation.md; manifests:
+output/playwright/auth-navigation-2026-10-14/manifest.json (43 owned code paths,
+51 hashes), соседние -identity/-lifecycle result.json. Файлы владения для staging:
+.tmp/auth-navigation-2026-10-14/owned-code-paths.json. Не включать прежние2 E2E
+public-catalog/unified, foreign Matrix/2taskcards и image/output. Auth specification
+и её roadmap hunks просмотрены и дополнены implementation evidence; входят в scope.
+Следующий шаг: docs links/diff/staged review, conventional auth commit и обычный
+push main по постоянному разрешению, verify remote и actual CI. Fetch уже0/0.
+Рабочая migration/runtime activation НЕ выполнялись, записаны как отдельный scope.
+
+Продолжение01:30–01:38: client logout/workspace28 PASS, Admin auth/navigation12
+PASS; API-client/Admin/landing/UI/buyer/supplier/web typechecks PASS. После source
+review добавлены generation guards после JSON/import await и проверка текущей
+Admin session после загрузки организаций. Target lint PASS до последнего Admin
+guard; его lint запущен отдельно. Backend review read-only READY, без блокирующих
+дефектов; дополнительные root/legacy/operator-class tests24 PASS (2 files).
+Real HTTP/PG повтор по НОВЫМ сценариям revoke-first/exchange-first PASS; оба
+порядка проверены детерминированно, существующие siblings не отзываются каскадом.
+`node scripts/verify-runtime-split.mjs` PASS с прежним неизменённым API build.
+`npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs` PASS
+на audit DB (45 migrations), включая обязательные tenant/rollback/concurrency.
+Никаких новых запусков заблокированного catalog gate.
+
+Сейчас unified frontend build выполняется с NEXT_ADAPTER_PATH на
+`.tmp/auth-navigation-2026-10-14/next-adapter.mjs`, отдельные next output/tsconfig,
+INTERNAL_API_URL=http://127.0.0.1:4113/api, pilot. Compile и TS уже PASS;
+полного exit ещё нет. next-env.d.ts временно изменён самим Next; после завершения
+восстановить точный backup `.tmp/auth-navigation-2026-10-14/next-env.before.txt`.
+Новый scripts/verify-auth-navigation-browser.mjs подготовлен, ещё NOT_RUN;
+использует build, owned3103/4113, existing audit fixture с новым optional apiPort,
+реальные аккаунты/вход, role refusal, lost-response retry, sibling broadcast,
+настоящий LoginPage и Admin A/B. Screenshots masked, секреты только в памяти.
+До запуска дождаться build; browser attempt counter для НОВОГО auth gate=0.
+Полная browser matrix/spec и stale workspace-logout.spec ещё требуют завершения;
+R7.2.1 не принят, commit/push не выполнялись.
+
+Checkpoint продолжения: backend self-logout + origin migration реализованы;
+schema navigation/logout62 PASS, identity/security/logger123 PASS; API build PASS.
+Prisma validate и migrate deploy на фактически проверенной audit DB PASS,
+45-я migration20261014000000 применена только туда. Первая generate попытка EPERM
+из-за занятой DLL пользователя; вторая PASS с PRISMA_QUERY_ENGINE_LIBRARY на
+копию того же engine в .tmp/auth-navigation-2026-10-14/query_engine-auth-20261014.dll.node
+(другой basename, пользовательский API не остановлен). Для будущего API prebuild
+использовать этот scoped env override, не менять зависимости/рабочую БД.
+Real HTTP/PG scripts/verify-session-logout.mjs: попытка1 FAIL на expired receipt
+из-за двух разных случайных ключей нашего fixture; после scoped sessionProof
+попытка2 PASS: target/root, same-user new login, foreign proof, Admin, access/refresh
+denial, lost-response receipt, audit idempotency, real transaction rollback,
+handoff race и legacy null. Fixture сам остановил свои процессы/отозвал тестовые
+сессии; секреты не выводились. Старый catalog gate/6attempts не запускался.
+
+Сейчас следующий шаг: проверить НОВЫЙ клиентский diff. Shared client helper
+перенесён в session-logout.ts, использует body proof/credentials omit, один refresh
+только по SESSION_LOGOUT_PROOF_EXPIRED и точный receipt; broadcast target id.
+Workspace store добавляет logout(expectedId), generation против late refresh;
+buyer/supplier используют его, небезопасный logout-primary helper и его obsolete
+tests удалены. Shared logout hook передаёт expectedId и возвращает на signedOut=1,
+LoginPage не autorestores в этом режиме. Admin logout подключён к тому же helper,
+слушает target broadcast. Эти последние клиентские правки ещё NOT_TESTED:
+обновить прежний session-logout.test на новый контракт, добавить late-response/
+renew/client identity regressions и целевые browser flows. Ни commit/push, ни
+приёмка R7.2.1 не выполнены. Full PG/runtime gates и affected types/build/lint,
+браузерная/визуальная матрица остаются впереди. Все предыдущие evidence сохранять.
+
+После уточнения владельца через PlatformaMarket UI продолжено постоянное
+исполнение roadmap. Primary — coordinator и единственный writer; UI строго
+read-only готовит shell R7.7.1.2 и анализ logout/recovery. Generation6 не меняется.
+Baseline main a0e0671; чужие Matrix/две карточки/auth specification и её roadmap
+ссылки приняты как входы, не публикуются без review. Старые E2E corrections
+public-catalog/unified сохраняются WIP; их R7.2 gate BLOCKED после6 attempts.
+
+План до реализации R7.2.1: сверить identity/session/organization, назначение URL,
+logout целевой сессии/связанного login и восстановление после lost response.
+Первый связный шаг — destination selection и Admin safe return (без новых прав):
+общая строгая allowlist, выбор только совместимых capabilities, явная смена
+аккаунта/возврат при отсутствии доступа. Затем Admin identity restoration и
+серверный logout/recovery contract после отдельной проверки текущей модели.
+Риск высокий: смешение аккаунтов/tenant, open redirect, ошибочный revoke,
+late async responses. Схема/API меняются до зависимого клиента/UI при необходимости.
+
+Focused checks: pure schema/navigation и landing/admin auth tests, client/session
+regressions; после каждого backend поведения — targeted positive/negative auth
+tests до UI. Completion: affected types/lint/build, API real-session tests в
+disposable audit DB, targeted auth browser (реальный login, три роли, другая
+вкладка/identity, lost response, desktop/mobile/keyboard), UI screenshot/computed
+styles по DS. При backend DB/idempotency — verify:postgres; runtime API —
+verify:runtime-split. Profile/fixtures/preflight проверяются до запуска, отдельные
+порты и output; пользовательские3000/4012 не останавливать. Auth gate не заменяет
+и не сбрасывает исчерпанный catalog R7.2. Общий E2E не выбран. Закрытие только
+по матрице auth specification; coherent промежуточный PASS не закрывает весь пункт.
+Применён development-toolkit: execution/frontend/backend/security/verification.
+
+Промежуточно: destination regression воспроизведён (1 FAIL/15 PASS), после
+исправления landing17 PASS; schema navigation60 PASS + schema build PASS;
+Admin identity/navigation12 PASS. Landing/admin types PASS на соответствующих
+промежуточных inputs; финальный completion ещё NOT_RUN. UI baseline/login3000
+сверен read-only: Manrope14/600, line19.6,44px/radius8; общие DmButton/Field/Input/
+Select/Feedback и существующая auth composition, JSON market-components-v1 и
+platforma-semantic-light-v1. Новые состояния требуют итоговых screenshots.
+
+Решение backend после source review: nullable AuthSession.originLoginSessionId
+с явным root для новых login и наследованием при handoff. Legacy null не
+backfill-ить эвристикой. Новый self logout с подписанным proof отзывает только
+target+доказанный login, не siblings/новый login того же user; cookies не очищает.
+Expired proof допускает только receipt уже terminal состояния, не active revoke.
+Обычная JWT middleware/CSRF старых cookie routes сохраняются. Handoff и logout
+сериализуются по root/source row locks. Migration/upgrade только isolated audit DB;
+рабочая БД не меняется. Сначала schema/API/service positive-negative tests, затем
+shared helper и UI. Дополнительный риск: поздний refresh cookie, проверить отдельно.
+
+
+## 14.10.2026 — журналы результатов и вопросов
+
+Уточнение UI владельца14.10: для любого нового frontend-компонента до реализации
+найти существующий аналог, сверить shared adapters и JSON-параметры, типографику,
+размеры controls/карточек/модалок; не заменять действия простым HTML/ссылками/текстом.
+Зафиксировано в DESIGN_SYSTEM, браузерная визуальная приёмка обязательна по риску.
+Документы результатов опубликованы742ee280477fc90726d9c6823b4c3ad60d26236b в main;
+remote SHA совпал, ссылки и diff PASS, API workflow_runs=[] на первой проверке.
+App suites для docs-only не запускались. Старый R7.2 BLOCKED сохраняется отдельно.
+
+Владелец уходит отдыхать и поручил фиксировать этапы roadmap, отдельно кратко
+описывать Admin и документооборот, записывать все вопросы и самостоятельно выбирать
+рекомендуемый оптимальный вариант в scope. Созданы три связанных журнала:
+applications/admin-implementation-log.md, domains/document-workflow-implementation-log.md,
+governance/ROADMAP-QUESTIONS-AND-DECISIONS.md. Постоянно обновлять после этапов;
+внешние подтверждения и неизвестные факты не выдумывать. UI уведомлён, остаётся read-only.
+План этого дополнения docs-only: риск ложной приёмки; сверка утверждений с текущими
+roadmap/Matrix/спецификациями, относительных ссылок и diff hygiene, без app suites.
+
+R7.2: разрешённый второй цикл из трёх запусков исчерпан. Попытка4 — lock,
+5 — webpack/CommonJS schemas compilation,6 — Turbopack: profile PASS, каталог
+пуст из-за неустановленного PUBLIC_CATALOG_ORGANIZATION_ID в нашем harness.
+Всего6 попыток; не сбрасывать лимит. Подготовить корректный canonical preflight;
+повторный browser gate требует отдельного явного решения по лимиту. Детали и
+следующий шаг сохранены в журнале вопросов. Эти ошибки не доказательство дефекта
+продукта. Изолированные процессы остановлены, пользовательские3000/4012 сохранены.
+
+## 14.10.2026 — R7.2 CI / ACTIVE, последовательное исполнение roadmap
+
+Уточнение владельца14.10: оба исполнителя назначены на последовательное исполнение
+всего roadmap без дедлайна и повторного «приступай» после подшагов. Роли writer/
+read-only preparer можно менять; единственный writer сохраняется. После фактического
+DoD отмечать соответствующие чекбоксы/evidence и брать следующий готовый пакет.
+Проверки пропорциональны риску по Workflow; общий E2E/ручной rerun CI не минимум
+для локального UI. Автоматический CI учитывать отдельно. Не подменять отсутствие
+бизнес-решений/внешнего доступа предположением; выполнять независимый доступный
+scope, вынося точный необходимый вопрос владельцу. DS, контракт/API/backend/UI,
+документация логики и целевые отрицательные проверки остаются обязательными.
+
+Владелец назначил primary01a11758 локальным оркестратором/исполнителем и разрешил
+последовательную реализацию roadmap. Сейчас единственный writer — primary;
+PlatformaMarket UI01a1369b готовит R7.7.1 строго read-only, результат сообщением,
+без файлов/тестов/процессов. Переход к записи только после явного назначения
+оркестратором и завершения текущего пакета; generation6 не меняется.
+
+Первый пакет R7.2: адресно устранить известные CI failures каталога. Baseline
+main2885f6fb91ddc221c42e9e3fdccc5ae8d9167800, canonical root; три прежних dirty
+документа Matrix/CATALOG-PROMOTIONS-MESSAGES/PRODUCT-PAGE-PREVIEW-DATA и output
+принадлежат предыдущей работе, сохраняются и не публикуются этой задачей.
+CI38453834830 пока IN_PROGRESS; последний разобранный d4e1db8/38447139522:
+101 PASS/6 FAIL. Пять ожидают старую ссылку «← Вернуться в каталог»;
+один ожидает sticky header. Код уже использует «← Каталог» и sticky toolbar;
+это соответствует принятой карточке CATALOG-REFERENCE-V3, scroll evidence y−600/y0.
+
+План до реализации: исправить устаревшие browser locators и scroll assertions,
+сохранив проверки URL/filter/page count, login return, cart retry, same origin,
+keyboard и overflow. Риск — ложное ослабление regression; продуктовый код пока
+не требует изменения. Checks: E2E types/scoped lint, шесть затронутых сценариев
+на390/1440 с изолированной audit DB/API; дополнительно ранее нестабильный
+settings-profile keyboard case по свежему CI evidence. Сервисы пользователя
+3000/4012 не останавливать; отдельный test API, read-only frontend с API retarget
+в harness либо изолированный frontend output. Product build только при изменении
+продуктового кода; tests-only не требует повторной сборки неизменённого frontend.
+Завершение: review/diff, scoped commit/push, exact-SHA CI receipt; общий R7.2
+не закрывается этим ограниченным исправлением. Старые CI FAIL/attempts сохранены;
+новое поручение явно разрешает адресное исправление, локальные попытки записывать
+здесь (max3; диагностика15min, test20min, suite45min). Deploy/live не разрешены.
+
+Локальный запуск1: E2E types и scoped ESLint PASS. Browser5 PASS/2 FAIL: возврат/
+фильтры390/1440, same-origin, mobile CSS и supplier profile keyboard прошли;
+два login/cart сценария получили400 до возврата, причина исследуется в harness.
+Использованы canonical frontend3000 (public reads) и isolated API4412/audit DB;
+SQL current_database подтвердил dentmarket_audit_20260914. Дополнительный read-only
+probe счётчика ошибся именем Prisma model, данные не менял. Logs .tmp/r7-ci-2026-10-14.
+План R7.7.1 от UI готов; до назначения остаётся read-only. Для минимального пакета
+выбираем совместимые query routes, identity/logout menu без нового profile API;
+актуальные screenshots/computed baseline снимает назначенный UI writer.
+
+Gate R7.2 сейчас BLOCKED: attempt2 (один login case) FAIL, запрос login ещё не
+доходил до diagnostic; после ожидания /auth/current перед вводом attempt3 отправляет
+login, но2 cases TIMEOUT при дальнейшей навигации (390: ссылка найдена, detached).
+Доказанной причины последнего timeout нет. Hybrid dev3000/testAPI4412 не является
+полностью изолированной composition. Все три attempts сохранены, повтор без
+явного решения не запускать. Own API останавливается Playwright; dev8200/13588
+не трогали. Дополнительно статически исправлены устаревшие toast expectations:
+409 → известный отказ/retry,503 → неизвестный результат/проверка корзины; ожидание
+первого запроса и release в finally. Эти последние изменения ещё НЕ ПРОВЕРЕНЫ.
+Ранее typecheck/lint PASS после session-ready изменения; после последнего diff
+повтор только затронутых checks. Commit/push НЕ ВЫПОЛНЕНЫ; R7.2 открыт.
+Следующий точный шаг: новый bounded cycle с отдельным frontend+API+audit DB,
+без hybrid retarget; async вопрос владельцу отправлен по Workflow§4.3.
+Пока вопрос pending — только read-only подготовка независимых пакетов, UI не writer.
+
 ## 14.10.2026 — ROADMAP-EXECUTION-VIEW / DOCS_CHECKED
 
 Владелец согласовал повторный анализ и поручил перестроить представление roadmap:
@@ -1792,3 +2009,21 @@ next-env.d.ts не stage и не менять. Собственных running п
 
 Не начинать этап вне разрешённой последовательности и не ротировать задачу автоматически.
 Архив содержит исторические поручения/блокеры, не действующие инструкции.
+
+Owner explicitly authorized a new max3 cycle with fully isolated frontend/API/DB.
+New input: canonical source served on3400 with its own Next output and TS config,
+API4412/audit DB, no browser API retarget. Original next-env backup retained for
+restoring generated declarations after the owned server exits. Attempt4/isolated1
+will run the7 affected cases; old failures remain. Setup budget5min, test20min.
+Isolated cycle attempt1 (overall4) SETUP_FAIL: Next custom-server conf ignored by
+its router initialization; default .next dev lock correctly rejected second server.
+No lock override or source copy. Local Next16.3.8 config-shared.d.ts documents
+NEXT_ADAPTER_PATH; ignored adapter changes only distDir/temporary tsconfig path,
+used by normal Next CLI. Attempt2 (overall5) uses that supported config route.
+Isolated cycle attempt2 (overall5) SETUP_FAIL: webpack dev compilation of the existing
+CommonJS schemas dist injects import.meta HMR and fails. No product edit; owned npm
+14228 tree stopped, dev8200/13588 preserved. Attempt3 (overall6) uses the existing
+canonical dev bundler Turbopack; separate output/API/DB unchanged, no lock bypass.
+Concurrent owner-supplied auth-session-navigation.md and two R7.2.1 roadmap hunks
+appeared; UI confirms direct owner instruction to read them and remains read-only.
+These new docs/hunks are preserved, not owned by this CI change or staged with it.

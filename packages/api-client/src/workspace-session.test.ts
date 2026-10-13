@@ -19,6 +19,43 @@ function browser(value?: object, hash = "") {
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 describe("verified workspace session", () => {
+  it("ignores a delayed response body after a newer login is verified", async () => {
+    const data = browser({ ...response, accessTokenExpiresAt: Date.now() + 900000 });
+    let complete!: (value: unknown) => void;
+    let reading!: () => void;
+    const bodyStarted = new Promise<void>(resolve => { reading = resolve; });
+    const fetcher = vi.fn().mockResolvedValueOnce(Response.json(context))
+      .mockResolvedValueOnce({ ok: true, status: 200, json: () => { reading(); return new Promise(resolve => { complete = resolve; }); } })
+      .mockResolvedValueOnce(Response.json(context));
+    vi.stubGlobal("fetch", fetcher);
+    const store = createWorkspaceSession("/api", "SUPPLIER"); await store.start();
+    const pending = store.getAccessToken(true);
+    const rejected = expect(pending).rejects.toThrow("Войдите");
+    await bodyStarted;
+    const nextId = "00000000-0000-4000-8000-000000000099";
+    data.set(store.sessionKey, JSON.stringify({ ...response, sessionId: nextId, accessToken: "new-login-token", accessTokenExpiresAt: Date.now() + 900000 }));
+    await store.retry(); complete({ malformed: true }); await rejected;
+    expect(store.getSnapshot().session?.sessionId).toBe(nextId);
+    expect(store.getSnapshot().session?.accessToken).toBe("new-login-token");
+  });
+  it("does not clear a newer login when an earlier logout completes", async () => {
+    const data = browser({ ...response, accessTokenExpiresAt: Date.now() + 900000 });
+    vi.stubGlobal("BroadcastChannel", undefined);
+    let complete!: (value: Response) => void;
+    const fetcher = vi.fn().mockResolvedValueOnce(Response.json(context))
+      .mockImplementationOnce(() => new Promise(resolve => { complete = resolve; }))
+      .mockResolvedValueOnce(Response.json(context));
+    vi.stubGlobal("fetch", fetcher);
+    const store = createWorkspaceSession("/api", "SUPPLIER"); await store.start();
+    const pending = store.logout(sessionId);
+    const nextId = "00000000-0000-4000-8000-000000000099";
+    data.set(store.sessionKey, JSON.stringify({ ...response, sessionId: nextId, accessTokenExpiresAt: Date.now() + 900000 }));
+    await store.retry();
+    complete(Response.json({ sessionId, status: "REVOKED", loginStatus: "REVOKED" })); await pending;
+    expect(store.getSnapshot().session?.sessionId).toBe(nextId);
+    await expect(store.logout(sessionId)).rejects.toThrow("Аккаунт изменился");
+    expect(fetcher).toHaveBeenCalledTimes(3);
+  });
   it("exchanges a one-time code once across concurrent StrictMode starts and verifies membership", async () => {
     browser(undefined, "#session=" + encodeURIComponent(JSON.stringify({ organizationId, capability: "SUPPLIER", handoffCode: "one-time-synthetic-code" })));
     const fetcher = vi.fn().mockResolvedValueOnce(Response.json(response)).mockResolvedValueOnce(Response.json(context));

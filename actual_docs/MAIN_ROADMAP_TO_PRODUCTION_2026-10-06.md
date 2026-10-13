@@ -507,6 +507,17 @@ R7.6/R7.7 PLANNED. Полная переработка Admin теперь вхо
   приёмка связанной matrix и прочих прежних UI/regression обязательств, без второго
   выполнения тех же задач. Разобрать текущие CI public-catalog/unified/profile
   failures по актуальным inputs, не объявлять их исправленными из-за локального PASS.
+  - [ ] **R7.2.1** Исправить lifecycle авторизации клиники/поставщика/Admin:
+    ручные переходы URL и safe return, несовместимая роль, явная смена аккаунта,
+    восстановление без смены identity, logout целевой сессии и recovery после
+    потери ответа; изоляция разных аккаунтов/вкладок, CSRF/MFA и server revoke.
+    [Проблемы, исправление и матрица приёмки](applications/auth-session-navigation.md).
+    Статус14.10: IMPLEMENTED / LOCAL_PASS, публикация и CI pending. Schema/API,
+    exact target/root logout, client identity guards и UI реализованы; targeted
+    unit/API/PG/runtime/core-contract/types/build и real browser10 групп PASS.
+    Evidence, попытки и ограничения — в том же документе; рабочая БД не менялась.
+    Связано с R7.7.1.1/3; один результат/evidence без повторного учёта.
+    Не закрывать по mock logout с подменённой страницей login или старому auth PASS.
 - [ ] **R7.3** Пройти согласованный цикл трёх ролей на одной revision/data manifest:
   onboarding → offer/import/moderation → checkout → confirmation → payment →
   shipment/receipt → documents/return/reorder, сообщения и операторские исключения.
@@ -702,6 +713,8 @@ DoD: оператор находит любой разрешённый объе�
   auth-контракт только при доказанной необходимости, не повторять готовую реализацию.
 
   - [ ] **R7.7.1.1** Сохранённый вход: сверить готовый operator login/revoke/CSRF и обычные MFA-сессии с новой композицией; переиспользовать применимое evidence, не переписывать auth.
+    R7.2.1 имеет отдельный LOCAL_PASS: [session identity, logout/recovery и safe return](applications/auth-session-navigation.md).
+    Новая оболочка и её CI остаются отдельной границей, прежний PASS их не закрывает.
   - [ ] **R7.7.1.2** Оболочка/UI: согласовать экраны по DESIGN_SYSTEM, реализовать sidebar/profile/header/drawer и фокус; проверить короткую/длинную страницу и shared consumers.
   - [ ] **R7.7.1.3** Навигация: принять карту старых и новых URL, уведомлений и объектов; проверить прямой вход, refresh, Back/Forward и доступный возврат без потери контекста.
 

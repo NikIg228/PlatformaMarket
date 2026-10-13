@@ -1,9 +1,28 @@
 import { describe, expect, it } from "vitest";
-import { productReturnPath, withProductReturn, workspaceReturnPath, withWorkspaceReturn } from "./product-navigation";
+import { adminReturnPath, requestedWorkspaceCapability, productReturnPath, withProductReturn, workspaceReturnPath, withWorkspaceReturn } from "./product-navigation";
 import { emailRegisterSchema } from "./commercial";
 
 const product = "/products/00000000-0000-4000-8000-000000000001";
 const target = `${product}?${new URLSearchParams({ returnTo: "/catalog?q=боры&sort=PRICE_ASC&count=48" })}`;
+
+describe("login destinations", () => {
+  it("requests a capability only from safe explicitly scoped paths", () => {
+    expect(requestedWorkspaceCapability("/supplier")).toBe("SUPPLIER");
+    expect(requestedWorkspaceCapability("/clinic/orders")).toBe("BUYER");
+    for (const value of ["/catalog", product, "/documents", "/supplier?role=ADMIN", "//outside.invalid/supplier", "/supplier/../admin"]) {
+      expect(requestedWorkspaceCapability(value)).toBeUndefined();
+    }
+  });
+  it("preserves the current admin section and bounded object or support links", () => {
+    const id = "00000000-0000-4000-8000-000000000001";
+    for (const path of ["/admin", "/admin?section=settings", `/admin?section=orders&queueType=SUPPLIER_CONFIRMATION&object=${id}`, `/admin?section=support&ticketId=${id}&conversationId=${id}`]) {
+      expect(adminReturnPath(path)).toBe(path);
+    }
+  });
+  it.each(["/admin/login", "/admin/../admin", "/%61dmin", "//outside.invalid/admin", "https://outside.invalid/admin", "/admin#session=secret", "/admin?returnTo=%2Fadmin", "/admin?token=secret", "/admin?organizationId=other", "/admin?section=orders&section=support", "/admin?section=unknown", "/admin?section=%0a", "/admin?queueType=SUPPLIER_CONFIRMATION", "/admin?object=00000000-0000-4000-8000-000000000001", "/admin?section=support&ticketId=invalid", "/admin?section=orders&ticketId=00000000-0000-4000-8000-000000000001"])("rejects unsafe admin return %s", path => {
+    expect(adminReturnPath(path)).toBeUndefined();
+  });
+});
 describe("workspace return allowlist", () => {
   it("preserves unified routes only for their verified workspace", () => {
     expect(workspaceReturnPath("/clinic?count=48", "BUYER")).toBe("/clinic?count=48");
