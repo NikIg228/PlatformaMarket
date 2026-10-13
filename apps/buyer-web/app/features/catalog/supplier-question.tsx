@@ -47,11 +47,11 @@ export function SupplierQuestion({ offer, onClose, onClosed, productName, imageU
     {success ? <ActionFeedback tone="success" description="Вопрос отправлен поставщику" action={<a href={`/clinic/messages?conversationId=${success}`}>Открыть переписку</a>} /> : null}
     <DmDialog open={Boolean(offer)} title="Задать вопрос поставщику" mobileFullscreen onOpenChange={open => { if (!open && !busy) onClose(); }} onClosed={onClosed}
       actions={<DmButton disabled={busy} onClick={onClose}>Отмена</DmButton>}>
-      {identity ? <ConversationContext key={id} context={{ ...identity, imageUrl: identity.imageUrl ?? imageUrl ?? null }} /> : null}
+      {identity ? <ConversationContext key={`context:${id}`} context={{ ...identity, imageUrl: identity.imageUrl ?? imageUrl ?? null }} /> : null}
       {lookup?.conversationId ? <a href={`/clinic/messages?conversationId=${lookup.conversationId}`}>Открыть предыдущую переписку</a> : null}
       {error ? <ActionFeedback {...error} description={`${error.description} Текст и файлы сохранены. Повторная отправка защищена от дублей.`} action={!lookup ? <DmButton onClick={() => setAttempt(value => value + 1)}>Повторить загрузку</DmButton> : undefined} /> : null}
       {lookup && !allowed ? <p role="status">У вашей роли нет права отправлять сообщения. Обратитесь к администратору организации.</p> : null}
-      {id ? <ConversationComposer key={id} api={api} context={{ contextType: "OFFER", contextId: id }} draft={draft} busy={busy} disabled={!lookup || !allowed}
+      {id ? <ConversationComposer key={`composer:${id}`} api={api} context={{ contextType: "OFFER", contextId: id }} draft={draft} busy={busy} disabled={!lookup || !allowed}
         label="Ваш вопрос" submitLabel="Отправить вопрос" question onSubmit={() => void send()}
         onChange={update => setDrafts(value => ({ ...value, [id]: typeof update === "function" ? update(value[id] ?? emptyConversationDraft()) : update }))} /> : null}
       <small>PNG, JPG, PDF · до 10 МБ · до 10 файлов. Переписка не изменяет условия заказа.</small>

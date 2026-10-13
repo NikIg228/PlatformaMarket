@@ -1,6 +1,29 @@
 import { expect, test } from "@playwright/test";
 import { id, messagesFixture, pngFile, productId } from "./messages.fixture";
 
+test("question and messages retain keyboard input and component identity", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
+  page.on("pageerror", error => errors.push(error.message));
+  await messagesFixture(page);
+  await page.goto(`/products/${productId}`);
+  await page.getByRole("button", { name: "Задать вопрос", exact: true }).first().click();
+  const dialog = page.getByRole("dialog", { name: "Задать вопрос поставщику" });
+  const input = dialog.getByRole("textbox", { name: "Ваш вопрос" });
+  await expect(input).toBeEnabled(); await input.click();
+  await input.pressSequentially("Test question", { delay: 40 });
+  await expect(input).toHaveValue("Test question"); await expect(input).toBeFocused();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Задать вопрос", exact: true }).first().click();
+  await expect(input).toHaveValue("Test question");
+  await page.goto(`/clinic/messages?conversationId=${id(10)}`);
+  const message = page.getByRole("textbox", { name: "Сообщение", exact: true });
+  await expect(message).toBeEnabled(); await message.click();
+  await message.pressSequentially("Test reply", { delay: 40 });
+  await expect(message).toHaveValue("Test reply"); await expect(message).toBeFocused();
+  expect(errors).toEqual([]);
+});
+
 for (const width of [1440, 834, 390]) test(`messages layout, attachments and retry ${width}`, async ({ page }, info) => {
   const state = await messagesFixture(page, width === 390 ? "supplier" : "clinic");
   await page.setViewportSize({ width, height: 900 });

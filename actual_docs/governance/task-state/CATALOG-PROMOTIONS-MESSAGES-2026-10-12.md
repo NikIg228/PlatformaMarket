@@ -1,4 +1,43 @@
-# CATALOG-PROMOTIONS-MESSAGES — MESSAGES / QUESTION LOCAL_PASS
+# CATALOG-PROMOTIONS-MESSAGES — LOCAL_PASS / PUBLISHED / CI_PENDING
+
+## Owner-reported keyboard regression — LOCAL_PASS / publication pending
+
+Owner reports invisible keyboard input in the supplier-question modal and three
+Next errors. Same authorized UI writer; primary native snapshot idle, canonical
+main1774efc, only known receipt/reference dirt preserved. Plan: reproduce ordinary
+keystrokes (earlier tests used fill), inspect React console, minimally repair
+component identity/state; check modal desktop/mobile and shared Messages, retained
+draft/focus, console errors, affected types/lint and one completion web build.
+No backend/data/design-contract changes. Stop at repaired input and verified publish.
+
+Diagnosis: inspected all three Next overlay entries in the owner's existing Chrome
+product tab; all report duplicate sibling React keys at SupplierQuestion's composer.
+Context and composer both used offerId; shared Messages history/composer both used
+draftId. Namespaced keys by component, retaining intentional remount per offer/chat.
+Before-fix regression FAIL1 on captured React console errors (keyboard text happened
+to survive in the isolated fixture). After-fix targeted browser PASS8: keyboard focus/
+value/close-reopen and zero console/page errors, Messages and question1440/834/390,
+files/retry/role denial. Native same product tab: Cyrillic text visibly entered,
+send became enabled, no Next issues; synthetic draft cleared, nothing sent.
+UI/buyer-web/web/e2e types PASS; scoped ESLint PASS. Logs
+`.tmp/messages-keyboard-{before,fixed,types,lint}.log`; go_live web build PASS
+(`npm run build --workspace=@marketplace/web`, `.tmp/messages-keyboard-build.log`).
+Verified canonical Next9060 stopped before build; launcher also shut down API.
+Canonical `npm run dev` restarted afterward; no foreign app process touched.
+Only four key values change in product code; prior backend evidence remains valid.
+
+## Publication receipt14.10
+
+Commit `1774efc1ea6693334f1bde6587e2ef7bf8ce6c0a`
+`feat: add supplier questions and conversation attachments` published to origin/main.
+Fetch confirmed unchanged upstream c251bc1; staged48-path review, diff hygiene and
+single outgoing commit checked. Push succeeded; git ls-remote matched exact HEAD.
+[CI38306060948](https://github.com/NikIg228/PlatformaMarket/actions/runs/38306060948)
+and [Security38306060933](https://github.com/NikIg228/PlatformaMarket/actions/runs/38306060933)
+observed QUEUED, conclusion null. CI_PENDING, not PASS; no CI repair or new stage started.
+Local implementation/verification complete, canonical dev remains available.
+This post-publication receipt is local metadata; previous product-preview receipt
+and three reference-image folders remain preserved and unstaged.
 
 ## 13.10 Messages and supplier-question implementation — LOCAL_PASS14.10
 
