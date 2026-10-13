@@ -19,6 +19,9 @@ export async function installOperatorSession(page: Page, db: PrismaClient, actor
   const encode = (value: object) => Buffer.from(JSON.stringify(value)).toString("base64url");
   const unsigned = `${encode({ alg: "HS256", typ: "JWT" })}.${encode({ sub: actor.userId, jti: id, organization_id: actor.organizationId, organization_ids: [actor.organizationId], amr: ["password"], iss: process.env.JWT_ISSUER ?? "dentmarket-kz", aud: process.env.JWT_AUDIENCE ?? "dentmarket-web", iat: now, exp: now + 1800 })}`;
   const accessToken = unsigned + "." + createHmac("sha256", e2eJwtSecret).update(unsigned).digest("base64url");
-  await page.addInitScript(session => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify(session)), { accessToken, organizationId: actor.organizationId });
+  await page.addInitScript(session => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify(session)), {
+    accessToken, sessionId: id, activeOrganizationId: actor.organizationId,
+    organizationId: actor.organizationId, user: { id: actor.userId }, expiresAt: (now + 1800) * 1000,
+  });
   return async () => { await db.authSession.update({ where: { id }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "flow_b3_fixture_finished" } }); };
 }

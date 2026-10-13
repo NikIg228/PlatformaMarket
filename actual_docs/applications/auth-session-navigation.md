@@ -5,7 +5,7 @@
 исправление всех связанных сценариев. После спецификации primary продолжил
 реализацию по постоянному поручению исполнения roadmap от14.10.
 
-Статус: **IMPLEMENTED / LOCAL_PASS / PUBLICATION_PENDING / CI_PENDING**.
+Статус: **IMPLEMENTED / LOCAL_PASS / PUBLISHED 37fa69a / CI_FAILURE**.
 Реестр исполнения — [Main Roadmap, R7.2.1](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
 Операторская часть связана с R7.7.1.1/3; это один объём работы, не два backlog.
 Документ не закрывает прежние CI failures, не разрешает менять полномочия,
@@ -322,4 +322,23 @@ adapter/tsconfig. Сохранить текущий `apps/web/next-env.d.ts`; в
 Обычный браузерный delayed Set-Cookie после нового login не симулировался отдельно:
 проверены server revoke/refresh race и отказ восстановления при cookie другой сессии.
 Старый catalog gate остаётся BLOCKED, прежний общий CI FAILURE не превращается в PASS.
-Публикация и фактический CI этого auth change set фиксируются отдельно после push.
+Опубликовано в `main`: `37fa69abec2bb5a8ef94d0eee1d9ba6a21bd159a`;
+remote SHA проверен. [Security38466389627](https://github.com/NikIg228/PlatformaMarket/actions/runs/38466389627)
+завершён SUCCESS. В [CI38466389600](https://github.com/NikIg228/PlatformaMarket/actions/runs/38466389600)
+PostgreSQL и обе container builds SUCCESS; общий job verify завершился FAILURE:
+Flow B3 —5 PASS/2 FAIL CSV/Excel publication. Dependent operator fixture сохранял
+неполную session identity и больше не проходит sameIdentity перед /organizations.
+Адресная правка fixture сохраняет sessionId/user.id/activeOrganizationId/expiresAt;
+типовой login уже записывал эти поля. E2E types и targeted ESLint PASS.
+`npm run db:test -- exec -- node .tmp/auth-navigation-2026-10-14/flow-b3.mjs`:
+два исправленных publication flow PASS на попытке2 (попытка1 — import.meta в
+временном CommonJS Playwright config, до запуска тестов). Использована неизменная
+production build auth, owned3103/4113 и проверенная audit DB; canonical flow config
+сохранён, изменены только isolated ports/output/storage. Test unified URL теперь
+берётся из Playwright baseURL, опциональный FLOW_B3_STORAGE_ROOT задаёт disposable
+upload storage. Это не расширяет права auth и не является logout/refresh evidence.
+Публикация исправления fixture и новый CI фиксируются отдельно;37fa69a остаётся FAIL.
+Также web-bundle сообщил превышение budget (27files/2020134raw/550629gzip);
+оно существовало до auth change: CI38453834830, job115491315486 —27/2017227/549923.
+Pipeline с tee продолжил работу; это не PASS. Последующие общие browser gates
+после Flow B3 в этом run не выполнялись. Старый R7.2/BLOCKED6 остаётся открытым.

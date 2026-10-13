@@ -9,7 +9,8 @@ import { PrismaClient } from "@prisma/client";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4012/api";
 const databaseUrl = process.env.DATABASE_URL ?? "postgresql://marketplace:marketplace@127.0.0.1:5432/marketplace?schema=public";
 const operator = { organizationId: "00000000-0000-4000-8000-000000000001", userId: "00000000-0000-4000-8000-000000000002" };
-const localStorageRoot = resolve(process.cwd(), "../..", ".local-storage");
+const localStorageRoot = process.env.FLOW_B3_STORAGE_ROOT
+  ? resolve(process.env.FLOW_B3_STORAGE_ROOT) : resolve(process.cwd(), "../..", ".local-storage");
 const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
 
 type Actor = { organizationId: string; userId: string; roleId: string };
@@ -152,7 +153,7 @@ for (const fileType of ["CSV", "EXCEL"] as const) test(`operator approves ${file
   page.on("pageerror", (error) => console.error(`[admin pageerror] ${error.message}`));
   page.on("console", (message) => { if (message.type() === "error") console.error(`[admin console] ${message.text()}`); });
   if (process.env.FLOW_B3_UNIFIED === "true") revokeOperator = await installOperatorSession(page, prisma, operator);
-  await page.goto(process.env.FLOW_B3_UNIFIED === "true" ? "http://127.0.0.1:3000/admin" : "http://127.0.0.1:3010");
+  await page.goto(process.env.FLOW_B3_UNIFIED === "true" ? "/admin" : "http://127.0.0.1:3010");
   await expect(page.getByText("Проверяем вход...")).toBeHidden({ timeout: 15_000 });
   await page.getByRole("button", { name: "Загрузка товаров", exact: true }).click();
   const card = page.getByTestId(`import-review-${candidateId}`);
@@ -211,7 +212,7 @@ for (const fileType of ["CSV", "EXCEL"] as const) test(`operator approves ${file
   expect(await prisma.outboxEvent.count({ where: { aggregateType: "SupplierOffer", aggregateId: offerId, eventType: "OfferPublicationChanged" } })).toBe(publicationEvents);
 
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto(`${process.env.FLOW_B3_UNIFIED === "true" ? "http://127.0.0.1:3000/catalog" : "http://127.0.0.1:3001/"}?q=${encodeURIComponent(uniqueName)}`);
+  await page.goto(`${process.env.FLOW_B3_UNIFIED === "true" ? "/catalog" : "http://127.0.0.1:3001/"}?q=${encodeURIComponent(uniqueName)}`);
   await expect(page.getByTestId("product-card").filter({ hasText: uniqueName })).toBeVisible();
   const afterSearch = await json<{ total: number; items: Array<{ id: string; name: string }> }>(await request.get(`${API_URL}/catalog/search?q=${encodeURIComponent(uniqueName)}`));
   expect(afterSearch.items).toEqual(expect.arrayContaining([expect.objectContaining({ id: productId, name: uniqueName })]));
