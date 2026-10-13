@@ -6,6 +6,12 @@
 реализацию по постоянному поручению исполнения roadmap от14.10.
 
 Статус: **IMPLEMENTED / LOCAL_PASS / PUBLISHED 37fa69a / CI_FAILURE**.
+
+Actual CI после fixture fix4d60acb и docs b197d8d: run38469520118 FAILURE,
+verify job115544652416: Flow B3 7/7PASS, verify:web95PASS/12FAIL.
+Security38469520083, PostgreSQL и container jobs SUCCESS. Receipt передан primary
+14.10; прежние catalog failures и зависимые auth fixture/URL expectations
+не считаются закрытыми локальным PASS. R7.2.1 остаётся LOCAL_PASS, checkbox открыт.
 Реестр исполнения — [Main Roadmap, R7.2.1](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
 Операторская часть связана с R7.7.1.1/3; это один объём работы, не два backlog.
 Документ не закрывает прежние CI failures, не разрешает менять полномочия,

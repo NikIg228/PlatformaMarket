@@ -1,10 +1,12 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps, type ComponentType } from "react";
 import { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OperationWorkQueue } from "@marketplace/schemas";
-import { DmButton, DmSelect, EmptyState, ErrorState, LoadingState, StatusTag, errorMessage } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/actions";
+import { DmSelect } from "@marketplace/ui/native-select";
+import { DmDialog, EmptyState, ErrorState, LoadingState, StatusTag } from "@marketplace/ui/primitives";
+import { errorMessage } from "@marketplace/ui/format";
 import { adminApiContext } from "./admin-auth";
-import { OperationAssignmentPanel } from "./operation-assignment";
 import styles from "./operation-queue.module.css";
 
 export const queueLabels: Record<string, string> = { ORGANIZATION_REVIEW: "Допуск поставщиков", PROMOTION_REVIEW: "Модерация акций", CATALOG_REVIEW: "Карточки на проверке", COMPLIANCE_REVIEW: "Проверка документов", INTEGRATION_RECONCILIATION: "Расхождения в данных", IMPORT_ATTENTION: "Загрузки требуют проверки", AGREEMENT_SIGNATURE: "Договоры ждут подписи", SUPPLIER_CONFIRMATION: "Подтверждение заказов", STALE_INVENTORY: "Устаревшие остатки" };
@@ -44,4 +46,28 @@ export function OperationQueue() {
     <div className="dm-conversations-toolbar"><DmButton disabled={!offset || busy} onClick={() => setOffset(value => Math.max(0, value - 50))}>Предыдущие</DmButton><span>Выборка {offset + 1}–{offset + 50} в каждом разделе</span><DmButton disabled={busy || !data?.sections.some(section => section.hasMore)} onClick={() => setOffset(value => value + 50)}>Следующие</DmButton></div>
     {selected ? <OperationAssignmentPanel key={`${selected.section.type}:${selected.item.id}`} api={api} type={selected.section.type} item={selected.item} defaultPriority={selected.section.priority} assignees={assignees} canManage={permissions.includes("support.ticket.manage")} onClose={() => { openerRef.current?.focus(); setSelected(null); }} onSaved={async assignment => { setSelected(value => value ? { ...value, item: { ...value.item, assignment } } : null); await load(); }} /> : null}
   </section>;
+}
+
+
+type AssignmentProps = ComponentProps<typeof import("./operation-assignment").OperationAssignmentPanel>;
+function OperationAssignmentPanel(props: AssignmentProps) {
+  const [Panel, setPanel] = useState<ComponentType<AssignmentProps> | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [revision, setRevision] = useState(0);
+  const [open, setOpen] = useState(true);
+  useEffect(() => {
+    if (!open) return;
+    let active = true;
+    setFailed(false);
+    void import("./operation-assignment").then(module => {
+      if (active) setPanel(() => module.OperationAssignmentPanel);
+    }, () => { if (active) setFailed(true); });
+    return () => { active = false; };
+  }, [revision, open]);
+  if (Panel && open) return <Panel {...props} />;
+  return <DmDialog open={open} onOpenChange={setOpen} onClosed={props.onClose}
+    title="Назначение задачи" actions={<DmButton onClick={() => setOpen(false)}>Закрыть</DmButton>}>
+    {failed ? <ErrorState description="Не удалось открыть назначение." action={<DmButton onClick={() => setRevision(value => value + 1)}>Повторить открытие</DmButton>} />
+      : <LoadingState label="Открываем назначение" />}
+  </DmDialog>;
 }

@@ -4,11 +4,11 @@ import tseslint from "typescript-eslint";
 export default [
   {
     files: ["apps/**/*.{ts,tsx}", "packages/ui/src/**/*.{ts,tsx}"],
-    ignores: ["packages/ui/src/controls.tsx"],
+    ignores: ["packages/ui/src/controls.tsx", "packages/ui/src/actions.tsx", "packages/ui/src/native-select.tsx"],
     rules: {
       "no-restricted-syntax": ["error", {
         selector: ":matches(JSXOpeningElement, JSXSelfClosingElement)[name.name=/^(button|input|select|textarea)$/]",
-        message: "Use shared controls, DmAction or DmFileInput. Native widget implementations belong in controls.tsx.",
+        message: "Use shared controls, DmAction or DmFileInput. Native widget implementations belong in the shared control adapters.",
       }],
       "no-restricted-imports": ["error", { paths: [{
         name: "@fluentui/react-components",

@@ -22,9 +22,32 @@ async function setup() {
   const current = vi.spyOn(MarketplaceApiClient.prototype, "currentOperatorSession");
   return { ...await import("./admin-auth"), current, location };
 }
-afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.resetModules(); });
+afterEach(() => { vi.doUnmock("@marketplace/schemas"); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.resetModules(); });
 
 describe("admin restore keeps the selected identity", () => {
+  it("does not overwrite a newer login while the validation chunk loads", async () => {
+    const schemas = await vi.importActual<typeof import("@marketplace/schemas")>("@marketplace/schemas");
+    let started!: () => void, release!: () => void;
+    const requested = new Promise<void>(resolve => { started = resolve; });
+    const held = new Promise<void>(resolve => { release = resolve; });
+    vi.doMock("@marketplace/schemas", async () => { started(); await held; return schemas; });
+    const auth = await setup(); auth.saveAdminSession(sessionA); auth.current.mockResolvedValue(sessionA);
+    const pending = auth.restoreAdminSession();
+    await requested; auth.saveAdminSession(sessionB); release();
+    await expect(pending).rejects.toThrow("Состояние входа изменилось");
+    expect(auth.readAdminSession()?.sessionId).toBe(sessionB.sessionId);
+    expect(auth.location.replace).not.toHaveBeenCalled();
+  });
+
+  it("preserves the selected login when the validation chunk cannot load", async () => {
+    vi.doMock("@marketplace/schemas", () => { throw new Error("validation chunk unavailable"); });
+    const auth = await setup(); auth.saveAdminSession(sessionA); auth.current.mockResolvedValue(sessionA);
+    // Vitest wraps a rejected module factory, preserving the chunk error as its cause.
+    await expect(auth.restoreAdminSession()).rejects.toMatchObject({ cause: { message: "validation chunk unavailable" } });
+    expect(auth.readAdminSession()?.sessionId).toBe(sessionA.sessionId);
+    expect(auth.location.assign).not.toHaveBeenCalled();
+  });
+
   it("preserves a newer login when the old logout receipt arrives", async () => {
     const auth = await setup(); auth.saveAdminSession(sessionA);
     vi.stubGlobal("BroadcastChannel", undefined);

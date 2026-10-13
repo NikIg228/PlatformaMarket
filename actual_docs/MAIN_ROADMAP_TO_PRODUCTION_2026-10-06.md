@@ -695,7 +695,7 @@ NOT_RUN в остальных строках — проверки именно �
 
 | Пакет | Реализация | Проверки | Публикация | CI пакета | Зависимость / следующий шаг |
 | --- | --- | --- | --- | --- | --- |
-| R7.7.1 Shell/auth/URL | PARTIAL: готов вход | BASE: LOCAL_PASS входа | BASE:55744ff/1ff5d98 | BASE: FAIL1ff5d98; новый NOT_RUN | Сверить auth evidence, принять shell/карту URL и выполнить перенос |
+| R7.7.1 Shell/auth/URL | PARTIAL: auth37fa69a; shell LOCAL_PASS | Shell browser5/real auth/consumers и Admin bundle PASS | Auth37fa69a; shell publication pending | Auth b197d8d FAILURE; shell NOT_RUN | Публикация/CI shell; карта URL .3 отдельно |
 | R7.7.2 Показатели/возможности | BASE: текущие панели | NOT_RUN | BASE:1ff5d98 | NOT_RUN | Семантика totals и безопасная capability projection |
 | R7.7.3 Организации/доступ | BASE: membership/допуск | NOT_RUN | BASE:1ff5d98 | NOT_RUN | Матрица операторских действий и list/detail contract |
 | R7.7.4 Каталог | BASE: модерация/редакторы | NOT_RUN | BASE:1ff5d98 | NOT_RUN | Полный поиск/paging, перенос без потери доменных guards |
@@ -721,6 +721,11 @@ DoD: оператор находит любой разрешённый объе�
     R7.2.1 имеет отдельный LOCAL_PASS: [session identity, logout/recovery и safe return](applications/auth-session-navigation.md).
     Новая оболочка и её CI остаются отдельной границей, прежний PASS их не закрывает.
   - [ ] **R7.7.1.2** Оболочка/UI: согласовать экраны по DESIGN_SYSTEM, реализовать sidebar/profile/header/drawer и фокус; проверить короткую/длинную страницу и shared consumers.
+    14.10: реализовано opt-in shared AppShell/Admin composition; targeted browser5,
+    real login/logout, screenshots/computed styles и default consumer PASS.
+    Admin bundle исправлен:1033817raw/314381gzip,15files PASS; review PASS.
+    Приёмка открыта до публикации/CI; прежний общий CI FAILURE не снят.
+    Evidence/попытки — [технический журнал](applications/admin-implementation-log.md).
   - [ ] **R7.7.1.3** Навигация: принять карту старых и новых URL, уведомлений и объектов; проверить прямой вход, refresh, Back/Forward и доступный возврат без потери контекста.
 
 - [ ] **R7.7.2** Достоверный рабочий стол и статусы возможностей (агрегаты ADM-02,

@@ -1,7 +1,7 @@
 "use client";
-import { DmAction } from "@marketplace/ui/controls";
+import { DmAction } from "@marketplace/ui/actions";
 
-import { IdentitySettings } from "./identity-settings";
+
 
 
 import { BuildingShop24Regular } from "@fluentui/react-icons/svg/building-shop";
@@ -12,11 +12,14 @@ import { DocumentTable24Regular } from "@fluentui/react-icons/svg/document-table
 import { PeopleTeam24Regular } from "@fluentui/react-icons/svg/people-team";
 import { Settings24Regular } from "@fluentui/react-icons/svg/settings";
 import { ShieldLock24Regular } from "@fluentui/react-icons/svg/shield-lock";
-import { AppShell, DmButton, ActionFeedback } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/actions";
+import { ActionFeedback } from "@marketplace/ui/action-feedback";
+import { AdminShell } from "./admin-shell";
 import { frontendFeatures } from "@marketplace/api-client";
 import { useEffect, useState, type ReactNode } from "react";
 import styles from "./page.module.css";
 import {
+  IdentitySettings,
   AgreementOperations,
   AuditOperations,
   CatalogFoundation,
@@ -41,7 +44,6 @@ import {
 } from "./admin-section-components";
 import { LiveMetrics } from "./live-metrics";
 import { OperationQueue } from "./operation-queue";
-import { logoutAdmin, readAdminSession } from "./admin-auth";
 
 import { useAdminAccess } from "./use-admin-access";
 import { OperatorNotifications } from "./operator-notifications";
@@ -121,8 +123,6 @@ const modules: Array<{ id: SectionId; title: string; description: string; icon: 
 
 export default function OperationsWorkspace() {
   const access = useAdminAccess();
-  const [actionError, setActionError] = useState("");
-  const [logoutPending, setLogoutPending] = useState(false);
   const [active, setActive] = useState<SectionId>("overview");
 
   const navigate = (id: SectionId) => {
@@ -186,17 +186,11 @@ export default function OperationsWorkspace() {
   };
 
   return (
-    <AppShell
-      productName="PlatformaMarket"
-      productMark="PM"
-      workspaceLabel="Операторский кабинет"
-      userName={readAdminSession()?.user?.displayName ?? "Команда PlatformaMarket"}
-      userMeta="Оператор"
+    <AdminShell
       navigation={navigation}
-      activeNavigation={active}
+      active={active}
+      title={meta.title}
       onNavigate={(id) => navigate(id as SectionId)}
-      logoutPending={logoutPending}
-      onLogout={() => { if (logoutPending) return; setLogoutPending(true); setActionError(""); void logoutAdmin().catch(() => { setLogoutPending(false); setActionError("Не удалось выйти. Повторите выход после восстановления соединения."); }); }}
       actions={
         <>
 
@@ -204,16 +198,13 @@ export default function OperationsWorkspace() {
         </>
       }
     >
-      <div className={styles.content}>{actionError ? <ActionFeedback tone="error" description={actionError} /> : null}
+      <div className={styles.content}>
         <div className={styles.heading}>
-          <div className={styles.headingCopy}>
-            <h1 className={styles.pageTitle}>{meta.title}</h1>
-            <span className={styles.muted}>{meta.description}</span>
-          </div>
+          <p className={styles.description}>{meta.description}</p>
           {active === "organizations" ? <OrganizationQuickCreate /> : null}
         </div>
         <div className={styles.sectionStack}><OperationObjectFocus />{content[active]}</div>
       </div>
-    </AppShell>
+    </AdminShell>
   );
 }

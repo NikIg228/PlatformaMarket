@@ -34,6 +34,7 @@ describe("Admin performance boundaries", () => {
     expect(source).toContain('from "./live-metrics"');
     expect(source).toContain('from "./operation-queue"');
     expect(source).not.toContain('from "./commerce-analytics"');
+    expect(source).not.toContain('from "./identity-settings"');
     expect(source).not.toMatch(/from "\.\/(?:supplier|catalog|platform|trust|audit|foundation|agreement|resource|organization|integration|connector)-/);
   });
 
@@ -53,6 +54,17 @@ describe("Admin performance boundaries", () => {
     expect(source).toContain('import("./support-operations")');
     expect(source).toContain('import("./operation-object-focus")');
     expect(source).toContain('import("./commerce-analytics")');
-    expect(dynamicImports).toHaveLength(21);
+    expect(source).toContain('import("./identity-settings")');
+    expect(dynamicImports).toHaveLength(22);
+  });
+
+  it("keeps domain forms and schemas out of eager shell imports", () => {
+    const eagerConsumers = ["page.tsx", "providers.tsx", "admin-shell.tsx", "admin-section-components.tsx", "operation-queue.tsx", "operation-assignment.tsx", "operator-notifications.tsx", "use-admin-access.ts"];
+    for (const file of eagerConsumers) {
+      expect(readFileSync(join(adminApp, file), "utf8"), file).not.toMatch(/from ["']@marketplace\/ui["']/);
+    }
+    const restore = readFileSync(join(adminApp, "admin-auth.ts"), "utf8");
+    expect(restore).not.toMatch(/import \{[^}]*currentOperatorSessionSchema/);
+    expect(restore).toContain('await import("@marketplace/schemas")');
   });
 });

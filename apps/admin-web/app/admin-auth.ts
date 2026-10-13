@@ -1,7 +1,7 @@
 import type { ApiContext } from "@marketplace/api-client";
 import { unifiedFrontend } from "@marketplace/api-client";
 import { MarketplaceApiClient, revokeWorkspaceSession, workspacePath } from "@marketplace/api-client";
-import { currentOperatorSessionSchema, type OperatorSession } from "@marketplace/schemas";
+import type { OperatorSession } from "@marketplace/schemas";
 import { adminLoginUrl } from "./admin-navigation";
 
 const SESSION_KEY = "dentmarket_admin_session";
@@ -39,7 +39,8 @@ export function restoreAdminSession() {
   if (!restoring) {
     const started = generation;
     const expected = readAdminSession();
-    restoring = new MarketplaceApiClient(apiUrl, {}).currentOperatorSession().then(payload => {
+    restoring = new MarketplaceApiClient(apiUrl, {}).currentOperatorSession().then(async payload => {
+      const { currentOperatorSessionSchema } = await import("@marketplace/schemas");
       if (started !== generation) throw new Error("Состояние входа изменилось. Повторите проверку.");
       const session = currentOperatorSessionSchema.parse(payload);
       if (expected && session && !sameIdentity(expected, session)) throw sessionChanged(expected);

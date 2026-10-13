@@ -10,7 +10,13 @@
     "./styles.css": "./src/styles.css",
     "./provider": "./src/provider.tsx",
     "./controls": "./src/controls.tsx",
-    "./link-button": "./src/link-button.ts"
+    "./link-button": "./src/link-button.ts",
+    "./primitives": "./src/primitives.tsx",
+    "./format": "./src/format.ts",
+    "./action-feedback": "./src/action-feedback.tsx",
+    "./app-shell": "./src/app-shell.tsx",
+    "./actions": "./src/actions.tsx",
+    "./native-select": "./src/native-select.tsx"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit",

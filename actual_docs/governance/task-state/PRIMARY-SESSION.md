@@ -1,6 +1,172 @@
 # PRIMARY-SESSION — PlatformaMarket
 
-## 14.10.2026 — R7.2.1 / ACTIVE, авторизация и навигация
+### 14.10 / 03:20 — R7.7.1.2 LOCAL_PASS, публикация готовится
+
+Final Admin rebuild после racefix PASS1033817raw/314381gzip/15files. Unified
+isolated build PASS с baked rewrite4113. Final browser attempt3 PASS5/16.5s,
+actual operator login/settings/analytics/logout и DB REVOKED PASS.12PNG/computed
+и drawer/profile обновлены; primary visual review PASS. Legacy Fluent actual
+consumer harness PASS. UI read-only final review READY, blockers0; lint adapter
+allowlist и regression прочитаны reviewer. Lint-policy3/UI-contract4/371 PASS.
+Owned3103/3104/4113 stopped; user3000PID13588/4012PID8200 preserved.
+Stage только согласованный shell+dependent bundle пакет и его docs. Foreign
+Matrix/2cards/2oldE2E/output остаются вне commit. Общий CI b197 FAILURE сохранён,
+пять dependent auth fixtures ещё не изменялись, catalog BLOCKED6 не перезапускать.
+
+### 14.10 / 03:15 — dependent Admin bundle PASS, final browser pending
+
+Primary sole writer, UI strict read-only review READY. Exact shared primitive/format/
+control bodies вынесены в leaf modules с обратными exports; IdentitySettings и
+assignment panel lazy; action-only schema import сохраняет parsing/guards.
+Admin budget attempt2 FAIL1105281raw/333415gzip; attempt3 PASS1033799raw/314367gzip,
+15files (лимиты1050000/330000/20 не менялись). После PASS review выявил pending-close
+race: loader мог вновь открыть окно; исправлены open guard + effect cleanup.
+Final affected Admin build revalidation запущен только из-за этого runtime fix.
+UI10 tests, client28, Admin auth12 (первая mock-error assertion исправлена),
+performance4 и UI/client/Admin types PASS. Scoped lint сначала FAIL: перенесённые
+shared control adapters отсутствовали в exact allowlist; добавлены только два
+adapter paths, запрет feature/native controls сохранён. Lint + policy2 + UI-contract
+4/371files PASS. Legacy actual Fluent harness PASS после extraction.
+Unified isolated build PASS, но runtime preflight выявил неверный baked rewrite:
+INTERNAL_API_URL не был задан во время build (runtime env не заменяет manifest).
+Final build повторён с4113 и harness теперь проверяет manifest до старта fixtures.
+Browser final-input attempt1 SETUP_FAIL missing DB env; attempt2 shell3 + delayed
+chunk close/reopen PASS, abortedchunk test FAIL (loader auto-retried request),
+real synthetic login FAIL на неверном rewrite. Attempt3 идёт с правильным built
+rewrite и удержанием отказа до явного retry. Проверки на прежних inputs не сброшены.
+Рабочие данные не изменялись; синтетические учётные записи только auditDB,
+неуспешный login ошибочного стенда не является приёмкой auth. User processes intact.
+До final browser receipt/review/docs и commit/push пакет остаётся OPEN.
+
+### 14.10 / 02:59 — primary sole writer, dependent bundle remediation
+
+UI подтвердил полный freeze и cleanup; primary принял writer обратно.
+Read-only review кода/manifest/final desktop, drawer, mobile screenshots не выявил
+дополнительных shell замечаний. R7.7.1.2 acceptance остаётся OPEN: Admin budget
+attempt1 FAIL1811161raw/502658gzip. Baseline — текущий frozen shell на b197d8d,
+не исторический standalone PASS30.09. Публикации пока нет.
+План изменения: убрать широкий UI/schema import graph из начального Admin bundle,
+сохранить прежние root exports, markup, guards, parsing и lazy section loading.
+Риск — shared consumers и новое async окно при загрузке schema. Generation check
+в restore обязателен после последнего await, перед parse/sameIdentity/save.
+Проверки: UI/Admin/client auth tests и types, lint/UI-contract, standalone build
+с неизменным budget (следующая attempt2); затем isolated unified build и shell/
+auth browser checks для изменённых входов. Следом — отдельные зависимые CI fixtures;
+старый catalog BLOCKED6 не перезапускать. UI остаётся строго read-only reviewer.
+Foreign Matrix/2cards/2oldE2E/output сохраняются. Рабочая БД и user processes
+не меняются; backend runtime behavior/migrations не входят в этот пакет.
+
+### R7.7.1.2 — review packet UI02:55, writer ещё UI до явного возврата
+
+Shell implementation завершён, acceptance OPEN из-за Admin bundle FAIL.
+UI8 + SSR2 + Admin17 PASS, scoped types/lint PASS; unified isolated build PASS,
+повтор после shared CSS correction PASS. Standalone Admin compile/types PASS,
+встроенный budget FAIL1811161raw/502658gzip; attempt1, baseline b197 не доказан.
+Primary готовит dependent bundle remediation read-only, UI scope не расширяет.
+Browser attempt1 PASS3+real operator login/logout; visual correction вернула
+left/grid links/selected background и full-width drawer footer. Повторный setup
+FAIL npm invocation (тесты не начались), исправленный повтор PASS3/9.6s + real
+login/logout/DB REVOKED. 12viewport PNG + drawer/profile/computed manifest:
+output/playwright/admin-shell-2026-10-14/manifest.json. Порты3103/4113 остановлены.
+Legacy default actual-component Fluent harness attempt1 locator ambiguity FAIL,
+attempt2 PASS navigation/Escape/return/logout и2PNG; это не whole-app evidence.
+Порт3104 остановлен. User3000/4012 сохранены. Final verify:ui-contract4+368PASS,
+diff check PASS. Details — applications/admin-implementation-log.md.
+Никаких commit/push: primary review и отдельное решение по dependent gate нужны.
+Existing admin-rebuild.spec.ts использует старую неполную mock identity — адресные
+shell3 tests используют полную identity; старый spec не запущен заново и не PASS.
+Перед возвратом writer отправить exact paths/evidence/known gap primary;
+дальнейшие writes UI только пока назначение не возвращено явно.
+
+### R7.7.1.2 — промежуточный checkpoint writer UI02:43
+
+Opt-in AppShell workspace и Admin composition реализованы; legacy shell вынесен
+без изменения разметки, default не переключён. Shared contract/theme/index8 PASS;
+новый SSR legacy-consumer test attempt1 FAIL (Vitest/tabster ESM export),
+attempt2 PASS2 с существующим подходом mock Fluent; настоящий focus только browser.
+UI/Admin types PASS, Admin regressions17 PASS, targeted lint/verify:ui-contract
+PASS4+368files. Новые browser tests — admin-shell.spec.ts, включён в существующий
+admin-rebuild config; пока NOT_RUN. Изолированные builds/actual browser впереди.
+Assets: используется import существующего buyer brand webp (без копии), чтобы
+логотип работал и на standalone Admin. Auth/API/contracts не менялись.
+
+Получен actual receipt primary: b197d8d CI38469520118 FAILURE, verify115544652416
+Flow B3 7/7PASS, verify:web95PASS/12FAIL; Security38469520083/PG/containers SUCCESS.
+Пять старых catalog backlink, старый sticky header, CORE02policytext требуют своей
+границы; пять зависимых auth fixture/URL expectations готовит primary read-only.
+UI не меняет foreign2E2E и не сбрасывает catalog BLOCKED6. R7.2.1 LOCAL_PASS, не[x].
+
+### R7.7.1.2 — план writer UI перед реализацией
+
+Checkout проверен: canonical main b197d8d, writer UI назначен primary02:35.
+Scope: opt-in workspace variant существующего AppShell, Admin composition,
+sidebar/header/profile/mobile drawer/focus; auth и полная URL-синхронизация не меняются.
+Файлы: packages/ui/src/{index.tsx,app-shell.tsx,styles.css},
+apps/admin-web/app/{page.tsx,admin-shell.tsx,page.module.css}, целевые shell E2E.
+Legacy default AppShell сохраняет API/разметку; новый вариант использует те же
+DmButton/link adapters, Fluent Menu/OverlayDrawer. Никаких новых зависимостей.
+Риск: общие consumers, portal/focus, короткий viewport, logout recovery.
+
+Паспорт: market-components-v1/neutral-fill-v1/platforma-semantic-light-v1;
+Manrope body14/400/1.5, h120/600/1.4 (mobile18), controls44/8radius,
+spacing4/8/12/16/24/32, focus1px offset2. Аналоги: workspace.tsx/module.css,
+MessageHeader/ProfileMenu, document-detail-panel OverlayDrawer. Sidebar200,
+logo144; desktop header61; mobile brandheader73 + pageheader61 по actual baseline,
+контент32desktop/24tablet/mobile24vertical+16horizontal, breakpoint760/761.
+Baseline: output/playwright/admin-shell-baseline-2026-10-14/manifest.json,
+12PNG на неизменном UI source37fa69a при checkoutb197d8d. Это не acceptance.
+Выполнить1440x900/1440x695/768x900/390x844, дополнительно760/761, длинный раздел,
+profile portal/closed drawer tab order/Escape/return focus и default consumer.
+
+Проверки: UI contract/theme, Admin login/auth/navigation/performance regressions;
+ui/admin/web и affected legacy consumer types, scoped lint + verify:ui-contract;
+isolated unified+Admin build один раз после coherent change; targeted browser
+на owned ports, synthetic disposable audit DB, actual login/logout smoke.
+Исчерпанный catalog BLOCKED6 не запускается; прежний web-bundle FAIL сохраняется,
+не превращается в PASS и не расширяет задачу. Review primary до commit/push.
+Все новые gates пока NOT_RUN, attempts0. Foreign Matrix/2карточки/2старыхE2E/output
+не включать в staged. Source/DB/owned processes не копируются в другое дерево.
+
+## 14.10.2026 — R7.7.1.2 / ACTIVE; R7.2.1 LOCAL_PASS, CI pending
+
+02:35: writer назначен PlatformaMarket UI (01a1369b-2bfb-7f33-8f32-b9bc119fda3a)
+для согласованного READY-пакета R7.7.1.2: shared opt-in AppShell, Admin
+sidebar/header/profile/drawer/focus и адресные проверки. Primary прекращает все
+файловые записи до возврата writer; только read-only CI/review/подготовка R7.7.2.
+Это исполнение постоянного поручения владельца двумя задачами, не передача primary.
+План: исправить недоступную при коротком viewport навигацию и выход, унифицировать
+оболочку по существующим tokens/contracts; риск shared consumers и keyboard/focus.
+Gates — READY-пакет UI, targeted types/tests/lint/build и isolated browser,
+screenshot/computed styles; старые R7.2 BLOCKED6 и bundle FAIL не переименовываются.
+Общий CI38469520118 ещё IN_PROGRESS: receipt будет отдельно передан writer.
+Auth LOCAL_PASS не объявляется общим CI PASS. Независимый shell начинается
+при завершённых локальных обязательных auth gates; ожидание общего CI не является
+продуктовой зависимостью. Foreign3docs/2E2E/output сохраняются без staging.
+
+
+02:29: Security38469520083 SUCCESS; CI38469520118 verify115544652416 ещё
+IN_PROGRESS, PG115544652070 и containers115544652453/115544652502 SUCCESS.
+Для следующего shell пакета primary снял baseline attempt1 SUCCESS:12PNG+manifest
+output/playwright/admin-shell-baseline-2026-10-14 (Admin analytics/settings и clinic
+settings,1440x900/1440x695/768x900/390x844). Реальный isolated login, build37fa69a
+на source-unchanged b197d8d, ownAPI4113/web3103; synthetic operator role получила
+permissions только внутри созданной audit organization. Ownпроцессы остановлены.
+Просмотрены Adminanalytics1440x695 и clinicsettings390x844: Adminaside250×1391,
+logout y1329; clinicdesktopaside200/header61/h120/600, mobilebrandheaderactual73
+при min68 + pageheader61/h118/600. Controls44/radius8; inputmasked для privacy.
+Baseline не PASS старого shell; drawer visibility/closedtaborder не доказаны
+одними rects. UI получил evidence, остаётся read-only до назначения.
+
+02:22:4d60acb и b197d8d6597352db7aa0cc7af6839c0ab8500256 опубликованы main,
+remoteSHA совпал. Новый CI38469520118/Security38469520083 IN_PROGRESS.
+В b197d8d ровно6 reviewed docs; чужие3docs/старые2E2E/output не включены.
+UI read-only bundle review READY: прежний широкий client UI barrel тащит
+DocumentUploadPanel и schemas/Zod в home/catalog. По CI auth добавил лишь2907raw/
+706gzip при тех же27files. Кандидат будущего пакета — узкие shared leaf exports
+и action-only schema import logout с сохранением parse; source-only гипотеза,
+не измеренный fix и не разрешение сброса catalog BLOCKED6. Shell остаётся READY.
+Primary sole writer ждёт CI receipt, готовит invoice contract read-only;
+следующая запись в журнал по bundle — вместе с выбором соответствующего пакета.
 
 02:19: test fix commit4d60acb создан (ровно2 E2E paths+auth evidence).
 Далее docs inventory/status commit6 owned docs и push обоих, actual CI.

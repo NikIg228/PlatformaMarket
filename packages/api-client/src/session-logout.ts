@@ -1,5 +1,3 @@
-import { sessionLogoutResponseSchema } from "@marketplace/schemas";
-
 /** Revoke only the captured target; the server proves its optional origin login. */
 export async function revokeWorkspaceSession(apiUrl: string, session: { sessionId?: string; accessToken?: string } | null,
   renewProof?: () => Promise<string | undefined>): Promise<void> {
@@ -24,6 +22,7 @@ export async function revokeWorkspaceSession(apiUrl: string, session: { sessionI
     payload = await response.json().catch(() => null);
   }
   if (!response.ok) throw new Error("Сервер не подтвердил выход. Если вход истёк или изменён в другой вкладке, войдите в выбранный аккаунт; при сетевой ошибке повторите попытку.");
+  const { sessionLogoutResponseSchema } = await import("@marketplace/schemas");
   const receipt = sessionLogoutResponseSchema.safeParse(payload);
   if (!receipt.success || receipt.data.sessionId !== sessionId) throw new Error("Сервер не подтвердил отзыв текущей сессии. Повторите попытку.");
   if (typeof window !== "undefined" && typeof BroadcastChannel !== "undefined") {

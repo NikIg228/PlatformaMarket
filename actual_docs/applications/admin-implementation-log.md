@@ -41,10 +41,80 @@ E2E types/lint и два реальных CSV/Excel publication flow на audit 
 commit4d60acb, новый CI pending. Рабочая migration и перезапуск пользовательского runtime
 не выполнялись. R7.7.1 целиком остаётся открытым.
 
-Для R7.7.1 подготовлен read-only план оболочки и навигации. Рекомендуемый вариант:
-сохранить совместимые URL с `?section`, использовать меню текущего пользователя
-и выхода без введения нового profile API. Реализация и UI-приёмка этого пакета
-ещё не выполнены; checkbox остаётся открытым.
+## 14.10 / R7.7.1.2 — оболочка реализована, приёмка открыта
+
+На `main@b197d8d` + shell diff добавлен opt-in `AppShell variant="workspace"`:
+фиксированный sidebar200px с собственным scroll, один заголовок, профиль/выход
+в sticky header, мобильный Fluent OverlayDrawer с Escape и возвратом фокуса.
+Старые consumers используют прежний default AppShell. Admin composition сохраняет
+`?section`, настоящий href/открытие в новой вкладке, существующие auth/logout
+и recovery; новый profile API не введён. Полная карта URL/объектов остаётся R7.7.1.3.
+
+UI contract/theme/index8 и legacy SSR2 PASS; Admin17 unit PASS; types UI/Admin/
+unified build/buyer/supplier/E2E, scoped ESLint и `verify:ui-contract`4+368files PASS.
+`npm run build --workspace @marketplace/web` с isolated adapter PASS; после
+исправления каскада shared navigation CSS повторная сборка PASS. Standalone
+`npm run build --workspace @marketplace/admin-web` compile/types PASS, но встроенный
+`verify-admin-bundle` FAIL:1811161raw/502658gzip против1050000/330000. Gate открыт;
+сопоставимого pre-shell receipt на b197d8d нет, старый PASS не подставляется.
+
+Адресный `admin-shell.spec.ts`:3 группы PASS, повтор после CSSfix3 PASS за9.6s.
+Проверены короткая/длинная страница,1440/768/390 и граница760/761, профиль после
+scroll, focus trap/closed tab order/resize, реальная ссылка, pending/error/retry
+выхода. В отдельной disposable audit DB выполнены настоящий operator login,
+переходы analytics/settings и logout с проверкой REVOKED в БД. Команда harness:
+`npm run db:test -- exec -- node .tmp/admin-shell-2026-10-14/browser.mjs`.
+Один повторный запуск не начался из-за ошибочного npm invocation; после исправления
+команды — PASS, ошибки приложения в этом запуске не было.
+
+Снимки12 viewport + drawer/profile и computed styles:
+`output/playwright/admin-shell-2026-10-14/manifest.json`. Визуально проверены
+sidebar/selected links, drawer footer, mobile header и длинная settings page.
+Default AppShell дополнительно проверен в browser harness с настоящим Fluent
+Provider, navigation/Escape/return focus/logout callback; это компонентная
+совместимость, не повторная приёмка всего legacy приложения. Harness attempt1
+FAIL из-за неоднозначного locator двух кнопок закрытия, attempt2 PASS;2 PNG +
+`output/playwright/admin-shell-2026-10-14/legacy/manifest.json`.
+
+Собственные3103/3104/4113 остановлены, пользовательские3000/4012 сохранены.
+Commit/push не выполнены: требуется primary review и разбор Admin bundle FAIL.
+Общий CI b197d8d38469520118 FAILURE (Flow B3 7/7PASS, verify:web95PASS/12FAIL),
+Security/PG/containers SUCCESS; это receipt предыдущих inputs, не CI оболочки.
+R7.7.1.2 checkbox открыт. UI не расширял scope на bundle/auth fixtures.
+
+### 14.10 — primary review и устранение зависимого bundle gate
+
+Shared primitives/format/actions/select вынесены в leaf modules без изменения
+реализаций; старые root/controls exports сохранены. Hot Admin shell использует
+узкие imports, IdentitySettings/assignment загружаются по действию. Runtime schemas
+restore/logout загружаются перед прежней валидацией; generation check остаётся после
+последнего await. Regression: поздняя schema не заменяет новую сессию, ошибка загрузки
+сохраняет выбранную. Backend/API/данные/права не менялись.
+
+Admin bundle attempt2 FAIL1105281/333415; attempt3 PASS1033799/314367.
+Review выявил close/import race; open guard/cleanup исправлены. Final rebuild
+`npm run build --workspace=@marketplace/admin-web` PASS1033817raw/314381gzip,
+15files при прежних лимитах1050000/330000/20. Лимиты не менялись.
+UI10, client logout/workspace28, Admin auth12, performance4 и scoped types PASS.
+ESLint exact adapter allowlist обновлён для двух перенесённых implementations;
+новый regression подтверждает, что feature modules по-прежнему не могут импортировать
+Fluent/native controls. Scoped lint, lint-policy3, UI-contract4/371files PASS.
+
+Final unified build с isolated adapter/INTERNAL_API_URL4113 PASS. Browser new-input
+attempt1 SETUP_FAIL (DB env), attempt2: shell3/close race PASS, chunkfailure fixture
+FAIL из-за automatic retry, actual login FAIL из-за baked API rewrite по умолчанию.
+До attempt3 build получил явный4113; harness проверяет manifest до fixtures, test
+удерживает отказ всех автоматических retry до явного действия. Attempt3 PASS5/16.5s,
+включая pending close/no reopen/return focus и error/retry/same task. Настоящий
+operator login/analytics/settings/logout + DB REVOKED PASS;12viewport screenshots,
+drawer/profile/computed styles обновлены и просмотрены. Legacy actual Fluent harness
+после leaf extraction PASS. Команда browser — та же `npm run db:test -- exec -- node
+.tmp/admin-shell-2026-10-14/browser.mjs`; logs browser-perf-3/build-admin-final-race
+в `.tmp/admin-shell-2026-10-14/`. Owned3103/3104/4113 остановлены; user3000/4012 intact.
+
+Read-only UI review подтвердил сохранность shared implementations и исправление
+race; primary visual review PASS. Результат LOCAL_PASS, публикация/CI ещё pending.
+Прежний общий CI FAILURE и catalog BLOCKED6 не переопределены.
 
 ## Как дополнять журнал
 

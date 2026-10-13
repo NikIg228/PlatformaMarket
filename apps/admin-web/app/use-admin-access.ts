@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { MarketplaceApiClient, workspacePath } from "@marketplace/api-client";
 import { adminLoginUrl } from "./admin-navigation";
-import { errorMessage } from "@marketplace/ui";
+import { errorMessage } from "@marketplace/ui/format";
 import { ADMIN_SESSION_ENDED, adminApiContext, clearAdminSession, isLocalAdminDevelopment, readAdminSession, restoreAdminSession } from "./admin-auth";
 import { hasOperatorOrganizationAccess } from "./login/admin-login-view-model";
 

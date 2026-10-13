@@ -121,8 +121,9 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--dm-space-6);
-  margin-bottom: var(--dm-space-8);
+  margin-bottom: var(--dm-space-6);
 }
+.description { margin: 0; color: var(--dm-text-secondary); font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); }
 .headingCopy {
   display: grid;
   gap: var(--dm-space-2);

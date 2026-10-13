@@ -6,7 +6,7 @@ import { ErrorCircle20Regular } from "@fluentui/react-icons/svg/error-circle";
 import { Warning20Regular } from "@fluentui/react-icons/svg/warning";
 import { Info20Regular } from "@fluentui/react-icons/svg/info";
 import { Dismiss20Regular } from "@fluentui/react-icons/svg/dismiss";
-import { DmButton } from "./controls";
+import { DmButton } from "./actions";
 import { useConnectionMonitor } from "./use-connection-monitor";
 import { offlineMessage } from "./feedback-error";
 

@@ -2,7 +2,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MarketplaceApiClient } from "@marketplace/api-client";
 import type { NotificationInbox } from "@marketplace/schemas";
-import { ActionFeedback, DmButton, DmDialog, EmptyState, LoadingState, errorMessage } from "@marketplace/ui";
+import { ActionFeedback } from "@marketplace/ui/action-feedback";
+import { DmButton } from "@marketplace/ui/actions";
+import { DmDialog, EmptyState, LoadingState } from "@marketplace/ui/primitives";
+import { errorMessage } from "@marketplace/ui/format";
 import { adminApiContext, readAdminSession } from "./admin-auth";
 
 export function OperatorNotifications({ onSupport }: { onSupport: () => void }) {
