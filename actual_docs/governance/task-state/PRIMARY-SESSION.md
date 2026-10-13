@@ -2,6 +2,58 @@
 
 ## 14.10.2026 — R7.2.1 / ACTIVE, авторизация и навигация
 
+02:19: test fix commit4d60acb создан (ровно2 E2E paths+auth evidence).
+Далее docs inventory/status commit6 owned docs и push обоих, actual CI.
+Owned3103/4113 завершены; только user3000 PID13588/4012 PID8200 слушают.
+git diff --check/staged check PASS; общий auth source неизменён, сборка не повторялась.
+Primary sole writer; UI read-only READY. Ни migration рабочей БД, ни deploy не было.
+
+02:17: зависимая Flow B3 fixture исправлена; E2E typecheck и scoped ESLint PASS.
+Адресный запуск .tmp/auth-navigation-2026-10-14/flow-b3.mjs через db:test:
+попытка1 FAIL config import.meta в CommonJS (тесты не начались); __dirname исправлен,
+попытка2 PASS CSV/Excel publication2/2 за36.1s. Production source/build не менялись.
+Temporary config наследует flow-b3 unified, точные isolated DB preflight,
+buyer/operator membership, owned ports3103/4113 и scoped storage; user3000/4012
+сохранены. UI read-only review READY: штатный login всегда записывает полную identity,
+guard ослаблять не нужно. Fixture не покрывает refresh/logout/MFA и не выдаётся за них.
+Следующий шаг: review/diff/links, отдельный test fix commit и docs inventory commit,
+обычный push main и actual CI нового SHA. Foreign3docs и старые2E2E не staging.
+
+02:12: CI38466389600 завершён FAILURE. verify job115534172094 дошёл до Flow B3:
+5 PASS/2 FAIL CSV+Excel publication, ожидание Admin «Загрузка товаров». Причина:
+operator-session fixture сохраняет только accessToken+organizationId; новая
+sameIdentity требует sessionId/user.id. План адресного исправления: дополнить
+реальную test session identity, E2E types/lint и2 затронутых publication tests
+на owned3103/4113 с неизменным production build и disposable audit DB. Новый
+dependent Flow B3 gate: запусков локально0; старый catalog BLOCKED6 не затрагивать.
+Также лог показал web bundle budget FAIL27files/2020134raw/550629gzip на home/catalog;
+pipeline с tee продолжился, это не PASS. Сохранить отдельный риск и не повышать budget.
+Полный npm test/types/lint/build в CI прошёл; Security/PostgreSQL/containers PASS.
+UI попросил read-only review fixture; sole writer остаётся primary. ZIP diagnostics
+11849093000 сохранён .tmp/auth-navigation-2026-10-14/ci-37fa69a.zip.
+
+Продолжение02:08: sole writer по-прежнему primary; UI idle/read-only, пакет
+R7.7.1.2 READY, назначения writer ещё нет. Код после37fa69a не менялся.
+Ожидается только общий verify CI38466389600; Security/PostgreSQL/container builds
+SUCCESS. Новые локальные docs hunks обновляют опубликованный SHA/CI и сохраняют
+параллельную подготовку: R7.6.1.1 DWF-01–11 инвентаризация UI reviewed primary,
+соответствующий docs-only outcome отмечен выполненным, публикация pending.
+R7.6.3.1: официальные SDK/KNCA Basics/Smart Bridge источники сверены с кодом;
+реальный CMS prototype NOT_RUN, SDK/test certs и mobile access неизвестны.
+Журнал document-workflow-implementation-log и ROADMAP-QUESTIONS дополнены.
+Local links6docs и отдельно document journal PASS; docs diff check до последних
+inventory edits PASS, финальный diff check ещё нужен. Runtime rerun не требуется.
+
+POST-PUSH:37fa69abec2bb5a8ef94d0eee1d9ba6a21bd159a опубликован main, ls-remote
+совпал. Commit49 файлов — только43 auth code/test paths +6 reviewed docs;
+чужие Matrix/2карточки и2 прежних E2E WIP остались unstaged. CI38466389600 и
+Security38466389627 SUCCESS. CI38466389600: PostgreSQL и обе container builds
+SUCCESS; только verify IN_PROGRESS (GitHub REST actions/runs по exact head_sha).
+Connector fetch_commit_workflow_runs фильтрует только pull_request, поэтому его
+пустой массив НЕ доказывает отсутствие push runs; combined statuses также не
+заменяют Actions checks. Следующий шаг — получить actual completion этих двух runs.
+Пользовательские3000 PID13588/4012 PID8200 сохранены;3103/4113 не слушают.
+
 ИТОГ ЛОКАЛЬНОГО ЭТАПА01:48: обязательные gates LOCAL_PASS, publication/CI pending.
 Все owned процессы завершены, command sessions завершены. Frontend production
 build PASS; exact next-env backup восстановлен, файл clean. UI/browser base5 groups

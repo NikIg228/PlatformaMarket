@@ -35,7 +35,10 @@ LOCAL_PASS: Admin unit12, affected types/lint, unified production build, реа�
 desktop/mobile сценарии safe return, A/B logout и changed-session notice;
 общие identity/PG/runtime/core-contract gates прошли. Точные команды, остальные
 сценарии и ограничения — [auth evidence](auth-session-navigation.md#реализация-и-локальная-приёмка1410).
-Публикация/CI ожидаются; рабочая migration и перезапуск пользовательского runtime
+Опубликовано37fa69a; Security/PG/containers PASS, общий CI FAILURE на неполной
+session identity в Flow B3 fixture (5 PASS/2 FAIL). Исправленный fixture прошёл
+E2E types/lint и два реальных CSV/Excel publication flow на audit DB;
+commit4d60acb, новый CI pending. Рабочая migration и перезапуск пользовательского runtime
 не выполнялись. R7.7.1 целиком остаётся открытым.
 
 Для R7.7.1 подготовлен read-only план оболочки и навигации. Рекомендуемый вариант:

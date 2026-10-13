@@ -6,7 +6,10 @@ Primary — единственный writer; PlatformaMarket UI готовит �
 Уточнения журналов/UI не отменяют постоянное исполнение roadmap. После отдельного
 BLOCKED R7.2 (6 попыток) начат независимый R7.2.1: destination, Admin identity/
 safe return, exact self logout и persistent origin login. Реализация и локальные
-unit/API/PG/runtime/core/types/build/browser gates PASS; публикация/CI pending.
+unit/API/PG/runtime/core/types/build/browser gates PASS; опубликовано37fa69a.
+Общий CI FAILURE: Flow B3 fixture требует полной identity; targeted fix LOCAL_PASS,
+commit4d60acb, новый CI pending;
+Security/PG/containers PASS. Прежний web-bundle budget FAIL также подтверждён.
 Основной browser5 групп PASS, дополнительно identity3/lifecycle2 PASS. Рабочая БД
 и пользовательские процессы не менялись; активация migration — отдельный scope.
 Детали, команды/попытки и remaining checks —
