@@ -20,6 +20,7 @@
 
 | Документ | Класс | Назначение |
 | --- | --- | --- |
+| [Workflow документооборота](domains/MARKET_DOCUMENT_WORKFLOW.md) | CURRENT | Профильная техническая спецификация13.10: согласованная цепочка, границы, открытые решения и приёмка; статусы исполнения в R0–R9 |
 | [FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md](FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md) | CURRENT | Приоритет №1: функциональная карта, целевые решения, совместный backend/UI DoD; checklist/status R0–R9 в реестре исполнения |
 | [Корневой README](../README.md) | CURRENT | Краткий вход |
 | [AGENTS](../AGENTS.md) | CURRENT | Границы и порядок работы |

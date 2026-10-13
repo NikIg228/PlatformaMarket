@@ -1,5 +1,31 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+## 13.10.2026 — MARKET-DOCUMENT-WORKFLOW / DOCS
+
+Владелец поручил сохранить согласованный документальный workflow и прямо подтвердил,
+что другая задача больше не активна. Единственный writer этого scope — primary
+`01a11758-1c55-7e52-bf15-2a04427aaf5d`; глобальная передача не выполняется.
+Исходный main `1ff5d985848e0bce206d8439f85057e47e6e1e85`, canonical folder подтверждена.
+Чужие dirty Matrix, CATALOG-PROMOTIONS-MESSAGES, PRODUCT-PAGE-PREVIEW-DATA и output
+сохраняются и не включаются в публикацию.
+
+Цель/DoD: [профильная спецификация](../../domains/MARKET_DOCUMENT_WORKFLOW.md)
+на основе последнего Word и прямого решения владельца; связь со сводками и R7.2,
+разделение принятых требований/открытых вопросов/статуса реализации.
+План проверок: docs-only, риск противоречий требований; сверка источников, локальных
+ссылок, diff hygiene и review собственного состава; затем commit/push по §8 и CI receipt.
+Код/БД/UI не изменяются, build/types/browser не требуются. Новая реализация,
+оценка сроков и закрытие R1/R7 не входят. Статус проверок/публикации — ниже по факту.
+
+Спецификация и навигация сохранены. Проверки13.10 на исходном HEAD + собственном
+docs diff: PowerShell Test-Path для281 локальной Markdown-ссылки — PASS;
+`git diff --check` — PASS. Сверка решений/границ/истории и review собственного
+состава — PASS; применены development-toolkit и практика Technical Writer
+(самодостаточная спецификация, разделение требований и evidence, ссылки на контекст).
+Build/types/DB/browser — NOT_RUN, docs-only. Следующий шаг: staged hygiene,
+commit/push восьми собственных файлов и CI receipt; затем ожидать отдельной задачи.
+Записи UI ниже — история другого scope и не поручение его продолжать.
+
 ## 13.10.2026 — CATALOG-PROMOTIONS-MESSAGES implementation
 
 Новое поручение13.10 после аудита: тот же исполнитель UI01a11795 перерабатывает
