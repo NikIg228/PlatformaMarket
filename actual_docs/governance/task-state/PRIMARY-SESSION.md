@@ -1,5 +1,31 @@
 # PRIMARY-SESSION — PlatformaMarket
 
+### 14.10 / 03:29 — dependent auth fixtures LOCAL_PASS
+
+Пять тестов приведены к действующему контракту. Targeted browser attempt1
+3PASS/2FAIL: strict request mock ожидал толькоsessionId, пропустил captured accessToken.
+После исправления ожидаемого proof attempt2 5/5PASS17.3s. E2E types/lint PASS,
+UI read-only exact-hunk review READY. Production код не менялся; validated
+isolated shell build59d944a переиспользован. Все5 core assertions сохранены,
+включая cookie refresh/no automatic re-login/currentnull и logout503/retry.
+Публикуются только auth hunks unified + workspace fixture + эти2docs; foreign
+catalog backlink/sticky hunks остаются unstaged. Shell CI/Security ещё IN_PROGRESS.
+
+### 14.10 / 03:24 — shell published59d944a; адресные auth CI fixtures
+
+Remote main59d944a8c6dcbfa6482dd0eed04e7102e997bc12 подтверждён.
+CI38476309767/Security38476309753 IN_PROGRESS. Scoped buyer/supplier/E2E types
+PASS, staged diff hygiene PASS после удаления trailing blank lines в3новых файлах.
+Primary sole writer; UI read-only готовит R7.7.1.3, не реализует следующий пакет.
+Независимый следующий scope: пять доказанных CI fixture/expectation mismatches
+после R7.2.1 (полная Admin identity, link semantics, exact logout receipt/URL,
+guest safe return). Только test fixes; production auth не менять/не ослаблять.
+Риск: неверный mock скроет регрессию. Проверки: exact request body/receipt,
+полная identity как в real login, exact pathname/query, targeted5 browser на
+existing validated isolated build с baked4113, types/lint/diff. Попытки нового
+fixture gate0; catalog BLOCKED6 и неизвестный CORE02 отдельно, не запускать.
+Foreign unified catalog hunks сохранить и не stage с auth hunks.
+
 ### 14.10 / 03:20 — R7.7.1.2 LOCAL_PASS, публикация готовится
 
 Final Admin rebuild после racefix PASS1033817raw/314381gzip/15files. Unified

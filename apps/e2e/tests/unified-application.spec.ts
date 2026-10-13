@@ -105,7 +105,7 @@ test("persisted dark preference keeps the approved light contract", async ({ pag
   expect(await page.evaluate(() => localStorage.getItem("marketplace-theme"))).toBe("dark");
 });
 
-test("password login, cookie refresh and legacy return use the same-origin proxy", async ({ page }) => {
+test("password login, cookie refresh and legacy return use the same-origin proxy", async ({ page, baseURL }) => {
   const fixture = await installPilotWorkspace(page, "BUYER");
   const db = new PrismaClient();
   const login = await page.context().newPage(); // No injected workspace session on this page.
@@ -114,7 +114,7 @@ test("password login, cookie refresh and legacy return use the same-origin proxy
     const password = "Synthetic-unified-password-2026!";
     await db.user.update({ where: { id: fixture.userId }, data: { passwordHash: passwordHash(password) } });
     await login.goto("/documents");
-    expect(new URL(login.url()).origin).toBe("http://127.0.0.1:3000");
+    expect(new URL(login.url()).origin).toBe(new URL(baseURL!).origin);
     await expect(login).toHaveURL(/\/login\?returnTo=%2Fdocuments/);
     await login.locator('input[type="email"]').fill(fixture.email);
     await login.locator('input[type="password"]').fill(password);
@@ -130,7 +130,7 @@ test("password login, cookie refresh and legacy return use the same-origin proxy
     await login.locator("header").getByRole("link", { name: /Личный кабинет/ }).click();
     await login.getByRole("button", { name: "Меню профиля", exact: true }).click();
     await login.getByRole("menuitem", { name: "Выйти", exact: true }).click();
-    await expect(login).toHaveURL(/\/login$/);
+    await expect(login).toHaveURL(new URL("/login?signedOut=1", baseURL!).href);
     await login.goto("/catalog");
     await expect(login.locator("header").getByRole("link", { name: "Войти", exact: true })).toBeVisible();
     await login.reload();
@@ -174,9 +174,9 @@ for (const [capability, root] of [["BUYER", "/clinic"], ["SUPPLIER", "/supplier"
   });
 }
 
-test("guest operator route requires its separate sign-in", async ({ page }) => {
+test("guest operator route requires its separate sign-in", async ({ page, baseURL }) => {
   await page.goto("/admin");
-  await expect(page).toHaveURL(/\/admin\/login$/);
+  await expect(page).toHaveURL(new URL("/admin/login?returnTo=%2Fadmin", baseURL!).href);
   await expect(page.getByText("Панель оператора", { exact: true })).toHaveCount(0);
 });
 

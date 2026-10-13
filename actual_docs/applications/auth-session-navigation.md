@@ -7,6 +7,16 @@
 
 Статус: **IMPLEMENTED / LOCAL_PASS / PUBLISHED 37fa69a / CI_FAILURE**.
 
+14.10 dependent fixtures: пять mismatches исправлены без изменения production auth:
+полная mock Admin identity, семантическая ссылка раздела, `/auth/session-logout`
+с точным captured session/proof и receipt, exact signedOut и safe-return URL.
+`npm run db:test -- exec -- node .tmp/admin-shell-2026-10-14/auth-fixtures.mjs`:
+attempt1 3PASS/2FAIL (strict fixture assertion пропустил accessToken в ожидаемом
+body), attempt2 5/5PASS17.3s. E2E types/scoped lint PASS, read-only review READY.
+Изолированный build59d944a/ports3103+4113/auditDB, без rerun catalog BLOCKED6.
+CORE02 payment-policy success-feedback failure пока не объяснён и не закрыт.
+Общий CI остаётся отдельным фактическим receipt, тестовые правки ещё не подтверждены CI.
+
 Actual CI после fixture fix4d60acb и docs b197d8d: run38469520118 FAILURE,
 verify job115544652416: Flow B3 7/7PASS, verify:web95PASS/12FAIL.
 Security38469520083, PostgreSQL и container jobs SUCCESS. Receipt передан primary

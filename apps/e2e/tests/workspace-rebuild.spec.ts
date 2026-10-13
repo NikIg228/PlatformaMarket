@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { writeFile } from "node:fs/promises";
 
 test("performance admin supplier loads once and preserves operations", async ({ page }, testInfo) => {
-  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "admin-ui-fixture", activeOrganizationId: "00000000-0000-4000-8000-000000000001" })));
+  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "admin-ui-fixture", sessionId: "00000000-0000-4000-8000-000000000003", user: { id: "00000000-0000-4000-8000-000000000002", displayName: "Оператор проверки" }, activeOrganizationId: "00000000-0000-4000-8000-000000000001", expiresAt: Date.now() + 3600000 })));
   const supplierId = "44444444-4444-4444-8444-444444444444";
   const reads: string[] = [];
   await page.route("**/api/**", async route => {
@@ -17,7 +17,7 @@ test("performance admin supplier loads once and preserves operations", async ({ 
     await route.fulfill({ json: data });
   });
   await page.goto("/admin");
-  await page.getByRole("button", { name: "Загрузка товаров", exact: true }).click();
+  await page.getByRole("link", { name: "Загрузка товаров", exact: true }).click();
   const section = page.getByRole("region", { name: "Товары поставщика", exact: true });
   await expect(section.getByRole("heading", { name: "Партии и резервы", exact: true })).toBeVisible();
   await expect(section.getByRole("button", { name: "Обновить", exact: true })).toBeEnabled();
@@ -354,19 +354,21 @@ for (const role of ["clinic", "supplier"] as const) for (const width of [1440, 3
   });
 }
 
-for (const role of ["clinic", "supplier"] as const) test(`profile-nav ${role} logout failure preserves session and retry confirms revocation`, async ({ page }) => {
+for (const role of ["clinic", "supplier"] as const) test(`profile-nav ${role} logout failure preserves session and retry confirms revocation`, async ({ page, baseURL }) => {
   await fixture(page, role === "clinic" ? "BUYER" : "SUPPLIER");
   let attempts = 0;
   let release!: () => void;
   const held = new Promise<void>(resolve => { release = resolve; });
-  await page.route(`**/api/auth/sessions/${sessionId}/revoke`, async route => {
+  await page.route("**/api/auth/session-logout", async route => {
+    expect(route.request().method()).toBe("POST");
+    expect(route.request().postDataJSON()).toEqual({ sessionId, accessToken: "ui-fixture-not-a-real-token" });
     attempts++;
     if (attempts === 1) await held;
     return attempts === 1 ? route.fulfill({ status: 503, json: { message: "Недоступно" } })
-      : route.fulfill({ json: { id: sessionId, status: "REVOKED" } });
+      : route.fulfill({ json: { sessionId, status: "REVOKED", loginStatus: "SAME_SESSION" } });
   });
   // Stub the destination so this test stays independent of the login UI.
-  await page.route("**/login", route => route.fulfill({ contentType: "text/html", body: "<h1>Вход</h1>" }));
+  await page.route("**/login?signedOut=1", route => route.fulfill({ contentType: "text/html", body: "<h1>Вход</h1>" }));
   await page.goto(`/${role}/profile`);
   const avatar = page.getByRole("button", { name: "Меню профиля", exact: true });
   await avatar.click(); await page.getByRole("menuitem", { name: "Выйти", exact: true }).click();
@@ -382,7 +384,7 @@ for (const role of ["clinic", "supplier"] as const) test(`profile-nav ${role} lo
   expect(await page.evaluate(key => Boolean(sessionStorage.getItem(key)), `dentmarket:${role === "clinic" ? "buyer" : "supplier"}-session`)).toBe(true);
   await avatar.click();
   await page.getByRole("menuitem", { name: "Выйти", exact: true }).click();
-  await expect(page).toHaveURL(/\/login$/);
+  await expect(page).toHaveURL(new URL("/login?signedOut=1", baseURL!).href);
   expect(attempts).toBe(2);
 });
 
