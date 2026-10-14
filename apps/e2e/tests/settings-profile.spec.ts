@@ -45,7 +45,10 @@ for(const role of ["clinic","supplier"] as const) for(const width of [1440,390])
   const name=region.getByRole("textbox",{name:"Имя",exact:false}); await expect(name).toBeFocused(); await name.fill("Новое имя"); await name.press("Escape"); await expect(edit).toBeFocused(); expect(state.writes).toHaveLength(0);
   await edit.click(); await name.fill("Новое имя"); await name.press("Enter"); await expect(region.getByText("Новое имя",{exact:true})).toBeVisible(); expect(state.personal.displayName).toBe("Новое имя");
   await region.getByRole("button",{name:"Изменить: Телефон",exact:true}).click(); const phone=region.getByRole("textbox",{name:"Телефон",exact:false}); await phone.fill(""); await phone.press("Enter"); await expect(region.getByRole("alert")).toHaveText("Заполните это поле"); await phone.fill("+7 700 111 22 33"); await region.getByRole("button",{name:"Сохранить: Телефон",exact:true}).click(); await expect(region.getByText("+7 700 111 22 33",{exact:true})).toBeVisible();
-  const avatar=region.getByRole("button",{name:"Изменить фото профиля"}); await avatar.focus(); await expect(avatar.locator(".dm-avatar-edit-overlay")).toHaveCSS("opacity","1");
+  // Inline edit restores its trigger focus on the next animation frame after save.
+  // Wait for that transition before moving focus to the next independent control.
+  await expect(region.getByRole("button",{name:"Изменить: Телефон",exact:true})).toBeFocused();
+  const avatar=region.getByRole("button",{name:"Изменить фото профиля"}); await avatar.focus(); await expect(avatar).toBeFocused(); await expect(avatar.locator(".dm-avatar-edit-overlay")).toHaveCSS("opacity","1");
   await region.locator('input[type="file"]').setInputFiles({name:"photo.png",mimeType:"image/png",buffer:Buffer.from(png,"base64")}); await expect(page.locator(".dm-save-toast")).toContainText("Фото профиля сохранено"); await expect(avatar.locator("img")).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   const sessions=page.getByRole("region",{name:"Активные сеансы"}); await expect(sessions.locator("li")).toHaveCount(5); await expect(sessions.locator("li").first()).toContainText("Текущий сеанс");

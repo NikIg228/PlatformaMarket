@@ -6,6 +6,33 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 14.10 — возобновление CI assertions после диагностики (LOCAL_PASS; CI pending)
+Владелец «продолжай» разрешил исправить диагностированные 7 browser failures.
+HEAD7792563; source root canonical, несвязанный WIP сохраняется. Scope: проверки
+catalog/unified return-link и sticky toolbar, ожидание возврата фокуса inline edit.
+Диагностика CI trace и controlled ordering доказала: pending RAF телефона забирает
+фокус у аватара. Продуктовый CSS не менять. Риск — корректность assertions/fixtures.
+План: targeted7+representative profile consumer на owned3016/4116/disposable DB,
+E2E types/lint/diff, selective публикация и actual CI. Новый цикл явно возобновлён;
+предыдущие FAIL и лимиты сохранены ниже. Полный локальный E2E не повторять.
+Existing comparison WIP проверять отдельно: контрактный fixture не должен зависеть
+от наличия складского остатка у первого предложения выбранного города.
+
+Результат: попытка1 targeted10 — 8PASS/2FAIL; comparison ожидал recovery-link
+в toast, но ActionFeedback сохраняет действие в диалоге. Исправлена область
+поиска, проверены видимость и href. Попытка2 только comparison390/1440 — 2PASS.
+Итог10/10 targeted имеют PASS; E2E typecheck и lint3files PASS, после последней
+правки lint public-catalog PASS. Продуктовые inputs/build неизменны, reused PASS.
+Команды: npm run db:test -- exec -- node .tmp/import-selector-2026-10-14/run.mjs
+../ci-assertions-2026-10-14/targeted.config.ts (8PASS/2FAIL), затем comparison.config.ts
+(2PASS); npm run typecheck --workspace=@marketplace/e2e;
+npm exec -- eslint apps/e2e/tests/public-catalog.spec.ts apps/e2e/tests/unified-application.spec.ts
+apps/e2e/tests/settings-profile.spec.ts --max-warnings=0.
+Review: assertions сверены с HEAD; fixture проверяется общей Zod schema, stock
+детерминирован; duplicate submission, 409 retry, 503 unknown outcome и quantity
+сохранены. Scope публикации: эти3tests (кроме несвязанного CORE08 hunk) и этот
+checkpoint. Предыдущий CI7792563 FAIL106/7 сохранён; новый CI ещё не подтверждён.
+
 ### 14.10 — исправление CI-селектора импорта (LOCAL_PASS, публикация pending)
 Владелец «Приступай» разрешил приёмку и публикацию существующей правки
 flow-b3-publication.spec.ts: button→link для навигации «Загрузка товаров».

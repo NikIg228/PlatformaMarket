@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
+import { offerComparisonResponseSchema } from "@marketplace/schemas";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { installPilotWorkspace } from "../fixtures/workspace-session";
@@ -45,10 +46,11 @@ for (const width of [390, 1440]) test(`semantic palette and keyboard states ${wi
   await page.screenshot({ path: testInfo.outputPath(`theme-catalog-${width}.png`) });
 });
 
-for (const width of [390, 1440]) test(`catalog comparison, login return and cart retry preserve selection ${width}`, async ({ page }) => {
+for (const width of [390, 1440]) test(`catalog comparison, login return and cart retry preserve selection ${width}`, async ({ page, baseURL }) => {
   const fixture = await installPilotWorkspace(page, "BUYER");
   const db = new PrismaClient();
   const browser = await page.context().newPage();
+  let releaseWrite: (() => void) | undefined;
   await browser.setViewportSize({ width, height: 900 });
   try {
     const { passwordHash } = createRequire(__filename)(path.resolve(__dirname, "../../api/dist/src/modules/identity/password-codec.js"));
@@ -56,16 +58,31 @@ for (const width of [390, 1440]) test(`catalog comparison, login return and cart
     await db.user.update({ where: { id: fixture.userId }, data: { passwordHash: passwordHash(password) } });
     const city = await db.city.findFirstOrThrow({ select: { id: true }, orderBy: { id: "asc" } });
     const offerId = "77777777-7777-4777-8777-777777777777";
-    await browser.route("**/api/catalog/products/*/compare?*", route => route.fulfill({ json: { offers: [
-      { offerId, supplier: { name: "Поставщик А" }, price: { amountMinor: "120000", normalizedPriceMinor: "12000", currency: "KZT" }, packaging: { name: "Упаковка", quantityInBaseUnit: "10", unit: "шт" }, availability: [{ quantityAvailable: "20" }], delivery: [], markers: {}, minimumOrderQuantity: "2", orderIncrement: "2" },
-      { offerId: "88888888-8888-4888-8888-888888888888", supplier: { name: "Поставщик Б" }, price: { amountMinor: "150000", currency: "KZT" }, availability: [{ quantityAvailable: "0" }], delivery: [], markers: {} },
-    ] } }));
+    await browser.route("**/api/catalog/products/*/compare?*", async route => {
+      const response = await route.fetch();
+      expect(response.ok()).toBe(true);
+      const comparison = offerComparisonResponseSchema.parse(await response.json());
+      const source = comparison.offers[0];
+      expect(source).toBeDefined();
+      const availability = { warehouseId: "99999999-9999-4999-8999-999999999999", warehouse: "Тестовый склад", cityId: city.id, updatedAt: null, freshnessExpiresAt: null };
+      // The same endpoint feeds the dialog and the product page after login.
+      // Keep the complete contract while controlling stock, price and cart IDs.
+      const offers = [
+        { ...source, offerId, supplier: { ...source.supplier, name: "Поставщик А" },
+          price: { ...source.price, amountMinor: "120000", normalizedPriceMinor: "12000", baseUnits: "10", currency: "KZT" },
+          packaging: { ...source.packaging, name: "Упаковка", quantityInBaseUnit: "10", unit: "шт" },
+          availability: [{ ...availability, quantityAvailable: "20" }], delivery: [], minimumOrderQuantity: "2", orderIncrement: "2" },
+        { ...source, offerId: "88888888-8888-4888-8888-888888888888", supplier: { ...source.supplier, name: "Поставщик Б" },
+          price: { ...source.price, amountMinor: "150000" }, availability: [{ ...availability, quantityAvailable: "0" }], delivery: [] },
+      ];
+      await route.fulfill({ response, json: offerComparisonResponseSchema.parse({ ...comparison, offers }) });
+    });
     await browser.goto(`/catalog?sort=PRICE_ASC&count=48&deliveryCityId=${city.id}`);
     const cards = browser.getByTestId("product-card");
     await expect(cards).toHaveCount(48);
     const productHref = await cards.first().getByRole("link", { name: /Открыть карточку/ }).getAttribute("href");
     const open = cards.first().getByRole("button", { name: /Выбрать поставщика/ });
-    await open.click();
+    await test.step("Open guest supplier offers", () => open.click());
     const dialog = browser.getByRole("dialog");
     const offer = dialog.getByRole("article", { name: "Предложение: Поставщик А", exact: true });
     await expect(dialog.getByRole("article")).toHaveCount(2);
@@ -76,45 +93,62 @@ for (const width of [390, 1440]) test(`catalog comparison, login return and cart
     await expect(disabledOffer).toBeDisabled();
     await expect(disabledOffer).toHaveCSS("background-color", "rgb(238, 241, 239)");
     await expect(disabledOffer).toHaveCSS("color", "rgb(114, 128, 120)");
-    await offer.getByRole("button", { name: "Войти и купить", exact: true }).click();
+    const sessionReady = browser.waitForResponse(response => new URL(response.url()).pathname === "/api/auth/current", { timeout: 15_000 });
+    await test.step("Continue to login from the selected offer", () => offer.getByRole("button", { name: "Войти и купить", exact: true }).click());
     await expect(browser).toHaveURL(/\/login\?returnTo=/);
     expect(new URL(browser.url()).searchParams.get("returnTo")).toBe(productHref);
+    // Session restoration runs after hydration; do not fill an inert server-rendered form.
+    await test.step("Wait for login restoration", async () => expect((await sessionReady).ok()).toBe(true));
+    await expect(browser.getByRole("button", { name: "Войти", exact: true })).toBeEnabled();
     await browser.locator('input[type="email"]').fill(fixture.email);
     await browser.locator('input[type="password"]').fill(password);
-    await browser.getByRole("button", { name: "Войти", exact: true }).click();
-    await expect(browser).toHaveURL(new URL(productHref!, "http://127.0.0.1:3000").href);
-    await browser.getByRole("link", { name: "← Вернуться в каталог", exact: true }).click();
+    await test.step("Submit password login", () => browser.getByRole("button", { name: "Войти", exact: true }).click());
+    await expect(browser).toHaveURL(new URL(productHref!, baseURL!).href);
+    await browser.getByRole("navigation", { name: "Навигация по каталогу" }).getByRole("link", { name: "← Каталог", exact: true }).click();
     await expect(cards).toHaveCount(48);
     expect(new URL(browser.url()).searchParams.get("sort")).toBe("PRICE_ASC");
 
     const writes: unknown[] = [];
-    let releaseWrite!: () => void;
     const heldWrite = new Promise<void>(resolve => { releaseWrite = resolve; });
     await browser.route(`**/api/buyers/${fixture.organizationId}/carts`, route => route.fulfill({ json: [{ id: "cart-fixture", status: "ACTIVE", currency: "KZT" }] }));
     await browser.route("**/api/carts/cart-fixture/items", async route => {
       expect(route.request().headers().authorization).toMatch(/^Bearer /);
       writes.push(route.request().postDataJSON());
       if (writes.length === 1) await heldWrite;
-      return route.fulfill(writes.length === 1 ? { status: 503, json: { message: "Повторите добавление товара" } } : { json: { id: "item-fixture" } });
+      return route.fulfill(writes.length === 1
+        ? { status: 409, json: { message: "Повторите добавление товара" } }
+        : writes.length === 2 ? { json: { id: "item-fixture" } }
+          : { status: 503, json: { message: "Сервис временно недоступен" } });
     });
-    await open.click();
+    await test.step("Reopen offers after login and return", () => open.click());
     await offer.getByRole("spinbutton", { name: "Количество у Поставщик А", exact: true }).fill("6");
-    await offer.getByRole("button", { name: "В корзину", exact: true }).click();
+    await test.step("Submit the first cart write", () => offer.getByRole("button", { name: "В корзину", exact: true }).click());
     const pending = offer.getByRole("button", { name: "Добавляем…", exact: true });
     await expect(pending).toBeDisabled();
     await expect(pending).toHaveCSS("background-color", "rgb(238, 241, 239)");
+    await expect.poll(() => writes.length).toBe(1);
     await pending.evaluate((button: HTMLButtonElement) => button.click());
     expect(writes).toHaveLength(1);
-    releaseWrite();
-    await expect(dialog.getByRole("alert")).toHaveText("Повторите добавление товара");
+    releaseWrite!();
+    const feedback = browser.locator(".dm-save-toast");
+    await expect(feedback).toContainText("Не удалось добавить товар");
+    await expect(feedback).toContainText("Повторите добавление товара");
     expect(writes).toEqual([{ offerId, quantity: 6 }]);
     await expect(offer.getByRole("spinbutton")).toHaveValue("6");
     await offer.getByRole("button", { name: "В корзину", exact: true }).click();
-    await expect(dialog.getByText("Поставщик А: добавлено в корзину — 6 ед. продажи.")).toBeVisible();
+    await expect(feedback).toContainText("Добавлено в корзину");
+    await expect(feedback).toContainText("6 ед. продажи");
     expect(writes).toEqual([{ offerId, quantity: 6 }, { offerId, quantity: 6 }]);
+    await offer.getByRole("button", { name: "В корзину", exact: true }).click();
+    await expect(feedback).toContainText("Результат пока неизвестен");
+    await expect(feedback).toContainText("Проверьте корзину перед повторным добавлением");
+    await expect(dialog.getByRole("link", { name: "Перейти в корзину" })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: "Перейти в корзину" })).toHaveAttribute("href", "/clinic/cart");
+    expect(writes).toEqual(Array.from({ length: 3 }, () => ({ offerId, quantity: 6 })));
+    await expect(offer.getByRole("spinbutton")).toHaveValue("6");
     await dialog.getByRole("button", { name: "Закрыть окно", exact: true }).press("Escape");
     await expect(open).toBeFocused();
-  } finally { await browser.close(); await fixture.dispose(); await db.$disconnect(); }
+  } finally { releaseWrite?.(); await browser.close(); await fixture.dispose(); await db.$disconnect(); }
 });
 
 for (const width of [390, 1440]) test(`public catalog restores pages and filters without workspace reads ${width}`, async ({ page }) => {
@@ -128,7 +162,7 @@ for (const width of [390, 1440]) test(`public catalog restores pages and filters
   await expect(cards).toHaveCount(48);
   await expect(page).toHaveURL(/count=48/);
   await cards.first().getByRole("link", { name: /Открыть карточку/ }).click();
-  await page.getByRole("link", { name: "← Вернуться в каталог", exact: true }).click();
+  await page.getByRole("navigation", { name: "Навигация по каталогу" }).getByRole("link", { name: "← Каталог", exact: true }).click();
   await expect(cards).toHaveCount(48);
   expect(new URL(page.url()).searchParams.get("sort")).toBe("PRICE_ASC");
 
@@ -150,7 +184,8 @@ for (const width of [390, 1440]) test(`public catalog restores pages and filters
   await expect(cards).toHaveCount(48);
   await expect(page).toHaveURL(/sort=PRICE_ASC/);
   await page.evaluate(() => window.scrollTo(0, 700));
-  expect((await page.locator("header").first().boundingBox())!.y).toBe(0);
+  await expect.poll(async () => (await page.getByLabel("Поиск и фильтрация", { exact: true }).boundingBox())?.y).toBe(0);
+  expect((await page.locator("header").first().boundingBox())!.y).toBeLessThan(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(workspaceReads).toEqual([]);
 });

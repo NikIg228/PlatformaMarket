@@ -141,18 +141,18 @@ test("password login, cookie refresh and legacy return use the same-origin proxy
   } finally { await login.close(); await fixture.dispose(); await db.$disconnect(); }
 });
 
-test("public catalog, product and auth stay on one origin", async ({ page }) => {
+test("public catalog, product and auth stay on one origin", async ({ page, baseURL }) => {
   const external: string[] = [];
-  page.on("request", request => { if (/127\.0\.0\.1:(3001|3002|3003|4012)/.test(request.url())) external.push(request.url()); });
+  page.on("request", request => { const url = new URL(request.url()); if (["127.0.0.1", "localhost"].includes(url.hostname) && url.origin !== new URL(baseURL!).origin) external.push(request.url()); });
   await page.goto("/catalog?sort=PRICE_ASC");
   const cards = page.getByTestId("product-card");
   await expect(cards).toHaveCount(24);
   await cards.first().getByRole("link", { name: /Открыть карточку/ }).click();
-  await expect(page).toHaveURL(/:3000\/products\//);
-  await page.getByRole("link", { name: "← Вернуться в каталог" }).click();
+  await expect(page).toHaveURL(url => url.origin === new URL(baseURL!).origin && url.pathname.startsWith("/products/"));
+  await page.getByRole("navigation", { name: "Навигация по каталогу" }).getByRole("link", { name: "← Каталог", exact: true }).click();
   await expect(page).toHaveURL(/sort=PRICE_ASC/);
   await page.locator("header").getByRole("link", { name: "Войти", exact: true }).click();
-  await expect(page).toHaveURL(/:3000\/login\?returnTo=/);
+  await expect(page).toHaveURL(url => url.origin === new URL(baseURL!).origin && url.pathname === "/login" && url.searchParams.has("returnTo"));
   await expect(page.locator('input[type="email"]')).toBeVisible();
   expect(external).toEqual([]);
 });
@@ -188,5 +188,6 @@ test("auth CSS stays scoped on mobile catalog", async ({ page }) => {
   await expect(page.getByTestId("product-card")).toHaveCount(24);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.evaluate(() => window.scrollTo(0, 600));
-  expect((await page.locator("header").first().boundingBox())!.y).toBe(0);
+  await expect.poll(async () => (await page.getByLabel("Поиск и фильтрация", { exact: true }).boundingBox())?.y).toBe(0);
+  expect((await page.locator("header").first().boundingBox())!.y).toBeLessThan(0);
 });
