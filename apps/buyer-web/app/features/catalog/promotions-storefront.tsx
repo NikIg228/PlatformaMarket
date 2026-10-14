@@ -51,7 +51,7 @@ export function PromotionsStorefront({ featured = false, productId, hideEmpty = 
   if (preview) return <PromotionPreview />;
   if (featured) return <FeaturedPromotions page={page} loading={loading} error={error} onRetry={() => setRetry(value => value + 1)} />;
   if (hideEmpty && !loading && !error && !page?.items.length) return null;
-  return <Section title={productId ? "Акции на этот товар" : "Акции поставщиков"} description="Условия действуют в указанный срок и в пределах доступного количества. При оформлении проверим цену и наличие подарка.">
+  return <Section descriptionAsHelp title={productId ? "Акции на этот товар" : "Акции поставщиков"} description="Условия действуют в указанный срок и в пределах доступного количества. При оформлении проверим цену и наличие подарка.">
     <div className="mp-stack">
       {!featured && !productId ? <form className="mp-stack" onSubmit={event => { event.preventDefault(); update({ q: draft }); }}>
         <DmSearch aria-label="Поиск акций" placeholder="Найти акцию" value={draft} onChange={setDraft} onSearch={value => update({ q: value })} />

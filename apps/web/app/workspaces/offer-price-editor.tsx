@@ -35,7 +35,7 @@ export function OfferPriceEditor(props: OfferEditorProps) {
       const warehouses = await api.listSupplierWarehouses(organizationId);
       const active = warehouses.filter(item => item.status === "ACTIVE");
       const warehouse = active.find(item => offer.inventoryBalances.some(balance => balance.warehouseId === item.id)) ?? active[0];
-      if (!warehouse) throw new Error("Для изменения цены нужен действующий склад поставщика. Добавьте его в настройках организации и повторите загрузку.");
+      if (!warehouse) throw new Error("Для изменения цены вам нужен действующий склад. Добавьте его в настройках организации и повторите загрузку.");
       const result = await api.getSupplierOfferCommercial(organizationId, offer.id, warehouse.id);
       if (!cancelled) { setState(result); setDraft(draftOf(result)); setInitialTax(result.price?.taxSnapshot?.selection ?? null); setTaxDirty(false); }
     })().catch(cause => { if (!cancelled) setError(errorMessage(cause)); }).finally(() => { if (!cancelled) setLoading(false); });

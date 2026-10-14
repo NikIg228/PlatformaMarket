@@ -53,6 +53,42 @@ async function fillSupplier(page: Page) {
   await page.getByRole("option", { name: "Плательщик НДС", exact: true }).click(); await page.getByLabel("Действует с", { exact: false }).fill("2026-01-01");
 }
 
+for (const role of ["supplier", "clinic"] as const) for (const width of [1440, 390]) test.describe(`requisites help ${role} ${width}`, () => {
+  test.use({ hasTouch: width === 390 });
+  test("opens contextual help with pointer, keyboard or touch without saving", async ({ page }, info) => {
+    const state = await fixture(page, role);
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto(`/${role}/settings?tab=requisites`);
+    const title = "Подсказка: Реквизиты для документов";
+    const trigger = page.getByRole("button", { name: title, exact: true });
+    const note = page.getByRole("note", { name: title, exact: true });
+    await expect(note).toBeHidden();
+    if (width === 390) await trigger.tap(); else await trigger.hover();
+    await expect(note).toBeVisible();
+    await expect(note).toContainText("Общие данные используются в документах вашей организации");
+    await page.screenshot({ path: info.outputPath(`requisites-help-${role}-${width}.png`), fullPage: true });
+    await page.keyboard.press("Escape");
+    await expect(note).toBeHidden();
+    if (width === 1440) {
+      await page.mouse.move(0, 0);
+      await page.getByRole("tab", { name: "Реквизиты", exact: true }).focus();
+      await page.keyboard.press("Tab");
+      // Supplier has more tabs; focus the requested help after establishing keyboard modality.
+      await trigger.focus();
+      await expect(note).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(trigger).toBeFocused();
+    }
+    const taxHelp = page.getByRole("button", { name: "Подсказка: Налоговый статус", exact: true });
+    if (width === 390) await taxHelp.tap(); else await taxHelp.hover();
+    await expect(page.getByRole("note", { name: "Подсказка: Налоговый статус", exact: true })).toContainText(role === "supplier" ? "ваш статус по НДС" : "ваш налоговый статус");
+    await page.keyboard.press("Escape");
+    expect(state.writes).toEqual([]);
+    expect(state.unexpected).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  });
+});
+
 for (const width of [1440, 390]) test(`requisites supplier save preview confirm and keyboard ${width}`, async ({ page }, info) => {
   const state = await fixture(page, "supplier"); await page.setViewportSize({ width, height: 1000 });
   await page.goto("/supplier/settings"); await page.getByRole("tab", { name: "Реквизиты", exact: true }).click();
@@ -87,6 +123,42 @@ for (const width of [1440, 390]) test(`requisites supplier save preview confirm 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); expect(state.unexpected).toEqual([]);
 });
 
+for (const width of [1440, 390]) test(`requisites optional tax details preserve values and reveal validation ${width}`, async ({ page }, info) => {
+  const state = await fixture(page, "supplier");
+  await page.setViewportSize({ width, height: 1000 });
+  await page.goto("/supplier/settings?tab=requisites");
+  await fillSupplier(page);
+  const group = page.getByRole("group", { name: "Налоговый период 1", exact: true });
+  const details = group.locator("details"), summary = details.locator("summary");
+  const endDate = group.getByLabel("Последний день действия", { exact: false });
+  await expect(endDate).toBeHidden();
+  await expect(group.getByLabel("Действует с", { exact: false })).toBeVisible();
+  await summary.focus(); await page.keyboard.press("Enter");
+  await expect(endDate).toBeVisible();
+  await endDate.fill("2025-12-31");
+  await group.getByLabel("Основание / регистрационные сведения", { exact: false }).fill("Сведения о регистрации");
+  await summary.click(); await expect(endDate).toBeHidden();
+  const save = page.getByRole("button", { name: "Сохранить черновик", exact: true });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await save.click();
+    await expect(endDate).toBeVisible();
+    await expect(endDate).toBeFocused();
+    await expect(group.getByText("Окончание периода не может быть раньше начала", { exact: true })).toBeVisible();
+    expect(state.writes).toEqual([]);
+    if (attempt === 0) { await summary.click(); await expect(endDate).toBeHidden(); }
+  }
+  await page.screenshot({ path: info.outputPath(`tax-details-validation-${width}.png`), fullPage: true });
+  await endDate.fill("2026-12-31"); await save.click();
+  expect(state.writes[0].body.fields.taxPeriods[0]).toMatchObject({ status: "VAT_PAYER", effectiveFrom: "2026-01-01", effectiveTo: "2026-12-31", reference: "Сведения о регистрации" });
+  await page.getByRole("button", { name: "Изменить реквизиты", exact: true }).click();
+  await expect(endDate).toBeHidden();
+  await expect(summary).toContainText("заполнены");
+  await summary.click();
+  await expect(endDate).toHaveValue("2026-12-31");
+  await expect(group.getByLabel("Основание / регистрационные сведения", { exact: false })).toHaveValue("Сведения о регистрации");
+  expect(state.unexpected).toEqual([]);
+});
+
 test("requisites errors retain drafts and retry keys; concurrent edits require an explicit choice", async ({ page }) => {
   const state = await fixture(page, "supplier"); await page.goto("/supplier/settings?tab=requisites"); await fillSupplier(page);
   await page.getByRole("textbox", { name: "ИИК / IBAN", exact: true }).fill("KZ00125KZT5004100100"); await page.getByRole("button", { name: "Сохранить черновик", exact: true }).click();
@@ -111,7 +183,9 @@ for (const width of [1440, 390]) test(`requisites clinic does not require suppli
   const state = await fixture(page, "clinic"); state.failRead = true;
   await page.goto("/clinic/settings?tab=requisites"); await expect(page.getByText("Не удалось загрузить реквизиты", { exact: true })).toBeVisible();
   state.failRead = false; await page.getByRole("button", { name: "Повторить", exact: true }).click();
-  await expect(page.getByText("Для оплаты поставщику банковский счёт клиники не обязателен.", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Подсказка: Банковские счета", exact: true }).hover();
+  await expect(page.getByRole("note", { name: "Подсказка: Банковские счета", exact: true })).toContainText("Для оплаты поставщику ваш банковский счёт не обязателен.");
+  await page.keyboard.press("Escape");
   await page.getByRole("combobox", { name: "Юридическая форма", exact: true }).click();
   await page.getByRole("option", { name: "Индивидуальный предприниматель · ИИН", exact: true }).click();
   await page.getByRole("button", { name: "Сохранить черновик", exact: true }).click(); await expect(page.getByRole("button", { name: "Проверить и подтвердить", exact: true })).toBeEnabled();

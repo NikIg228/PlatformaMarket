@@ -31,7 +31,7 @@ export function SupplierDocuments({
 }) {
   return (
     <div className="mp-stack">
-      <PageHeader
+      <PageHeader descriptionAsHelp
         eyebrow="Документооборот"
         title="Документы"
         description="Счета, спецификации и накладные с электронными подписями и историей версий."
@@ -73,7 +73,7 @@ export function SupplierDocuments({
           </div>
         )}
       </Section>
-      <Section
+      <Section descriptionAsHelp
         title="Платёжный профиль"
         description="Готовность к приёму и выплате средств"
       >

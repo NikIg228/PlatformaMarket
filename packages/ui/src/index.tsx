@@ -1,6 +1,7 @@
 "use client";
 export { DocumentRegistry } from "./document-registry";
 export { DmInfoTip } from "./info-tip";
+export { DmHeading, DmFormSections } from "./heading";
 export { useSaveToast, useToast, type ToastTone, type ToastOptions } from "./save-toast";
 export { ActionFeedback } from "./action-feedback";
 export { actionFailure } from "./feedback-error";

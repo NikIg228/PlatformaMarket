@@ -71,7 +71,7 @@ export function BuyerOrders({
 
   return (
     <div className="mp-stack">
-      <PageHeader
+      <PageHeader descriptionAsHelp
         eyebrow="Исполнение"
         title="Заказы"
         description="Одна корзина автоматически разделяется на отдельные заказы поставщикам. Здесь собраны статусы, изменения, отгрузки и документы."

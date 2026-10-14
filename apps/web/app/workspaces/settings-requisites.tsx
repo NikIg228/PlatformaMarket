@@ -4,7 +4,7 @@ import { ArrowRight20Regular } from "@fluentui/react-icons/svg/arrow-right";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MarketplaceApiError } from "@marketplace/api-client";
 import { organizationRequisitesFieldsSchema, type OrganizationRequisitesFields, type OrganizationRequisitesResponse } from "@marketplace/schemas";
-import { DmButton, DmCheckbox, DmDialog, DmFeedback, DmSurface, ErrorState, LoadingState, errorMessage, usePermissions, useSaveToast, useUnsavedChanges } from "@marketplace/ui";
+import { DmHeading, DmButton, DmCheckbox, DmDialog, DmFeedback, DmSurface, ErrorState, LoadingState, errorMessage, usePermissions, useSaveToast, useUnsavedChanges } from "@marketplace/ui";
 import { dmLinkButtonProps } from "@marketplace/ui/link-button";
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
@@ -102,9 +102,8 @@ function RequisitesEditor({ initial, onDirtyChange }: { initial: OrganizationReq
   const problem = error ? <DmFeedback tone="danger" presentation="note" alert title="Действие не завершено" description={error} action={!confirmOpen ? <DmButton disabled={busy} onClick={() => void reload()}>Обновить сохранённые данные</DmButton> : undefined} /> : null;
   return <div className={`${styles.page} ${layout.page}`}>
     <DmSurface className={styles.card} role="region" aria-label="Реквизиты организации">
-      <div className={styles.toolbar}><h2>Реквизиты для документов</h2>{!editing && editable ? <DmButton disabled={busy || refreshRequired} onClick={beginEdit}>Изменить реквизиты</DmButton> : null}</div>
+      <div className={styles.toolbar}><DmHeading inline title="Реквизиты для документов" description="Общие данные используются в документах вашей организации. Изменения сохраняются новой версией." />{!editing && editable ? <DmButton disabled={busy || refreshRequired} onClick={beginEdit}>Изменить реквизиты</DmButton> : null}</div>
       <div className={layout.stack}>
-        <p className={styles.muted}>Общие данные используются в документах организации. Изменения сохраняются новой версией.</p>
         {saved.readiness.ready ? <DmFeedback tone="success" presentation="note" title="Реквизиты подтверждены" description={`Версия ${saved.version}. Данные организации актуальны на ${saved.readiness.asOfDate}.`} action={organizationLink} /> : <DmFeedback presentation="note" tone="warning" title={saved.current?.confirmedAt ? "Реквизиты требуют обновления" : "Реквизиты не подтверждены"} description="Заполните недостающие сведения, сохраните и проверьте версию перед подтверждением." details={issues.length ? <ul className={layout.issues}>{issues.map(issue => <li key={issue.code}>{issue.message}</li>)}</ul> : undefined} action={organizationLink} />}
         {!editable ? <DmFeedback presentation="note" tone="info" title="Доступно только для просмотра" description="Изменить и подтвердить реквизиты может сотрудник с правом управления организацией." /> : null}
         {editing && editable ? <form ref={form} noValidate aria-label="Редактирование реквизитов" className={layout.stack} onSubmit={event => { event.preventDefault(); void save(); }}>

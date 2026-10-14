@@ -343,7 +343,8 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
 }
 
 /* Persistent field/section guidance is a note, not another nested card. */
-.dm-feedback.dm-feedback-note { grid-template-columns: 20px minmax(0, 1fr) auto; width: 100%; max-width: 100%; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.dm-feedback.dm-feedback-note { grid-template-columns: 20px minmax(0, 1fr) auto; width: 100%; max-width: 100%; padding: var(--dm-space-4); border: 1px solid currentColor; border-radius: var(--dm-radius-card); background: transparent; }
+.dm-feedback-note .dm-feedback-copy strong { color: inherit; }
 .dm-feedback-note .dm-feedback-copy { min-width: 0; max-width: 72ch; overflow-wrap: anywhere; }
 .dm-feedback-note .dm-feedback-action { grid-column: 3; width: auto; justify-self: end; }
 .dm-feedback-note .dm-feedback-action > * { width: auto; max-width: 100%; }
@@ -624,6 +625,12 @@ html[data-input-modality] .fui-Button:focus { box-shadow: none !important; }
 .dm-navigation-tabs .fui-Tab { flex-shrink: 0; border-radius: 0; padding-inline: var(--dm-space-3); }
 .dm-navigation-tabs .fui-Tab::before, .dm-navigation-tabs .fui-Tab::after { border-radius: 0; }
 .dm-info-tip { max-width: min(320px, calc(100vw - 32px)); font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); }
+.dm-heading { display: flex; align-items: center; gap: var(--dm-space-2); min-width: 0; margin-bottom: var(--dm-space-4); }
+.dm-heading[data-dm-inline="true"] { margin-bottom: 0; }
+.dm-heading > .dm-heading-title { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.dm-heading > .dm-button { flex-shrink: 0; }
+.dm-form-sections { display: grid; gap: var(--dm-space-6); min-width: 0; }
+.dm-form-sections > * + * { border-top: 1px solid var(--dm-border); padding-top: var(--dm-space-6); }
 
 /* Composer is an explicit shared composite field, not a page-level border override. */
 .dm-surface[data-dm-surface="composer"] { padding: 0; border-color: transparent; background: var(--dm-surface-subtle); }

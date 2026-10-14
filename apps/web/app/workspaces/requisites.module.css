@@ -7,6 +7,7 @@
 .sectionHeader h3 { margin: 0; }
 .stack p { margin: 0; }
 .fields { align-items: start; }
+.detailsFields { padding-top: var(--dm-space-4); }
 .record { display: grid; gap: var(--dm-space-4); padding-block: var(--dm-space-4); border-top: 1px solid var(--dm-border); min-width: 0; }
 .summary { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--dm-space-2) var(--dm-space-4); margin: 0; }
 .summary dt { color: var(--dm-text-secondary); }

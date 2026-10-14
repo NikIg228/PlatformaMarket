@@ -48,7 +48,7 @@ export function SupplierOrders({
   }, [focusOrderId, orders]);
   return (
     <div className="mp-stack">
-      <PageHeader
+      <PageHeader descriptionAsHelp
         eyebrow="Исполнение"
         title="Заказы покупателей"
         description="Подтвердите доступное количество, затем создайте отгрузку и комплект документов."

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight20Regular } from "@fluentui/react-icons/svg/arrow-right";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupplierVatSettings } from "@marketplace/schemas";
-import { DmButton, DmCheckbox, DmFeedback, DmSurface, ErrorState, LoadingState, errorMessage, usePermissions, useUnsavedChanges } from "@marketplace/ui";
+import { DmHeading, DmButton, DmCheckbox, DmFeedback, DmSurface, ErrorState, LoadingState, errorMessage, usePermissions, useUnsavedChanges } from "@marketplace/ui";
 import { dmLinkButtonProps } from "@marketplace/ui/link-button";
 import { VatFields, parseVatDraft, vatDraft } from "../../../supplier-web/app/features/supplier-workspace/vat-fields";
 import { useWorkspace } from "./workspace";
@@ -54,8 +54,7 @@ function VatSettingsEditor({ initial, onDirtyChange }: { initial: SupplierVatSet
   };
   const requisitesLink = <Link {...dmLinkButtonProps({ appearance: "secondary" })} href="/supplier/settings?tab=requisites">Реквизиты и налоговый статус<ArrowRight20Regular aria-hidden="true" /></Link>;
   return <div className={`${styles.page} ${layout.page}`}><DmSurface className={styles.card}>
-    <div className={styles.toolbar}><h2>НДС для новых предложений</h2>{!saved.profileIssue && !saved.defaultIssue ? requisitesLink : null}</div>
-    <p className={styles.intro}>Выберите условия для новых товаров. Исключения можно указать в предложении или строке импорта. Для существующих товаров используйте массовое изменение в списке товаров.</p>
+    <div className={styles.toolbar}><DmHeading inline title="НДС для новых предложений" description="Выберите условия для ваших новых товаров. Исключения можно указать в предложении или строке импорта. Для существующих товаров используйте массовое изменение в списке товаров." />{!saved.profileIssue && !saved.defaultIssue ? requisitesLink : null}</div>
     <form className={layout.form} onSubmit={event => { event.preventDefault(); void save(); }}>
       {!editable ? <DmFeedback presentation="note" tone="warning" title="Настройка доступна для просмотра" description="Для изменения нужно право на управление ценами." /> : null}
       {saved.profileIssue ? <DmFeedback presentation="note" tone="warning" title="Проверьте реквизиты" description={saved.profileIssue} action={requisitesLink} /> : null}

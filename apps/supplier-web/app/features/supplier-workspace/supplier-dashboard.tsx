@@ -61,12 +61,12 @@ export function SupplierDashboard({
 
   return (
     <div className="mp-stack">
-      <PageHeader
+      <PageHeader descriptionAsHelp
         eyebrow="Рабочий день"
         title={`Добрый день, ${supplier.name}`}
         description="Сначала обработайте заказы и данные, которые непосредственно влияют на продажи."
       />
-      <Section
+      <Section descriptionAsHelp
         title="Требует внимания"
         description="Приоритетные действия на сегодня"
       >
@@ -145,7 +145,7 @@ export function SupplierDashboard({
         />
       </div>
       <div className="mp-grid-2">
-        <Section
+        <Section descriptionAsHelp
           title="Состояние данных"
           description="Проверки, которые влияют на публикацию и продажи"
         >
@@ -173,7 +173,7 @@ export function SupplierDashboard({
             </div>
           </div>
         </Section>
-        <Section title="Последние заказы" description="События по исполнению">
+        <Section descriptionAsHelp title="Последние заказы" description="События по исполнению">
           {!orders.length ? (
             <EmptyState
               icon={<ClipboardTaskListLtr24Regular />}

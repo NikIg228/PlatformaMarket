@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from "react";
 import { Laptop24Regular } from "@fluentui/react-icons/svg/laptop";
 import { Desktop24Regular } from "@fluentui/react-icons/svg/desktop";
 import { Phone24Regular } from "@fluentui/react-icons/svg/phone";
-import { useSaveToast, DmSurface, DmButton, DmDialog, DmFeedback, EmptyState, LoadingState, errorMessage } from "@marketplace/ui";
+import { DmHeading, useSaveToast, DmSurface, DmButton, DmDialog, DmFeedback, EmptyState, LoadingState, errorMessage } from "@marketplace/ui";
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
 import { sessionStore as clinicSessionStore } from "../../../buyer-web/app/workspace-session";
@@ -52,7 +52,7 @@ export function ProfileSessions() {
     } catch (cause) { setError(errorMessage(cause)); }
     finally { lock.current = false; setBusy(false); }
   }
-  return <DmSurface role="region" className={styles.card} aria-label="Активные сеансы"><h2 ref={heading} tabIndex={-1}>Активные сеансы</h2><p className={styles.intro}>Завершите сеанс на устройстве, которым больше не пользуетесь.</p>
+  return <DmSurface role="region" className={styles.card} aria-label="Активные сеансы"><DmHeading headingRef={heading} tabIndex={-1} title="Активные сеансы" description="Завершите сеанс на устройстве, которым больше не пользуетесь." />
     {resource.error ? <DmFeedback tone="danger" title="Не удалось загрузить сеансы" description={resource.error} alert action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : null}
     {resource.loading && !resource.data ? <LoadingState label="Загружаем сеансы" /> : null}
     {resource.data?.length === 0 ? <EmptyState title="Активных сеансов нет" description="Войдите в аккаунт заново." /> : null}

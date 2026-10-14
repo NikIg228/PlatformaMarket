@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Option } from "@fluentui/react-components";
 import { createWarehouseSchema } from "@marketplace/schemas";
-import { DmSurface, DmButton, DmFeedback, DmField, DmFluentDropdown, DmInput, ErrorState, LoadingState, errorMessage, formatStatus, usePermissions, useUnsavedChanges, useSaveToast } from "@marketplace/ui";
+import { DmHeading, DmSurface, DmButton, DmFeedback, DmField, DmFluentDropdown, DmInput, ErrorState, LoadingState, errorMessage, formatStatus, usePermissions, useUnsavedChanges, useSaveToast } from "@marketplace/ui";
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
 import type { SettingsCity } from "./settings-organization";
@@ -37,8 +37,7 @@ export function SettingsWarehouses({ onDirtyChange }: { onDirtyChange: (dirty: b
     } catch (cause) { setError(errorMessage(cause)); }
     finally { lock.current = false; setBusy(false); }
   }
-  return <DmSurface role="region" className={styles.card} aria-label="Склады"><h2>Склады</h2>
-    <p className={styles.intro}>Места хранения товаров поставщика. Остатки учитываются отдельно по каждому складу.</p>
+  return <DmSurface role="region" className={styles.card} aria-label="Склады"><DmHeading title="Склады" description="Укажите места хранения ваших товаров. Остатки учитываются отдельно по каждому складу." />
     {resource.error ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : null}
     {!resource.data && resource.loading ? <LoadingState label="Загружаем склады" /> : null}
     {resource.data?.warehouses.length === 0 ? <div className={styles.empty} role="status"><strong>Складов пока нет</strong><p>Добавьте место хранения, чтобы учитывать его остатки.</p></div> : <ul className={styles.list}>{resource.data?.warehouses.map(warehouse => <li key={warehouse.id}><strong>{warehouse.name}</strong><p className={styles.muted}>{formatStatus(warehouse.status)}</p></li>)}</ul>}

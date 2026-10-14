@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DmButton, DmDialog, DmFeedback, DmField, DmInfoTip, DmInput, DmSurface, DmTextarea, ErrorState, LoadingState, errorMessage, formatStatus, usePermissions, useSaveToast, useUnsavedChanges } from "@marketplace/ui";
+import { DmHeading, DmButton, DmDialog, DmFeedback, DmField, DmInfoTip, DmInput, DmSurface, DmTextarea, ErrorState, LoadingState, errorMessage, formatStatus, usePermissions, useSaveToast, useUnsavedChanges } from "@marketplace/ui";
 import { dmLinkButtonProps } from "@marketplace/ui/link-button";
 import type { SupplierDataSource } from "../../../supplier-web/app/features/supplier-workspace/types";
 import { useWorkspace } from "./workspace";
@@ -24,9 +24,9 @@ export function SettingsSources({ onDirtyChange }: { onDirtyChange?: (dirty: boo
   const [tickets, setTickets] = useState<Record<string, string>>({});
   return <div className={styles.page}>
     <DmSurface role="region" className={styles.card} aria-label="Источники товаров">
-      <div className={styles.toolbar}><h2>Источники товаров</h2><Link {...dmLinkButtonProps({ appearance: "primary" })} href="/supplier/products/import">Загрузить прайс</Link></div>
+      <div className={styles.toolbar}><DmHeading inline title="Источники товаров" description="Загружайте ваши товары из прайса или подключённой учётной системы. Здесь вы можете выбрать способ загрузки и посмотреть добавленные источники." /><Link {...dmLinkButtonProps({ appearance: "primary" })} href="/supplier/products/import">Загрузить прайс</Link></div>
       <div className={styles.connectorGrid}>{connectors.map(connector => <DmSurface key={connector.id} className={styles.connector} role="region" aria-label={connector.name}>
-        <h3>{connector.name}</h3><p className={styles.muted}>{connector.description}</p><p className={styles.muted}>Подключение с помощью специалиста</p>
+        <DmHeading inline level={3} title={connector.name} description={connector.description} /><p className={styles.muted}>Подключение с помощью специалиста</p>
         <div className={styles.connectorActions}><DmButton appearance="primary" onClick={event => { trigger.current = event.currentTarget; setSelected(connector); setConnectionOpen(true); }}>Подключить</DmButton>{tickets[connector.id] ? <Link href={`/supplier/support?ticketId=${tickets[connector.id]}`}>Открыть обращение</Link> : null}</div>
       </DmSurface>)}</div>
     </DmSurface>

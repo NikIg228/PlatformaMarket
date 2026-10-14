@@ -44,7 +44,7 @@ export function SupplierOffers({
   const [editorGeneration, setEditorGeneration] = useState(0);
   return (
     <div className="mp-stack">
-      <PageHeader
+      <PageHeader descriptionAsHelp
         eyebrow="Каталог поставщика"
         title="Предложения и цены"
         description="У каждой цены видны срок действия, публикация и текущий доступный остаток."

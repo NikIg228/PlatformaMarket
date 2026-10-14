@@ -67,7 +67,7 @@ export function SupplierIntegrations({
 }) {
   return (
     <div className="mp-stack">
-      <PageHeader
+      <PageHeader descriptionAsHelp
         eyebrow="Обмен данными"
         title="Загрузка товаров"
         description="Загружайте прайсы файлами или подключите 1С и другую учётную систему."
@@ -76,7 +76,7 @@ export function SupplierIntegrations({
         <ConnectorOnboarding supplierId={supplierId} apiContext={apiContext} />
       ) : null}
       <SpreadsheetImport key={supplierId} api={api} supplierId={supplierId} sources={dataSources} onChanged={onChanged} />
-      <Section
+      <Section descriptionAsHelp
         title="Загрузить прайс или каталог"
         description="Мы сохраним исходный файл, распознаем строки и попросим подтвердить валюту перед публикацией."
       >
@@ -140,7 +140,7 @@ export function SupplierIntegrations({
           />
         )}
       </Section>
-      <Section
+      <Section descriptionAsHelp
         title="Проверка карточки"
         description="Перед добавлением товара мы проверим, нет ли его уже в каталоге."
       >

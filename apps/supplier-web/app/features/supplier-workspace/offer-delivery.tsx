@@ -68,7 +68,7 @@ export function OfferDelivery({ api, supplierId, offerId, warehouses, defaultWar
     setNotice("Условия доставки сохранены и доступны клинике при сравнении предложений.");
     onSaved?.();
   });
-  return <PermissionFields required={["delivery.view", "delivery.manage"]}><Section title="Условия доставки предложения" description="Укажите сроки подготовки и доставки. Выбор транспортной компании здесь не создаёт отправление.">
+  return <PermissionFields required={["delivery.view", "delivery.manage"]}><Section descriptionAsHelp title="Условия доставки предложения" description="Укажите сроки подготовки и доставки. Выбор транспортной компании здесь не создаёт отправление.">
     {error ? <ErrorState description={error} /> : null}
     {notice ? <ActionFeedback tone="success" description={notice} /> : null}
     {options === null ? <DmButton disabled={busy} onClick={() => void run(async () => setOptions(await api.listOfferDeliveryOptions(supplierId, offerId)))}>Настроить доставку</DmButton> : <div className="mp-stack">

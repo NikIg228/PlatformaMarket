@@ -1,5 +1,15 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+15.10 — **Рамки, подсказки и разделение форм кабинетов: LOCAL PASS; публикация pending.**
+Общие DmHeading/InfoTip/FormSections; note с рамкой в цвет текста; обращения на
+«вы». Налоговый статус: статус и дата начала на виду, прочее раскрывается;
+validation автоматически показывает скрытое ошибочное поле, значения сохраняются.
+UI unit90PASS, UI/E2E types/scoped lint/UI-contract386files/build+types PASS;
+28 целевых browser cases PASS по итоговому evidence, screenshots/computed1440/390
+просмотрены. Escape hovered help исправлен; прежний intermittent profile focus
+fail и успешная отдельная проверка сохранены в [checkpoint](task-state/PRIMARY-SESSION.md).
+Backend/API и рабочие данные без изменений; публикация/actual CI ещё pending.
+
 15.10 — **Settings/общие controls: LOCAL PASS; публикация/CI pending.**
 Действия по ширине содержимого с явным fullWidth; DmField без растяжения по
 соседней подсказке; persistent note с заметным переходом справа/mobile снизу.

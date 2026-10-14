@@ -2,6 +2,7 @@
 import { DmButton } from "./actions";
 import { ToastScope } from "./save-toast";
 import { ActionFeedback } from "./action-feedback";
+import { DmHeading } from "./heading";
 import { Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Spinner, Tag, Tooltip, type DropdownProps } from "@fluentui/react-components";
 import { Dismiss24Regular } from "@fluentui/react-icons/svg/dismiss";
 import { Info20Regular } from "@fluentui/react-icons/svg/info";
@@ -182,20 +183,22 @@ export function PageHeader({
   eyebrow,
   title,
   description,
+  descriptionAsHelp = false,
   actions,
 }: {
   hideHeading?: boolean;
   eyebrow?: string;
   title: string;
   description?: string;
+  descriptionAsHelp?: boolean;
   actions?: ReactNode;
 }) {
   return (
     <div className="mp-page-header">
       {!hideHeading ? <div>
         {eyebrow ? <span className="mp-eyebrow">{eyebrow}</span> : null}
-        <h1>{title}</h1>
-        {description ? <p>{description}</p> : null}
+        {descriptionAsHelp ? <DmHeading inline level={1} title={title} description={description} /> : <h1>{title}</h1>}
+        {description && !descriptionAsHelp ? <p>{description}</p> : null}
       </div> : null}
       {actions ? <div className="mp-page-actions">{actions}</div> : null}
     </div>
@@ -315,12 +318,14 @@ export function ErrorState({
 export function Section({
   title,
   description,
+  descriptionAsHelp = false,
   action,
   children,
   className = "",
 }: {
   title?: string;
   description?: string;
+  descriptionAsHelp?: boolean;
   action?: ReactNode;
   children: ReactNode;
   className?: string;
@@ -330,8 +335,8 @@ export function Section({
       {title || description || action ? (
         <header>
           <div>
-            {title ? <h2>{title}</h2> : null}
-            {description ? <p>{description}</p> : null}
+            {title ? descriptionAsHelp ? <DmHeading inline title={title} description={description} /> : <h2>{title}</h2> : null}
+            {description && (!descriptionAsHelp || !title) ? <p>{description}</p> : null}
           </div>
           {action}
         </header>

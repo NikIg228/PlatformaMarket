@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { vatLabel, type IntegrationTaxBinding, type SupplierVatSettings } from "@marketplace/schemas";
-import { DmButton, DmCheckbox, DmDropdown, DmFeedback, DmField, DmInput, DmSurface, ErrorState, LoadingState, errorMessage, usePermissions } from "@marketplace/ui";
+import { DmHeading, DmButton, DmCheckbox, DmDropdown, DmFeedback, DmField, DmInput, DmSurface, ErrorState, LoadingState, errorMessage, usePermissions } from "@marketplace/ui";
 import { VatFields, parseVatDraft, vatDraft } from "../../../supplier-web/app/features/supplier-workspace/vat-fields";
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
@@ -15,8 +15,7 @@ export function SettingsIntegrationTax({ onDirtyChange }: { onDirtyChange: (dirt
   const [selected, setSelected] = useState("");
   const binding = resource.data?.find(item => item.id === selected);
   return <DmSurface className={styles.card}>
-    <h2>НДС в подключённых ERP</h2>
-    <p>Укажите формат входящей цены. Новые настройки применяются при следующей синхронизации; существующие цены сейчас не меняются.</p>
+    <DmHeading title="НДС в подключённых ERP" description="Укажите формат входящей цены. Ваши новые настройки применяются при следующей синхронизации; существующие цены сейчас не меняются." />
     {resource.error ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить загрузку источников</DmButton>} /> : null}
     {!resource.data && resource.loading ? <LoadingState label="Загружаем источники цен" /> : null}
     {resource.data?.length === 0 ? <p>Подключённых источников цен пока нет.</p> : null}
@@ -62,7 +61,7 @@ function IntegrationTaxEditor({ initial, onDirtyChange, onClose }: { initial: In
     {!settings ? <LoadingState label="Загружаем налоговый профиль" /> : <>
       {settings.profileIssue ? <ErrorState description={settings.profileIssue} /> : null}
       {settings.defaultIssue ? <p role="alert">Настройка по умолчанию устарела. Подтвердите её в настройках НДС или укажите режим для новых товаров этого источника.</p> : null}
-      <p>Настройка поставщика для новых товаров: {settings.defaultTax ? vatLabel(settings.defaultTax.selection) : "не задана"}. Пустые поля существующих предложений сохраняют прежние условия.</p>
+      <p>Ваша настройка для новых товаров: {settings.defaultTax ? vatLabel(settings.defaultTax.selection) : "не задана"}. Пустые поля существующих предложений сохраняют прежние условия.</p>
       <DmField className={layout.field} label="Формат цены ERP" required><DmDropdown value={kind} disabled={busy || !editable} onChange={(_, data) => { setKind(data.value); changed(); }}><option value="">Выберите формат</option><option value="GROSS">Цена включает применимый НДС</option><option value="NET">Цена без НДС — начислить сверху</option></DmDropdown></DmField>
       <DmCheckbox label="Задать режим для новых товаров этого источника" checked={override} disabled={busy || !editable} onChange={(_, data) => { setOverride(data.checked === true); changed(); }} />
       {override ? <VatFields value={draft} onChange={value => { setDraft(value); changed(); }} date={settings.date} profile={settings.profile} disabled={busy || !editable} /> : null}

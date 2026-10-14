@@ -97,7 +97,7 @@ export function BuyerCart({
 
   return (
     <div className="mp-stack" ref={root}>
-      <PageHeader
+      <PageHeader descriptionAsHelp
         hideHeading={hideHeading}
         eyebrow="Заказ"
         title="Корзина клиники"
@@ -126,7 +126,7 @@ export function BuyerCart({
           />
         </Section>
       ) : (
-        <Section
+        <Section descriptionAsHelp
           title={`${cart.items.length} позиций`}
           description="Актуальная версия корзины"
           className={styles.cartSection}

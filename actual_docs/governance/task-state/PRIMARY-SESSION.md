@@ -6,6 +6,60 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 15.10 — рамки предупреждений, разделители и подсказки кабинетов: LOCAL PASS, публикация pending
+
+Запрос владельца: предупреждения о недостающих реквизитах отделить тонкой рамкой
+в цвет текста; тематические группы полей разделять как рабочие контакты;
+обращения к текущему пользователю на «вы»; описания назначения страниц/секций
+перенести в вопросительный знак рядом с заголовком, для клиники и поставщика.
+Отдельно объяснить налоговые поля; согласованное упрощение указано ниже.
+Уточнение владельца принято: на виду статус и дата начала; остальные поля —
+раскрываемые «Дополнительные сведения». Backend/API/семантика дат сохраняются.
+Ошибки скрытых полей автоматически раскрывают блок перед фокусом validation;
+данные сохраняются и при свёрнутом блоке, заполненность отмечается в заголовке.
+HEAD02cb2d6, canonical root/main; прежний WIP в .tmp/ui-guidance/baseline.json.
+Паспорт: существующие Manrope14/18, controls44/32, radius8/12, spacing8/16/24;
+семантическая рамка1px currentColor. Аналоги: DmInfoTip (hover/focus/touch),
+account-settings.module.css .contact + .contact, DmFeedback note. Текущий screenshot
+requisites-editor-1440 из предыдущей неизменённой версии просмотрен.
+План: общие adapters для заголовка/групп, bordered note, применение к пояснениям
+обоих кабинетов и проверка role-aware текстов. Видимые ошибки/состояния сохраняются.
+Риск: shared consumers, доступность popover, форма/validation и mobile wrapping.
+Checks: UI types/unit по изменённым interactions, scoped lint/UI-contract,
+targeted mock browser requisites/VAT/settings и representative headers1440/390,
+hover/focus/touch/Escape, screenshots/computed; итоговая изолированная web build/types,
+review/diff hygiene, выборочный commit/push и actual CI. Не менять рабочие данные.
+До решения по налоговому статусу сохранять backend/API и семантику периодов.
+Лимит gate3, завершение после всего согласованного scope без следующей фазы.
+
+Реализация: общий DmHeading/descriptionAsHelp для пояснений кабинетов,
+DmFormSections для юридической формы/банков/налогового статуса; note с рамкой.
+Пояснения Settings/VAT/ERP/складов/источников, сеансов, импорта и заголовков
+buyer/supplier features перенесены в help. Role-aware обращения исправлены;
+фактические сведения, ошибки и названия контрагентов остались видимыми.
+Дополнительные налоговые поля вынесены в RequisitesTaxPeriod; браузер доказал
+сохранение скрытых значений и повторное auto-open/focus при ошибке даты.
+Общий DmInfoTip исправлен: Escape закрывает hovered help без фокуса trigger и
+не закрывает родительский dialog. До исправления help attempt1:2PASS/2FAIL;
+attempt2:6PASS, включая новые tax details cases. Логи .tmp/ui-guidance.
+
+Итоговые проверки на коде: UI types PASS; UI unit18files/90tests PASS;
+scoped ESLint PASS; verify:ui-contract386files PASS; E2E types PASS;
+изолированная Next webpack build+types49routes PASS (build-run.log).
+Browser final1:13PASS/3FAIL; две проверки clinic ожидали прежний видимый текст,
+перенесённый в help — assertions обновлены. Один intermittent mobile profile
+focus fail при параллельной сборке; код inline-edit не менялся, точная причина
+не доказана. Отдельный final2 после сборки5PASS: эти3cases + buyer VAT2.
+Финальная browser граница:18 основных cases +6 help/tax +4 visual PASS.
+Визуальные screenshots/computed1440/390 просмотрены: border/text rgb154/90/19,
+border1/radius12/padding16, header help в строке, maxform960/field440,
+без overflow. Stable VAT shots повторены после окончания popover fade:
+output/playwright/ui-guidance-visual-stable; остальные ui-guidance-help-2,
+ui-guidance-final-1/2, ui-guidance-visual-1. Backend/schema/рабочие данные не менялись.
+Следующий шаг: selective review/stage/commit/push только собственного diff,
+проверка exact remote SHA и actual CI. Own files manifest .tmp/ui-guidance;
+старый WIP сохранён, индекс пока пуст. Dev3000/API4012 продолжают работать.
+
 ### 15.10 — UI Settings/controls: LOCAL PASS, публикация/CI pending
 
 Запрос: убрать случайное растяжение действий/уведомлений/селекторов в VAT и

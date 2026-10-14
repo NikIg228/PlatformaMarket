@@ -43,12 +43,12 @@ export function SupplierCompliance({
 }) {
   return (
     <div className="mp-stack">
-      <PageHeader
+      <PageHeader descriptionAsHelp
         eyebrow="Регуляторика"
         title="Комплаенс и документы организации"
         description="Загрузите лицензии и регистрационные документы. Мы проверим срок действия и сохраним историю изменений."
       />
-      <Section
+      <Section descriptionAsHelp
         title="Добавить документ"
         description="После отправки документ появится со статусом «Ожидает проверки»"
       >

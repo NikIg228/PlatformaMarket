@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useCallback } from "react";
-import { DmButton, ErrorState, LoadingState } from "@marketplace/ui";
+import { DmHeading, DmButton, ErrorState, LoadingState } from "@marketplace/ui";
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
 import { ResourceStatus } from "./resource-status";
@@ -30,7 +30,7 @@ export default function Dashboard() {
         <Link href="/supplier/products">Управлять товарами →</Link>
       </section>
       <section className={styles.panel}>
-        <h2>Организация</h2><p>Проверьте реквизиты, склад и готовность к публикации предложений.</p>
+        <DmHeading title="Организация" description="Проверьте ваши реквизиты, склад и готовность к публикации предложений." />
         <Link href="/supplier/settings">Настройки →</Link>
       </section>
     </div>

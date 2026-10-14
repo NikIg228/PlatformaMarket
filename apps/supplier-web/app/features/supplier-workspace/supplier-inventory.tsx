@@ -35,7 +35,7 @@ export function SupplierInventory({
 }) {
   return (
     <div className="mp-stack">
-      <PageHeader
+      <PageHeader descriptionAsHelp
         eyebrow="Складской учёт"
         title="Остатки и партии"
         description="Доступное количество учитывает резервы, страховой запас и время последнего обновления."
@@ -118,7 +118,7 @@ export function SupplierInventory({
         )}
       </Section>
       {overrides.length ? (
-        <Section
+        <Section descriptionAsHelp
           title="Ручные переопределения"
           description="Данные, защищённые от автоматической перезаписи"
         >
