@@ -20,8 +20,8 @@
 
 | Документ | Класс | Назначение |
 | --- | --- | --- |
-| [Admin roadmap](applications/admin-roadmap.md) | CURRENT | Профильные требования ADM-00–11: login/shell, все разделы, API, права, очереди и аудит; исполнение в R7.7 основного roadmap |
-| [Workflow документооборота](domains/MARKET_DOCUMENT_WORKFLOW.md) | CURRENT | Профильная техническая спецификация13.10: согласованная цепочка, границы, открытые решения и приёмка; статусы исполнения в R0–R9 |
+| [Admin roadmap](applications/admin-roadmap.md) | CURRENT | ADM-00–11 и структура реализации14.10: разделы, права, реестры, входы/результаты/проверки R7.7, общая модель документов |
+| [Workflow документооборота](domains/MARKET_DOCUMENT_WORKFLOW.md) | CURRENT | Спецификация с уточнением14.10: цепочка, модель версий/сторон/комплекта, матрица действий, входы/результаты/проверки R7.6; открытые решения сохранены |
 | [FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md](FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md) | CURRENT | Приоритет №1: функциональная карта, целевые решения, совместный backend/UI DoD; checklist/status R0–R9 в реестре исполнения |
 | [Корневой README](../README.md) | CURRENT | Краткий вход |
 | [AGENTS](../AGENTS.md) | CURRENT | Границы и порядок работы |

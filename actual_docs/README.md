@@ -22,6 +22,13 @@
 | Контекст выбранной задачи | [Checkpoint](governance/task-state/PRIMARY-SESSION.md), актуальная карточка задачи; объём задаёт пользователь |
 | Классификация всех материалов | [Documentation index](DOCUMENTATION_INDEX.md) |
 
+Для реализации документов/Admin после выбранного R-ID читать
+[порядок и зависимости](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#documents-admin-execution),
+[модель/пакеты документов](domains/MARKET_DOCUMENT_WORKFLOW.md#implementation-contract),
+[структуру/пакеты Admin](applications/admin-roadmap.md#implementation-contract) и только
+относящиеся к сценарию [открытые входы](governance/ROADMAP-QUESTIONS-AND-DECISIONS.md#documents-admin-readiness).
+Эти разделы задают границы исполнения; результат всё ещё требует кода и evidence.
+
 Запрос пользователя определяет разрешённый scope. Наличие R0–R9 не поручает
 выполнить все этапы. Старый PASS ограничен своими inputs, незавершённый WIP
 не считается принятым или опубликованным. Историческая задача пересборки:
