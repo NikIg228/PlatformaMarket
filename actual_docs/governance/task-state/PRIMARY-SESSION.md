@@ -6,6 +6,28 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 14.10 — promotion CI ACCEPTED; подготовка НДС
+
+Исправление опубликовано в main: 03828c311fb3f4bec2ddcfd04c63571b20b6fcb5.
+[CI38583712037](https://github.com/NikIg228/PlatformaMarket/actions/runs/38583712037)
+и [Security38583712595](https://github.com/NikIg228/PlatformaMarket/actions/runs/38583712595)
+SUCCESS. Все4 jobs CI и оба Security jobs PASS; canonical browser, full-access,
+enabled-module build и promotion workspace прошли. Предыдущий blocker закрыт.
+Roadmap: promotion отмечен [x], общий R7.2 остаётся открытым по остальным пунктам.
+Профиль реквизитов dd1dac8 опубликован и проверен текущим общим CI.
+
+Продолжение R7.6.1.4: сверены существующие поля/формы, checkout snapshots,
+ERP/override writers. DWF §17.6.1 фиксирует проект режимов, точного расчёта,
+версий и совместимости; implementation log и журнал решений синхронизированы.
+Нет утверждённых правил применимости/даты оборота/округления/перехода legacy;
+вопрос владельцу отправлен, ответа пока нет. Зависимый налоговый код не менялся.
+Это подготовка, не завершение всей цепочки и не разрешение менять цены/данные.
+
+Финальный пакет только docs: links/source consistency/diff review PASS;
+продуктовые проверки переиспользованы на неизменном коде03828c3.
+Публикация этого документационного пакета/его CI фиксируются отдельно;
+не объявлять их PASS по предыдущему SHA. Unrelated WIP сохранён.
+
 ### 14.10 — roadmap sync и promotion operator fixture (LOCAL_PASS; CI pending)
 Владелец «приступай» разрешил: синхронизировать roadmap → исправить promotion
 CI blocker → после приёмки сверить и продолжить R7.6.1.4. HEAD60a9860 canonical

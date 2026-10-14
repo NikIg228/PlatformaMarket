@@ -40,14 +40,13 @@ checklist по фактическому DoD и краткое техническ
 
 ## Где находится проект
 
-Текущая приёмка14.10 на60a9860: canonical browser113/113 и full-access3/3
-PASS в CI; Security, сборки, PostgreSQL и extended API PASS. Исправлены catalog/
-unified/profile assertions и лимит чтения workspace-context; изменения опубликованы.
-Общий CI38579022595 FAILURE на отдельном promotion-workspace operator test:
-3PASS/1FAIL. Fixture не содержит sessionId/user.id, поэтому identity guard
-останавливает вход до API-запроса. Fixture исправлен; targeted promotion4/4PASS, go_live build/types/lint PASS.
-Публикация исправления и новая общая CI-приёмка pending.
-R7.2 целиком и переход к следующему продуктовому пакету пока не закрыты.
+Текущая приёмка14.10 на03828c3: [CI38583712037](https://github.com/NikIg228/PlatformaMarket/actions/runs/38583712037) и Security38583712595 SUCCESS.
+Закрыты catalog/unified/profile assertions, workspace-context read limit и
+promotion operator fixture. Общий browser, full-access, promotion workspace,
+сборки, PostgreSQL и остальные включённые CI gates PASS. Это приёмка текущего
+пакета, не закрытие всего R7.2 или production roadmap.
+Следующий R7.6.1.4: профиль реквизитов опубликован/проверен; подготовлен DWF §17.6.1,
+налоговая цепочка ожидает правил применимости, даты, округления и перехода данных.
 Подробные receipts — [PRIMARY-SESSION](governance/task-state/PRIMARY-SESSION.md).
 
 Цель владельца08.10 — production с необходимыми интеграциями,
@@ -525,8 +524,8 @@ R7.6/R7.7 PLANNED. Полная переработка Admin теперь вхо
     focus и comparison fixture приняты в CI60a9860 (canonical113/113PASS).
   - [x] Чтение workspace-context: обычные API limits, строгий login limit сохранён;
     published60a9860, full-access3/3PASS и проверка границ throttling PASS.
-  - [ ] Остаток promotion-workspace: принять вход fixture оператора и согласование
-    акции с клавиатуры: LOCAL_PASS4/4; общий CI текущего пакета pending.
+  - [x] Остаток promotion-workspace: вход fixture оператора и согласование
+    акции с клавиатуры приняты: LOCAL_PASS4/4 и общий CI03828c3 SUCCESS.
   - [ ] **R7.2.1** Исправить lifecycle авторизации клиники/поставщика/Admin:
     ручные переходы URL и safe return, несовместимая роль, явная смена аккаунта,
     восстановление без смены identity, logout целевой сессии и recovery после
@@ -619,7 +618,7 @@ SMS физлица — отдельный согласованный докум�
   <a id="document-vat"></a>
 
   - [ ] **R7.6.1.4** Реквизиты и НДС: профиль поставщика → предложение → заказ → документы.
-    IN_PROGRESS: первый пакет профиля реализован локально; targeted UI/API/PostgreSQL PASS, Prisma generate, рабочая миграция и dev restart PASS; публикация/CI pending. [Контракт пакета](domains/MARKET_DOCUMENT_WORKFLOW.md#organization-requisites-runtime), [evidence/блокеры](governance/task-state/PRIMARY-SESSION.md). Остальная налоговая цепочка PLANNED. Внесено по поручению владельца14.10;
+    IN_PROGRESS: первый пакет профиля опубликован в dd1dac8; targeted UI/API/PostgreSQL, рабочая миграция/dev и общий CI03828c3 PASS. [Контракт пакета](domains/MARKET_DOCUMENT_WORKFLOW.md#organization-requisites-runtime), [evidence/блокеры](governance/task-state/PRIMARY-SESSION.md). Остальная налоговая цепочка PLANNED; сверка реализации и открытые решения — DWF §17.6.1. Внесено по поручению владельца14.10;
     описание оставшейся цепочки не означает её реализацию. Контракт — [DWF §17.5–17.6](domains/MARKET_DOCUMENT_WORKFLOW.md#supplier-vat-proposal).
     Последовательность и границы результата:
     - **Профиль:** общие реквизиты вводятся и подтверждаются один раз, затем
@@ -649,7 +648,7 @@ SMS физлица — отдельный согласованный докум�
     До зависимого расчёта фиксируются применимые налоговые правила/основания,
     округление и переход через дату изменения режима. Начать можно с контракта
     и сквозного профиля реквизитов; это не закрывает весь подпункт без цепочки
-    предложения/заказа/документов. Фактическая реализация и evidence пока отсутствуют.
+    предложения/заказа/документов. Для оставшейся налоговой цепочки реализация и evidence пока отсутствуют; профиль принят отдельно.
 
 - [ ] **R7.6.2** Завершить GENERATED-счёт: генерация из актуального заказа поставщика,
   проверка суммы/версии/связей, отдельное подтверждение поставщиком, видимость клинике,
