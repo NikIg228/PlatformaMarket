@@ -1,34 +1,9 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "projectName": "Platforma.Market",
   "projectId": "local-affe45ff7ccd29c6dcc081e3663d7082",
   "canonicalRoot": "C:\\Users\\user\\Desktop\\dentmarket-kz-main",
-  "generation": 6,
-  "primaryThreadId": "01a11758-1c55-7e52-bf15-2a04427aaf5d",
-  "successorThreadId": null,
-  "transition": "idle",
-  "autoHandoffEnabled": true,
-  "rolloverPolicy": "after-task-completion",
-  "hookActivationStatus": "REQUIRES_REVIEW_AND_TRUST",
-  "handoffPath": "actual_docs/PROJECT_HANDOFF.md",
   "checkpointPath": "actual_docs/governance/task-state/PRIMARY-SESSION.md",
-  "protocolPath": "actual_docs/governance/SESSION_ROLLOVER.md",
-  "retiredThreadIds": [
-    "01a0c957-1f23-7b70-9dc9-226afbb5c0b1",
-    "01a0c415-1c3c-73e3-a270-5ad591fa9ca7",
-    "01a0c36e-38a1-7942-957b-9e8620c01442",
-    "019fc298-67f6-77c3-bd13-456defdc513c",
-    "01a020bb-35e2-76e3-8ae5-b7932e9e7909",
-    "01a02551-6288-7e10-b66f-d67bd887ff05",
-    "01a025b2-389e-78a2-90fe-8ca01b056de4",
-    "01a0f302-2d38-75d1-b79c-141e7428b533",
-    "01a0fd63-0ae1-71e2-a4d4-271515cf0d40"
-  ],
-  "sourceThreadIds": [
-    "019fc298-67f6-77c3-bd13-456defdc513c",
-    "01a020bb-35e2-76e3-8ae5-b7932e9e7909",
-    "01a02551-6288-7e10-b66f-d67bd887ff05",
-    "01a025b2-389e-78a2-90fe-8ca01b056de4"
-  ],
-  "lastAuthorization": "2026-10-07: owner explicitly requested transfer of all context to a new chat. Manual transfer at main75dab025da6fa0cfd70a14336a01203f315d8aee is authorized despite CI37654735114 and Security37654735057 FAILURE; local gates PASS does not imply CI PASS. Create one fresh local saved-project successor, read-only comprehension first. Preserve running canonical dev2196 and all files. No product changes, CI repair, tests, commit/push, DB writes, worktrees, hook/trust changes. Only handoff metadata writes until finalizer appointment. Read-only comprehension READY verified in completed turn01a11758-1e53-7aa1-ad45-62d199147520, including all Git/dirty/CI/dev/scope constraints. Successor01a11758-1c55-7e52-bf15-2a04427aaf5d is sole finalizer of generation6. Source ceases ALL filesystem/product writes now and ends its turn. Finalizer must verify source idle, archive source using native tool, confirm archive and finalize same transition idle/successorThreadId=null. No product work or new transfer. Finalized 2026-10-07: native wait_threads confirmed source idle and turn01a11756-8a93-7851-8c77-f1bad69d3829 completed; set_thread_archived returned archived=true for source01a0fd63-0ae1-71e2-a4d4-271515cf0d40, independently confirmed by list_archived_threads. Same generation6 finalized idle, successorThreadId=null, primary unchanged. Only three handoff metadata changed; CI/Security FAILURE and dev2196 preserved. Await next owner task."
+  "contextTransferPath": "actual_docs/governance/SESSION_ROLLOVER.md",
+  "policy": "User-directed tasks; explicit context transfer only. No thread ownership or automatic coordination."
 }

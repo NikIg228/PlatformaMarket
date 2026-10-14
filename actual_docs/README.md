@@ -19,7 +19,7 @@
 | Что принято на конкретной версии | [Acceptance Matrix](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
 | Краткие технические результаты этапов | [Admin](applications/admin-implementation-log.md), [документооборот](domains/document-workflow-implementation-log.md) |
 | Возникшие вопросы и принятые варианты | [Журнал вопросов и решений](governance/ROADMAP-QUESTIONS-AND-DECISIONS.md) |
-| Текущее владение и состояние выбранной задачи | [Реестр сессии](../.codex/project-session.json), [primary](governance/task-state/PRIMARY-SESSION.md), актуальная карточка задачи |
+| Контекст выбранной задачи | [Checkpoint](governance/task-state/PRIMARY-SESSION.md), актуальная карточка задачи; объём задаёт пользователь |
 | Классификация всех материалов | [Documentation index](DOCUMENTATION_INDEX.md) |
 
 Запрос пользователя определяет разрешённый scope. Наличие R0–R9 не поручает

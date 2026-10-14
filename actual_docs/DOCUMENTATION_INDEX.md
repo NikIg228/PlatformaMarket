@@ -30,7 +30,7 @@
 | [domains/document-workflow-implementation-log.md](domains/document-workflow-implementation-log.md) | EXECUTION | Краткие результаты документооборота по R7.6 |
 | [governance/ROADMAP-QUESTIONS-AND-DECISIONS.md](governance/ROADMAP-QUESTIONS-AND-DECISIONS.md) | EXECUTION | Вопросы, рекомендации и самостоятельные решения; не второй backlog |
 | [MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md) | CURRENT | Рабочий источник по назначению |
-| [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) | EXECUTION | Читать только для выбранного scope/владения |
+| [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) | EXECUTION | Краткое описание контекста при явном поручении передать задачу |
 | [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) | CURRENT | Рабочий источник по назначению |
 | [README.md](README.md) | CURRENT | Рабочий источник по назначению |
 | [applications/admin-web.md](applications/admin-web.md) | REFERENCE | Карта кода; маршруты и статус сверять с текущим кодом |
