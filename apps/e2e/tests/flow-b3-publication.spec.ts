@@ -155,7 +155,7 @@ for (const fileType of ["CSV", "EXCEL"] as const) test(`operator approves ${file
   if (process.env.FLOW_B3_UNIFIED === "true") revokeOperator = await installOperatorSession(page, prisma, operator);
   await page.goto(process.env.FLOW_B3_UNIFIED === "true" ? "/admin" : "http://127.0.0.1:3010");
   await expect(page.getByText("Проверяем вход...")).toBeHidden({ timeout: 15_000 });
-  await page.getByRole("button", { name: "Загрузка товаров", exact: true }).click();
+  await page.getByRole("link", { name: "Загрузка товаров", exact: true }).click();
   const card = page.getByTestId(`import-review-${candidateId}`);
   await expect(card).toBeVisible();
   await card.getByLabel("Каноническое название").fill(uniqueName);

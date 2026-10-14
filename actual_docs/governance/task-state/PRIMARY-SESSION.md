@@ -6,6 +6,25 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 14.10 — исправление CI-селектора импорта (LOCAL_PASS, публикация pending)
+Владелец «Приступай» разрешил приёмку и публикацию существующей правки
+flow-b3-publication.spec.ts: button→link для навигации «Загрузка товаров».
+База main dd1dac8; несвязанный WIP сохраняется. Риск — корректность достижения
+экрана импорта; продуктовая логика не меняется. План: целевой flow-b3
+на disposable DB/отдельном API, E2E typecheck и diff hygiene, selective commit/push,
+фактический CI. Исходный CI FAIL1 сохранён; итог локальных проверок ниже.
+Dev3000/4012 не останавливать. Сборки/API checks предыдущего пакета неизменны.
+Результат: 2 изменённых CSV/EXCEL flow PASS20.7s; оставшиеся 5 неизменённых
+flow-b3 tests REUSED_PASS по CI38551470768. E2E typecheck и diff hygiene PASS.
+Локальная попытка1 FAIL2: nav/save/publication пройдены, catalog-search frontend
+обратился к рабочему API (браузерный proxy перехватывал только /api).
+Попытка2 PASS2: отдельный frontend3016 на ранее проверенной isolated build,
+INTERNAL_API_URL4116, собственный API4116/disposable DB. Проверки не ослаблены,
+API responses реальные. Test fixtures cleaned; собственные servers остановлены.
+Команда: npm run db:test -- exec -- node .tmp/import-selector-2026-10-14/run.mjs.
+Локальный runner/proxy не публикуется: CI использует стандартный canonical flow.
+Изменение публикации — только button→link плюс эта запись evidence.
+
 ### 14.10 — R7.6.1.4: сквозной профиль реквизитов (LOCAL_PASS, публикация pending)
 Финальный локальный результат14.10: владелец явно разрешил дополнительный запуск
 после исправления команды dev. Попытка4 npm run dev без временного adapter и
