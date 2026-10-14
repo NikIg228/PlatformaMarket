@@ -40,6 +40,16 @@ checklist по фактическому DoD и краткое техническ
 
 ## Где находится проект
 
+Текущая приёмка14.10 на60a9860: canonical browser113/113 и full-access3/3
+PASS в CI; Security, сборки, PostgreSQL и extended API PASS. Исправлены catalog/
+unified/profile assertions и лимит чтения workspace-context; изменения опубликованы.
+Общий CI38579022595 FAILURE на отдельном promotion-workspace operator test:
+3PASS/1FAIL. Fixture не содержит sessionId/user.id, поэтому identity guard
+останавливает вход до API-запроса. Fixture исправлен; targeted promotion4/4PASS, go_live build/types/lint PASS.
+Публикация исправления и новая общая CI-приёмка pending.
+R7.2 целиком и переход к следующему продуктовому пакету пока не закрыты.
+Подробные receipts — [PRIMARY-SESSION](governance/task-state/PRIMARY-SESSION.md).
+
 Цель владельца08.10 — production с необходимыми интеграциями,
 SMS/SMTP, самостоятельными1С/МойСклад обеих ролей, Excel/CSV и AI-стандартизатором.
 Реальные участники не подтверждены evidence запуска. После добавления двух крупных
@@ -511,6 +521,12 @@ R7.6/R7.7 PLANNED. Полная переработка Admin теперь вхо
   приёмка связанной matrix и прочих прежних UI/regression обязательств, без второго
   выполнения тех же задач. Разобрать текущие CI public-catalog/unified/profile
   failures по актуальным inputs, не объявлять их исправленными из-за локального PASS.
+  - [x] Остаток public-catalog/unified/profile: актуальные selectors, sticky toolbar,
+    focus и comparison fixture приняты в CI60a9860 (canonical113/113PASS).
+  - [x] Чтение workspace-context: обычные API limits, строгий login limit сохранён;
+    published60a9860, full-access3/3PASS и проверка границ throttling PASS.
+  - [ ] Остаток promotion-workspace: принять вход fixture оператора и согласование
+    акции с клавиатуры: LOCAL_PASS4/4; общий CI текущего пакета pending.
   - [ ] **R7.2.1** Исправить lifecycle авторизации клиники/поставщика/Admin:
     ручные переходы URL и safe return, несовместимая роль, явная смена аккаунта,
     восстановление без смены identity, logout целевой сессии и recovery после

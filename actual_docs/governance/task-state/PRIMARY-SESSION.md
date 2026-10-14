@@ -6,6 +6,30 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 14.10 — roadmap sync и promotion operator fixture (LOCAL_PASS; CI pending)
+Владелец «приступай» разрешил: синхронизировать roadmap → исправить promotion
+CI blocker → после приёмки сверить и продолжить R7.6.1.4. HEAD60a9860 canonical
+main; preexisting WIP сохраняется. Scope текущего пакета — только fixture session
+identity и документация статусов. sameIdentity требует sessionId+user.id+org;
+старый promotion fixture имеет только token+org, guard падает до API/heading.
+Риск: достоверность теста, не новый auth contract. План: completefixture по
+workspace-rebuild образцу, isolated go_live webbuild, targeted operator flow и
+остальные3promotion tests, E2Etypes/lint/diff/review/selectivepublish/actualCI.
+R7.2/НДС не закрывать по частному PASS; рабочие данные/devservers не менять.
+
+Результат: fixture добавлены sessionId/user.id/expiresAt, guard не обходится.
+Существующие assertions/filter/APPROVE version/retry сохранены. Один запуск
+promotion-workspace4/4PASS18.3s на isolated3016/4116 и go_live build; E2Etypes,
+scopedlint/diff PASS. go_live webbuild PASS (новые generated artifacts .tmp,
+исходники не копировались), frontend source не менялся. Dev3000/4012 сохранены.
+Команды: DEPLOYMENT_PROFILE=go_live npm run build --workspace=@marketplace/web
+с NEXT_ADAPTER_PATH .tmp/promotion-ci-2026-10-14/next-adapter.mjs;
+npm run db:test -- exec -- node .tmp/import-selector-2026-10-14/run.mjs
+../promotion-ci-2026-10-14/playwright.config.ts; npm run typecheck --workspace=@marketplace/e2e;
+npm exec -- eslint apps/e2e/tests/promotion-workspace.spec.ts --max-warnings=0.
+Roadmap синхронизирован:2 scoped результата [x], общийR7.2 и promotionCI ещё [ ].
+Selective publication: только1fixture+текущие roadmap/log/checkpoint записи.
+
 ### 14.10 — workspace-context read throttling (LOCAL_PASS; CI pending)
 Владелец «приступай» разрешил исправить диагностированный read-limit blocker.
 База d5e42b2; canonical root/main, unrelated WIP сохраняется. Изменение: только

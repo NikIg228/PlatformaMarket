@@ -13,7 +13,7 @@ test("enabled promotions keep permission denial before business reads", async ({
 });
 
 test("shared promotion workspace keeps operator review and keyboard filtering", async ({ page }) => {
-  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "admin-ui-fixture", activeOrganizationId: "00000000-0000-4000-8000-000000000001" })));
+  await page.addInitScript(() => sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ accessToken: "admin-ui-fixture", sessionId: "00000000-0000-4000-8000-000000000003", user: { id: "00000000-0000-4000-8000-000000000002", displayName: "Оператор проверки" }, activeOrganizationId: "00000000-0000-4000-8000-000000000001", expiresAt: Date.now() + 3600000 })));
   let approved = false;
   const filters: string[] = [];
   const writes: Array<Record<string, unknown>> = [];

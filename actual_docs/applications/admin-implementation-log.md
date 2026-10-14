@@ -1,5 +1,14 @@
 # Admin — выполненные этапы и технические решения
 
+## 14.10 / R7.2 — fixture входа в согласование акций
+
+CI60a9860 подтвердил canonical113/113 и full-access3/3, но promotion4tests имел
+один FAIL до открытия Admin. Старая fixture с token/org не содержала sessionId
+и user.id, поэтому adminAccessToken отклонял идентичность до API-запроса.
+Fixture приведён к текущему контракту по образцу workspace-rebuild; production
+auth не изменён. go_live build, targeted promotion4/4, E2Etypes/lint PASS.
+Новая публикация/CI pending; это не приёмка всего R7.7. [Evidence](../governance/task-state/PRIMARY-SESSION.md).
+
 Обновлено 14.10.2026. Краткий журнал результатов кабинета оператора для владельца
 и разработчиков. Требования — [Admin roadmap](admin-roadmap.md), единственный
 checklist — [R7.7 основного roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#admin-rebuild).
