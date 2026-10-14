@@ -70,6 +70,12 @@ export class AuthSessionsController {
   clientOptions() { return this.sessions.clientOptions(); }
 
   @Get("workspace-context") @Header("Cache-Control", "no-store")
+  // Every workspace page verifies context; this read is not a credential attempt.
+  @Throttle({
+    ip: { limit: () => environment().RATE_LIMIT_REQUESTS, ttl: () => environment().RATE_LIMIT_TTL_MS },
+    user: { limit: () => environment().RATE_LIMIT_REQUESTS * 2, ttl: () => environment().RATE_LIMIT_TTL_MS },
+    tenant: { limit: () => environment().RATE_LIMIT_REQUESTS * 5, ttl: () => environment().RATE_LIMIT_TTL_MS },
+  })
   @ApiCoreProtected()
   @ApiCoreResponse("WorkspaceContextResponse")
   @ApiCoreResponse("ErrorResponse", 401) @ApiCoreResponse("ErrorResponse", 403) @ApiCoreResponse("ErrorResponse", 429)

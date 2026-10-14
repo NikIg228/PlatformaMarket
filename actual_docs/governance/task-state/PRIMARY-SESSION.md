@@ -6,6 +6,36 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 14.10 — workspace-context read throttling (LOCAL_PASS; CI pending)
+Владелец «приступай» разрешил исправить диагностированный read-limit blocker.
+База d5e42b2; canonical root/main, unrelated WIP сохраняется. Изменение: только
+GET /auth/workspace-context получает обычные API ip/user/tenant limits, как current;
+credential endpoints сохраняют20/30/60 за60s. Риск — auth rate-limit regression.
+Диагностика: isolated SUPPLIER1PASS4HTTP200; запрос21→429 RATE_LIMIT_EXCEEDED,
+Retry-After60, тот же экран ошибки CI. Оригинальный CI status не записан.
+Gates: focused identity/rate-limit tests сразу после controller change; API/E2E
+типы, lint, API build, targeted full-access3 roles+21 valid context reads;
+проверка конечного configurable limit, diff/review/selective commit/push/actualCI.
+Контракт request/response, membership guard и UI не меняются; migration не нужна.
+
+Результат: focused API5files/30testsPASS (current-session, workspace-context,
+auth-api-contract, rate-limit.storage, identity-headers). API/E2E typecheck и lint
+3files PASS. npm run build --workspace=@marketplace/api остановился на prebuild
+Prisma EPERM DLL lock (dev API живой); schema/Prisma inputs неизменны. Реальная
+компиляция npm exec --workspace=@marketplace/api -- nest build PASS с existing
+client. verify:runtime-split wrapper повторил тот же prebuild lock; фактический
+node scripts/verify-runtime-split.mjs на новой сборке PASS всех probes/guards.
+Prisma generate больше не повторялся, dev процессы не останавливались.
+Browser: db:test + .tmp/import-selector-2026-10-14/run.mjs с
+../full-access-diagnosis-2026-10-14/full-fixed.config.ts — 3PASS (BUYER/SUPPLIER/
+OPERATOR), включая новый21read regression, foreign tenant403 и blocked member403.
+Отдельный rate-fixed.config.ts — 1PASS: configured read24 пропускает24 запроса,
+25→429 RATE_LIMIT_EXCEEDED/Retry-After60; login invalid-input20→400,21→429.
+UI/build frontend reused без изменений. Schema/migration не затронуты.
+Review: только один read endpoint override, все3 scopes+TTL проверены; login,
+register, forgot/reset ограничения сохранены. Обходов auth/retry/skip нет.
+Публикация:3 code/test paths и этот brief; несвязанный WIP исключён. CI pending.
+
 ### 14.10 — возобновление CI assertions после диагностики (LOCAL_PASS; CI pending)
 Владелец «продолжай» разрешил исправить диагностированные 7 browser failures.
 HEAD7792563; source root canonical, несвязанный WIP сохраняется. Scope: проверки

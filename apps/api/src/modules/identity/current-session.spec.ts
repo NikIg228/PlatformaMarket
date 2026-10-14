@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { AuthSessionsService } from "./auth-sessions.service";
 import { AuthSessionsController } from "./auth-sessions.controller";
-import { THROTTLER_LIMIT } from "@nestjs/throttler/dist/throttler.constants";
+import { THROTTLER_LIMIT, THROTTLER_TTL } from "@nestjs/throttler/dist/throttler.constants";
 import { environment } from "../../platform/config/environment";
 vi.mock("../../platform/config/environment", () => ({ environment: () => ({ AUTH_ACCESS_TOKEN_TTL_SECONDS: 900, RATE_LIMIT_REQUESTS: 240, RATE_LIMIT_TTL_MS: 60000, JWT_SECRET: "synthetic-current-session-secret", JWT_ISSUER: "tests", JWT_AUDIENCE: "tests" }) }));
 
@@ -11,6 +11,20 @@ function setup(capabilities = ["SUPPLIER"]) {
   return { session, db, service: new AuthSessionsService(db as never, {} as never, {} as never, {} as never) };
 }
 describe("read-only current session", () => {
+  it.each([["ip", 1, 20], ["user", 2, 30], ["tenant", 5, 60]] as const)("uses the standard %s policy for workspace reads and keeps credential limits", (scope, multiplier, credentialLimit) => {
+    const controller = new AuthSessionsController(setup().service);
+    const limit = Reflect.getMetadata(`${THROTTLER_LIMIT}${scope}`, controller.workspaceContext);
+    const ttl = Reflect.getMetadata(`${THROTTLER_TTL}${scope}`, controller.workspaceContext);
+    expect(typeof limit).toBe("function");
+    expect(typeof ttl).toBe("function");
+    expect(limit()).toBe(environment().RATE_LIMIT_REQUESTS * multiplier);
+    expect(ttl()).toBe(environment().RATE_LIMIT_TTL_MS);
+    expect(Reflect.getMetadata(`${THROTTLER_LIMIT}${scope}`, AuthSessionsController)).toBe(credentialLimit);
+    expect(Reflect.getMetadata(`${THROTTLER_TTL}${scope}`, AuthSessionsController)).toBe(60_000);
+    for (const method of [controller.login, controller.register, controller.forgotPassword, controller.resetPassword]) {
+      expect(Reflect.getMetadata(`${THROTTLER_LIMIT}${scope}`, method)).toBeUndefined();
+    }
+  });
   it("serializes an anonymous response as JSON null and keeps credential throttling separate", async () => {
     const t = setup();
     const controller = new AuthSessionsController(t.service);

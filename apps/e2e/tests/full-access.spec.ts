@@ -37,6 +37,15 @@ for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const)
         expect(await assignees.json()).toEqual(expect.arrayContaining([expect.objectContaining({ id: user.id })]));
       }
       if (capability === "SUPPLIER") {
+        // Page-entry checks share an IP across workspaces. They must not consume
+        // the 20/minute credential-attempt allowance and block normal navigation.
+        await test.step("Workspace context reads exceed the credential-attempt limit", async () => {
+          for (let read = 0; read < 21; read++) {
+            const context = await request.get("/api/auth/workspace-context", { headers });
+            expect(context.status()).toBe(200);
+            expect(await context.json()).toMatchObject({ organizationId: org.id, capabilities: ["SUPPLIER"] });
+          }
+        });
         expect((await request.get("/api/supplier-terms/current", { headers })).status()).toBe(200);
         const paymentPolicy = await request.get("/api/suppliers/current/payment-review-policy", { headers });
         expect(paymentPolicy.status()).toBe(200);
