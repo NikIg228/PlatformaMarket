@@ -90,8 +90,8 @@ test("documents upload retains file draft and retry, read role hides accounting"
   await dialog.getByRole("button", { name: "Закрыть, сохранив черновик" }).click(); await page.getByRole("button", { name: "Загрузить документ", exact: true }).click(); await expect(dialog.getByLabel(/^Название/)).toHaveValue("Тестовый документ"); await expect(dialog.getByText("Выбран: test.pdf")).toBeVisible();
   await dialog.getByRole("button", { name: "Загрузить", exact: true }).click(); await expect(page.getByRole("alert")).toContainText("Документ не загружен"); state.uploadFail = false; await dialog.getByRole("button", { name: "Загрузить", exact: true }).click(); await expect(dialog).toBeHidden(); expect(state.writes.at(-1)).toMatchObject({ title: "Тестовый документ", fileName: "test.pdf", ownerOrganizationId: organizationId }); expect(state.unexpected).toEqual([]);
 });
-test("documents old organization link opens Settings agreement", async ({ page }) => {
-  const state = await fixture(page, "supplier"); await page.goto("/supplier/documents?organization=1"); await expect(page).toHaveURL(/supplier\/settings\?tab=documents$/); await expect(page.getByRole("heading", { name: "Договор с площадкой" })).toBeVisible(); await expect(page.getByRole("tab", { name: "Договор и документы" })).toHaveAttribute("aria-selected", "true"); expect(state.unexpected).toEqual([]);
+test("documents old organization link stays in the document archive", async ({ page }) => {
+  const state = await fixture(page, "supplier"); await page.goto("/supplier/documents?organization=1"); await expect(page).toHaveURL(/supplier\/documents\?organization=1$/); await expect(page.getByRole("button", { name: "Загрузить документ", exact: true })).toBeVisible(); await expect(page.getByRole("heading", { name: "Договор с площадкой" })).toHaveCount(0); expect(state.unexpected).toEqual([]);
 });
 test("documents mobile drawer settled visual and keyboard", async ({ page }, info) => {
   await fixture(page, "supplier"); await page.setViewportSize({ width: 390, height: 900 }); await page.goto("/supplier/documents");

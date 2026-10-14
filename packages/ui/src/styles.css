@@ -229,7 +229,7 @@ button, input, select, textarea { font: inherit; }
 
 /* Shared controls. Feature screens may compose these primitives, but should not
    redefine their height, radius, focus, or validation language. */
-.dm-field { display: grid; gap: var(--dm-space-2); min-width: 0; }
+.dm-field { display: grid; align-content: start; gap: var(--dm-space-2); min-width: 0; }
 .dm-field .fui-Label { color: var(--dm-text-primary); font-size: var(--dm-font-size-body); font-weight: var(--dm-font-weight-bold); line-height: var(--dm-line-compact); }
 .dm-field .fui-Label::after { color: var(--dm-brand-primary); }
 .dm-field .fui-Field__validationMessage { margin-top: var(--dm-space-micro); color: var(--dm-danger-text); font-size: var(--dm-font-size-caption); line-height: var(--dm-line-compact); }
@@ -313,6 +313,9 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
 
 .dm-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .dm-feedback { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--dm-space-3); align-items: start; padding: var(--dm-space-4) var(--dm-space-4); border: 1px solid var(--dm-border); border-radius: var(--dm-radius-card); background: var(--dm-surface-subtle); color: var(--dm-text-secondary); }
+/* Ordinary actions keep their intrinsic width even inside a grid or column. */
+:where(.dm-button, .dm-link-button) { width: fit-content; max-width: 100%; }
+:is(.dm-button.fui-Button, .dm-link-button)[data-dm-full-width="true"] { width: 100%; }
 .dm-feedback-icon { display: grid; place-items: center; margin-top: 1px; color: currentColor; }
 .dm-feedback-copy { display: grid; gap: var(--dm-space-micro); }
 .dm-feedback-copy strong { color: var(--dm-text-primary); font-size: var(--dm-font-size-body); }
@@ -337,6 +340,16 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
   .dm-table td:last-child { border-bottom: 0; }
   .dm-table td[colspan] { display: block; padding: var(--dm-space-3); }
   .dm-table td[colspan]::before { content: none; }
+}
+
+/* Persistent field/section guidance is a note, not another nested card. */
+.dm-feedback.dm-feedback-note { grid-template-columns: 20px minmax(0, 1fr) auto; width: 100%; max-width: 100%; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.dm-feedback-note .dm-feedback-copy { min-width: 0; max-width: 72ch; overflow-wrap: anywhere; }
+.dm-feedback-note .dm-feedback-action { grid-column: 3; width: auto; justify-self: end; }
+.dm-feedback-note .dm-feedback-action > * { width: auto; max-width: 100%; }
+@media (max-width: 760px) {
+  .dm-feedback.dm-feedback-note { grid-template-columns: 20px minmax(0, 1fr); }
+  .dm-feedback-note .dm-feedback-action { grid-column: 2; justify-self: start; }
 }
 
 @media (forced-colors: active) {

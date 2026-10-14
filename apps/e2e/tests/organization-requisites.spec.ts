@@ -41,20 +41,28 @@ async function fixture(page: Page, role: "clinic" | "supplier", canEdit = true) 
 }
 
 async function fillSupplier(page: Page) {
-  await page.getByLabel("Юридическая форма", { exact: true }).selectOption("LEGAL_ENTITY");
+  await page.getByRole("combobox", { name: "Юридическая форма", exact: true }).click();
+  await page.getByRole("option", { name: "Юридическое лицо · БИН", exact: true }).click();
   await page.getByRole("button", { name: "Добавить счёт", exact: true }).click();
   const bank = page.getByRole("group", { name: "Банковский счёт 1", exact: true });
   await bank.getByRole("textbox", { name: "Название банка", exact: true }).fill("Тестовый банк");
   await bank.getByRole("textbox", { name: "ИИК / IBAN", exact: true }).fill("KZ86125KZT5004100100");
   await bank.getByRole("textbox", { name: "БИК", exact: true }).fill("FAKEKZXX"); await bank.getByRole("textbox", { name: "КБе", exact: true }).fill("17");
   await page.getByRole("button", { name: "Добавить период", exact: true }).click();
-  await page.getByRole("combobox", { name: "Статус по НДС", exact: true }).selectOption("VAT_PAYER"); await page.getByLabel("Действует с", { exact: false }).fill("2026-01-01");
+  await page.getByRole("combobox", { name: "Статус по НДС", exact: true }).click();
+  await page.getByRole("option", { name: "Плательщик НДС", exact: true }).click(); await page.getByLabel("Действует с", { exact: false }).fill("2026-01-01");
 }
 
-for (const width of [1440, 390]) test(`requisites supplier save preview confirm history and keyboard ${width}`, async ({ page }, info) => {
+for (const width of [1440, 390]) test(`requisites supplier save preview confirm and keyboard ${width}`, async ({ page }, info) => {
   const state = await fixture(page, "supplier"); await page.setViewportSize({ width, height: 1000 });
   await page.goto("/supplier/settings"); await page.getByRole("tab", { name: "Реквизиты", exact: true }).click();
-  await expect(page).toHaveURL(/tab=requisites/); await fillSupplier(page);
+  await expect(page).toHaveURL(/tab=requisites/);
+  const legal = page.getByRole("combobox", { name: "Юридическая форма", exact: true });
+  await legal.focus(); await page.keyboard.press("Enter");
+  await expect(page.getByRole("listbox", { name: "Юридическая форма", exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath(`requisites-dropdown-${width}.png`), fullPage: true });
+  await page.keyboard.press("Escape"); await expect(legal).toBeFocused();
+  await fillSupplier(page);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: info.outputPath(`requisites-editor-${width}.png`), fullPage: true });
   const input = page.getByRole("textbox", { name: "ИИК / IBAN", exact: true });
@@ -74,12 +82,8 @@ for (const width of [1440, 390]) test(`requisites supplier save preview confirm 
   await page.getByRole("button", { name: "Изменить реквизиты", exact: true }).click();
   await page.getByRole("textbox", { name: "Название банка", exact: true }).fill("Другой тестовый банк"); await page.getByRole("button", { name: "Сохранить черновик", exact: true }).click();
   await expect(page.getByText("Версия 2 · сохранена", { exact: false })).toBeVisible();
-  // The shared save toast enters over the lower-right history action on desktop.
-  // Dismiss the visible feedback before clicking the control beneath it.
-  await page.getByRole("button", { name: "Закрыть уведомление", exact: true }).click();
-  await page.getByRole("button", { name: "Показать историю", exact: true }).click(); await page.getByRole("button", { name: "Открыть версию 1", exact: true }).click();
-  await expect(dialog.getByText("Тестовый банк", { exact: true })).toBeVisible(); await expect(dialog.getByText("Другой тестовый банк", { exact: true })).toHaveCount(0);
-  await dialog.getByRole("button", { name: "Закрыть", exact: true }).click();
+  await expect(page.getByRole("region", { name: "История реквизитов", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Реквизиты организации", exact: true })).toContainText("Другой тестовый банк");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); expect(state.unexpected).toEqual([]);
 });
 
@@ -102,20 +106,32 @@ test("requisites errors retain drafts and retry keys; concurrent edits require a
   await expect(page.getByText("Версия 3 · сохранена", { exact: false })).toBeVisible(); expect(state.writes.at(-1)?.body.expectedVersion).toBe(2);
 });
 
-test("requisites clinic does not require supplier bank fields and initial load can recover", async ({ page }) => {
+for (const width of [1440, 390]) test(`requisites clinic does not require supplier bank fields and initial load can recover ${width}`, async ({ page }, info) => {
+  await page.setViewportSize({ width, height: 1000 });
   const state = await fixture(page, "clinic"); state.failRead = true;
   await page.goto("/clinic/settings?tab=requisites"); await expect(page.getByText("Не удалось загрузить реквизиты", { exact: true })).toBeVisible();
   state.failRead = false; await page.getByRole("button", { name: "Повторить", exact: true }).click();
   await expect(page.getByText("Для оплаты поставщику банковский счёт клиники не обязателен.", { exact: true })).toBeVisible();
-  await page.getByLabel("Юридическая форма", { exact: true }).selectOption("INDIVIDUAL_ENTREPRENEUR");
+  await page.getByRole("combobox", { name: "Юридическая форма", exact: true }).click();
+  await page.getByRole("option", { name: "Индивидуальный предприниматель · ИИН", exact: true }).click();
   await page.getByRole("button", { name: "Сохранить черновик", exact: true }).click(); await expect(page.getByRole("button", { name: "Проверить и подтвердить", exact: true })).toBeEnabled();
   expect(state.writes[0].body.fields.bankAccounts).toEqual([]); expect(state.writes[0].body.fields.taxPeriods).toEqual([]);
+  await page.screenshot({ path: info.outputPath(`requisites-clinic-${width}.png`), fullPage: true });
 });
 
-test("requisites viewer sees empty history and has no mutation controls", async ({ page }) => {
+test("requisites old documents tab falls back to organization settings", async ({ page }) => {
+  const state = await fixture(page, "supplier");
+  await page.goto("/supplier/settings?tab=documents");
+  await expect(page.getByRole("tab", { name: "Организация", exact: true })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tab", { name: "Договор и документы", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Договор с площадкой", exact: true })).toHaveCount(0);
+  expect(state.writes).toEqual([]);
+});
+
+test("requisites viewer has no history or mutation controls", async ({ page }) => {
   const state = await fixture(page, "supplier", false); await page.goto("/supplier/settings?tab=requisites");
   await expect(page.getByText("Доступно только для просмотра", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: /Изменить реквизиты|Сохранить черновик|Проверить и подтвердить/ })).toHaveCount(0);
-  await page.getByRole("button", { name: "Показать историю", exact: true }).click(); await expect(page.getByText("Сохранённых версий пока нет.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "История реквизитов", exact: true })).toHaveCount(0);
   expect(state.writes).toEqual([]);
 });

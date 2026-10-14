@@ -4,6 +4,8 @@ import { ToastScope } from "./save-toast";
 import { ActionFeedback } from "./action-feedback";
 import { Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Spinner, Tag, Tooltip, type DropdownProps } from "@fluentui/react-components";
 import { Dismiss24Regular } from "@fluentui/react-icons/svg/dismiss";
+import { Info20Regular } from "@fluentui/react-icons/svg/info";
+import { Warning20Regular } from "@fluentui/react-icons/svg/warning";
 import type { ReactNode } from "react";
 function joinClasses(...classes: Array<string | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -113,6 +115,7 @@ export function DmFeedback({
   description,
   icon,
   action,
+  details,
   alert = false,
   presentation,
 }: {
@@ -121,22 +124,24 @@ export function DmFeedback({
   description: string;
   icon?: ReactNode;
   action?: ReactNode;
+  details?: ReactNode;
   alert?: boolean;
-  presentation?: "inline" | "toast";
+  presentation?: "inline" | "toast" | "note";
 }) {
-  if (presentation === "toast" || (presentation !== "inline" && (tone === "success" || tone === "danger"))) {
+  if (presentation === "toast" || (presentation == null && (tone === "success" || tone === "danger"))) {
     return <ActionFeedback tone={tone} title={title} description={description} action={action} />;
   }
   return (
     <div
-      className={`dm-feedback dm-feedback-${tone}`}
+      className={`dm-feedback dm-feedback-${tone}${presentation === "note" ? " dm-feedback-note" : ""}`}
       role={alert ? "alert" : "status"}
       aria-live={alert ? "assertive" : "polite"}
     >
-      {icon ? <span className="dm-feedback-icon" aria-hidden="true">{icon}</span> : null}
+      {icon || presentation === "note" ? <span className="dm-feedback-icon" aria-hidden="true">{icon ?? (tone === "warning" || tone === "danger" ? <Warning20Regular /> : <Info20Regular />)}</span> : null}
       <div className="dm-feedback-copy">
         <strong>{title}</strong>
         <span>{description}</span>
+        {details}
       </div>
       {action ? <div className="dm-feedback-action">{action}</div> : null}
     </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   DocumentArchiveItem,
@@ -32,7 +32,6 @@ const initial: DocumentArchiveFilters = {
 };
 export default function Documents() {
   const search = useSearchParams();
-  const router = useRouter();
   const documentId = search.get("documentId");
   const initialDocumentId = documentId && /^[0-9a-f-]{36}$/i.test(documentId) ? documentId : null;
   const { api, role, organizationId } = useWorkspace();
@@ -47,7 +46,6 @@ export default function Documents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
-  useEffect(() => { if (role === "supplier" && search.get("organization") === "1") router.replace("/supplier/settings?tab=documents"); }, [role, search, router]);
   const [uploading, setUploading] = useState(false);
   const sequence = useRef(0);
   const moreLock = useRef(false);

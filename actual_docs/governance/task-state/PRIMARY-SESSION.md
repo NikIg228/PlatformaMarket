@@ -6,6 +6,56 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 15.10 — UI Settings/controls: LOCAL PASS, публикация/CI pending
+
+Запрос: убрать случайное растяжение действий/уведомлений/селекторов в VAT и
+реквизитах; закрепить корректное применение shared controls для всех ролей.
+HEAD9c5e38c, canonical root; прежний dirty scope сохранён в .tmp/ui-sizing/baseline.json.
+Паспорт: supplier /supplier/settings?tab=vat|requisites и общий clinic requisites;
+исходный screenshot владельца codex-clipboard-459402b7-93fa-4753-9dd8-cde7ee36d494.png.
+Live Chrome воспроизвёл ссылку шириной1207px, равной форме. JSON market-components-v1,
+platforma-semantic-light-v1: Manrope body14/1.5, subtitle18/1.25/600,
+controls44/radius8, cards12/padding24 (mobile16), gap12/16/24.
+Аналоги: VatFields использует DmDropdown; inventory-editor.module.css ограничивает
+поле440px; account-settings.module.css — существующая типографика Settings.
+Изменение: intrinsic width обычных shared buttons/links с явным fullWidth;
+shared persistent note без карточки; ограничение ширины формы/полей в feature;
+DmDropdown вместо DmSelect в общей форме реквизитов. Shell/tokens/бизнес-логика прежние.
+Риск: shared button consumers и keyboard/validation селектора. Проверки: UI types,
+targeted requisites/VAT browser (supplier/clinic desktop/mobile, клавиатура,
+save/validation/recovery с intercepted API), representative admin/catalog actions,
+screenshots/computed including dropdown portal; UI-contract, scoped lint, web build/types,
+review/diff hygiene, выборочный commit/push и actual CI. Не писать рабочие данные.
+Лимит каждого gate3; остановка после этого DoD, без массового редизайна страниц.
+
+Уточнение владельца15.10 во время проверки: центрировать ограниченные containers;
+поместить заметные ссылки со стрелкой справа внутри notice с проблемой; убрать
+историю версий из UI и полностью вкладку/контент «Договор и документы» Settings.
+В scope входят удаление её orphan UI и перенаправляющих ссылок, обновление browser
+контрактов. Backend версии/snapshots/обязательность договора не меняются, данные
+не удаляются. Добавить проверку отсутствия удалённой вкладки/истории и старого URL.
+До уточнения: requisites6PASS + VAT6PASS/desktop1FAIL при Fast Refresh; повтор
+стабильного кода7PASS (requisites2, VAT2, catalog2, admin1). Notes2PASS. UI89PASS,
+новый note regression4PASS, lint/contractPASS. Из-за нового scope browser/build
+завершаются на итоговом коде; прежний UI evidence не подменяет новую приёмку.
+
+Итоговый код: локальная приёмка PASS. `playwright test --config
+playwright.workspaces.config.ts organization-requisites.spec.ts supplier-vat.spec.ts
+documents-registry.spec.ts --grep 'requisites|VAT settings ERP|documents old organization'`
+9PASS; отдельный old-documents-tab regression1PASS; визуальная проверка missing-profile
+notice2PASS (1440/390). Final screenshots просмотрены: центрированный container960,
+поле440 максимум, ссылка272px/44px с arrow справа (mobile под текстом), Manrope14,
+controls44/radius8. Сохранение/подтверждение/validation/recovery/role-view и клавиатура
+проверены на intercepted API, рабочие данные не менялись. Catalog/admin3PASS
+переиспользованы для неизменённых shared buttons. UI unit89PASS + note regression4PASS,
+UI/E2E types PASS, scoped lint/UI-contract384files PASS. Финальная изолированная
+Next webpack сборка + TypeScript PASS (.tmp/ui-sizing/build-final-run.log),
+49 routes; dev3000/API4012 продолжают работать. Собственные проверки завершены.
+Логи .tmp/ui-sizing, screenshots output/playwright/ui-sizing-final-1 и
+ui-sizing-notes-final; baseline сохраняет прежний WIP. Выборочный commit/push
+и actual CI ещё pending; следующий шаг — review/stage только собственного diff.
+
+
 ### 15.10 — R7.6.1.4: реализация налоговых условий (IN_PROGRESS, новый цикл разрешён)
 
 Итог локальной проверки15.10: LOCAL PASS; готовится выборочный commit/push,

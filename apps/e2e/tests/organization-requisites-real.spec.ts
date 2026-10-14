@@ -27,14 +27,16 @@ test("real supplier requisites save confirmation reload and immutable history", 
     }
     const errors: string[] = []; page.on("pageerror", error => errors.push(error.message));
     await page.goto("/supplier/settings?tab=requisites");
-    await page.getByLabel("Юридическая форма", { exact: true }).selectOption("LEGAL_ENTITY");
+    await page.getByRole("combobox", { name: "Юридическая форма", exact: true }).click();
+  await page.getByRole("option", { name: "Юридическое лицо · БИН", exact: true }).click();
     await page.getByRole("button", { name: "Добавить счёт", exact: true }).click();
     await page.getByRole("textbox", { name: "Название банка", exact: true }).fill("Synthetic Bank");
     await page.getByRole("textbox", { name: "ИИК / IBAN", exact: true }).fill("KZ86125KZT5004100100");
     await page.getByRole("textbox", { name: "БИК", exact: true }).fill("FAKEKZXX");
     await page.getByRole("textbox", { name: "КБе", exact: true }).fill("17");
     await page.getByRole("button", { name: "Добавить период", exact: true }).click();
-    await page.getByRole("combobox", { name: "Статус по НДС", exact: true }).selectOption("VAT_PAYER");
+    await page.getByRole("combobox", { name: "Статус по НДС", exact: true }).click();
+  await page.getByRole("option", { name: "Плательщик НДС", exact: true }).click();
     await page.getByLabel("Действует с", { exact: false }).fill("2020-01-01");
     await page.getByRole("button", { name: "Сохранить черновик", exact: true }).click();
     await page.getByRole("button", { name: "Проверить и подтвердить", exact: true }).click();
@@ -50,9 +52,6 @@ test("real supplier requisites save confirmation reload and immutable history", 
     await page.getByRole("button", { name: "Сохранить черновик", exact: true }).click();
     await expect(page.getByText("Версия 2 · сохранена", { exact: false })).toBeVisible();
     await page.getByRole("button", { name: "Закрыть уведомление", exact: true }).click();
-    await page.getByRole("button", { name: "Показать историю", exact: true }).click();
-    await page.getByRole("button", { name: "Открыть версию 1", exact: true }).click();
-    await expect(dialog.getByText("Synthetic Bank", { exact: true })).toBeVisible();
     expect(await db.organizationRequisitesRevision.findUniqueOrThrow({ where: { id: first.id } })).toEqual(first);
     expect(await db.organizationRequisitesRevision.count({ where: { organizationId } })).toBe(2);
     expect(await db.outboxEvent.count({ where: { aggregateId: organizationId, eventType: "OrganizationRequisitesConfirmed" } })).toBe(1);

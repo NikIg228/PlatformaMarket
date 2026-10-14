@@ -20,7 +20,7 @@ export function SettingsIntegrationTax({ onDirtyChange }: { onDirtyChange: (dirt
     {resource.error ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить загрузку источников</DmButton>} /> : null}
     {!resource.data && resource.loading ? <LoadingState label="Загружаем источники цен" /> : null}
     {resource.data?.length === 0 ? <p>Подключённых источников цен пока нет.</p> : null}
-    {!binding && resource.data?.length ? <DmField label="Источник цен"><DmDropdown value={selected} onChange={(_, data) => setSelected(data.value)}><option value="">Выберите подключённый источник</option>{resource.data.map(item => <option key={item.id} value={item.id}>{item.connectionName} · {item.offerId ? "отдельное предложение" : item.warehouseId ? "склад" : "все предложения"} · приоритет {item.priority}</option>)}</DmDropdown></DmField> : null}
+    {!binding && resource.data?.length ? <DmField className={layout.field} label="Источник цен"><DmDropdown value={selected} onChange={(_, data) => setSelected(data.value)}><option value="">Выберите подключённый источник</option>{resource.data.map(item => <option key={item.id} value={item.id}>{item.connectionName} · {item.offerId ? "отдельное предложение" : item.warehouseId ? "склад" : "все предложения"} · приоритет {item.priority}</option>)}</DmDropdown></DmField> : null}
     {binding ? <IntegrationTaxEditor key={binding.id} initial={binding} onDirtyChange={onDirtyChange} onClose={() => setSelected("")} /> : null}
   </DmSurface>;
 }
@@ -63,15 +63,15 @@ function IntegrationTaxEditor({ initial, onDirtyChange, onClose }: { initial: In
       {settings.profileIssue ? <ErrorState description={settings.profileIssue} /> : null}
       {settings.defaultIssue ? <p role="alert">Настройка по умолчанию устарела. Подтвердите её в настройках НДС или укажите режим для новых товаров этого источника.</p> : null}
       <p>Настройка поставщика для новых товаров: {settings.defaultTax ? vatLabel(settings.defaultTax.selection) : "не задана"}. Пустые поля существующих предложений сохраняют прежние условия.</p>
-      <DmField label="Формат цены ERP" required><DmDropdown value={kind} disabled={busy || !editable} onChange={(_, data) => { setKind(data.value); changed(); }}><option value="">Выберите формат</option><option value="GROSS">Цена включает применимый НДС</option><option value="NET">Цена без НДС — начислить сверху</option></DmDropdown></DmField>
+      <DmField className={layout.field} label="Формат цены ERP" required><DmDropdown value={kind} disabled={busy || !editable} onChange={(_, data) => { setKind(data.value); changed(); }}><option value="">Выберите формат</option><option value="GROSS">Цена включает применимый НДС</option><option value="NET">Цена без НДС — начислить сверху</option></DmDropdown></DmField>
       <DmCheckbox label="Задать режим для новых товаров этого источника" checked={override} disabled={busy || !editable} onChange={(_, data) => { setOverride(data.checked === true); changed(); }} />
       {override ? <VatFields value={draft} onChange={value => { setDraft(value); changed(); }} date={settings.date} profile={settings.profile} disabled={busy || !editable} /> : null}
       <p>Если ERP передаёт индивидуальные условия, укажите имена полей. Значения режима: TAXABLE, NOT_VAT_PAYER, EXEMPT, ZERO_RATED; ставка — число без знака %.</p>
-      {([ ["vatMode", "Поле режима НДС"], ["vatRate", "Поле ставки НДС"], ["vatBasis", "Поле основания НДС"] ] as const).map(([key, label]) => <DmField key={key} label={label}><DmInput value={columns[key]} maxLength={120} disabled={busy || !editable} onChange={(_, data) => { setColumns(value => ({ ...value, [key]: data.value })); changed(); }} /></DmField>)}
+      {([ ["vatMode", "Поле режима НДС"], ["vatRate", "Поле ставки НДС"], ["vatBasis", "Поле основания НДС"] ] as const).map(([key, label]) => <DmField className={layout.field} key={key} label={label}><DmInput value={columns[key]} maxLength={120} disabled={busy || !editable} onChange={(_, data) => { setColumns(value => ({ ...value, [key]: data.value })); changed(); }} /></DmField>)}
       <DmCheckbox label="Подтверждаю формат цен и налоговые условия источника" checked={ack} disabled={busy || !editable} onChange={(_, data) => setAck(data.checked === true)} />
     </>}
     {conflict ? <p role="alert">Обновите данные и проверьте введённые условия перед повторным сохранением.</p> : null}
     {notice ? <DmFeedback tone="success" title="Сохранено" description={notice} /> : null}
-    <div className={styles.actions}><DmButton disabled={busy} onClick={() => void load()}>Обновить данные источника</DmButton><DmButton disabled={busy || dirty} onClick={onClose}>Другой источник</DmButton><DmButton appearance="primary" disabled={busy || !editable || conflict || !ack || !kind || !settings?.profile || Boolean(settings.profileIssue) || (override && !parseVatDraft(draft).success)} onClick={() => void save()}>Сохранить НДС источника</DmButton></div>
+    <div className={layout.actions}><DmButton disabled={busy} onClick={() => void load()}>Обновить данные источника</DmButton><DmButton disabled={busy || dirty} onClick={onClose}>Другой источник</DmButton><DmButton appearance="primary" disabled={busy || !editable || conflict || !ack || !kind || !settings?.profile || Boolean(settings.profileIssue) || (override && !parseVatDraft(draft).success)} onClick={() => void save()}>Сохранить НДС источника</DmButton></div>
   </div>;
 }

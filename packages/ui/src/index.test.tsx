@@ -42,6 +42,7 @@ vi.mock("@fluentui/react-icons/svg/weather-sunny", () => ({
 import {
   DmButton,
   DmConflictState,
+  DmFeedback,
   DmDialog,
   DmTable,
   formatMoney,
@@ -67,6 +68,16 @@ describe("DentMarket UI contracts", () => {
     });
     expect(dialog.props.open).toBe(true);
     expect(conflict.type).toBe(DmFeedbackType());
+  });
+
+  it("keeps persistent notes inline even for success and error states", () => {
+    for (const tone of ["success", "danger"] as const) {
+      const note = DmFeedback({ tone, presentation: "note", title: "Статус", description: "Нужна проверка", alert: tone === "danger" });
+      expect(note.type).toBe("div");
+      expect(note.props.role).toBe(tone === "danger" ? "alert" : "status");
+      expect(note.props.children).toBeDefined();
+      expect(DmFeedback({ tone, title: "Результат", description: "Действие завершено" }).type).not.toBe("div");
+    }
   });
 
   it("keeps table captions and large monetary values in the shared layer", () => {

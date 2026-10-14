@@ -1,5 +1,16 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+15.10 — **Settings/общие controls: LOCAL PASS; публикация/CI pending.**
+Действия по ширине содержимого с явным fullWidth; DmField без растяжения по
+соседней подсказке; persistent note с заметным переходом справа/mobile снизу.
+VAT/реквизиты центрированы, selectors тематизированы. Убраны UI истории и вкладка
+Settings «Договор и документы», её orphan content и старые переходы; backend
+snapshots/требования к допуску сохранены. Final browser9PASS + routing1PASS +
+visual2PASS; representative catalog/admin3PASS, UI89PASS + note4PASS, UI/E2E types,
+scoped lint/UI-contract и final web build/types PASS. Screenshot/computed1440/390
+просмотрены. Команды/попытки/граница — [checkpoint](task-state/PRIMARY-SESSION.md).
+
+
 15.10 — **R7.6.1.4 VAT: LOCAL PASS, publication/CI pending**, main699047b + VAT patch.
 Владелец разрешил новый цикл: buyer browser2/2PASS390/1440, keyboard/computed
 и screenshots PASS после исправления композиции; supplier10PASS + price1PASS.

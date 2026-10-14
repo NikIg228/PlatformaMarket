@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { ArrowRight20Regular } from "@fluentui/react-icons/svg/arrow-right";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupplierVatSettings } from "@marketplace/schemas";
 import { DmButton, DmCheckbox, DmFeedback, DmSurface, ErrorState, LoadingState, errorMessage, usePermissions, useUnsavedChanges } from "@marketplace/ui";
@@ -51,20 +52,20 @@ function VatSettingsEditor({ initial, onDirtyChange }: { initial: SupplierVatSet
     } catch (cause) { setError(errorMessage(cause)); if (cause && typeof cause === "object" && "status" in cause && cause.status === 409) setConflict(true); }
     finally { lock.current = false; setBusy(false); }
   };
-  return <div className={layout.stack}><DmSurface className={styles.card}>
-    <h2>НДС для новых предложений</h2>
+  const requisitesLink = <Link {...dmLinkButtonProps({ appearance: "secondary" })} href="/supplier/settings?tab=requisites">Реквизиты и налоговый статус<ArrowRight20Regular aria-hidden="true" /></Link>;
+  return <div className={`${styles.page} ${layout.page}`}><DmSurface className={styles.card}>
+    <div className={styles.toolbar}><h2>НДС для новых предложений</h2>{!saved.profileIssue && !saved.defaultIssue ? requisitesLink : null}</div>
     <p className={styles.intro}>Выберите условия для новых товаров. Исключения можно указать в предложении или строке импорта. Для существующих товаров используйте массовое изменение в списке товаров.</p>
-    <form className={layout.stack} onSubmit={event => { event.preventDefault(); void save(); }}>
-      {!editable ? <DmFeedback tone="warning" title="Настройка доступна для просмотра" description="Для изменения нужно право на управление ценами." /> : null}
-      {saved.profileIssue ? <DmFeedback tone="warning" title="Проверьте реквизиты" description={saved.profileIssue} /> : null}
-      {saved.defaultIssue ? <DmFeedback tone="warning" title="Подтвердите настройку заново" description={saved.defaultIssue} /> : null}
-      <Link {...dmLinkButtonProps({ appearance: "subtle" })} href="/supplier/settings?tab=requisites">Реквизиты и налоговый статус</Link>
+    <form className={layout.form} onSubmit={event => { event.preventDefault(); void save(); }}>
+      {!editable ? <DmFeedback presentation="note" tone="warning" title="Настройка доступна для просмотра" description="Для изменения нужно право на управление ценами." /> : null}
+      {saved.profileIssue ? <DmFeedback presentation="note" tone="warning" title="Проверьте реквизиты" description={saved.profileIssue} action={requisitesLink} /> : null}
+      {saved.defaultIssue ? <DmFeedback presentation="note" tone="warning" title="Подтвердите настройку заново" description={saved.defaultIssue} action={!saved.profileIssue ? requisitesLink : undefined} /> : null}
       <DmCheckbox label="Подставлять налоговый режим для новых предложений" checked={enabled} disabled={busy || !editable} onChange={(_, data) => { setEnabled(data.checked === true); setAcknowledged(false); }} />
       {enabled ? <VatFields value={draft} onChange={value => { setDraft(value); setAcknowledged(false); }} date={saved.date} profile={saved.profile} disabled={busy || !editable || !saved.profile || Boolean(saved.profileIssue)} /> : <p>Для каждого нового предложения налоговые условия нужно выбрать отдельно.</p>}
       <DmCheckbox label="Подтверждаю настройку только для новых предложений и ответственность за применимость режима" checked={acknowledged} disabled={busy || !editable} onChange={(_, data) => setAcknowledged(data.checked === true)} />
       {error ? <ErrorState description={error} /> : null}{notice ? <DmFeedback tone="success" title="Сохранено" description={notice} /> : null}
       {conflict ? <p role="alert">Настройки или реквизиты изменились. Обновите данные и проверьте сохранённый ввод.</p> : null}
-      <div className={styles.actions}><DmButton type="button" disabled={busy} onClick={() => void refresh()}>Обновить данные</DmButton><DmButton type="submit" appearance="primary" disabled={busy || !editable || conflict || (enabled && (!saved.profile || Boolean(saved.profileIssue)))}>{busy ? "Сохраняем…" : "Сохранить настройку НДС"}</DmButton></div>
+      <div className={layout.actions}><DmButton type="button" disabled={busy} onClick={() => void refresh()}>Обновить данные</DmButton><DmButton type="submit" appearance="primary" disabled={busy || !editable || conflict || (enabled && (!saved.profile || Boolean(saved.profileIssue)))}>{busy ? "Сохраняем…" : "Сохранить настройку НДС"}</DmButton></div>
     </form>
   </DmSurface>{has("integration.view") ? <SettingsIntegrationTax onDirtyChange={setIntegrationDirty} /> : null}</div>;
 }
