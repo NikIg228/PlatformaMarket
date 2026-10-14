@@ -6,6 +6,187 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 14.10 — R7.6.1.4: сквозной профиль реквизитов (LOCAL_PASS, публикация pending)
+Финальный локальный результат14.10: владелец явно разрешил дополнительный запуск
+после исправления команды dev. Попытка4 npm run dev без временного adapter и
+переменной TURBOPACK PASS: schemas build, Prisma generate, API build, schema/data
+preflight, API ready200, frontend/login200, launcher «unified is ready».
+Действуют canonical API4012 PID17524 и Next3000 PID7228, launcher npmPID17276;
+логи .tmp/organization-requisites-2026-10-14/dev-restart-4.{stdout,stderr}.log.
+Рабочая миграция, резервная копия и проверки сохранности подтверждены ниже.
+Блокеры generate/browser/dev restart сняты. Первый пакет профиля имеет LOCAL_PASS;
+весь R7.6.1.4 остаётся IN_PROGRESS, VAT offers/checkout/documents не реализовывались.
+
+Применены development-toolkit: backend/frontend/verification и self-review;
+Playwright для целевых UI-flow. Чужие WIP и процессы после восстановления не трогаются.
+Готовится selective commit только этого пакета и явной команды dev; push/CI ещё
+не заявлены PASS. После публикации receipt с SHA/CI будет добавлен локально.
+
+---
+Ниже сохранён журнал промежуточных блокеров и разрешений; они сняты результатом выше.
+Последнее решение владельца «Разрешаю»14.10 явно разрешило рабочую additive
+миграцию marketplace без reseed/удаления и перезапуск всего dev.
+Проверен target127.0.0.1:5432/marketplace; единственная pending migration —
+20261014010000_organization_requisites, failed migrations нет.
+Остановлено проверенное дерево dev-local PID12160. До изменения создан pg_dump
+custom archive, pg_restore --list PASS; .tmp/organization-requisites-2026-10-14/
+working-db-backup/marketplace-before-requisites.dump,1603821bytes,
+SHA256 f0ee7396f0f3e26a8224e63d9f120c4d78e2fa96e6e15f16df516fab913345b6.
+Backup ignored Git; не публиковать. Рабочая migrate deploy PASS: сохранены counts
+Organization/Profile/OfferPrice/SupplierOrder, новые requisites rows0. Reseed нет.
+
+Prisma generate теперь PASS (v6.19.3), API prebuild/build и schema build PASS.
+НО восстановление dev BLOCKED3/3: стандартный launcher поднимает API, затем
+останавливает всё дерево из-за Next16 defaultTurbopack + существующего dirty
+webpack config. Попытка1 обычный npm run dev FAIL. Попытка2 локальный adapter
+с turbopack:{} FAIL: validateTurboNextConfig читает raw config до adapters.
+Попытка3 TURBOPACK=1 через окружение FAIL: Next всё равно получил default auto;
+значение не дошло через цепочку запуска. Все runners завершены;3000/4012 DOWN.
+Логи .tmp/organization-requisites-2026-10-14/dev-restart{,-2,-3}.{stdout,stderr}.log.
+
+Подготовлена точечная правка apps/web/package.json: dev теперь явно вызывает
+next dev --turbopack --port3000 --hostname127.0.0.1. Исходный package был clean,
+его baseline добавлен в baseline.json. Это сохраняет прежний bundler dev при
+существующем webpack build. Продуктовый next.config/WIP не изменены.
+Правка команды ещё НЕ проверена запуском: лимит3 попыток исчерпан. Следующий
+точный шаг — разрешение владельца на дополнительный запуск после этой правки,
+затем npm run dev без временного adapter/переменных bundler и health обоих портов.
+Не выдавать dev за работающий. Не повторять неизменившиеся unit/DB/UI/build gates.
+
+Selective staging подготовлен как .tmp/organization-requisites-2026-10-14/stage-owned.mjs,
+но НЕ запущен. Перед использованием добавить apps/web/package.json в clean-file
+список helper, обновить checkpoint/docs по фактическому restart и проверить
+gitstatus/HEAD/index. Сейчас main64a31b2, staging/commit/push нет. Fetch origin/main
+совпадает64a31b2. CI не запускался. Текущая остановка только по dev restart gate.
+
+---
+Журнал предыдущего этапа (generate blocker уже снят):
+Возобновление по явному «Да, приступай»14.10: разрешены дополнительные попытки
+browser и краткий перезапуск API. Browser blocker снят: trace подтвердил, что
+анимируемый общий save-toast вошёл поверх кнопки истории между pointerdown/up.
+Тест явно закрывает уведомление перед историей; продуктовый обработчик исправления
+не требовал. Повтор после разрешения: 5/5 PASS31.8s, screenshots1440/390 просмотрены,
+computed Manrope14/control44/radius8 и keyboard/dialog focus PASS.
+Evidence: output/playwright/organization-requisites-resumed/.
+
+Новые проверки:
+- additive upgrade на scratch schema в isolated DB PASS: прежняя Organization
+  не изменена, таблицы пустые, rollback удалил scratch schema;
+- npm exec --workspace=@marketplace/api -- nest build PASS (компиляция без
+  повторного Prisma prebuild; это НЕ закрывает прежний EPERM generate);
+- PostgreSQL попытка1 FAIL: runner был запущен до окончания API build, entrypoint
+  ещё отсутствовал; cleanup выполнен. Попытка2: зависимые suites до реквизитов
+  PASS, затем FAIL коллизия synthetic createBuyer indices81–84. Исправлены на
+  свободные41–44, создание последовательное. Попытка3 focused --requisites-only
+  PASS: read/write/confirm rights, foreign tenant/history, invalid input, replay,
+  source change, immutable payload/confirmation, first-save race201/409,
+  save+confirm outbox-failure rollback (audit/replay/head), retry/revocation.
+  Полный runner не объявляется PASS; новый helper включён в него для CI.
+- npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs --requisites-only PASS;
+- node scripts/verify-runtime-split.mjs PASS;
+- isolated npm run build --workspace=@marketplace/web PASS (adapter в .tmp/organization-requisites-2026-10-14/),
+  финальные web/e2e typecheck PASS; verify:ui-contract PASS4 tests/378 files/6782 elements; исходная dev .next не использовалась сборкой;
+- npm run db:test -- exec -- node scripts/verify-pilot-backend.mjs --contract-only PASS:
+  response/error validation,62 core operations,228 components текущего WIP;
+- scoped ESLint всех новых production files, scripts и real browser config/spec PASS;
+- npm run db:test -- exec -- playwright test --config=apps/e2e/playwright.requisites-real.config.ts
+  PASS1/1: настоящий JWT API4115/testDB, UI save→confirm→reload→amend→old history,
+  assertions по сохранённым revision/outbox. Transport forwarded к собственному API,
+  ответы не mocked. JWT trace/screenshots отключены. Fixture/API cleanup завершён.
+
+Открытый blocker generate: при изучении launcher выяснилось, что DLL удерживает
+также общий dev-local parent12160, а остановка API автоматически остановит frontend.
+Стандартный restart проверяет все migrations и потребует новую migration на рабочей
+marketplace; разрешение кратко перезапустить API не разрешает менять эту БД.
+Отдельный async вопрос отправлен: разрешить после тестов additive migration без
+reseed/удаления и перезапуск всего dev, либо оставить рабочую БД/dev нетронутыми.
+Ответ ещё НЕ получен; процессов не останавливали, рабочая миграция НЕ применена.
+Тестовая миграция применена только в dentmarket_audit_20260914.
+Dev3000 PID16532 / API4012 PID11268 продолжают работать. Собственные API4115 и
+PostgreSQL runners остановлены. Ни staging, ни commit/push не выполнялись.
+Добавлены DWF§17.7 и roadmap IN_PROGRESS с явной границей первого пакета. Self-review контракта/tenant/transaction/UI/recovery/diff выполнен, новых блокирующих дефектов не найдено; независимый review не заявлен. git diff --check PASS.
+Следующий шаг после ответа — согласованное снятие DLL lock, Prisma generate и
+восстановление dev, затем final review/own-hunk publication/CI. Прежние PASS при
+неизменённых входах не повторять. Не начинать цепочку VAT offers/checkout/documents.
+
+---
+Ниже исходный brief и журнал первой остановки; актуальный статус — выше.
+
+Последний запрос владельца «Окей, приступай» разрешает первый предложенный пакет:
+контракт/хранение/валидация/подтверждение реквизитов и UI клиники/поставщика.
+Не входит: назначение ставок товарам, изменение цен/checkout, генератор счёта,
+НУЦ/ЭСФ, рабочая миграция или исправление прежнего catalog blocker.
+Canonical main64a31b2; baseline затронутых tracked файлов и полный dirty scope:
+.tmp/organization-requisites-2026-10-14/baseline.json. Несвязанный WIP сохраняется.
+
+Контракт: новый собственный subresource organizations/current/requisites;
+существующие legalName/bin/контакты/адреса переиспользуются, юридическая форма,
+банковские счета и периоды налогового статуса добавляются. Отдельное сохранение
+черновика/подтверждение, immutable revision payload и история, source version,
+tenant/permission, serializable version guard, idempotency, audit/outbox.
+Клиника не обязана вводить счёт для оплаты поставщику; для поставщика нужны
+счёт и действующий налоговый статус. Подтверждение — заявление представителя,
+не внешняя банковская/налоговая проверка и не ЭЦП. Полнота этих реквизитов не
+означает готовность всего счёта или соответствие ставки конкретного товара.
+
+План проверок: schemas/client regressions; после каждого backend перехода
+целевые service/controller tests; затем isolated PostgreSQL upgrade/constraints,
+role/tenant/replay/race/rollback и реальные API→UI; types/API build и runtime-split,
+frontend build, targeted browser/keyboard 1440/390 + screenshot/computed styles.
+Core-contract выполнить при затронутой границе; full catalog E2E не перезапускать.
+Не более3 попыток одного gate/blocker; результаты/причины записываются здесь.
+Existing prerequisites проверяются без migrate/reseed рабочей БД. Dev3000/4012
+сейчас слушают, источник Next canonical; API runtime не использовать для записей.
+
+UI passport: аналог — settings-organization.tsx/account-settings.module.css,
+исходный settings supplier1440 screenshot: output/playwright/requisites-baseline/
+settings-profile-profile-e-6a527-er-layout-and-keyboard-1440/settings-supplier-1440.png.
+Один существующий profile-edit supplier1440 fixture test PASS (8.3s), API intercepted.
+Новая вкладка «Реквизиты» в settings clinic/supplier, common DmTabList/Surface,
+Field/Input/Dropdown/Button/Dialog; Manrope14/1.5, заголовки18/1.25/600,
+control44/radius8, card12/padding24 (mobile16), gaps16/24 из JSON.
+JSON market-components-v1 и platforma-semantic-light-v1; sidebar200/header56,
+existing shell без редизайна. Layout две колонки → одна при760px, история bounded.
+Видимая карточка подтверждения/истории и recovery состояния входят в DoD.
+
+Состояние при остановке 14.10: реализация сохранена локально, commit/push не было.
+Добавлены schemas/client/OpenAPI, additive migration, service/controller с revision,
+idempotency/confirmation/audit/outbox, вкладка clinic/supplier с draft/review/history.
+Собственный scope: новые organization-requisites файлы schemas/client/API/E2E,
+Prisma schema+migration20261014010000, organizations.module, core-openapi,
+exports schemas/client, settings.tsx и requisites-{fields,review}/settings-requisites/
+requisites.module.css, testMatch двух E2E configs. Чужой WIP не staged.
+
+PASS: schemas/profile13, schema build, client1 (попытка2: исправлен test defaultGET),
+backend draft16 и confirm/controller13; API types (попытка2: fixture nullguard),
+web/client types, ui-contract4 tests +378 files/6782 elements.
+Prisma validate через npm run db:test -- exec --workspace=@marketplace/api -- prisma validate
+PASS (попытка2 после отсутствующего DATABASE_URL в первой). Миграции не применены.
+Web types/ui-contract были до последних локальных изменений размеров кнопок;
+финальная перепроверка затронутых входов остаётся в DoD.
+
+BLOCKER1: npm run db:generate попытка1 EPERM при замене query_engine-windows.dll.node,
+DLL занят уже запущенным API4012 PID11268 (node dist/src/main.js). Запрошено разрешение
+кратко остановить и вернуть этот процесс; ответа нет. Чужие процессы не остановлены.
+JS/types Prisma созданы частично, это НЕ PASS generate. Build не заявлен.
+BLOCKER2: browser gate исчерпан3/3. Попытка1 — label/asterisk selectors, остановлена;
+попытка2 — 2PASS/3FAIL (outer min-height32 vs actualheight44, duplicate alerts);
+попытка3 — 4PASS/1FAIL, desktop1440 timeout открытия «Открыть версию 1» после
+сохранения версии2 и клика «Показать историю». Mobile390, recovery/concurrent,
+clinic и viewer PASS. Повторный запуск НЕ выполнялся. Trace network содержит
+save/confirm/current200/201, но НЕ содержит запроса requisites/history; причина
+потери клика/нераскрытия истории ещё не установлена, backend fault не доказан.
+Evidence: output/playwright/organization-requisites/organization-requisites-re-672e5-m-history-and-keyboard-1440/
+trace.zip, error-context.md, test-failed-1.png. Это browser с intercepted API,
+не доказательство реального API→UI. Собственный runner завершён; dev3000/4012 не тронуты.
+
+Осталось после снятия блокеров: исправить desktop history и целевой browser gate;
+реальный isolated PostgreSQL upgrade/constraints/tenant/roles/replay/race/rollback
+и API→UI ещё НЕ реализованы/НЕ запущены; final types/lint/API+web builds,
+runtime-split, review, selective commit/push и CI тоже НЕ выполнены.
+Следующий шаг: получить решение владельца на продолжение browser gate сверх3 попыток
+и краткий перезапуск существующего API для корректного Prisma generate, затем
+продолжить тот же DoD. Новая фаза НДС/счёта не разрешена этим checkpoint.
 ### 14.10 — НДС в глобальном roadmap и готовность следующего пакета
 
 Запрос: добавить налоговый сценарий в документооборот roadmap, синхронизировать

@@ -18,6 +18,8 @@ import { verifyOfferPromotions } from "./lib/verify-offer-promotions.mjs";
 import { verifyPromotionUpgrade } from "./lib/verify-promotion-upgrade.mjs";
 import { verifyCommerceMetricUpgrade } from "./lib/verify-commerce-metric-upgrade.mjs";
 import { verifyConversations } from "./lib/verify-conversations.mjs";
+import { verifyOrganizationRequisites } from "./lib/verify-organization-requisites.mjs";
+import { verifyOrganizationRequisitesUpgrade } from "./lib/verify-organization-requisites-upgrade.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const apiDirectory = path.join(root, "apps", "api");
@@ -592,13 +594,15 @@ try {
   runNpm(["run", "db:seed:test"], testEnvironment);
   await prisma.$connect();
   const commercialOnly = process.argv.includes("--commercial-only");
-  if (!commercialOnly) {
+  const requisitesOnly = process.argv.includes("--requisites-only");
+  if (!commercialOnly && !requisitesOnly) {
     await verifyManualPaymentUpgrade(prisma, assert);
     await verifyPromotionUpgrade(prisma, assert);
     await verifyCommerceMetricUpgrade(prisma, assert);
   }
+  if (!commercialOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
   const [rollbackOffer, idempotencyOffer, concurrencyOffer, correctionOffer, snapshotOffer, ...lotOffers] =
-    await createFixtureCatalog();
+    requisitesOnly ? [] : await createFixtureCatalog();
   const [
     tenantOwner,
     foreignTenant,
@@ -617,7 +621,10 @@ try {
   api.stderr.on("data", rememberLog);
   await waitUntilReady();
 
-  if (commercialOnly) {
+  if (requisitesOnly) {
+    await verifyOrganizationRequisites({ prisma, createBuyer, request, runId, assert });
+    console.log("Focused PostgreSQL requisites verification PASS");
+  } else if (commercialOnly) {
     await verifyOfferCommercial({ prisma, offer: lotOffers[4], supplierId: fixture.supplierId, fixture,
       createBuyer, request, runId, assert });
     console.log("Focused PostgreSQL commercial verification PASS");
@@ -635,6 +642,7 @@ try {
   await verifyOfferPromotions({ prisma, offers: lotOffers.slice(20, 26), supplierId: fixture.supplierId, createBuyer, runId, assert, request });
   await verifyLocalPermissions({ prisma, supplierId: fixture.supplierId, offerId: lotOffers[4].offerId, createBuyer, request, runId, assert });
   await verifyConversations({ prisma, offer: lotOffers[26], supplierId: fixture.supplierId, createBuyer, createCartWithItem, runId, assert, request });
+  await verifyOrganizationRequisites({ prisma, createBuyer, request, runId, assert });
 
   const onboardingBuyer = await createBuyer(90, false);
   const profileRoute = "/organizations/current/profile";

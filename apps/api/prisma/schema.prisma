@@ -1067,6 +1067,8 @@ model Organization {
   approvalPolicies                  ApprovalPolicy[]
   addresses                         Address[]
   profile                           OrganizationProfile?
+  requisites                        OrganizationRequisites?
+  requisitesRevisions               OrganizationRequisitesRevision[]
   supplierProfile                   SupplierProfile?
   buyerContractPrices               ContractPrice[]           @relation("ContractPriceBuyer")
   carts                             Cart[]                    @relation("CartBuyer")
@@ -1381,6 +1383,31 @@ model OrganizationProfile {
 
   @@index([legalAddressId])
   @@index([deliveryAddressId])
+}
+
+// Requisites have their own version: a draft must not silently change admission,
+// prices or the source organization profile. Revision payloads are append-only.
+model OrganizationRequisites {
+  organizationId String       @id @db.Uuid
+  version        Int          @default(0)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+}
+
+model OrganizationRequisitesRevision {
+  id                String       @id @default(uuid()) @db.Uuid
+  organizationId    String       @db.Uuid
+  version           Int
+  fields            Json
+  source            Json
+  createdById       String       @db.Uuid
+  createdByName     String
+  createdAt         DateTime     @default(now())
+  confirmedById     String?      @db.Uuid
+  confirmedByName   String?
+  confirmedAt       DateTime?
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+
+  @@unique([organizationId, version])
 }
 
 model Industry {

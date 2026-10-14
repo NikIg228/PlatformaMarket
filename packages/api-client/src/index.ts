@@ -13,6 +13,7 @@ import type {
   UpdateProductInput, UpdatedCatalogProduct,
   OrderWorkflowCommand, OrderWorkflowResponse, OrderWorkflowResult, SaveSupplierPaymentPolicy, SupplierPaymentPolicyResponse,
   OrganizationProfileResponse, SaveOrganizationProfileInput, OrganizationOnboarding,
+  OrganizationRequisitesResponse, SaveOrganizationRequisitesInput, ConfirmOrganizationRequisitesInput, OrganizationRequisitesMutation, OrganizationRequisitesHistory, OrganizationRequisitesHistoryQuery,
   AcceptSupplierTermsInput, ReviewSupplierAdmissionInput, SupplierLegalBundle, SupplierTermsState, SupplierTermsAcceptance, SupplierAdmissionList,
   WorkspaceContext,
   AuthClientOptions, AuthRegistrationAccepted, AuthForgotAccepted, AuthEmailRegistration, LocalOperatorLogin, LocalOperatorSession,
@@ -156,6 +157,13 @@ export class MarketplaceApiClient {
   getSupplierTerms() { return this.get<SupplierTermsState>("/supplier-terms/current"); }
   getOrganizationProfile() { return this.get<OrganizationProfileResponse>("/organizations/current/profile"); }
   saveOrganizationProfile(input: SaveOrganizationProfileInput) { return this.post<OrganizationProfileResponse>("/organizations/current/profile", input); }
+  getOrganizationRequisites() { return this.get<OrganizationRequisitesResponse>("/organizations/current/requisites"); }
+  saveOrganizationRequisites(input: SaveOrganizationRequisitesInput) { return this.post<OrganizationRequisitesMutation>("/organizations/current/requisites", input); }
+  confirmOrganizationRequisites(input: ConfirmOrganizationRequisitesInput) { return this.post<OrganizationRequisitesMutation>("/organizations/current/requisites/confirm", input); }
+  getOrganizationRequisitesHistory(query: OrganizationRequisitesHistoryQuery = {}) {
+    const suffix = query.beforeVersion === undefined ? "" : `?beforeVersion=${encodeURIComponent(query.beforeVersion)}`;
+    return this.get<OrganizationRequisitesHistory>(`/organizations/current/requisites/history${suffix}`);
+  }
   getOrganizationOnboarding() { return this.get<OrganizationOnboarding>("/organizations/current/onboarding"); }
   getOperatorOrganizationOnboarding(id: string) { return this.get<OrganizationOnboarding>(`/organizations/${encodeURIComponent(id)}/onboarding`); }
   acceptSupplierTerms(input: AcceptSupplierTermsInput) { return this.post<SupplierTermsAcceptance>("/supplier-terms/acceptances", input); }

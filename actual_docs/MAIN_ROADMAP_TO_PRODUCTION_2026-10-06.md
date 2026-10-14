@@ -603,8 +603,8 @@ SMS физлица — отдельный согласованный докум�
   <a id="document-vat"></a>
 
   - [ ] **R7.6.1.4** Реквизиты и НДС: профиль поставщика → предложение → заказ → документы.
-    PLANNED, runtime NOT_RUN. Внесено по поручению владельца14.10;
-    описание не означает реализацию. Контракт — [DWF §17.5–17.6](domains/MARKET_DOCUMENT_WORKFLOW.md#supplier-vat-proposal).
+    IN_PROGRESS: первый пакет профиля реализован локально; targeted UI/API/PostgreSQL PASS, Prisma generate, рабочая миграция и dev restart PASS; публикация/CI pending. [Контракт пакета](domains/MARKET_DOCUMENT_WORKFLOW.md#organization-requisites-runtime), [evidence/блокеры](governance/task-state/PRIMARY-SESSION.md). Остальная налоговая цепочка PLANNED. Внесено по поручению владельца14.10;
+    описание оставшейся цепочки не означает её реализацию. Контракт — [DWF §17.5–17.6](domains/MARKET_DOCUMENT_WORKFLOW.md#supplier-vat-proposal).
     Последовательность и границы результата:
     - **Профиль:** общие реквизиты вводятся и подтверждаются один раз, затем
       переиспользуются; налоговый статус имеет период действия. Изменения
