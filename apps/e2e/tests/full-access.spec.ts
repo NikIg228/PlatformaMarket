@@ -47,7 +47,7 @@ for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const)
       await page.addInitScript(({ session, capability, actorId, operator }) => sessionStorage.setItem(operator ? "dentmarket_admin_session" : `dentmarket:${capability.toLowerCase()}-session`, JSON.stringify({ ...session, actorId, user: { id: actorId }, activeOrganizationId: session.organizationId })), { session, capability, actorId: user.id, operator });
       const base = capability === "BUYER" ? "/clinic" : "/supplier";
       await page.goto(operator ? "/admin" : `${base}/settings`);
-      if (operator) await page.getByRole("button", { name: "Настройки", exact: true }).click();
+      if (operator) await page.getByRole("link", { name: "Настройки", exact: true }).click();
       const management = page.getByRole("region", { name: "Сотрудники и доступ" });
       if (operator) {
         await expect(management.getByText("Все активные сотрудники имеют полный доступ", { exact: false })).toBeVisible();

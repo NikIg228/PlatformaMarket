@@ -44,7 +44,7 @@ for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const)
     await page.addInitScript(({ session, capability, actorId, operator }) => sessionStorage.setItem(operator ? "dentmarket_admin_session" : `dentmarket:${capability.toLowerCase()}-session`, JSON.stringify({ ...session, actorId, user: { id: actorId }, activeOrganizationId: session.organizationId })), { session, capability, actorId: user.id, operator });
     const route = operator ? "/admin" : capability === "BUYER" ? "/clinic/settings" : "/supplier/settings";
     await page.goto(route);
-    if (operator) await page.getByRole("button", { name: "Настройки", exact: true }).click();
+    if (operator) await page.getByRole("link", { name: "Настройки", exact: true }).click();
     const management = page.getByRole("region", { name: "Сотрудники и доступ" });
     if (operator) {
       await management.getByLabel("Email сотрудника").fill(email);
@@ -84,7 +84,7 @@ for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const)
     const memberSession = await workspaceFixture(db, capability, { userId: added.id, organizationId: organization.id, displayName: organization.displayName });
     await invitePage.evaluate(({ memberSession, capability, actorId, operator }) => sessionStorage.setItem(operator ? "dentmarket_admin_session" : `dentmarket:${capability.toLowerCase()}-session`, JSON.stringify({ ...memberSession, actorId, user: { id: actorId }, activeOrganizationId: memberSession.organizationId })), { memberSession, capability, actorId: added.id, operator });
     await invitePage.goto(route);
-    if (operator) await invitePage.getByRole("button", { name: "Настройки", exact: true }).click();
+    if (operator) await invitePage.getByRole("link", { name: "Настройки", exact: true }).click();
     if (operator) {
       await expect(invitePage.getByText("Управление сотрудниками доступно администратору организации.")).toBeVisible();
       await member.getByRole("button", { name: "Отключить доступ" }).click();
