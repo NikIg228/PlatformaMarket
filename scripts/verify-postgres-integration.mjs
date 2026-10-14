@@ -20,6 +20,7 @@ import { verifyCommerceMetricUpgrade } from "./lib/verify-commerce-metric-upgrad
 import { verifyConversations } from "./lib/verify-conversations.mjs";
 import { verifyOrganizationRequisites } from "./lib/verify-organization-requisites.mjs";
 import { verifyOrganizationRequisitesUpgrade } from "./lib/verify-organization-requisites-upgrade.mjs";
+import { verifySupplierVat } from "./lib/verify-supplier-vat.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const apiDirectory = path.join(root, "apps", "api");
@@ -153,6 +154,7 @@ async function createBuyer(index, complete = true) {
       emailVerifiedAt: new Date(),
     },
   });
+  fixture.userIds.push(user.id);
   const organization = await prisma.organization.create({
     data: {
       legalName: `B0.4 Clinic ${runId} ${index}`,
@@ -162,6 +164,7 @@ async function createBuyer(index, complete = true) {
       capabilities: { create: { capability: "BUYER" } },
     },
   });
+  fixture.buyerIds.push(organization.id);
   const role = await prisma.role.create({
     data: {
       organizationId: organization.id,
@@ -185,8 +188,6 @@ async function createBuyer(index, complete = true) {
   await prisma.membershipRole.create({
     data: { membershipId: membership.id, roleId: role.id },
   });
-  fixture.userIds.push(user.id);
-  fixture.buyerIds.push(organization.id);
   if (complete) await completeFixtureOrganization(prisma, organization.id);
   return { userId: user.id, organizationId: organization.id };
 }
@@ -595,12 +596,13 @@ try {
   await prisma.$connect();
   const commercialOnly = process.argv.includes("--commercial-only");
   const requisitesOnly = process.argv.includes("--requisites-only");
-  if (!commercialOnly && !requisitesOnly) {
+  const vatOnly = process.argv.includes("--vat-only");
+  if (!commercialOnly && !requisitesOnly && !vatOnly) {
     await verifyManualPaymentUpgrade(prisma, assert);
     await verifyPromotionUpgrade(prisma, assert);
     await verifyCommerceMetricUpgrade(prisma, assert);
   }
-  if (!commercialOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
+  if (!commercialOnly && !vatOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
   const [rollbackOffer, idempotencyOffer, concurrencyOffer, correctionOffer, snapshotOffer, ...lotOffers] =
     requisitesOnly ? [] : await createFixtureCatalog();
   const [
@@ -621,7 +623,10 @@ try {
   api.stderr.on("data", rememberLog);
   await waitUntilReady();
 
-  if (requisitesOnly) {
+  if (vatOnly) {
+    await verifySupplierVat({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer] });
+    console.log("Focused PostgreSQL VAT verification PASS");
+  } else if (requisitesOnly) {
     await verifyOrganizationRequisites({ prisma, createBuyer, request, runId, assert });
     console.log("Focused PostgreSQL requisites verification PASS");
   } else if (commercialOnly) {
@@ -906,6 +911,7 @@ try {
       "Failed checkout was not fully compensated",
     );
 
+  await verifySupplierVat({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer] });
   console.log(
     JSON.stringify(
       {

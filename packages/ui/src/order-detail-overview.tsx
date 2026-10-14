@@ -1,6 +1,8 @@
 "use client";
 import type { ReactNode } from "react";
 import type { OrderWorkflowResponse } from "@marketplace/schemas";
+import { orderLineVat } from "@marketplace/schemas";
+import { VatLineAmount, VatBreakdown } from "./vat-breakdown";
 import { DmButton, formatDate, formatMoney } from "./index";
 import { orderItemCount, orderOverview, type OrderDetailTab } from "./order-presentation";
 
@@ -21,8 +23,9 @@ export function OrderDetailItems({ data, action }: { data: OrderWorkflowResponse
   return <section id={`order-items-${data.order.id}`} tabIndex={-1} className="dm-order-card" aria-label="Состав заказа"><div className="dm-order-card-heading"><h2>Состав заказа</h2><span>{orderItemCount(data.order.items.length)}</span></div>
     <div className="dm-order-items">{data.order.items.map(item => <article key={item.id} className="dm-order-item">
       <div><h3>{item.offer?.productVariant.product.canonicalName ?? "Товар"}</h3>{item.giftForItemId ? <span className="dm-order-eyebrow">Подарок</span> : null}<p>Заказано: {item.quantity} · Подтверждено: {item.acceptedQuantity ?? "—"}</p>{item.decisionReason ? <p>{item.decisionReason}</p> : null}</div>
-      <strong>{formatMoney(item.totalPriceMinor, item.currency)}</strong>
-    </article>)}</div><div className="dm-order-total"><span>Сумма заказа</span><strong>{formatMoney(data.order.subtotalAmountMinor, data.order.currency)}</strong></div>{action}
+      <div><strong>{formatMoney(item.totalPriceMinor, item.currency)}</strong><VatLineAmount tax={orderLineVat(item.offerSnapshot, item.totalPriceMinor)} currency={item.currency} /></div>
+    </article>)}</div><div className="dm-order-total"><span>Сумма заказа</span><strong>{formatMoney(data.order.subtotalAmountMinor, data.order.currency)}</strong></div>
+    <VatBreakdown lines={data.order.items.map(item => orderLineVat(item.offerSnapshot, item.totalPriceMinor))} currency={data.order.currency} />{action}
   </section>;
 }
 

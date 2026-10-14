@@ -14,6 +14,8 @@ describe("DataFreshnessService manual price override", () => {
       reason: "Точная ручная цена",
     });
     const tx = {
+      $queryRaw: vi.fn(),
+      supplierVatSettings: { findUnique: vi.fn().mockResolvedValue(null) },
       dataOverride: {
         update: vi.fn(),
         create: vi.fn().mockResolvedValue({
@@ -26,6 +28,7 @@ describe("DataFreshnessService manual price override", () => {
         }),
       },
       offerPrice: {
+        findFirst: vi.fn().mockResolvedValue(null),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         create: vi.fn().mockResolvedValue({ id: "price-1" }),
       },

@@ -6,6 +6,161 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 15.10 — R7.6.1.4: реализация налоговых условий (IN_PROGRESS, новый цикл разрешён)
+
+Итог локальной проверки15.10: LOCAL PASS; готовится выборочный commit/push,
+actual CI ещё pending. Buyer cycle2: attempt1PASS2/2; после уточнения текста
+и закрытия toast для снимка attempt2PASS2/2. Screenshot390/1440 просмотрены,
+computed Manrope14/gap12, keyboard consent, tax-only diff и immutable order PASS.
+Inventory price regression: attempt1 ожидал checkbox без выбора режима legacy;
+fixture исправлена на явный TAXABLE16, attempt2PASS. Supplier прежние10PASS
+переиспользуются. Legacy manual-offer/manual-candidate адаптированы к декларации
+и scoped test profile, typecheck PASS; legacy servers/browser suite не запускались.
+
+Финальные проверки текущего VAT patch: backend dependent46files/275tests PASS;
+schemas35/291 PASS; api-client25/74 PASS; UI18/89 PASS. Shared UI/client и E2E
+types PASS. Schema/API build прежний PASS; final isolated web build+types49routes
+PASS; web bundle budget PASS; scoped ESLint PASS и UI contract PASS386files.
+Полный PostgreSQL attempt1 дошёл до VAT, столкнулся с reused fixture indices91–93;
+новому VAT набору выделены31–33, cleanup регистрирует созданные записи сразу;
+attempt2PASS exit0. Core-contract PASS69 verified operations, включая7 новых
+VAT/import/ERP операций. Runtime-split прежний PASS переиспользован.
+Команды/логи: `.tmp/vat-2026-10-14/{backend-dependent-1,schema-final-tests,
+client-tests-1,ui-tests-1,shared-types-1,e2e-types-1,lint-1,ui-contract-1,
+postgres-full-2,core-contract-1,build-web-final,web-budget}.log`.
+API/schema prerequisite builds выполнены ранее на тех же исходниках;
+underlying verify scripts запускались через `npm run db:test -- exec -- node`
+с isolated generated Prisma hook/loader. Исходники только canonical checkout.
+Далее: review собственных hunks относительно сохранённого before-VAT baseline,
+выборочная публикация и actual CI. Рабочая миграция по-прежнему не применялась.
+Ниже сохранена история, прежний BLOCKED больше не текущий статус.
+
+Владелец15.10: «разрешаю, продолжа» — новый цикл buyer UI и завершение
+оставшихся проверок/публикации разрешены. Старые три попытки сохранены ниже.
+План коррекции: объединить содержимое каждой table cell в один контейнер,
+разделить сумму и пояснение НДС, добавить отступы итогу. Риск — shared order
+composition обеих ролей; значения/tax logic не меняются. Паспорт прежний:
+Manrope14, tokens spacing, 390/1440; baseline vat-buyer-3. Проверка — buyer
+consent/order browser с computed styles и screenshot; затем оставшиеся gates.
+
+Последний checkpoint: main/699047b + незакоммиченный VAT patch; unrelated WIP
+сохранён. Полный согласованный DoD не выполнен, commit/push/нового CI нет.
+Проверки текущего пакета: schemas/API build PASS, isolated web production
+build (включая TypeScript, 49 routes) PASS; runtime-split PASS. Supplier browser
+5 новых + 5 связанных сценариев PASS. Расширенный PostgreSQL VAT gate attempt3
+PASS/exit0: скидка/округление, tax-only consent, immutable order/replay,
+import net/blank/stale rollback, ERP optimistic update; также tenant/role,
+default isolation, bulk rollback/concurrency/profile invalidation. Логи:
+`.tmp/vat-2026-10-14/postgres-vat-flows-3.log`, `build-web.log`; browser evidence
+`output/playwright/vat-ui-1`, `vat-editor-1`, `vat-buyer-3`.
+
+Buyer browser: attempt1 остановлен при неверном mock endpoint; attempt2 FAIL
+из-за отсутствия organization profile fixture; attempt3 прошёл VAT assertions,
+но FAIL на unexpected /catalog/cities. Mock cities добавлен, НЕ перепроверен.
+Три попытки исчерпаны: AGENTS §7.1, новый цикл только после решения владельца.
+Снимки также выявили реальные дефекты композиции: сумма и пояснение НДС в
+заказе слипаются; mobile cart commercial diff раскладывается отдельными grid
+ячейками, налоговому итогу нужны согласованные отступы. UI НЕ ACCEPTED.
+Следующий точный шаг: после разрешения нового цикла исправить эту композицию
+и принять buyer flow на 390/1440. Затем оставшиеся affected/dependent tests,
+core-contract/full PostgreSQL по плану, lint, contract regressions, review,
+выборочный commit/push и actual CI. Не повторять неизменённые PASS.
+Собственные build64673/PG34538 завершены exit0; активных собственных запусков нет.
+Orphan пользователя первой неудачной PG fixture найден по точному synthetic
+email; memberships=0, удалён из verified test DB. Рабочая БД не менялась.
+Ниже история реализации, не новые поручения и не итоговая приёмка.
+
+Владелец полностью согласовал предложение и явно поручил реализацию:
+налоговый режим/ставка предложения; default только для новых предложений;
+массовое изменение выбранных с preview/confirm; импорт explicit > default для
+новых, пустое поле сохраняет прежнее для обновлений; ERP gross/net явно;
+точное выделение налога из конечной суммы строки после скидки, HALF_UP до
+тиына, база=итог−НДС, суммирование строк, всегда две цифры в денежных суммах.
+Статус/основание подтверждает поставщик; автоматической классификации товара
+и внешней проверки лицензий нет. Этот ответ заменяет ожидание решения о
+владельце ставки и округлении; не подставлять основания существующим товарам.
+
+База699047b, canonical main. Риск высокий: деньги, shared contract/formatter,
+импорт/ERP, revalidation, snapshots. Существующий unrelated WIP сохранён в
+baseline; ни working DB migration, ни изменение старых цен не входит в scope.
+План: (1) shared tax schemas/точная арифметика и unit; (2) additive migration,
+default/offer/bulk backend с focused tests сразу; (3) import/ERP/override и
+targeted tests; (4) checkout/document snapshots, суммы и tests; (5) API client,
+supplier settings/create/edit/import/bulk и buyer breakdown; (6) изолированные
+PostgreSQL/core-contract/runtime, affected types/lint/build, targeted browser,
+UI screenshot/computed styles 390/1440+keyboard, review/selective publish/CI.
+Лимит каждого gate3 попытки; завершение всей согласованной модели, не одного
+helper. Старые неподтверждённые поля не становятся новым подтверждённым режимом;
+история заказов/документов не переписывается и чужие изменения не публикуются.
+
+UI паспорт: аналоги offer-commercial-editor.tsx, spreadsheet-import.tsx и
+shared organization requisites forms; DmField/DmInput/DmSelect/DmButton и
+DmCheckbox/DmTable, без локальных overrides. Component/semantic JSON прочитаны:
+Manrope14/line1.5, controls44px (compact32 только в существующей плотной таблице),
+spacing8/12/16/24, radius control8/card12/dialog16, existing semantic colors.
+Перед UI кодом сверить текущий экран; при приёмке фактические computed styles.
+
+Промежуточно: shared vat.ts (режимы/датированные ставки, snapshot и BigInt
+арифметика), additive20261014020000_supplier_vat, backend default/bulk и
+single-price путь, OpenAPI/client endpoints написаны. Schema tests59/59PASS;
+VAT backend12 + commercial8 =20PASS. Первый isolated API typecheck PASS до
+controller/single-price wiring; повтор после wiring выполняется отдельно.
+Prisma validate attempt1 не имел DATABASE_URL (P1012), attempt2 через db:test
+PASS. Рабочий API17524/4012 использует загруженную DLL; не останавливался.
+Для тестов Prisma generated в .tmp/vat-2026-10-14/client (PASS), API types/Vitest
+используют временные configs с этим client; исходники остаются canonical.
+Продолжение23:20: импорт сохраняет предыдущую декларацию/legacy flags,
+explicit row валидируется без fallback, net→gross один раз; default и actor
+фиксируются при создании batch. Модерация использует декларацию строки.
+ERP binding получил явные priceTax настройки; sync сравнивает нормализованную
+сумму и пишет tax-only изменения. Override сохраняет/подтверждает tax.
+Корзина выделяет налог после скидки/количества, revalidation сравнивает tax;
+документы берут immutable order declaration и суммы принятых/отгруженных строк.
+Unit: import/schema11PASS; VAT/import/moderation28PASS; override18PASS;
+ERP10PASS; документы15PASS. API typecheck после документов PASS. Сборка API
+с isolated generated client запущена (Nest config .tmp/vat-2026-10-14).
+Одна попытка commerce-rules упала из-за import в конце CommonJS schema;
+import перенесён наверх, schema rebuilt, повтор commerce/docs21PASS.
+Создан PostgreSQL --vat-only gate: tenant/role/default/replay/stale preview/
+batch rollback/concurrency/profile invalidation; пока не запускался.
+До завершения: PG и upgrade-path; server import tax preview/stale binding;
+UI/settings/create/edit/import/bulk/buyer; formatter; focused browser +
+computed/screenshot, core/runtime/final checks и публикация/CI.
+Текущий dev UI доступен, отдельная браузерная вкладка открыта; кабинет
+требует входа. Исходный supplier settings проверен существующей UI-фикстурой:
+organization-requisites.spec.ts grep supplier...1440 PASS, screenshot
+output/playwright/vat-baseline/organization-requisites-re-672e5-m-history-and-keyboard-1440/requisites-editor-1440.png.
+Просмотрен; 1440 CSSpx, масштаб1, sidebar200/header60, content padding32,
+surface padding24; Manrope14,44px/radius8 подтверждены computed тестом.
+Контракты market-components-v1/platforma-semantic-light-v1; используем
+существующую форму реквизитов и shared Dm controls как аналог.
+PG VAT attempt1 FAIL: fixture actor не имел organization.view для чтения
+реквизитов; добавлено в тестовую роль, проверяется полнота fixture до retry.
+Attempt2PASS: роль исправлена и synthetic supplier profile заполнен через
+утверждённый fixture helper. Default не меняет цены; stale preview409;
+batch rollback без partial price/history; concurrent201/409; gross/freshness
+сохранены; replay/tenant/role/profile invalidation PASS. API Nest build PASS.
+Миграция testDB успешно применена; cleanup PASS. Новое23:37: UI настройки
+НДС, поля create/edit, bulk selection/preview/confirm написаны; shared money
+всегда2digits (6testsPASS). Web typecheck PASS после этих изменений.
+Server import-tax-preview схематизирован/контроллер/client подключены,
+counts/hash/перепроверка при batch creation и price/offer versions при process;
+10targeted import testsPASS, новый API typecheck выполняется. Импортная форма
+и ERP UI ещё не подключены; buyer breakdown и итоговые проверки не завершены.
+Продолжение23:50: импортная UI форма подключена к server tax-preview/hash,
+gross/net, default override/row columns, counts/errors и stale409 recovery.
+ERP получил shared typed GET price-tax/PATCH binding-tax, audit/idempotency,
+optimistic concurrency, supplier-only declaration и форму существующих PRICE
+bindings в настройках НДС. Scope/priority binding сохраняются.
+ERP targeted10PASS (первая команда из root не нашла тесты; исправлен cwd,
+следующая попытка PASS). API typecheck после ERP PASS. Web types после ERP
+и buyer breakdown PASS. Cart/order теперь показывают line/base/VAT/groups;
+unknown legacy не изображается нулевым налогом. Buyer focused8PASS.
+Запрет explicit declaration оператором добавлен в single/commercial/import/
+override/binding; related17PASS. Требуются реальные browser screenshot/computed
+и полный остаток DoD выше; новые UI ещё не приняты визуально. Рабочая БД
+не менялась. Ничего из этого пакета пока не опубликовано.
+
 ### 14.10 — продолжение НДС: вопрос отложен владельцем
 
 На «продолжай» выполнена read-only сверка источников №1204/№542 и даты оборота

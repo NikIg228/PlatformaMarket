@@ -1,4 +1,5 @@
 import type { CartLineSnapshotResponse } from "@marketplace/schemas";
+import { sameAcceptedVat, vatLabel } from "@marketplace/schemas";
 import { sameAcceptedPromotion } from "@marketplace/schemas/promotion-snapshot";
 
 const amount = (value: string | null | undefined) => value?.replace(".", ",") ?? "не указано";
@@ -22,6 +23,14 @@ export function cartCommercialChanges(previous: CartLineSnapshotResponse, curren
   if (before?.packagingUnitId !== after?.packagingUnitId) changes.push("Изменилась единица измерения содержимого упаковки.");
   const vat = (terms: typeof before) => !terms || terms.includesVat === null ? "не указан" : `${terms.includesVat ? "включён" : "не включён"}, ставка ${terms.vatRate === null ? "не указана" : `${amount(terms.vatRate)}%`}`;
   compare("НДС", vat(before), vat(after));
+  if (!sameAcceptedVat(previous.tax, current.tax)) {
+    compare("Налоговые условия", vatLabel(previous.tax?.declaration.selection), vatLabel(current.tax?.declaration.selection));
+    compare("Основание НДС", previous.tax?.declaration.selection.basis ?? "не указано", current.tax?.declaration.selection.basis ?? "не указано");
+    if (previous.tax?.declaration.profile.version !== current.tax?.declaration.profile.version)
+      changes.push("Обновлён подтверждённый налоговый профиль поставщика.");
+    if (previous.tax && current.tax && previous.tax.declaration.ruleId !== current.tax.declaration.ruleId)
+      changes.push("Изменилось применяемое правило расчёта НДС.");
+  }
   compare("Минимальное количество", amount(previous.minimumOrderQuantity), amount(current.minimumOrderQuantity));
   compare("Шаг заказа", amount(previous.orderIncrement), amount(current.orderIncrement));
   compare("Условие цены", sourceName(previous.source), sourceName(current.source));

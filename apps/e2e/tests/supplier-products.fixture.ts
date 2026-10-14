@@ -1,5 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import type { WorkspaceOffer, OfferPromotion } from "@marketplace/schemas";
+import { taxFixture, taxDeclaration } from "./supplier-vat.fixture";
 export const id = (value: number) => `00000000-0000-4000-8000-${String(value).padStart(12, "0")}`;
 export const organizationId = id(1), warehouseId = id(2), offerId = id(3), variantId = id(4), productId = id(5);
 const at = "2026-01-01T00:00:00.000Z";
@@ -66,6 +67,7 @@ export async function productFixture(page: Page, allowed = permissions) {
       if (state.failImport) return fail("Не удалось прочитать прайс");
       body = { headers: ["Код", "Название", "Цена", "Валюта", "Остаток"], rows: [{ rowNumber: 2, rawData: { Код: "PRICE-1", Название: "Композит", Цена: "1234,56", Валюта: "KZT", Остаток: "5" } }] };
     }
+    else if (path === `/suppliers/${organizationId}/import-tax-preview`) body = { previewHash: "b".repeat(64), counts: { inherited: 1, individual: 0, unchanged: 0, errors: 0, unknown: 0 }, items: [{ rowNumber: 2, kind: "INHERITED", amountMinor: "123456", selection: taxDeclaration.selection, issue: null, offerId: null, offerVersion: null, priceId: null, variantId }] };
     else if (path === `/suppliers/${organizationId}/import-batches`) {
       if (write) {
         if (state.failImport) return fail("Не удалось прочитать прайс");
@@ -101,6 +103,7 @@ export async function productFixture(page: Page, allowed = permissions) {
     else { state.unexpected.push(path); return fail(`Unexpected fixture path ${path}`); }
     return route.fulfill({ json: body });
   });
+  await taxFixture(page);
   return state;
 }
 export async function noOverflow(page: Page) { expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); }

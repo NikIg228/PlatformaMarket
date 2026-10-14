@@ -1,19 +1,20 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   type OnModuleInit,
 } from "@nestjs/common";
 import {
   supplierColumnMappingSchema,
-  importPriceMinor, supplierImportPreviewSchema, type SupplierImportPreviewInput,
+  supplierImportPreviewSchema, type SupplierImportPreviewInput,
+  importVatSelection, type SupplierImportTaxPreviewInput, type SupplierImportTaxPreview,
   IMPORT_UPLOAD_MAX_BYTES,
   supplierImportRollbackResponseSchema,
   type ConfirmSupplierItemMatchInput,
   type CreateImportBatchInput,
   type RollbackImportBatchInput,
-  type SupplierColumnMappingInput,
   type SupplierImportRollbackResponse,
 } from "@marketplace/schemas";
 import { createHash } from "node:crypto";
@@ -25,6 +26,9 @@ import {
 } from "../suppliers/supplier-access.service";
 import { ImportFileParser } from "./import-file.parser";
 import { applyImportedInventory } from "./import-inventory";
+import { resolveImportPrice } from "./import-vat";
+import { storedVat } from "../vat/vat-rules";
+import { previewImportTax } from "./import-tax-preview";
 import {
   isConfidentAutomaticMatch,
   normalizeCatalogText,
@@ -36,91 +40,7 @@ import { FileUploadPolicyService } from "../../platform/security/file-upload-pol
 import { SearchProjectionService } from "../search/search-projection.service";
 import { SupplierTermsService } from "../agreements/supplier-terms.service";
 
-type RawRow = Record<string, unknown>;
-
-function value(row: RawRow, column?: string) {
-  return column ? String(row[column] ?? "").trim() : "";
-}
-
-function normalizeRow(row: RawRow, mapping: SupplierColumnMappingInput) {
-  return {
-    externalId: value(row, mapping.externalId),
-    name: value(row, mapping.name),
-    supplierSku: value(row, mapping.supplierSku) || null,
-    gtin: value(row, mapping.gtin) || null,
-    brand: value(row, mapping.brand) || null,
-    manufacturer: value(row, mapping.manufacturer) || null,
-    unit: value(row, mapping.unit) || null,
-    priceMinor: value(row, mapping.priceMinor) ? importPriceMinor(value(row, mapping.priceMinor), mapping.priceUnit) ?? "INVALID_PRICE" : null,
-    currency: value(row, mapping.currency).toUpperCase() || null,
-    quantityOnHand: value(row, mapping.quantityOnHand) || null,
-    lotNumber: value(row, mapping.lotNumber) || null,
-    expirationDate: value(row, mapping.expirationDate) || null,
-  };
-}
-
-function mappingKey(row: ReturnType<typeof normalizeRow>) {
-  if (row.supplierSku) return `SKU:${normalizeCatalogText(row.supplierSku)}`;
-  if (row.gtin) return `GTIN:${normalizeCatalogText(row.gtin)}`;
-  return `NAME:${normalizeCatalogText(row.name)}`;
-}
-
-function lineComplianceStatus(
-  row: ReturnType<typeof normalizeRow>,
-  regulated = false,
-) {
-  const reasons: string[] = [];
-  if (row.currency && row.currency !== "KZT")
-    reasons.push("UNSUPPORTED_CURRENCY");
-  if (
-    row.expirationDate &&
-    !Number.isNaN(Date.parse(row.expirationDate)) &&
-    new Date(row.expirationDate) <= new Date()
-  )
-    reasons.push("EXPIRED_LOT");
-  if (!row.priceMinor || !row.currency)
-    reasons.push("PRICE_OR_CURRENCY_REQUIRED");
-  if (regulated && !row.lotNumber) reasons.push("LOT_REQUIRED");
-  if (reasons.includes("EXPIRED_LOT")) return { status: "EXPIRED", reasons };
-  if (reasons.includes("UNSUPPORTED_CURRENCY"))
-    return { status: "BLOCKED", reasons };
-  if (reasons.length > 0)
-    return {
-      status: regulated ? "DOCUMENT_REQUIRED" : "REVIEW_REQUIRED",
-      reasons,
-    };
-  return { status: "READY", reasons: [] };
-}
-
-function rowFormatError(row: ReturnType<typeof normalizeRow>) {
-  if (!row.externalId || !row.name)
-    return {
-      code: "REQUIRED_VALUE_MISSING",
-      message: "External ID and name are required",
-    };
-  if (
-    row.priceMinor &&
-    (!/^[1-9]\d{0,19}$/.test(row.priceMinor) || BigInt(row.priceMinor) <= 0n)
-  )
-    return {
-      code: "INVALID_PRICE_MINOR",
-      message: "Price must be a positive integer in minor units",
-    };
-  if (
-    row.quantityOnHand &&
-    !/^\d+(?:\.\d{1,6})?$/.test(row.quantityOnHand)
-  )
-    return {
-      code: "INVALID_QUANTITY",
-      message: "Quantity must be a non-negative decimal with up to 6 fraction digits",
-    };
-  if (row.expirationDate && Number.isNaN(Date.parse(row.expirationDate)))
-    return {
-      code: "INVALID_EXPIRATION_DATE",
-      message: "Expiration date must be a valid date",
-    };
-  return null;
-}
+import { normalizeRow, mappingKey, lineComplianceStatus, rowFormatError, type RawRow } from "./import-row";
 
 @Injectable()
 export class ImportsService implements OnModuleInit {
@@ -448,6 +368,7 @@ export class ImportsService implements OnModuleInit {
     input: CreateImportBatchInput,
     context: SupplierActorContext,
   ) {
+    if (supplierOrganizationId !== context.organizationId && (input.columnMapping.taxAcknowledged || input.columnMapping.defaultVat || input.columnMapping.vatMode || input.columnMapping.vatRate || input.columnMapping.vatBasis)) throw new ForbiddenException("Налоговые условия подтверждает представитель поставщика");
     await this.access.assertCanManage(supplierOrganizationId, context);
     await this.access.requireProfile(supplierOrganizationId);
     const source = await this.prisma.supplierDataSource.findFirst({
@@ -486,6 +407,12 @@ export class ImportsService implements OnModuleInit {
         createHash("sha256").update(JSON.stringify(rows)).digest("hex");
       return await this.prisma.$transaction(
         async (tx) => {
+        const reviewedTax = await previewImportTax(tx, supplierOrganizationId, context.actorId,
+          { columnMapping: input.columnMapping, rows: rows.map((rawData, index) => ({ rowNumber: parsedFile.rowNumbers?.[index] ?? index + 2, rawData })) });
+        const taxPreview = input.taxPreviewHash ? reviewedTax : null;
+        if (taxPreview && (taxPreview.previewHash !== input.taxPreviewHash || taxPreview.counts.errors)) throw new ConflictException("Налоговые условия или товары изменились после предпросмотра. Проверьте файл повторно");
+        const initialTax = reviewedTax.items.some(item => item.kind === "INHERITED")
+          ? await resolveImportPrice(tx, supplierOrganizationId, context.actorId, {}, { ...input.columnMapping, priceIncludesVat: true }, "0", null) : null;
         const batch = await tx.importBatch.create({
           data: {
             supplierOrganizationId,
@@ -494,7 +421,7 @@ export class ImportsService implements OnModuleInit {
             fileType: input.fileType,
             checksum,
             status: parsedFile.requiresReview ? "REVIEW_REQUIRED" : "MAPPED",
-            columnMapping: input.columnMapping as Prisma.InputJsonValue,
+            columnMapping: { ...input.columnMapping, vatContext: { actorId: context.actorId, defaultTax: initialTax?.declaration ?? null }, taxPreview } as Prisma.InputJsonValue,
             extractionMetadata: parsedFile.metadata as Prisma.InputJsonValue,
             totalRows: rows.length,
             rows: {
@@ -536,7 +463,7 @@ export class ImportsService implements OnModuleInit {
         });
         return batch;
         },
-        { maxWait: 15_000, timeout: 60_000 },
+        { maxWait: 15_000, timeout: 60_000, isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
       );
     } catch (error) {
       if (uploadAssetId) await this.uploads.release(uploadAssetId, "Import batch creation failed");
@@ -557,6 +484,13 @@ export class ImportsService implements OnModuleInit {
       if (!result.success) throw new BadRequestException("Слишком длинные значения или слишком много столбцов в файле.");
       return result.data;
     } finally { await this.uploads.release(asset.id, "Import preview complete"); }
+  }
+
+  async previewTax(supplierOrganizationId: string, input: SupplierImportTaxPreviewInput, context: SupplierActorContext) {
+    await this.access.assertCanManage(supplierOrganizationId, context);
+    await this.access.requireProfile(supplierOrganizationId);
+    return this.prisma.$transaction(tx => previewImportTax(tx, supplierOrganizationId, context.actorId, input),
+      { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead, timeout: 60_000 });
   }
 
   async enqueueBatch(
@@ -619,6 +553,11 @@ export class ImportsService implements OnModuleInit {
     );
     if (!mappingResult.success)
       throw new BadRequestException("Import batch column mapping is invalid");
+    const storedMapping = batch.columnMapping as Record<string, Prisma.JsonValue>;
+    const vatContext = storedMapping.vatContext as { actorId: string; defaultTax: Prisma.JsonValue } | undefined;
+    const taxActorId = vatContext?.actorId ?? context.actorId;
+    const frozenDefault = vatContext ? storedVat(vatContext.defaultTax) : undefined;
+    const taxPreview = storedMapping.taxPreview as unknown as SupplierImportTaxPreview | null;
     const variants = await this.prisma.productVariant.findMany({
       include: { product: { include: { brand: true, manufacturer: true } } },
     });
@@ -665,7 +604,9 @@ export class ImportsService implements OnModuleInit {
         row.rawData as RawRow,
         mappingResult.data,
       );
-      const formatError = rowFormatError(normalized);
+      let formatError = rowFormatError(normalized);
+      try { importVatSelection(row.rawData as RawRow, mappingResult.data); }
+      catch { formatError = { code: "INVALID_VAT_TERMS", message: "Проверьте режим, ставку и основание НДС в строке" }; }
       if (formatError) {
         errorRows += 1;
         await this.prisma.importRow.update({
@@ -751,6 +692,9 @@ export class ImportsService implements OnModuleInit {
               },
             });
             const exactMatch = isConfidentAutomaticMatch(candidates);
+            const expectedTax = taxPreview?.items.find(item => item.rowNumber === row.rowNumber);
+            if (expectedTax && expectedTax.variantId !== (exactMatch && best ? best.variant.id : null))
+              throw new ConflictException("Сопоставление изменилось после предпросмотра. Проверьте строку повторно");
             if (exactMatch && best) {
               await tx.supplierItemMatchCandidate.updateMany({
                 where: { externalItemId: item.id, status: "CONFIRMED" },
@@ -819,6 +763,11 @@ export class ImportsService implements OnModuleInit {
                   saleUnitId: best.variant.saleUnitId ?? null,
                 },
               });
+              if (existingOffer) await tx.$queryRaw`SELECT "id" FROM "SupplierOffer" WHERE "id" = ${existingOffer.id}::uuid FOR UPDATE`;
+              const previousPrice = existingOffer ? await tx.offerPrice.findFirst({ where: { offerId: existingOffer.id, status: "ACTIVE" }, orderBy: { createdAt: "desc" } }) : null;
+              const currentOffer = existingOffer ? await tx.supplierOffer.findUniqueOrThrow({ where: { id: existingOffer.id } }) : null;
+              if (expectedTax && (expectedTax.offerId !== (currentOffer?.id ?? null) || expectedTax.offerVersion !== (currentOffer?.version ?? null) || expectedTax.priceId !== (previousPrice?.id ?? null)))
+                throw new ConflictException("Предложение изменилось после предпросмотра. Проверьте строку повторно");
               const offer =
                 existingOffer ??
                 (await tx.supplierOffer.create({
@@ -838,6 +787,7 @@ export class ImportsService implements OnModuleInit {
                     publication: { create: {} },
                   },
                 }));
+              await tx.$queryRaw`SELECT "id" FROM "SupplierOffer" WHERE "id" = ${offer.id}::uuid FOR UPDATE`;
               if (existingOffer)
                 await tx.supplierOffer.update({
                   where: { id: existingOffer.id },
@@ -855,6 +805,9 @@ export class ImportsService implements OnModuleInit {
                 /^[1-9]\d{0,19}$/.test(amountMinor) &&
                 /^[A-Z]{3}$/.test(normalized.currency ?? "")
               ) {
+                const { declaration, ...priceData } = await resolveImportPrice(tx, supplierOrganizationId, taxActorId,
+                  row.rawData as RawRow, mappingResult.data, amountMinor, previousPrice, frozenDefault);
+                Object.assign(normalized, { priceMinor: priceData.amountMinor, taxSnapshot: declaration });
                 await tx.offerPrice.updateMany({
                   where: { offerId: offer.id, status: "ACTIVE" },
                   data: { status: "INACTIVE", validTo: new Date() },
@@ -862,9 +815,8 @@ export class ImportsService implements OnModuleInit {
                 await tx.offerPrice.create({
                   data: {
                     offerId: offer.id,
-                    amountMinor,
+                    ...priceData,
                     currency: normalized.currency!,
-                    includesVat: true,
                     source: "IMPORT",
                     freshnessExpiresAt: new Date(
                       Date.now() + 24 * 60 * 60 * 1000,
@@ -874,9 +826,8 @@ export class ImportsService implements OnModuleInit {
                 await tx.offerPriceHistory.create({
                   data: {
                     offerId: offer.id,
-                    amountMinor,
+                    ...priceData,
                     currency: normalized.currency!,
-                    includesVat: true,
                     source: "IMPORT",
                     reason: "Auto-created from exact supplier import match",
                   },
@@ -900,6 +851,11 @@ export class ImportsService implements OnModuleInit {
                 },
               });
             } else if (candidates.length > 0) {
+              if (normalized.priceMinor) {
+                const price = await resolveImportPrice(tx, supplierOrganizationId, taxActorId,
+                  row.rawData as RawRow, mappingResult.data, normalized.priceMinor, null, frozenDefault);
+                Object.assign(normalized, { priceMinor: price.amountMinor, taxSnapshot: price.declaration });
+              }
               await tx.supplierItemMatchCandidate.createMany({
                 data: candidates.map(({ variant, score, reasons }) => ({
                   externalItemId: item.id,
@@ -918,6 +874,11 @@ export class ImportsService implements OnModuleInit {
                 },
               });
             } else {
+              if (normalized.priceMinor) {
+                const price = await resolveImportPrice(tx, supplierOrganizationId, taxActorId,
+                  row.rawData as RawRow, mappingResult.data, normalized.priceMinor, null, frozenDefault);
+                Object.assign(normalized, { priceMinor: price.amountMinor, taxSnapshot: price.declaration });
+              }
               await tx.productCandidate.upsert({
                 where: { externalItemId: item.id },
                 update: {

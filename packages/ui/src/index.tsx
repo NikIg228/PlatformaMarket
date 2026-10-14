@@ -33,4 +33,5 @@ export { AppShell, type NavigationItem } from "./app-shell";
 export { useWorkspaceSession } from "./use-workspace-session";
 
 export { OrderWorkflowWorkspace } from "./order-workflow-workspace";
+export { VatLineAmount, VatBreakdown } from "./vat-breakdown";
 export { orderStatusLabel, orderStatusTone, orderPaymentPresentation, orderItemCount } from "./order-presentation";

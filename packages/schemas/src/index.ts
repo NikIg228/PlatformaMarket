@@ -1,4 +1,9 @@
 import { z } from "zod";
+import { integrationPriceTaxSchema } from "./integration-tax";
+export * from "./integration-tax";
+import { offerVatInputSchema, vatSelectionSchema } from "./vat";
+export * from "./vat";
+export * from "./import-vat";
 export * from "./access-policy";
 import { DOCUMENT_UPLOAD_MAX_BASE64_CHARACTERS, IMPORT_UPLOAD_MAX_BASE64_CHARACTERS } from "./document-upload-limits";
 export * from "./offer-commercial";
@@ -244,6 +249,13 @@ export const supplierColumnMappingSchema = z.object({
   unit: z.string().trim().min(1).max(120).optional(),
   priceMinor: z.string().trim().min(1).max(120).optional(),
   priceUnit: z.enum(["MAJOR", "MINOR"]).optional(),
+  vatMode: z.string().trim().min(1).max(120).optional(),
+  vatRate: z.string().trim().min(1).max(120).optional(),
+  vatBasis: z.string().trim().min(1).max(120).optional(),
+  priceIncludesVat: z.boolean().optional(),
+  defaultVat: vatSelectionSchema.optional(),
+  expectedRequisitesVersion: z.number().int().positive().optional(),
+  taxAcknowledged: z.literal(true).optional(),
   currency: z.string().trim().min(1).max(120).optional(),
   quantityOnHand: z.string().trim().min(1).max(120).optional(),
   lotNumber: z.string().trim().min(1).max(120).optional(),
@@ -257,9 +269,24 @@ export const supplierImportPreviewInputSchema = z.object({ fileName: z.string().
 export const supplierImportPreviewSchema = z.object({ headers: z.array(z.string()).max(100), rows: z.array(z.object({ rowNumber: z.number().int().positive(), rawData: rawImportRowSchema })).max(5000) });
 export type SupplierImportPreviewInput = z.infer<typeof supplierImportPreviewInputSchema>;
 export type SupplierImportPreview = z.infer<typeof supplierImportPreviewSchema>;
+export const supplierImportTaxPreviewInputSchema = z.object({
+  columnMapping: supplierColumnMappingSchema,
+  rows: z.array(z.object({ rowNumber: z.number().int().positive(), rawData: rawImportRowSchema })).min(1).max(5000),
+});
+export const supplierImportTaxPreviewSchema = z.object({
+  previewHash: z.string().regex(/^[a-f0-9]{64}$/),
+  counts: z.object({ inherited: z.number().int(), individual: z.number().int(), unchanged: z.number().int(), errors: z.number().int(), unknown: z.number().int() }),
+  items: z.array(z.object({ rowNumber: z.number().int(), kind: z.enum(["INHERITED", "INDIVIDUAL", "UNCHANGED", "ERROR", "UNKNOWN"]),
+    amountMinor: z.string().nullable(), selection: vatSelectionSchema.nullable(), issue: z.string().nullable(),
+    offerId: z.uuid().nullable(), offerVersion: z.number().int().nullable(), priceId: z.uuid().nullable(), variantId: z.uuid().nullable(),
+  })).max(5000),
+});
+export type SupplierImportTaxPreviewInput = z.infer<typeof supplierImportTaxPreviewInputSchema>;
+export type SupplierImportTaxPreview = z.infer<typeof supplierImportTaxPreviewSchema>;
 export { importPriceMinor } from "./import-price";
 
 export const createImportBatchSchema = z.object({
+  taxPreviewHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   sourceId: z.uuid(),
   fileName: z.string().trim().min(1).max(240),
   fileType: z.enum(["MANUAL", "CSV", "EXCEL", "PDF"]),
@@ -397,6 +424,7 @@ export const setOfferPriceSchema = z.object({
   currency: z.string().trim().regex(/^[A-Z]{3}$/),
   includesVat: z.boolean().default(true),
   vatRate: z.number().min(0).max(100).nullable().optional(),
+  tax: offerVatInputSchema.optional(),
   source: z.enum(["MANUAL", "IMPORT", "API", "ERP"]).default("MANUAL"),
   reason: z.string().trim().max(240).nullable().optional(),
 });
@@ -655,6 +683,7 @@ const manualOverrideAmountMinorSchema = z.union([
 ]);
 
 export const createDataOverrideSchema = z.object({
+  tax: offerVatInputSchema.optional(),
   target: z.enum(["PRICE", "INVENTORY"]),
   offerId: z.uuid().nullable().optional(),
   inventoryBalanceId: z.uuid().nullable().optional(),
@@ -663,6 +692,7 @@ export const createDataOverrideSchema = z.object({
   reason: z.string().trim().min(3).max(1_000),
   validUntil: z.iso.datetime().nullable().optional(),
 }).superRefine((value, context) => {
+  if (value.tax && value.target !== "PRICE") context.addIssue({ code: "custom", message: "Налоговые условия применимы только к цене", path: ["tax"] });
   if (value.target === "PRICE" && (!value.offerId || value.inventoryBalanceId)) context.addIssue({ code: "custom", message: "Price override requires only offerId", path: ["offerId"] });
   if (value.target === "INVENTORY" && !value.inventoryBalanceId) context.addIssue({ code: "custom", message: "Inventory override requires inventoryBalanceId", path: ["inventoryBalanceId"] });
   if (value.mode === "UNTIL_DATE" && !value.validUntil) context.addIssue({ code: "custom", message: "Until-date override requires validUntil", path: ["validUntil"] });
@@ -1288,12 +1318,14 @@ export const updateIntegrationConnectionSchema = z.object({
 }).refine(({ version: _version, ...changes }) => Object.values(changes).some((value) => value !== undefined), "At least one connection field must be changed");
 
 export const createIntegrationBindingSchema = z.object({
+  priceTax: integrationPriceTaxSchema.optional(),
   dataType: integrationDataTypeSchema,
   warehouseId: z.uuid().nullable().optional(),
   offerId: z.uuid().nullable().optional(),
   priority: z.number().int().min(0).max(10_000).default(100),
   configuration: integrationConfigurationSchema.nullable().optional(),
-}).refine((value) => !(value.warehouseId && value.offerId), "Only one binding scope may be selected");
+}).refine((value) => !(value.warehouseId && value.offerId), "Only one binding scope may be selected")
+  .refine(value => !value.priceTax || value.dataType === "PRICE", "Налоговые условия применимы только к цене");
 
 export const upsertIntegrationMappingSchema = z.object({
   entityType: integrationEntityTypeSchema,

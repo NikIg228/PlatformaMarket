@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { offerVatInputSchema, vatPriceSnapshotSchema } from "./vat";
 
 export const saveOfferCommercialSchema = z.object({
   warehouseId: z.uuid(),
@@ -9,6 +10,7 @@ export const saveOfferCommercialSchema = z.object({
   currency: z.literal("KZT"),
   includesVat: z.boolean(),
   vatRate: z.number().min(0).max(100).nullable(),
+  tax: offerVatInputSchema.optional(),
   quantityOnHand: z.number().finite().nonnegative(),
 });
 
@@ -19,7 +21,7 @@ export const saveOfferPriceSchema = saveOfferCommercialSchema.omit({ quantityOnH
 export const offerCommercialStateSchema = z.object({
   offerId: z.uuid(), offerVersion: z.number().int().positive(), warehouseId: z.uuid(),
   publicationStatus: z.string(), marketplaceVisible: z.boolean(),
-  price: z.object({ amountMinor: z.string(), currency: z.string(), includesVat: z.boolean(), vatRate: z.string().nullable() }).nullable(),
+  price: z.object({ amountMinor: z.string(), currency: z.string(), includesVat: z.boolean(), vatRate: z.string().nullable(), taxSnapshot: vatPriceSnapshotSchema.nullable().optional() }).nullable(),
   balance: z.object({ id: z.uuid(), version: z.number().int().positive(), quantityOnHand: z.string(), quantityReserved: z.string(),
     safetyStock: z.string(), quantityAvailable: z.string(), availabilityStatus: z.string() }).nullable(),
 });

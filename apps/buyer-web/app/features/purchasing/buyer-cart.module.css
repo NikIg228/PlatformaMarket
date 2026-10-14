@@ -2,6 +2,10 @@
   overflow: hidden;
 }
 
+.taxSummary {
+  padding: var(--dm-space-4);
+}
+
 .validationState {
   margin: 0 var(--dm-space-4) var(--dm-space-4);
 }

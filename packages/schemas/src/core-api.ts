@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { vatLineSnapshotSchema } from "./vat";
 import { acceptedPromotionSchema } from "./promotions.js";
 import { organizationContactSchema } from "./organization-profile.js";
 
@@ -365,6 +366,7 @@ export const cartCommercialTermsSchema = z.object({
 });
 
 export const cartLineSnapshotSchema = z.object({
+  tax: vatLineSnapshotSchema.nullable().optional(),
   resolvedAt: dateTimeSchema,
   offerVersion: z.number().int().nonnegative(),
   source: z.string(),

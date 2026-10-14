@@ -1,4 +1,6 @@
 "use client";
+import { vatLegacyFields, vatLabel, type OfferVatInput, type VatSelection } from "@marketplace/schemas";
+import { OfferVatEditor } from "./offer-vat-editor";
 import { ActionFeedback } from "@marketplace/ui";
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
@@ -12,7 +14,9 @@ export function AddOfferWizard({ api, supplierId }: { api: MarketplaceApiClient;
   const [options, setOptions] = useState<OfferOptionsResponse | null>(null), [selected, setSelected] = useState<OfferOption | null>(null);
   const [packId, setPackId] = useState(""), [warehouses, setWarehouses] = useState<SupplierWarehouseList>([]), [warehouseId, setWarehouseId] = useState("");
   const [price, setPrice] = useState(""), [stock, setStock] = useState(""), [sku, setSku] = useState("");
-  const [minimum, setMinimum] = useState("1"), [increment, setIncrement] = useState("1"), [vat, setVat] = useState("included"), [vatRate, setVatRate] = useState("");
+  const [minimum, setMinimum] = useState("1"), [increment, setIncrement] = useState("1");
+  const [tax, setTax] = useState<OfferVatInput | undefined>();
+  const [taxBaseline, setTaxBaseline] = useState<VatSelection | null>(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState(""), [fieldError, setFieldError] = useState("");
   const [saved, setSaved] = useState<OfferCommercialState | null>(null), [published, setPublished] = useState(false);
   const [unknownCreation, setUnknownCreation] = useState(false), [unknownSave, setUnknownSave] = useState(false), [conflict, setConflict] = useState(false);
@@ -46,8 +50,7 @@ export function AddOfferWizard({ api, supplierId }: { api: MarketplaceApiClient;
     try { amount = offerPriceMinor(price); } catch (cause) { invalid("price", errorMessage(cause)); }
     try { quantity = offerQuantity(stock, true); } catch (cause) { invalid("stock", errorMessage(cause)); }
     try { min = offerQuantity(minimum); inc = offerQuantity(increment); } catch (cause) { invalid("minimum", errorMessage(cause)); }
-    const rate = vatRate.trim() ? Number(vatRate.replace(",", ".")) : null;
-    if (rate !== null && (!Number.isFinite(rate) || rate < 0 || rate > 100)) invalid("vat", "Ставка НДС должна быть от 0 до 100%.");
+    if (!pending.current && !tax) invalid("vat", "Выберите и подтвердите налоговый режим предложения.");
     if (!created.current) {
       try {
         const result = await api.createSupplierOffer(supplierId, { productVariantId: selected.id, packagingId: packaging.id, saleUnitId: packaging.unitId,
@@ -62,7 +65,7 @@ export function AddOfferWizard({ api, supplierId }: { api: MarketplaceApiClient;
     if (!pending.current) {
       const baseline = await api.getSupplierOfferCommercial(supplierId, created.current, warehouseId);
       pending.current = { warehouseId, expectedOfferVersion: baseline.offerVersion, expectedBalanceVersion: baseline.balance?.version ?? null,
-        idempotencyKey: crypto.randomUUID(), amountMinor: String(amount!), currency: "KZT", includesVat: vat === "included", vatRate: rate, quantityOnHand: quantity! };
+        idempotencyKey: crypto.randomUUID(), amountMinor: String(amount!), currency: "KZT", ...vatLegacyFields(tax!.selection), tax, quantityOnHand: quantity! };
     }
     try {
       const state = await api.saveSupplierOfferCommercial(supplierId, created.current, pending.current);
@@ -80,7 +83,7 @@ export function AddOfferWizard({ api, supplierId }: { api: MarketplaceApiClient;
     await api.setSupplierOfferPublication(supplierId, created.current, { status: "PUBLISHED", marketplaceVisible: true, expectedVersion: saved.offerVersion });
     if (alive.current) setPublished(true);
   });
-  const editConditions = () => { setSaved(null); setStep(2); };
+  const editConditions = () => { setTaxBaseline(saved?.price?.taxSnapshot?.selection ?? null); setSaved(null); setStep(2); };
   const locked = busy || unknownSave || unknownCreation;
   return <div className={selected ? s.columns : undefined}>
     <section className={`${s.panel} ${s.form}`}>
@@ -121,16 +124,14 @@ export function AddOfferWizard({ api, supplierId }: { api: MarketplaceApiClient;
           <DmField label="Минимум, уп."><DmInput name="minimum" inputMode="decimal" value={minimum} disabled={locked || Boolean(created.current)} onChange={(_, data) => setMinimum(data.value)} /></DmField>
           <DmField label="Шаг заказа, уп."><DmInput inputMode="decimal" value={increment} disabled={locked || Boolean(created.current)} onChange={(_, data) => setIncrement(data.value)} /></DmField>
         </div></section>
-        <details className={s.disclosure}><summary>Дополнительные условия</summary><div className={s.fields}>
-          <DmField label="НДС в цене"><DmDropdown value={vat} disabled={locked} onChange={(_, data) => setVat(data.value)}><option value="included">Включён в цену</option><option value="excluded">Без НДС</option></DmDropdown></DmField>
-          <DmField label="Ставка НДС, %"><DmInput name="vat" inputMode="decimal" value={vatRate} disabled={locked} onChange={(_, data) => setVatRate(data.value)} /></DmField>
-        </div></details>
+        <OfferVatEditor api={api} supplierId={supplierId} initial={taxBaseline} applyDefault={!created.current} disabled={locked} onChange={setTax} />
         {conflict ? <p role="alert">Условия изменились. Проверьте свои значения перед повторным сохранением.</p> : null}
         {!has("pricing.manage", "inventory.adjust") ? <p role="status">Для сохранения нужны права на изменение цены и остатка. Ввод сохранён.</p> : null}
         <div className={s.footer}><DmButton type="button" disabled={locked || Boolean(created.current)} onClick={() => setStep(1)}>Назад</DmButton><DmButton type="submit" appearance="primary" disabled={busy || unknownCreation || !has("pricing.manage", "inventory.adjust")}>{busy ? "Сохраняем…" : unknownSave ? "Повторить сохранение" : conflict ? "Подтвердить мои значения" : "Проверить предложение"}</DmButton></div>
       </form> : null}
       {step === 3 && saved ? <>
         <h2>{published ? "Предложение опубликовано" : "Проверьте перед публикацией"}</h2>
+        <p>{vatLabel(saved.price?.taxSnapshot?.selection)}</p>
         {published ? <ActionFeedback tone="success" description="Предложение опубликовано. Цена и остаток доступны клиникам." /> : <p className={s.hint}>Условия сохранены в черновике. Проверьте их перед публикацией.</p>}
         <dl className={s.metadata}><dt>Товар</dt><dd>{selected?.name}</dd><dt>Упаковка</dt><dd>{packaging?.name}</dd><dt>Цена за упаковку</dt><dd>{saved.price ? formatMoney(saved.price.amountMinor, saved.price.currency) : "Не задана"}</dd><dt>Количество упаковок</dt><dd>{saved.balance?.quantityOnHand}</dd><dt>Склад</dt><dd>{warehouses.find(item => item.id === warehouseId)?.name}</dd><dt>Минимум / шаг</dt><dd>{minimum} / {increment}</dd></dl>
         <div className={s.footer}>{published ? <a href={`/supplier/products?offer=${created.current}`}>Открыть предложение</a> : <><DmButton disabled={busy} onClick={editConditions}>Изменить условия</DmButton><DmButton appearance="primary" disabled={busy || !has("catalog.offer.publish")} onClick={() => void publish()}>Опубликовать предложение</DmButton></>}</div>

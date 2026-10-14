@@ -1782,6 +1782,7 @@ model SupplierProfile {
   regulatoryDetails      Json?
   paymentReviewPolicy    Json?
   paymentReviewVersion   Int                     @default(0)
+  vatSettings            SupplierVatSettings?
   organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   warehouses             Warehouse[]
   dataSources            SupplierDataSource[]
@@ -1804,6 +1805,15 @@ model SupplierProfile {
   dataOverrides          DataOverride[]
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
+}
+
+model SupplierVatSettings {
+  supplierOrganizationId String          @id @db.Uuid
+  version                Int             @default(1)
+  defaultTax             Json?
+  updatedById            String          @db.Uuid
+  updatedAt              DateTime        @updatedAt
+  supplier               SupplierProfile @relation(fields: [supplierOrganizationId], references: [organizationId], onDelete: Cascade)
 }
 
 model Warehouse {
@@ -2047,6 +2057,7 @@ model OfferPrice {
   currency           String           @db.Char(3)
   includesVat        Boolean          @default(true)
   vatRate            Decimal?         @db.Decimal(5, 2)
+  taxSnapshot        Json?
   validFrom          DateTime         @default(now())
   validTo            DateTime?
   source             OfferSourceType  @default(MANUAL)
@@ -2066,6 +2077,7 @@ model OfferPriceHistory {
   currency    String          @db.Char(3)
   includesVat Boolean
   vatRate     Decimal?        @db.Decimal(5, 2)
+  taxSnapshot Json?
   source      OfferSourceType
   changedById String?         @db.Uuid
   reason      String?

@@ -1,26 +1,30 @@
 "use client";
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { OfferCommercialState, SaveOfferPriceInput } from "@marketplace/schemas";
-import { DmButton, DmField, DmInput, DmDropdown, ErrorState, errorMessage, formatMoney, usePermissions } from "@marketplace/ui";
+import { DmButton, DmField, DmInput, ErrorState, errorMessage, formatMoney, usePermissions } from "@marketplace/ui";
+import { vatLabel, vatLegacyFields, type OfferVatInput, type VatSelection } from "@marketplace/schemas";
+import { OfferVatEditor } from "../../../supplier-web/app/features/supplier-workspace/offer-vat-editor";
 import { offerPriceMinor, offerPriceText } from "../../../supplier-web/app/features/supplier-workspace/offer-editor-model";
 import { useWorkspace } from "./workspace";
 import { EditorActions, responseStatus, useEditorGuard, type OfferEditorProps } from "./offer-editor-shared";
 import styles from "./offer-editors.module.css";
 
-type Draft = { price: string; vat: string; rate: string };
-const draftOf = (state: OfferCommercialState): Draft => ({ price: state.price ? offerPriceText(state.price.amountMinor) : "", vat: state.price?.includesVat === false ? "excluded" : "included", rate: state.price?.vatRate ?? "" });
+type Draft = { price: string };
+const draftOf = (state: OfferCommercialState): Draft => ({ price: state.price ? offerPriceText(state.price.amountMinor) : "" });
 export function OfferPriceEditor(props: OfferEditorProps) {
   const { offer, footer, onCancel, onSaved } = props;
   const { api, organizationId } = useWorkspace(), has = usePermissions(), formId = useId();
   const [state, setState] = useState<OfferCommercialState | null>(null);
-  const [draft, setDraft] = useState<Draft>({ price: "", vat: "included", rate: "" });
+  const [draft, setDraft] = useState<Draft>({ price: "" });
+  const [tax, setTax] = useState<OfferVatInput | undefined>(), [initialTax, setInitialTax] = useState<VatSelection | null>(null), [taxDirty, setTaxDirty] = useState(false);
+  const markTaxDirty = useCallback(() => setTaxDirty(true), []);
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false), [attempt, setAttempt] = useState(0);
   const [error, setError] = useState(""), [validation, setValidation] = useState<Record<string, string>>({});
   const [conflict, setConflict] = useState<OfferCommercialState | null>(null), [needsComparison, setNeedsComparison] = useState(false);
   const [unknown, setUnknown] = useState(false);
   const pending = useRef<SaveOfferPriceInput | null>(null), flight = useRef(false);
   const priceInput = useRef<HTMLInputElement>(null);
-  const dirty = Boolean(state && JSON.stringify(draft) !== JSON.stringify(draftOf(state)));
+  const dirty = taxDirty || Boolean(state && JSON.stringify(draft) !== JSON.stringify(draftOf(state)));
   const allowed = has("pricing.manage", "catalog.offer.edit") && ["MANUAL", "IMPORT"].includes(offer.sourceType);
   const locked = busy || unknown;
   useEditorGuard(props, dirty || unknown, locked);
@@ -33,7 +37,7 @@ export function OfferPriceEditor(props: OfferEditorProps) {
       const warehouse = active.find(item => offer.inventoryBalances.some(balance => balance.warehouseId === item.id)) ?? active[0];
       if (!warehouse) throw new Error("Для изменения цены нужен действующий склад поставщика. Добавьте его в настройках организации и повторите загрузку.");
       const result = await api.getSupplierOfferCommercial(organizationId, offer.id, warehouse.id);
-      if (!cancelled) { setState(result); setDraft(draftOf(result)); }
+      if (!cancelled) { setState(result); setDraft(draftOf(result)); setInitialTax(result.price?.taxSnapshot?.selection ?? null); setTaxDirty(false); }
     })().catch(cause => { if (!cancelled) setError(errorMessage(cause)); }).finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
     // The inspector keys each editor by offer ID. Refreshes must not replace a draft.
@@ -51,18 +55,17 @@ export function OfferPriceEditor(props: OfferEditorProps) {
       const errors: Record<string, string> = {};
       let amount = "";
       try { amount = String(offerPriceMinor(draft.price)); } catch (cause) { errors.price = errorMessage(cause); }
-      const rate = draft.rate.trim() ? Number(draft.rate.replace(",", ".")) : null;
-      if (rate !== null && (!Number.isFinite(rate) || rate < 0 || rate > 100)) errors.rate = "Укажите ставку НДС от 0 до 100%.";
+      if (!tax) errors.tax = "Выберите и подтвердите налоговые условия предложения.";
       setValidation(errors);
       if (Object.keys(errors).length) { if (errors.price) priceInput.current?.focus(); return; }
       input = { warehouseId: state.warehouseId, expectedOfferVersion: state.offerVersion, expectedBalanceVersion: state.balance?.version ?? null,
-        idempotencyKey: crypto.randomUUID(), amountMinor: amount, currency: "KZT", includesVat: draft.vat === "included", vatRate: rate };
+        idempotencyKey: crypto.randomUUID(), amountMinor: amount, currency: "KZT", ...vatLegacyFields(tax!.selection), tax };
       pending.current = input;
     }
     flight.current = true; setBusy(true); setError("");
     try {
       const result = await api.saveSupplierOfferPrice(organizationId, offer.id, input);
-      pending.current = null; setUnknown(false); setState(result); setDraft(draftOf(result));
+      pending.current = null; setUnknown(false); setState(result); setDraft(draftOf(result)); setInitialTax(result.price?.taxSnapshot?.selection ?? null); setTaxDirty(false);
       await onSaved("Цена сохранена. Остаток не изменён.");
     } catch (cause) {
       setError(errorMessage(cause));
@@ -80,13 +83,13 @@ export function OfferPriceEditor(props: OfferEditorProps) {
     {state ? <>
       <div className={styles.summary}><span>Текущая цена за {offer.saleUnit?.symbol ?? "единицу продажи"}</span><strong>{state.price ? formatMoney(state.price.amountMinor, state.price.currency) : "Не задана"}</strong></div>
       <DmField label={`Новая цена за ${offer.saleUnit?.symbol ?? "единицу продажи"}, ₸`} required validationMessage={validation.price} validationState={validation.price ? "error" : "none"}><DmInput input={{ ref: priceInput }} inputMode="decimal" value={draft.price} disabled={locked || !allowed} onChange={(_, data) => { setDraft(current => ({ ...current, price: data.value })); setValidation({}); }} /></DmField>
-      <div className={styles.fields}><DmField label="НДС в цене"><DmDropdown value={draft.vat} disabled={locked || !allowed} onChange={(_, data) => setDraft(current => ({ ...current, vat: data.value }))}><option value="included">Включён в цену</option><option value="excluded">Без НДС</option></DmDropdown></DmField>
-      <DmField label="Ставка НДС, %" hint="Если применима" validationMessage={validation.rate} validationState={validation.rate ? "error" : "none"}><DmInput inputMode="decimal" value={draft.rate} disabled={locked || !allowed} onChange={(_, data) => { setDraft(current => ({ ...current, rate: data.value })); setValidation({}); }} /></DmField></div>
+      <OfferVatEditor api={api} supplierId={organizationId} initial={initialTax} applyDefault={!state.price} disabled={locked || !allowed} onChange={setTax} onDirty={markTaxDirty} />
+      {validation.tax ? <p role="alert">{validation.tax}</p> : null}
       <p className={styles.hint}>Цена за 1 {offer.saleUnit?.symbol ?? "единицу продажи"}. Единица продажи и статус публикации сохраняются.</p>
       {unknown ? <p role="status">Ответ не получен. Повторите сохранение: будет проверен тот же запрос. До получения результата форма защищена от закрытия.</p> : null}
-      {needsComparison ? <section aria-label="Конфликт цены" className={styles.form}>{conflict ? <><p>Сейчас: {conflict.price ? formatMoney(conflict.price.amountMinor, conflict.price.currency) : "цена не задана"}. НДС {conflict.price?.includesVat ? "включён" : "не включён"}, ставка {conflict.price?.vatRate ?? "не указана"}. Ваш ввод сохранён выше.</p>
+      {needsComparison ? <section aria-label="Конфликт цены" className={styles.form}>{conflict ? <><p>Сейчас: {conflict.price ? formatMoney(conflict.price.amountMinor, conflict.price.currency) : "цена не задана"}. {vatLabel(conflict.price?.taxSnapshot?.selection)}. Ваш ввод сохранён выше.</p>
         <DmButton disabled={busy} onClick={() => { setState(conflict); setConflict(null); setNeedsComparison(false); setError(""); }}>Оставить мои значения</DmButton>
-        <DmButton disabled={busy} onClick={() => { setState(conflict); setDraft(draftOf(conflict)); setConflict(null); setNeedsComparison(false); setError(""); }}>Загрузить текущие значения</DmButton></> : <DmButton onClick={() => void compare()}>Загрузить текущую цену для сравнения</DmButton>}</section> : null}
+        <DmButton disabled={busy} onClick={() => { setState(conflict); setDraft(draftOf(conflict)); setInitialTax(conflict.price?.taxSnapshot?.selection ?? null); setTaxDirty(false); setConflict(null); setNeedsComparison(false); setError(""); }}>Загрузить текущие значения</DmButton></> : <DmButton onClick={() => void compare()}>Загрузить текущую цену для сравнения</DmButton>}</section> : null}
     </> : null}
     {!allowed ? <p role="status">Изменение цены недоступно вашей роли или источнику предложения.</p> : null}
     <EditorActions host={footer}><DmButton disabled={locked} onClick={onCancel}>Отмена</DmButton><DmButton type="submit" form={formId} appearance="primary" disabled={loading || busy || !state || !allowed || needsComparison}>{busy ? "Сохраняем…" : unknown ? "Повторить сохранение" : "Сохранить цену"}</DmButton></EditorActions>

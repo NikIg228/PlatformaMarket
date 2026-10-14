@@ -1,0 +1,28 @@
+.line {
+  display: block;
+  font-size: var(--dm-font-size-caption);
+  line-height: var(--dm-line-body);
+  color: var(--dm-text-muted);
+}
+
+.summary {
+  display: grid;
+  gap: var(--dm-space-3);
+  font-size: var(--dm-font-size-body);
+  line-height: var(--dm-line-body);
+}
+
+.summary h3 {
+  margin: 0;
+  font-size: var(--dm-font-size-body);
+  font-weight: var(--dm-font-weight-semibold);
+}
+
+.summary p,
+.summary ul {
+  margin: 0;
+}
+
+.summary ul {
+  padding-left: var(--dm-space-4);
+}

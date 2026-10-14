@@ -23,5 +23,5 @@ export function formatMoney(amountMinor: string | number | bigint | null | undef
   const fraction = absolute % BigInt(100);
   const grouped = new Intl.NumberFormat("ru-KZ", { maximumFractionDigits: 0 }).format(major);
   const symbol = new Intl.NumberFormat("ru-KZ", { style: "currency", currency }).formatToParts(0).find(part => part.type === "currency")?.value ?? currency;
-  return `${value < BigInt(0) ? "−" : ""}${grouped}${fraction ? `,${fraction.toString().padStart(2, "0")}` : ""}\u00a0${symbol}`;
+  return `${value < BigInt(0) ? "−" : ""}${grouped},${fraction.toString().padStart(2, "0")}\u00a0${symbol}`;
 }

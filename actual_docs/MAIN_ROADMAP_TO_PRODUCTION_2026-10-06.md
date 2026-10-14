@@ -45,8 +45,10 @@ checklist по фактическому DoD и краткое техническ
 promotion operator fixture. Общий browser, full-access, promotion workspace,
 сборки, PostgreSQL и остальные включённые CI gates PASS. Это приёмка текущего
 пакета, не закрытие всего R7.2 или production roadmap.
-Следующий R7.6.1.4: профиль реквизитов опубликован/проверен; подготовлен DWF §17.6.1,
-налоговая цепочка ожидает правил применимости, даты, округления и перехода данных.
+R7.6.1.4: профиль реквизитов опубликован/проверен; 14.10 владелец согласовал
+налоговую модель и реализацию. Пакет в dirty checkout; 15.10 после разрешённого
+нового цикла LOCAL PASS: buyer/supplier UI, PostgreSQL, contracts, builds/tests.
+Выборочная публикация и actual CI pending; рабочая миграция отдельно.
 Подробные receipts — [PRIMARY-SESSION](governance/task-state/PRIMARY-SESSION.md).
 
 Цель владельца08.10 — production с необходимыми интеграциями,
@@ -618,7 +620,7 @@ SMS физлица — отдельный согласованный докум�
   <a id="document-vat"></a>
 
   - [ ] **R7.6.1.4** Реквизиты и НДС: профиль поставщика → предложение → заказ → документы.
-    IN_PROGRESS: первый пакет профиля опубликован в dd1dac8; targeted UI/API/PostgreSQL, рабочая миграция/dev и общий CI03828c3 PASS. [Контракт пакета](domains/MARKET_DOCUMENT_WORKFLOW.md#organization-requisites-runtime), [evidence/блокеры](governance/task-state/PRIMARY-SESSION.md). Остальная налоговая цепочка PLANNED; сверка реализации и открытые решения — DWF §17.6.1. Внесено по поручению владельца14.10;
+    LOCAL PASS15.10: VAT implementation, full isolated PG/core-contract, API/web build, runtime и supplier/buyer browser PASS; новый цикл разрешён владельцем. Выборочная publication/actual CI pending, рабочая миграция отдельно. Первый пакет профиля опубликован в dd1dac8; targeted UI/API/PostgreSQL, рабочая миграция/dev и общий CI03828c3 PASS относятся к прежнему пакету. [Контракт пакета](domains/MARKET_DOCUMENT_WORKFLOW.md#organization-requisites-runtime), [evidence/блокеры](governance/task-state/PRIMARY-SESSION.md). Модель оставшейся цепочки согласована владельцем14.10;
     описание оставшейся цепочки не означает её реализацию. Контракт — [DWF §17.5–17.6](domains/MARKET_DOCUMENT_WORKFLOW.md#supplier-vat-proposal).
     Последовательность и границы результата:
     - **Профиль:** общие реквизиты вводятся и подтверждаются один раз, затем

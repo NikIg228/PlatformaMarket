@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import type { AssignOfferPackagingInput, CreateSupplierOfferInput, SetOfferPriceInput, SetOfferPublicationInput, SupplierOfferPublicationResponse } from "@marketplace/schemas";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
@@ -6,6 +6,8 @@ import { SupplierAccessService, type SupplierActorContext } from "../suppliers/s
 import { ComplianceService } from "../compliance/compliance.service";
 import { MarketplaceAgreementsService } from "../agreements/marketplace-agreements.service";
 import { SearchProjectionService } from "../search/search-projection.service";
+import { vatLegacyFields } from "@marketplace/schemas";
+import { resolvePriceVat, vatConflict } from "../vat/vat-rules";
 
 @Injectable()
 export class OffersService {
@@ -79,6 +81,7 @@ export class OffersService {
   }
 
   async setPrice(supplierOrganizationId: string, offerId: string, input: Omit<SetOfferPriceInput, "amountMinor"> & { amountMinor: number | string }, context: SupplierActorContext, transaction?: Prisma.TransactionClient) {
+    if (input.tax && supplierOrganizationId !== context.organizationId) throw new ForbiddenException("Налоговые условия подтверждает представитель поставщика");
     await this.access.assertCanManage(supplierOrganizationId, context);
     const db = transaction ?? this.prisma;
     const offer = await this.requireOffer(supplierOrganizationId, offerId, db);
@@ -89,12 +92,17 @@ export class OffersService {
     try {
       const write = async (tx: Prisma.TransactionClient) => {
       await tx.$queryRaw`SELECT id FROM "SupplierOffer" WHERE id = ${offerId}::uuid FOR UPDATE`;
+      const previousPrice = await tx.offerPrice.findFirst({ where: { offerId, status: "ACTIVE" }, orderBy: { createdAt: "desc" } });
+      const taxSnapshot = await resolvePriceVat(tx, supplierOrganizationId, context.actorId, previousPrice, input.tax);
+      const taxFields = taxSnapshot ? vatLegacyFields(taxSnapshot.selection) : { includesVat: input.includesVat, vatRate: input.vatRate ?? null };
+      if (previousPrice?.taxSnapshot && !input.tax && (input.includesVat !== taxFields.includesVat || (input.vatRate ?? null) !== taxFields.vatRate))
+        throw vatConflict("Для изменения НДС подтвердите налоговый режим и основание в форме предложения");
       const activePromotion = await tx.promotion.findFirst({ where: { offerId, moderationStatus: "APPROVED", approvedRevision: { equals: tx.promotion.fields.termsRevision }, claimedQuantity: { lt: tx.promotion.fields.quantityLimit }, status: { in: ["ACTIVE", "PAUSED"] }, startsAt: { lte: now }, endsAt: { gt: now } } });
       if (activePromotion?.baseAmountMinor && (!activePromotion.baseAmountMinor.eq(input.amountMinor) || activePromotion.currency !== input.currency))
         throw new ConflictException("Обычная цена заблокирована до завершения акции. Измените акцию новой версией с повторной модерацией");
       await tx.offerPrice.updateMany({ where: { offerId, status: "ACTIVE" }, data: { status: "INACTIVE", validTo: now } });
-      const price = await tx.offerPrice.create({ data: { offerId, amountMinor: input.amountMinor, currency: input.currency, includesVat: input.includesVat, vatRate: input.vatRate ?? null, source: input.source, validFrom: now, lastConfirmedAt: now, freshnessExpiresAt } });
-      await tx.offerPriceHistory.create({ data: { offerId, amountMinor: input.amountMinor, currency: input.currency, includesVat: input.includesVat, vatRate: input.vatRate ?? null, source: input.source, changedById: context.actorId, reason: input.reason ?? null } });
+      const price = await tx.offerPrice.create({ data: { offerId, amountMinor: input.amountMinor, currency: input.currency, ...taxFields, taxSnapshot: taxSnapshot ?? Prisma.DbNull, source: input.source, validFrom: now, lastConfirmedAt: now, freshnessExpiresAt } });
+      await tx.offerPriceHistory.create({ data: { offerId, amountMinor: input.amountMinor, currency: input.currency, ...taxFields, taxSnapshot: taxSnapshot ?? Prisma.DbNull, source: input.source, changedById: context.actorId, reason: input.reason ?? null } });
       const updatedOffer = await tx.supplierOffer.update({ where: { id: offerId }, data: { status: "ACTIVE", version: { increment: 1 } } });
       const majorAmount = new Prisma.Decimal(input.amountMinor).div(100);
       await tx.productSearchDocument.updateMany({ where: { productId: (await tx.productVariant.findUniqueOrThrow({ where: { id: offer.productVariantId } })).productId }, data: { minPrice: majorAmount, maxPrice: majorAmount, projectionVersion: { increment: 1 } } });

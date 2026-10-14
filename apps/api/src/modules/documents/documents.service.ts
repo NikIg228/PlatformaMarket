@@ -7,6 +7,8 @@ import { PrismaService } from "../../platform/prisma/prisma.service";
 import { ObjectStorageService } from "../../platform/storage/object-storage.service";
 import type { SupplierActorContext } from "../suppliers/supplier-access.service";
 import { DocumentRendererService } from "./document-renderer.service";
+import { documentTaxTemplate, documentVat } from "./document-vat";
+import { calculateLineTotal } from "../commerce/commerce-rules";
 import { SignatureAdapterRegistry } from "./signature-adapter-registry.service";
 import { FileUploadPolicyService } from "../../platform/security/file-upload-policy.service";
 import { collectConsistentDocuments, documentReferenceInclude, hasConfirmedDocumentPayment, hasConsistentDocumentReferences, operationalReferenceError, sameDocumentReferences, withoutReferenceRelations, type DocumentGraph } from "./document-reference-graph";
@@ -362,6 +364,7 @@ export class DocumentsService {
     ]);
     await this.assertCreationAccess(input.ownerOrganizationId, context, participants, options.allowParticipantOwner === true);
     const category = input.category ?? categoryForKind(template.kind);
+    const templateBody = documentTaxTemplate(template.kind, template.templateBody, input.data);
     const document = await this.prisma.document.create({ data: {
       ownerOrganizationId: input.ownerOrganizationId,
       templateId: template.id,
@@ -384,13 +387,13 @@ export class DocumentsService {
       amountMinor: input.amountMinor,
       currency: input.currency,
       dataSnapshot: input.data as Prisma.InputJsonValue,
-      templateSnapshot: { id: template.id, code: template.code, version: template.version, body: template.templateBody, locale: template.locale, format: template.format },
+      templateSnapshot: { id: template.id, code: template.code, version: template.version, body: templateBody, locale: template.locale, format: template.format },
       requiredSignatureCount: template.requiredSignatureCount,
       expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
       metadata: input.metadata == null ? Prisma.JsonNull : input.metadata as Prisma.InputJsonValue,
       participants: { create: participants },
     } });
-    return this.renderAndFinalize(document.id, template.templateBody, input.data, context);
+    return this.renderAndFinalize(document.id, templateBody, input.data, context);
   }
 
   async upload(input: UploadDocumentInput, context: SupplierActorContext) {
@@ -505,10 +508,11 @@ export class DocumentsService {
     const missingTemplates = definitions.filter(({ templateCode }) => !templateByCode.has(templateCode));
     if (missingTemplates.length) throw new ConflictException(`Active document templates are missing: ${missingTemplates.map(({ templateCode }) => templateCode).join(", ")}`);
 
+    const tax = documentVat(order.items);
     const orderItems = order.items.map((item, index) => {
       const quantity = item.acceptedQuantity.toString();
-      return `${index + 1}. ${item.offer.productVariant.product.canonicalName} — ${quantity} × ${formatMinorUnits(item.unitPriceMinor)} = ${formatMinorUnits(item.totalPriceMinor)} ${item.currency}`;
-    }).join("\n");
+      return `${index + 1}. ${item.offer.productVariant.product.canonicalName} — ${quantity} × ${formatMinorUnits(item.unitPriceMinor)} = ${formatMinorUnits(item.totalPriceMinor)} ${item.currency}; ${tax.lineText[index]}`;
+    }).join("\n") + `\n${tax.summary}`;
     const total = formatMinorUnits(order.subtotalAmountMinor);
     const generated = [];
     for (const definition of definitions) {
@@ -531,7 +535,7 @@ export class DocumentsService {
       }
       const data = {
         order: { number: order.orderNumber, total, currency: order.currency, items: orderItems },
-        invoice: { number: documentNumber, total, currency: order.currency },
+        invoice: { number: documentNumber, total, currency: order.currency, taxSummary: tax.summary },
         supplier: { name: order.supplier.legalName, bin: order.supplier.bin },
         buyer: { name: order.buyer.legalName, bin: order.buyer.bin },
       };
@@ -546,7 +550,7 @@ export class DocumentsService {
           amountMinor: order.subtotalAmountMinor.toString(),
           currency: order.currency,
           data,
-          metadata: { purpose: "ORDER_PREPAYMENT_SET", snapshotVersion: 1 },
+          metadata: { purpose: "ORDER_PREPAYMENT_SET", snapshotVersion: 2, tax: { lines: tax.lines, totals: tax.totals, unknownCount: tax.unknownCount } },
         }, context));
       } catch (error) {
         if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") throw error;
@@ -598,14 +602,21 @@ export class DocumentsService {
     }
 
     const orderItemById = new Map(order.items.map((item) => [item.id, item]));
+    const tax = documentVat(order.items);
     const orderItems = order.items.map((item, index) => {
       const quantity = item.acceptedQuantity.toString();
-      return `${index + 1}. ${item.offer.productVariant.product.canonicalName} — ${quantity} × ${formatMinorUnits(item.unitPriceMinor)} = ${formatMinorUnits(item.totalPriceMinor)} ${item.currency}`;
-    }).join("\n");
+      return `${index + 1}. ${item.offer.productVariant.product.canonicalName} — ${quantity} × ${formatMinorUnits(item.unitPriceMinor)} = ${formatMinorUnits(item.totalPriceMinor)} ${item.currency}; ${tax.lineText[index]}`;
+    }).join("\n") + `\n${tax.summary}`;
+    const shipmentTaxItems = shipment.items.map(item => {
+      const orderItem = orderItemById.get(item.supplierOrderItemId);
+      if (!orderItem) throw new ConflictException("Shipment line does not belong to this order");
+      return { offerSnapshot: orderItem.offerSnapshot, totalPriceMinor: calculateLineTotal(orderItem.unitPriceMinor.toString(), item.quantity.toString()) };
+    });
+    const shipmentTax = documentVat(shipmentTaxItems);
     const shipmentItems = shipment.items.map((item, index) => {
       const orderItem = orderItemById.get(item.supplierOrderItemId);
-      return `${index + 1}. ${orderItem?.offer.productVariant.product.canonicalName ?? "Товар"} — ${item.quantity.toString()}`;
-    }).join("\n");
+      return `${index + 1}. ${orderItem?.offer.productVariant.product.canonicalName ?? "Товар"} — ${item.quantity.toString()}; ${shipmentTax.lineText[index]}`;
+    }).join("\n") + `\n${shipmentTax.summary}`;
     const total = formatMinorUnits(order.subtotalAmountMinor);
 
     const generated = [];
@@ -631,7 +642,7 @@ export class DocumentsService {
 
       const data = {
         order: { number: order.orderNumber, total, currency: order.currency, items: orderItems },
-        invoice: { number: documentNumber, total, currency: order.currency },
+        invoice: { number: documentNumber, total, currency: order.currency, taxSummary: tax.summary },
         shipment: { number: shipment.shipmentNumber, items: shipmentItems, trackingNumber: shipment.trackingNumber },
         supplier: { name: order.supplier.legalName, bin: order.supplier.bin },
         buyer: { name: order.buyer.legalName, bin: order.buyer.bin },
@@ -650,7 +661,9 @@ export class DocumentsService {
           amountMinor: order.subtotalAmountMinor.toString(),
           currency: order.currency,
           data,
-          metadata: { purpose: "ORDER_DOCUMENT_PACK", snapshotVersion: 1 },
+          metadata: { purpose: "ORDER_DOCUMENT_PACK", snapshotVersion: 2, tax: definition.kind === "WAYBILL"
+            ? { lines: shipmentTax.lines, totals: shipmentTax.totals, unknownCount: shipmentTax.unknownCount }
+            : { lines: tax.lines, totals: tax.totals, unknownCount: tax.unknownCount } },
         }, context));
       } catch (error) {
         if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") throw error;
@@ -675,6 +688,7 @@ export class DocumentsService {
     const template = await this.prisma.documentTemplate.findUnique({ where: { id: templateId } });
     if (!template || template.status !== "ACTIVE") throw new NotFoundException("Active document template not found");
     await this.assertReferences({ ...current, kind: template.kind });
+    const templateBody = documentTaxTemplate(template.kind, template.templateBody, input.data);
     const created = await this.prisma.document.create({ data: {
       ownerOrganizationId: current.ownerOrganizationId,
       templateId: template.id,
@@ -699,13 +713,13 @@ export class DocumentsService {
       currency: current.currency,
       version: current.version + 1,
       dataSnapshot: input.data as Prisma.InputJsonValue,
-      templateSnapshot: { id: template.id, code: template.code, version: template.version, body: template.templateBody, locale: template.locale, format: template.format },
+      templateSnapshot: { id: template.id, code: template.code, version: template.version, body: templateBody, locale: template.locale, format: template.format },
       requiredSignatureCount: template.requiredSignatureCount,
       expiresAt: current.expiresAt,
       metadata: { versionReason: input.reason },
       participants: { create: current.participants.map(({ organizationId, role }) => ({ organizationId, role })) },
     } });
-    const updated = await this.renderAndFinalize(created.id, template.templateBody, input.data, context);
+    const updated = await this.renderAndFinalize(created.id, templateBody, input.data, context);
     await this.prisma.document.update({ where: { id: current.id }, data: { status: "SUPERSEDED" } });
     return updated;
   }

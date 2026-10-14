@@ -1,5 +1,7 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import type { CreateDataOverrideInput, UpsertFreshnessPolicyInput } from "@marketplace/schemas";
+import { vatLegacyFields } from "@marketplace/schemas";
+import { resolvePriceVat } from "../vat/vat-rules";
 import { Prisma, type FreshnessDataType, type OfferSourceType } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import { SupplierAccessService, type SupplierActorContext } from "../suppliers/supplier-access.service";
@@ -38,6 +40,7 @@ export class DataFreshnessService {
   }
 
   async createOverride(supplierOrganizationId: string, input: CreateDataOverrideInput, context: SupplierActorContext) {
+    if (input.tax && supplierOrganizationId !== context.organizationId) throw new ForbiddenException("Налоговые условия подтверждает представитель поставщика");
     await this.access.assertCanManage(supplierOrganizationId, context);
     const now = new Date();
     const validUntil = input.validUntil ? new Date(input.validUntil) : null;
@@ -58,12 +61,20 @@ export class DataFreshnessService {
       if (current) await tx.dataOverride.update({ where: { id: current.id }, data: { status: "CANCELLED", cancelledAt: now } });
       const override = await tx.dataOverride.create({ data: { supplierOrganizationId, offerId: input.offerId, inventoryBalanceId: input.inventoryBalanceId, previousOverrideId: current?.id, target: input.target, mode: input.mode, value: value as Prisma.InputJsonValue, reason: input.reason, validFrom: now, validUntil, createdById: context.actorId } });
       if (input.target === "PRICE" && offer) {
+        await tx.$queryRaw`SELECT "id" FROM "SupplierOffer" WHERE "id" = ${offer.id}::uuid FOR UPDATE`;
+        const previous = await tx.offerPrice.findFirst({ where: { offerId: offer.id, status: "ACTIVE" }, orderBy: { createdAt: "desc" } });
+        const tax = await resolvePriceVat(tx, supplierOrganizationId, context.actorId, previous, input.tax);
+        const taxFields = tax ? { ...vatLegacyFields(tax.selection), taxSnapshot: tax as unknown as Prisma.InputJsonValue }
+          : { includesVat: typeof value.includesVat === "boolean" ? value.includesVat : previous?.includesVat ?? true, vatRate: typeof value.vatRate === "number" ? value.vatRate : previous?.vatRate ?? null };
+        if (tax && !input.tax && ((typeof value.includesVat === "boolean" && value.includesVat !== taxFields.includesVat) ||
+          (value.vatRate !== undefined && String(value.vatRate) !== String(taxFields.vatRate))))
+          throw new ConflictException("Подтвердите новые налоговые условия предложения перед изменением режима НДС");
         if (typeof value.amountMinor !== "string") throw new BadRequestException("Price override amountMinor must be an exact integer string");
         const amountMinor = new Prisma.Decimal(value.amountMinor);
         const currency = typeof value.currency === "string" && /^[A-Z]{3}$/.test(value.currency) ? value.currency : "KZT";
         await tx.offerPrice.updateMany({ where: { offerId: offer.id, status: "ACTIVE" }, data: { status: "INACTIVE", validTo: now } });
-        await tx.offerPrice.create({ data: { offerId: offer.id, amountMinor, currency, includesVat: value.includesVat !== false, vatRate: typeof value.vatRate === "number" ? value.vatRate : null, source: "MANUAL", lastConfirmedAt: now, freshnessExpiresAt: validUntil } });
-        await tx.offerPriceHistory.create({ data: { offerId: offer.id, amountMinor, currency, includesVat: value.includesVat !== false, vatRate: typeof value.vatRate === "number" ? value.vatRate : null, source: "MANUAL", changedById: context.actorId, reason: `Override ${override.id}: ${input.reason}` } });
+        await tx.offerPrice.create({ data: { offerId: offer.id, amountMinor, currency, ...taxFields, source: "MANUAL", lastConfirmedAt: now, freshnessExpiresAt: validUntil } });
+        await tx.offerPriceHistory.create({ data: { offerId: offer.id, amountMinor, currency, ...taxFields, source: "MANUAL", changedById: context.actorId, reason: `Override ${override.id}: ${input.reason}` } });
         await tx.supplierOffer.update({ where: { id: offer.id }, data: { version: { increment: 1 } } });
       }
       if (input.target === "INVENTORY" && balance) {

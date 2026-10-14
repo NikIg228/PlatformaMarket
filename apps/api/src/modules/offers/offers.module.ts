@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { VatModule } from "../vat/vat.module";
 import { AccessControlModule } from "../access-control/access-control.module";
 import { SuppliersModule } from "../suppliers/suppliers.module";
 import { OffersController } from "./offers.controller";
@@ -9,5 +10,5 @@ import { SearchModule } from "../search/search.module";
 import { InventoryModule } from "../inventory/inventory.module";
 import { OfferCommercialService } from "./offer-commercial.service";
 
-@Module({ imports: [AccessControlModule, SuppliersModule, ComplianceModule, MarketplaceAgreementsModule, SearchModule, InventoryModule], controllers: [OffersController], providers: [OffersService, OfferCommercialService] })
+@Module({ imports: [VatModule, AccessControlModule, SuppliersModule, ComplianceModule, MarketplaceAgreementsModule, SearchModule, InventoryModule], controllers: [OffersController], providers: [OffersService, OfferCommercialService] })
 export class OffersModule {}

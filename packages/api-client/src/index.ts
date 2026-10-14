@@ -112,6 +112,10 @@ export class MarketplaceApiError extends Error {
 }
 
 export class MarketplaceApiClient {
+  getSupplierVatSettings(supplierId: string) { return this.get<import("@marketplace/schemas").SupplierVatSettings>(`/suppliers/${supplierId}/vat`); }
+  saveSupplierVatSettings(supplierId: string, input: import("@marketplace/schemas").SaveSupplierVatSettingsInput) { return this.post<import("@marketplace/schemas").SupplierVatSettings>(`/suppliers/${supplierId}/vat`, input); }
+  previewOfferVat(supplierId: string, input: import("@marketplace/schemas").PreviewOfferVatInput) { return this.post<import("@marketplace/schemas").OfferVatPreview>(`/suppliers/${supplierId}/vat/offers/preview`, input); }
+  applyOfferVat(supplierId: string, input: import("@marketplace/schemas").ApplyOfferVatInput) { return this.post<import("@marketplace/schemas").OfferVatApplyResult>(`/suppliers/${supplierId}/vat/offers/apply`, input); }
   createSupportTicket(input: import("@marketplace/schemas").CreateSupportTicketInput) { return this.post<import("@marketplace/schemas").SupportTicketSummary>("/support/tickets", input); }
   internalNotifications(organizationId: string, offset = 0) { return this.get<import("@marketplace/schemas").InternalNotification[]>(`/notifications/organizations/${encodeURIComponent(organizationId)}?channel=IN_APP&limit=50&offset=${offset}`); }
   notificationInbox(organizationId: string, query: import("@marketplace/schemas").NotificationInboxQuery = {}, options?: { signal?: AbortSignal }) {
@@ -623,6 +627,18 @@ export class MarketplaceApiClient {
 
   previewSupplierImport(supplierId: string, input: import("@marketplace/schemas").SupplierImportPreviewInput) {
     return this.post<import("@marketplace/schemas").SupplierImportPreview>(`/suppliers/${supplierId}/import-preview`, input);
+  }
+
+  previewSupplierImportTax(supplierId: string, input: import("@marketplace/schemas").SupplierImportTaxPreviewInput) {
+    return this.post<import("@marketplace/schemas").SupplierImportTaxPreview>(`/suppliers/${supplierId}/import-tax-preview`, input);
+  }
+
+  listIntegrationTaxBindings(supplierId: string) {
+    return this.get<import("@marketplace/schemas").IntegrationTaxBinding[]>(`/suppliers/${supplierId}/integrations/price-tax`);
+  }
+
+  updateIntegrationTax(supplierId: string, connectionId: string, bindingId: string, input: import("@marketplace/schemas").UpdateIntegrationTaxInput) {
+    return this.patch<import("@marketplace/schemas").IntegrationTaxBinding>(`/suppliers/${supplierId}/integrations/${connectionId}/bindings/${bindingId}/tax`, input);
   }
 
   listOfferDeliveryOptions(supplierId: string, offerId: string) {

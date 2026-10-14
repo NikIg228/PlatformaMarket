@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
 import type { CartLineSnapshotResponse } from "@marketplace/schemas";
 import { cartCommercialChanges } from "./cart-commercial-changes";
+import { calculateVatLine, type VatPriceSnapshot } from "@marketplace/schemas";
 
 const snapshot: CartLineSnapshotResponse = {
   resolvedAt: "2026-09-30T00:00:00.000Z", offerVersion: 1, source: "BASE", ruleId: "price",
@@ -22,4 +23,13 @@ it("explains newly supplied historical terms without inventing previous VAT", ()
 });
 it("has no terms diff when only stock changed", () => {
   expect(cartCommercialChanges(snapshot, { ...snapshot, availableQuantity: "8" })).toEqual([]);
+});
+it("shows tax mode and basis changes at an identical gross amount", () => {
+  const declaration = { selection: { mode: "TAXABLE", rate: "16", basis: null }, profile: { version: 1 }, ruleId: "standard" } as VatPriceSnapshot;
+  const previous = { ...snapshot, tax: calculateVatLine("10000", declaration) };
+  const current = { ...snapshot, tax: calculateVatLine("10000", { ...declaration, selection: { mode: "EXEMPT", rate: null, basis: "Перечень освобождения" } }) };
+  const changes = cartCommercialChanges(previous, current);
+  expect(changes).toContain("Налоговые условия: Включая НДС 16% → Освобождено от НДС");
+  expect(changes).toContain("Основание НДС: не указано → Перечень освобождения");
+  expect(cartCommercialChanges(previous, { ...previous, tax: { ...previous.tax, declaration: { ...declaration, declaredAt: "2026-10-15T00:00:00Z" } } })).toEqual([]);
 });

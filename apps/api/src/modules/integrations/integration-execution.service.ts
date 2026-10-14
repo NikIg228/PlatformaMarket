@@ -1,4 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { createIntegrationBindingSchema } from "@marketplace/schemas";
+import { resolveImportPrice } from "../imports/import-vat";
+import { storedVat } from "../vat/vat-rules";
 import type { ConnectorCatalogResult, ConnectorInventoryResult, ConnectorPriceResult } from "@marketplace/schemas";
 import { createHash } from "node:crypto";
 import {
@@ -429,20 +432,6 @@ export class IntegrationExecutionService {
         );
         continue;
       }
-      if (
-        active &&
-        Number(active.amountMinor) === item.valueMinor &&
-        active.currency === item.currency
-      ) {
-        result.unchanged += 1;
-        await this.resolveOpenReconciliation(
-          job.connectionId,
-          "PRICE",
-          externalRef,
-        );
-        continue;
-      }
-
       const now = new Date();
       const freshnessPolicy = await this.freshness.resolvePolicy(
         supplierOrganizationId,
@@ -452,12 +441,21 @@ export class IntegrationExecutionService {
       const freshnessExpiresAt = new Date(
         now.getTime() + freshnessPolicy.staleAfterMinutes * 60_000,
       );
-      const includesVat = configuration.includesVat !== false;
-      const vatRate =
-        typeof configuration.vatRate === "number"
-          ? configuration.vatRate
-          : null;
-      await this.prisma.$transaction(async (tx) => {
+      const changed = await this.prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "SupplierOffer" WHERE "id" = ${target.offer!.id}::uuid FOR UPDATE`;
+        const previous = await tx.offerPrice.findFirst({ where: { offerId: target.offer!.id, status: "ACTIVE" }, orderBy: [{ validFrom: "desc" }, { createdAt: "desc" }] });
+        if (previous?.source === "MANUAL" && !syncOverride.override && configuration.allowOverwriteManual !== true)
+          throw new PermanentIntegrationError("Ручная цена изменилась во время синхронизации. Повторите сверку");
+        const priceTax = configuration.priceTax == null ? undefined : createIntegrationBindingSchema.parse({ dataType: "PRICE", priceTax: configuration.priceTax }).priceTax;
+        const vatContext = asRecord(configuration.vatContext);
+        if (priceTax && typeof vatContext.actorId !== "string") throw new PermanentIntegrationError("Подтвердите налоговые настройки интеграции");
+        const { declaration, ...priceData } = await resolveImportPrice(tx, supplierOrganizationId, String(vatContext.actorId ?? ""), item.raw,
+          { externalId: "externalId", name: "name", ...priceTax }, String(item.valueMinor), previous,
+          priceTax ? storedVat(vatContext.defaultTax) : null);
+        const previousTax = storedVat(previous?.taxSnapshot);
+        if (previous && previous.amountMinor.eq(priceData.amountMinor) && previous.currency === item.currency &&
+          JSON.stringify(previousTax?.selection ?? null) === JSON.stringify(declaration?.selection ?? null) &&
+          previousTax?.profile.version === declaration?.profile.version && previousTax?.ruleId === declaration?.ruleId) return false;
         await tx.offerPrice.updateMany({
           where: { offerId: target.offer!.id, status: "ACTIVE" },
           data: { status: "INACTIVE", validTo: now },
@@ -465,10 +463,8 @@ export class IntegrationExecutionService {
         await tx.offerPrice.create({
           data: {
             offerId: target.offer!.id,
-            amountMinor: new Prisma.Decimal(item.valueMinor),
+            ...priceData,
             currency: item.currency,
-            includesVat,
-            vatRate,
             source: "API",
             validFrom: now,
             lastConfirmedAt: now,
@@ -478,10 +474,8 @@ export class IntegrationExecutionService {
         await tx.offerPriceHistory.create({
           data: {
             offerId: target.offer!.id,
-            amountMinor: new Prisma.Decimal(item.valueMinor),
+            ...priceData,
             currency: item.currency,
-            includesVat,
-            vatRate,
             source: "API",
             reason: `Integration ${job.connectionId}`,
           },
@@ -504,16 +498,17 @@ export class IntegrationExecutionService {
             payload: {
               supplierOrganizationId,
               offerId: target.offer!.id,
-              amountMinor: item.valueMinor,
+              amountMinor: priceData.amountMinor,
               currency: item.currency,
               source: "API",
               connectionId: job.connectionId,
             },
           },
         });
+        return true;
       });
-      productIds.add(target.offer.productVariant.productId);
-      result.updated += 1;
+      if (changed) { productIds.add(target.offer.productVariant.productId); result.updated += 1; }
+      else result.unchanged += 1;
       await this.resolveOpenReconciliation(
         job.connectionId,
         "PRICE",

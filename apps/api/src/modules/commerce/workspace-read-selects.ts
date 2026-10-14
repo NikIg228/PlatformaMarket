@@ -10,7 +10,7 @@ export const workspaceOfferSelect = {
   packaging: { select: { id: true, name: true, quantityInBaseUnit: true, unit: { select: { symbol: true } } } },
   publication: { select: { status: true, marketplaceVisible: true, blockedReason: true } },
   prices: { where: { status: "ACTIVE" }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 1,
-    select: { id: true, amountMinor: true, currency: true, status: true, includesVat: true, vatRate: true, source: true, lastConfirmedAt: true, freshnessExpiresAt: true } },
+    select: { id: true, amountMinor: true, currency: true, status: true, includesVat: true, vatRate: true, taxSnapshot: true, source: true, lastConfirmedAt: true, freshnessExpiresAt: true } },
   inventoryBalances: { orderBy: { id: "asc" }, select: { id: true, warehouseId: true, warehouse: { select: { name: true } }, quantityOnHand: true, quantityAvailable: true, quantityReserved: true, freshnessStatus: true, freshnessExpiresAt: true, source: true, updatedAt: true } },
 } satisfies Prisma.SupplierOfferSelect;
 

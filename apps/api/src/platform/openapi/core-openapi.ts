@@ -1,3 +1,5 @@
+import { supplierVatSettingsSchema, saveSupplierVatSettingsSchema, previewOfferVatSchema, applyOfferVatSchema, offerVatPreviewSchema, offerVatApplyResultSchema, integrationTaxBindingsSchema, integrationTaxBindingSchema, updateIntegrationTaxSchema } from "@marketplace/schemas";
+import { supplierImportTaxPreviewInputSchema, supplierImportTaxPreviewSchema } from "@marketplace/schemas";
 import { personalProfileSchema, updatePersonalProfileSchema, requestProfileEmailSchema, profileEmailRequestedSchema, uploadProfileAvatarSchema, profileAvatarSchema } from "@marketplace/schemas";
 import { sessionLogoutRequestSchema, sessionLogoutResponseSchema } from "@marketplace/schemas";
 import { notificationInboxQuerySchema, notificationInboxSchema, notificationReadAllSchema, notificationReadAllResultSchema } from "@marketplace/schemas";
@@ -123,6 +125,15 @@ const authenticatedCompareOffersQuerySchema = compareOffersSchema.omit({
 const supplierOrdersQuerySchema = z.object({ checkoutId: z.uuid().optional() });
 
 const coreZodSchemas = {
+  IntegrationTaxBindings: integrationTaxBindingsSchema,
+  IntegrationTaxBinding: integrationTaxBindingSchema,
+  UpdateIntegrationTax: updateIntegrationTaxSchema,
+  SupplierVatSettings: supplierVatSettingsSchema,
+  SaveSupplierVatSettingsRequest: saveSupplierVatSettingsSchema,
+  PreviewOfferVatRequest: previewOfferVatSchema,
+  ApplyOfferVatRequest: applyOfferVatSchema,
+  OfferVatPreview: offerVatPreviewSchema,
+  OfferVatApplyResult: offerVatApplyResultSchema,
   InternalNotification: internalNotificationSchema,
   InternalNotificationList: internalNotificationListSchema,
   NotificationQuery: notificationQuerySchema,
@@ -317,6 +328,8 @@ const coreZodSchemas = {
   ProductCandidateHistoryQuery: productCandidateHistoryQuerySchema,
   SupplierImportPreviewInput: supplierImportPreviewInputSchema,
   SupplierImportPreview: supplierImportPreviewSchema,
+  SupplierImportTaxPreviewInput: supplierImportTaxPreviewInputSchema,
+  SupplierImportTaxPreview: supplierImportTaxPreviewSchema,
   ProductCandidateHistoryResponse: productCandidateHistoryResponseSchema,
   ApproveProductCandidateRequest: approveProductCandidateSchema,
   ApproveProductCandidateResponse: approveProductCandidateResponseSchema,

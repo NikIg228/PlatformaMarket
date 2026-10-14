@@ -11,6 +11,7 @@ import {
   ApiUuidParam,
 } from "../../platform/openapi/core-openapi";
 import { ImportsService } from "./imports.service";
+import { supplierImportTaxPreviewInputSchema } from "@marketplace/schemas";
 import { supplierImportHistoryQuerySchema } from "@marketplace/schemas";
 import { ApiCoreQuery } from "../../platform/openapi/core-openapi";
 
@@ -22,6 +23,17 @@ import { ApiCoreQuery } from "../../platform/openapi/core-openapi";
 export class ImportsController {
   constructor(private readonly imports: ImportsService) {}
   private context(actorId: string, organizationId: string) { return { actorId, organizationId }; }
+
+  @Post("import-tax-preview")
+  @ApiUuidParam("supplierOrganizationId", "Supplier organization identifier")
+  @RequirePermissions("import.manage")
+  @ApiCoreBody("SupplierImportTaxPreviewInput")
+  @ApiCoreResponse("SupplierImportTaxPreview", 201, "Read-only tax preview binds raw rows, mapping, profile, defaults and existing offer/price versions. Create batch returns 409 for stale preview.")
+  previewTax(@Param("supplierOrganizationId") supplierOrganizationId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+    const parsed = supplierImportTaxPreviewInputSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.imports.previewTax(supplierOrganizationId, parsed.data, this.context(actorId, organizationId));
+  }
 
   @Post("import-preview")
   @ApiUuidParam("supplierOrganizationId", "Supplier organization identifier")

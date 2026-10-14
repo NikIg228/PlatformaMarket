@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { installPilotWorkspace } from "../fixtures/workspace-session";
+import { confirmStandardVat, installSupplierTaxFixture } from "../fixtures/supplier-tax";
 
 test("supplier creates and resumes a manual draft, then publishes it into the clinic catalogue", async ({ page, browser }) => {
   test.setTimeout(90000);
@@ -11,6 +12,7 @@ test("supplier creates and resumes a manual draft, then publishes it into the cl
   const db = new PrismaClient();
   let workspace: Awaited<ReturnType<typeof installPilotWorkspace>> | undefined;
   let productId: string | undefined;
+  let restoreTax: (() => Promise<void>) | undefined;
   try {
     const [identity] = await db.$queryRaw<Array<{ name: string }>>`SELECT current_database() AS name`;
     expect(identity.name).toBe(url.pathname.slice(1));
@@ -25,13 +27,14 @@ test("supplier creates and resumes a manual draft, then publishes it into the cl
     }, include: { variants: true } });
     productId = product.id;
     await page.goto("http://127.0.0.1:3002");
+    restoreTax = await installSupplierTaxFixture(db, page, workspace);
     await page.getByRole("button", { name: "Предложения", exact: true }).click();
     await page.getByRole("button", { name: "Добавить предложение вручную", exact: true }).click();
     await page.getByLabel("Товар, артикул или штрихкод").fill(name);
     await page.getByRole("button", { name: "Найти в мастер-каталоге", exact: true }).click();
     await page.getByRole("button", { name: `Выбрать ${name}`, exact: true }).click();
     await page.getByLabel("Цена за упаковку, ₸", { exact: true }).fill("123,45");
-    await page.getByLabel("Ставка НДС, % (если применима)").fill("12");
+    await confirmStandardVat(page);
     const warehouse = await db.warehouse.findFirstOrThrow({ where: { supplierOrganizationId: workspace.organizationId, status: "ACTIVE" } });
     await page.getByLabel("Склад", { exact: true }).selectOption(warehouse.id);
     // Zero stock intentionally fails publication, independent of supplier admission.
@@ -58,7 +61,8 @@ test("supplier creates and resumes a manual draft, then publishes it into the cl
     await page.getByRole("button", { name: "Предложения", exact: true }).click();
     await page.getByRole("row").filter({ hasText: name }).getByRole("button", { name: "Настроить предложение" }).click();
     await expect(page.getByLabel("Цена за упаковку, ₸", { exact: true })).toHaveValue("123.45");
-    await expect(page.getByLabel("Ставка НДС, % (если применима)")).toHaveValue("12");
+    await expect(page.getByRole("combobox", { name: "Ставка НДС", exact: true })).toContainText("16%");
+    await page.getByRole("checkbox", { name: "Подтверждаю применимость режима и ставки к этому товару" }).check();
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.getByRole("button", { name: "Сохранить условия", exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
@@ -75,10 +79,11 @@ test("supplier creates and resumes a manual draft, then publishes it into the cl
       await buyerPage.getByRole("button", { name: "Сравнить и заказать", exact: true }).click();
       await expect(buyerPage.getByRole("dialog")).toContainText("24–48 ч.");
       await expect(buyerPage.getByRole("dialog")).toContainText("бесплатно от");
-      await expect(buyerPage.getByRole("dialog")).toContainText(/бесплатно от 10\s000 ₸; иначе 1\s000 ₸/);
+      await expect(buyerPage.getByRole("dialog")).toContainText(/бесплатно от 10\s000,00 ₸; иначе 1\s000,00 ₸/);
     } finally { await buyerPage.close(); }
   } finally {
     if (productId) await db.product.update({ where: { id: productId }, data: { status: "ARCHIVED" } });
+    await restoreTax?.();
     await workspace?.dispose(); await db.$disconnect();
   }
 });

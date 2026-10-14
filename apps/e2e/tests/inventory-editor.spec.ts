@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import type { OfferCommercialState } from "@marketplace/schemas";
+import { confirmStandardVat } from "../fixtures/supplier-tax";
 import { productFixture, noOverflow, sampleOffer, id, offerId, organizationId, warehouseId, permissions } from "./supplier-products.fixture";
 
 const deepLink = `/supplier/products/inventory?offer=${offerId}&warehouse=${warehouseId}&balance=${id(8)}&edit=1`;
@@ -91,7 +92,9 @@ test("inspector edits price without stock input or stock write", async ({ page }
   await page.getByRole("button", { name: "Композит для реставрации", exact: true }).click(); await page.getByRole("button", { name: "Изменить цену" }).click();
   const price = page.getByRole("textbox", { name: "Новая цена за уп., ₸", exact: true }); await expect(price).toHaveValue("1000.00");
   await expect(page.getByRole("textbox", { name: "Остаток, упаковок" })).toHaveCount(0);
-  await price.fill("1250"); await page.getByRole("button", { name: "Сохранить цену" }).click();
+  await price.fill("1250");
+  await confirmStandardVat(page);
+  await page.getByRole("button", { name: "Сохранить цену" }).click();
   await expect(page.getByText(/Цена сохранена. Остаток не изменён./)).toBeVisible();
   expect(state.writes[0]).toMatchObject({ amountMinor: "125000" }); expect(state.writes[0]).not.toHaveProperty("quantityOnHand"); expect(state.commercial.balance?.quantityOnHand).toBe("28");
 });

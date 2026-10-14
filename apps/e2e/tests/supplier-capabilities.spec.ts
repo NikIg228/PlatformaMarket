@@ -196,6 +196,7 @@ test("manual offer creation keeps conditions and idempotency through retry, then
   await choose(page, "Склад", "Основной склад");
   await page.getByLabel("Цена за упаковку, ₸", { exact: true }).fill("1234,56");
   await page.getByLabel("Количество упаковок", { exact: true }).fill("5");
+  await page.getByRole("checkbox", { name: "Подтверждаю применимость режима и ставки к этому товару" }).check();
   await page.getByRole("button", { name: "Проверить предложение", exact: true }).click();
   await expect(page.getByText("Повторите сохранение условий", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Цена за упаковку, ₸", { exact: true })).toHaveValue("1234,56");
@@ -226,6 +227,8 @@ test("spreadsheet preview is read-only and processing requires explicit confirma
   state.failImport = false;
   await page.getByRole("button", { name: "Настроить столбцы" }).click();
   await expect(page.getByRole("combobox", { name: "Код строки", exact: true })).toHaveText("Код");
+  await choose(page, "НДС в цене файла", "Конечная цена с применимым НДС");
+  await page.getByRole("checkbox", { name: "Подтверждаю налоговые условия строк и формат цен этого прайса" }).check();
   await page.getByRole("button", { name: "Проверить данные" }).click();
   await expect(page.getByRole("table", { name: "Предварительный просмотр строк файла" })).toBeVisible();
   await expect(page.getByRole("table")).toContainText(/1.234,56/);

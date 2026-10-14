@@ -5,6 +5,8 @@ import { PermissionsGuard } from "../access-control/permissions.guard";
 import { RequirePermissions } from "../access-control/require-permissions.decorator";
 import { IntegrationJobsService } from "./integration-jobs.service";
 import { IntegrationsService } from "./integrations.service";
+import { updateIntegrationTaxSchema } from "@marketplace/schemas";
+import { ApiCoreBody, ApiCoreErrors, ApiCoreProtected, ApiCoreResponse, ApiUuidParam } from "../../platform/openapi/core-openapi";
 
 @ApiTags("integrations")
 @UseGuards(PermissionsGuard)
@@ -31,6 +33,31 @@ export class IntegrationsController {
     const parsed = createIntegrationConnectionSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
     return this.integrations.create(supplierOrganizationId, parsed.data, this.context(actorId, organizationId));
+  }
+
+  @Get("price-tax")
+  @ApiCoreProtected()
+  @ApiCoreErrors()
+  @ApiUuidParam("supplierOrganizationId", "Supplier organization")
+  @ApiCoreResponse("IntegrationTaxBindings", 200)
+  @RequirePermissions("integration.view")
+  listTaxBindings(@Param("supplierOrganizationId") supplierId: string, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+    return this.integrations.listTaxBindings(supplierId, this.context(actorId, organizationId));
+  }
+
+  @Patch(":connectionId/bindings/:bindingId/tax")
+  @ApiCoreProtected()
+  @ApiCoreErrors()
+  @ApiUuidParam("supplierOrganizationId", "Supplier organization")
+  @ApiUuidParam("connectionId", "Connection")
+  @ApiUuidParam("bindingId", "Price binding")
+  @ApiCoreBody("UpdateIntegrationTax")
+  @ApiCoreResponse("IntegrationTaxBinding", 200, "Supplier declaration; optimistic version conflict 409; idempotent replay; atomic audit. Scope and priority preserved.")
+  @RequirePermissions("integration.manage", "pricing.manage")
+  updateTaxBinding(@Param("supplierOrganizationId") supplierId: string, @Param("connectionId") connectionId: string, @Param("bindingId") bindingId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+    const parsed = updateIntegrationTaxSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.integrations.updateTaxBinding(supplierId, connectionId, bindingId, parsed.data, this.context(actorId, organizationId));
   }
 
   @Get(":connectionId")

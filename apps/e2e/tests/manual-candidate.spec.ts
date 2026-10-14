@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { installPilotWorkspace } from "../fixtures/workspace-session";
+import { confirmStandardVat, installSupplierTaxFixture } from "../fixtures/supplier-tax";
 
 test("manual proposal is reviewed by the operator, configured by supplier and shown to buyer", async ({ page, browser, request }) => {
   test.setTimeout(120000);
@@ -11,6 +12,7 @@ test("manual proposal is reviewed by the operator, configured by supplier and sh
   const db = new PrismaClient();
   let workspace: Awaited<ReturnType<typeof installPilotWorkspace>> | undefined;
   const products: string[] = [], proposals: string[] = [];
+  let restoreTax: (() => Promise<void>) | undefined;
   const operatorPage = await browser.newPage();
   const buyerPage = await browser.newPage();
   try {
@@ -19,6 +21,7 @@ test("manual proposal is reviewed by the operator, configured by supplier and sh
     workspace = await installPilotWorkspace(page, "SUPPLIER", ["catalog.offer.edit", "pricing.manage", "inventory.adjust", "catalog.offer.publish"]);
     const name = `Proposal ${randomUUID()}`;
     await page.goto("http://127.0.0.1:3002");
+    restoreTax = await installSupplierTaxFixture(db, page, workspace);
     await page.getByRole("button", { name: "Предложения", exact: true }).click();
     await page.getByRole("button", { name: "Добавить предложение вручную", exact: true }).click();
     await page.getByLabel("Товар, артикул или штрихкод", { exact: true }).fill(name);
@@ -61,6 +64,7 @@ test("manual proposal is reviewed by the operator, configured by supplier and sh
     await expect(page.getByRole("table", { name: "Мои заявки на товары" }).getByRole("row").filter({ hasText: name })).toContainText("Одобрено");
     await page.getByRole("row").filter({ has: page.getByRole("button", { name: "Настроить предложение" }) }).filter({ hasText: name }).getByRole("button", { name: "Настроить предложение" }).click();
     await page.getByLabel("Цена за упаковку, ₸", { exact: true }).fill("1000");
+    await confirmStandardVat(page);
     const warehouse = await db.warehouse.findFirstOrThrow({ where: { supplierOrganizationId: workspace.organizationId, status: "ACTIVE" } });
     await page.getByLabel("Склад", { exact: true }).selectOption(warehouse.id);
     await page.getByLabel("Остаток, упаковок", { exact: true }).fill("50");
@@ -91,6 +95,7 @@ test("manual proposal is reviewed by the operator, configured by supplier and sh
     const ownedProducts = [...new Set([...products, ...approved.flatMap(item => item.approvedProductId ? [item.approvedProductId] : [])])];
     await db.product.updateMany({ where: { id: { in: ownedProducts } }, data: { status: "ARCHIVED" } });
     await db.productCandidate.updateMany({ where: { id: { in: proposals }, status: "PENDING" }, data: { status: "REJECTED", rejectionReason: "Isolated browser fixture finished" } });
+    await restoreTax?.();
     await workspace?.dispose(); await operatorPage.close(); await buyerPage.close(); await db.$disconnect();
   }
 });

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { productFixture, sampleOffer, noOverflow, permissions, organizationId, offerId, warehouseId, id } from "./supplier-products.fixture";
+import { productFixture, sampleOffer, noOverflow, permissions, organizationId, offerId, warehouseId, id, choose } from "./supplier-products.fixture";
 
 for (const width of [1440, 390]) test(`offer inspector reference, menu and dirty navigation ${width}`, async ({ page }, testInfo) => {
   const state = await productFixture(page);
@@ -97,7 +97,9 @@ for (const width of [1440, 390]) test(`independent price without packaging, VAT 
   const { state, base } = await editorFixture(page, true); await page.setViewportSize({ width, height: 850 }); await openPrice(page);
   const field = page.getByRole("textbox", { name: "Новая цена за уп., ₸", exact: true }); await expect(field).toHaveValue("1000.00"); await expect(field).toBeFocused();
   await expect(page.getByRole("combobox", { name: "Упаковка предложения" })).toHaveCount(0); await expect(page.getByRole("link", { name: "Обновить остатки" })).toHaveCount(0);
-  await page.getByRole("combobox", { name: "НДС в цене" }).click(); await page.getByRole("option", { name: "Без НДС", exact: true }).click();
+  await choose(page, "Налоговый режим", "Освобождено от НДС");
+  await page.getByRole("textbox", { name: "Основание применения", exact: true }).fill("Тестовый перечень освобождения");
+  await page.getByRole("checkbox", { name: "Подтверждаю применимость режима и ставки к этому товару" }).check();
   page.once("dialog", dialog => dialog.dismiss()); await page.getByRole("button", { name: "← К предложению" }).click(); await expect(field).toBeVisible();
   await field.fill("0"); await page.getByRole("button", { name: "Сохранить цену", exact: true }).click(); expect(state.writes).toEqual([]); await expect(field).toHaveAttribute("aria-invalid", "true");
   await field.fill("1250"); await noOverflow(page); await page.screenshot({ path: testInfo.outputPath(`price-${width}.png`), fullPage: true });
@@ -108,6 +110,8 @@ for (const width of [1440, 390]) test(`independent price without packaging, VAT 
 test("price load recovery, conflict comparison and same-key uncertain retry", async ({ page }) => {
   const { state } = await editorFixture(page); state.failRead = true; await openPrice(page); await expect(page.getByText("Цена временно недоступна")).toBeVisible(); state.failRead = false;
   await page.getByRole("button", { name: "Повторить загрузку цены" }).click(); const field = page.getByRole("textbox", { name: "Новая цена за уп., ₸", exact: true }); await field.fill("1300");
+  await choose(page, "Налоговый режим", "Облагается НДС"); await choose(page, "Ставка НДС", "16% — общая ставка");
+  await page.getByRole("checkbox", { name: "Подтверждаю применимость режима и ставки к этому товару" }).check();
   state.version = 2; state.price.amountMinor = "110000"; state.failures.push(409); await page.getByRole("button", { name: "Сохранить цену", exact: true }).click();
   await expect(page.getByRole("region", { name: "Конфликт цены" })).toContainText(/1\s?100/); await expect(field).toHaveValue("1300"); await expect(page.getByRole("button", { name: "Сохранить цену", exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "Оставить мои значения" }).click(); state.failures.push(503); await page.getByRole("button", { name: "Сохранить цену", exact: true }).click(); await expect(field).toBeDisabled(); await expect(page.getByRole("button", { name: "Закрыть предложение" })).toBeDisabled();

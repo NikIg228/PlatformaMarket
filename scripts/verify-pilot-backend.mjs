@@ -70,6 +70,13 @@ function assertOpenApiContract(openApi) {
   }
 
   const coreOperations = [
+    ["/api/suppliers/{supplierOrganizationId}/vat", "get", "200", "SupplierVatSettings"],
+    ["/api/suppliers/{supplierOrganizationId}/vat", "post", "201", "SupplierVatSettings", "SaveSupplierVatSettingsRequest"],
+    ["/api/suppliers/{supplierOrganizationId}/vat/offers/preview", "post", "201", "OfferVatPreview", "PreviewOfferVatRequest"],
+    ["/api/suppliers/{supplierOrganizationId}/vat/offers/apply", "post", "201", "OfferVatApplyResult", "ApplyOfferVatRequest"],
+    ["/api/suppliers/{supplierOrganizationId}/import-tax-preview", "post", "201", "SupplierImportTaxPreview", "SupplierImportTaxPreviewInput"],
+    ["/api/suppliers/{supplierOrganizationId}/integrations/price-tax", "get", "200", "IntegrationTaxBindings"],
+    ["/api/suppliers/{supplierOrganizationId}/integrations/{connectionId}/bindings/{bindingId}/tax", "patch", "200", "IntegrationTaxBinding", "UpdateIntegrationTax"],
     ["/api/access-control/policy", "get", "200", "AccessPolicy"],
     ["/api/auth/login", "post", "201", "AuthEmailSessionResponse", "AuthEmailLoginRequest"],
     ["/api/auth/email/verify", "post", "201", "AuthEmailVerifiedResponse", "AuthEmailVerifyRequest"],

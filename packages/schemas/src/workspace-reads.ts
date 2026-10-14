@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { vatPriceSnapshotSchema } from "./vat";
 import { cartResponseSchema } from "./core-api";
 
 export const workspacePageQuerySchema = z.object({
@@ -33,7 +34,7 @@ export const workspaceOfferSchema = z.object({
   saleUnit: z.object({ nameRu: z.string(), symbol: z.string() }).nullable(),
   packaging: z.object({ id: z.uuid(), name: z.string(), quantityInBaseUnit: decimal, unit: z.object({ symbol: z.string() }) }).nullable(),
   publication: z.object({ status: z.string(), marketplaceVisible: z.boolean(), blockedReason: z.string().nullable() }).nullable(),
-  prices: z.array(z.object({ id: z.uuid(), amountMinor: decimal, currency: z.string(), status: z.string(), includesVat: z.boolean(), vatRate: decimal.nullable(), source: z.string(), lastConfirmedAt: date.nullable(), freshnessExpiresAt: date.nullable() })),
+  prices: z.array(z.object({ id: z.uuid(), amountMinor: decimal, currency: z.string(), status: z.string(), includesVat: z.boolean(), vatRate: decimal.nullable(), taxSnapshot: vatPriceSnapshotSchema.nullable().optional(), source: z.string(), lastConfirmedAt: date.nullable(), freshnessExpiresAt: date.nullable() })),
   inventoryBalances: z.array(z.object({ id: z.uuid(), warehouseId: z.uuid(), warehouse: z.object({ name: z.string() }), quantityOnHand: decimal, quantityAvailable: decimal, quantityReserved: decimal, freshnessStatus: z.string(), freshnessExpiresAt: date.nullable(), source: z.string(), updatedAt: date })),
 });
 export const workspaceOfferPageSchema = page(workspaceOfferSchema);

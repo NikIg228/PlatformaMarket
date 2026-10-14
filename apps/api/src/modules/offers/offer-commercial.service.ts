@@ -7,6 +7,7 @@ import { AccessControlService } from "../access-control/access-control.service";
 import { SupplierAccessService, type SupplierActorContext } from "../suppliers/supplier-access.service";
 import { InventoryService } from "../inventory/inventory.service";
 import { OffersService } from "./offers.service";
+import { currentVatProfile, storedVat, validateVatSelection, vatConflict } from "../vat/vat-rules";
 
 @Injectable()
 export class OfferCommercialService {
@@ -26,7 +27,7 @@ export class OfferCommercialService {
     const price = offer.prices[0];
     return { offerId, offerVersion: offer.version, warehouseId,
       publicationStatus: offer.publication?.status ?? "DRAFT", marketplaceVisible: offer.publication?.marketplaceVisible ?? false,
-      price: price ? { amountMinor: price.amountMinor.toString(), currency: price.currency, includesVat: price.includesVat, vatRate: price.vatRate?.toString() ?? null } : null,
+      price: price ? { amountMinor: price.amountMinor.toString(), currency: price.currency, includesVat: price.includesVat, vatRate: price.vatRate?.toString() ?? null, taxSnapshot: storedVat(price.taxSnapshot) } : null,
       balance: balance ? { id: balance.id, version: balance.version, quantityOnHand: balance.quantityOnHand.toString(), quantityReserved: balance.quantityReserved.toString(),
         safetyStock: balance.safetyStock.toString(), quantityAvailable: balance.quantityAvailable.toString(), availabilityStatus: balance.availabilityStatus } : null };
   }
@@ -51,6 +52,7 @@ export class OfferCommercialService {
 
   private async write(supplierId: string, offerId: string, input: SaveOfferCommercialInput | SaveOfferStockInput | SaveOfferPriceInput,
     context: SupplierActorContext, mode: "commercial" | "stock" | "price"): Promise<OfferCommercialState> {
+    if ("tax" in input && input.tax && supplierId !== context.organizationId) throw new ForbiddenException("Налоговые условия подтверждает представитель поставщика");
     await this.access.assertCanManage(supplierId, context);
     const required = mode === "stock" ? ["inventory.adjust"] : mode === "price" ? ["pricing.manage"] : ["pricing.manage", "inventory.adjust"];
     if (!await this.permissions.hasAll(context.actorId, context.organizationId, required))
@@ -74,10 +76,16 @@ export class OfferCommercialService {
         if (current.offerVersion !== input.expectedOfferVersion || (current.balance?.version ?? null) !== input.expectedBalanceVersion)
           throw new ConflictException({ code: "OFFER_COMMERCIAL_CHANGED", message: "Условия изменились после открытия формы. Сравните текущие значения с введёнными.", current });
         if (mode !== "stock" && "amountMinor" in input) {
+        if (input.tax) {
+          const profile = await currentVatProfile(tx, supplierId);
+          if (profile.version !== input.tax.expectedRequisitesVersion) throw vatConflict("Реквизиты изменились. Обновите налоговые условия");
+          validateVatSelection(input.tax.selection, profile);
+        }
+        const sameTax = !input.tax || (JSON.stringify(current.price?.taxSnapshot?.selection) === JSON.stringify(input.tax.selection) && current.price?.taxSnapshot?.profile.version === input.tax.expectedRequisitesVersion);
         const samePrice = current.price && new Prisma.Decimal(current.price.amountMinor).eq(input.amountMinor) && current.price.currency === input.currency &&
-          current.price.includesVat === input.includesVat && (current.price.vatRate === null ? input.vatRate === null : input.vatRate !== null && new Prisma.Decimal(current.price.vatRate).eq(input.vatRate));
+          sameTax && current.price.includesVat === input.includesVat && (current.price.vatRate === null ? input.vatRate === null : input.vatRate !== null && new Prisma.Decimal(current.price.vatRate).eq(input.vatRate));
         if (!samePrice) await this.offers.setPrice(supplierId, offerId, { amountMinor: input.amountMinor, currency: input.currency,
-          includesVat: input.includesVat, vatRate: input.vatRate, source: "MANUAL" }, context, tx);
+          includesVat: input.includesVat, vatRate: input.vatRate, tax: input.tax, source: "MANUAL" }, context, tx);
         }
         if (mode !== "price" && "quantityOnHand" in input) await this.inventory.setBalance(supplierId, { warehouseId: input.warehouseId, productVariantId: offer.productVariantId, offerId,
           quantityOnHand: input.quantityOnHand, quantityReserved: 0, safetyStock: 0, initialForOffer: true, source: "MANUAL" }, context, tx, input.expectedBalanceVersion);

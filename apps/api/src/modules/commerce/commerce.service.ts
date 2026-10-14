@@ -41,6 +41,8 @@ import { documentReferenceInclude, hasConsistentDocumentReferences, withoutRefer
 import { assertOrganizationProfileComplete } from "../organizations/organization-profile.service";
 import { recoveredCartId, recoverFailedCart } from "./cart-recovery";
 import { quoteOfferPromotion, claimCheckoutPromotion, releaseCheckoutPromotions } from "../promotions/checkout-promotions";
+import { calculateVatLine } from "@marketplace/schemas";
+import { assertVatCurrent, storedVat } from "../vat/vat-rules";
 
 @Injectable()
 export class CommerceService {
@@ -262,7 +264,10 @@ export class CommerceService {
       source: decision.source, unitPriceMinor: decision.amountMinor, currency: decision.currency, quantity, balanceId: balance?.id ?? null, lotId: lot?.id ?? null });
     if (promotion) decision.amountMinor = promotion.snapshot.unitPriceMinor;
     const total = calculateLineTotal(decision.amountMinor, quantity);
+    const taxDeclaration = storedVat(offer.prices[0]?.taxSnapshot);
+    if (taxDeclaration) await assertVatCurrent(db, offer.supplierOrganizationId, taxDeclaration);
     const pricingSnapshot: CartLineSnapshot = {
+      tax: taxDeclaration ? calculateVatLine(total.toString(), taxDeclaration) : null,
       resolvedAt: at.toISOString(),
       offerVersion: offer.version,
       source: decision.source,

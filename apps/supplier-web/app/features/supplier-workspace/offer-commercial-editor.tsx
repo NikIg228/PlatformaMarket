@@ -5,6 +5,8 @@ import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferCommercialState, SaveOfferCommercialInput, SaveOfferPriceInput, SupplierWarehouseList } from "@marketplace/schemas";
 import { DmButton, DmField, DmInput, DmDropdown as DmSelect, ErrorState, errorMessage, formatMoney, usePermissions } from "@marketplace/ui";
 import { offerPriceMinor, offerPriceText, offerQuantity } from "./offer-editor-model";
+import { vatLegacyFields, type OfferVatInput, type VatSelection } from "@marketplace/schemas";
+import { OfferVatEditor } from "./offer-vat-editor";
 
 type Draft = { stock: string; baseline: OfferCommercialState["balance"] };
 export function OfferCommercialEditor({ api, supplierId, offerId, warehouses, initialWarehouseId, onChanged, onWarehouseChange, onWarehousesChange, stockEditable = true }: {
@@ -17,8 +19,9 @@ export function OfferCommercialEditor({ api, supplierId, offerId, warehouses, in
   const [warehouseId, setWarehouseId] = useState("");
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [price, setPrice] = useState("");
-  const [includesVat, setIncludesVat] = useState(true);
-  const [vatRate, setVatRate] = useState("");
+  const [tax, setTax] = useState<OfferVatInput | undefined>();
+  const [initialTax, setInitialTax] = useState<VatSelection | null>(null);
+  const [newPrice, setNewPrice] = useState(false);
   const [offerVersion, setOfferVersion] = useState<number | null>(null);
   const [publication, setPublication] = useState<{ status: string; visible: boolean } | null>(null);
   const [conflict, setConflict] = useState<OfferCommercialState | null>(null);
@@ -41,7 +44,7 @@ export function OfferCommercialEditor({ api, supplierId, offerId, warehouses, in
     setDrafts(current => ({ ...current, [state.warehouseId]: { stock: replaceInput ? state.balance?.quantityOnHand ?? "0" : current[state.warehouseId]?.stock ?? "0", baseline: state.balance } }));
     if (replaceInput) {
       setPrice(state.price ? offerPriceText(state.price.amountMinor) : "");
-      setIncludesVat(state.price?.includesVat ?? true); setVatRate(state.price?.vatRate ?? "");
+      setInitialTax(state.price?.taxSnapshot?.selection ?? null); setNewPrice(!state.price);
     }
   };
   const selectWarehouse = async (id: string) => {
@@ -86,10 +89,9 @@ export function OfferCommercialEditor({ api, supplierId, offerId, warehouses, in
     inFlight.current = true; setBusy(true); setError(""); setNotice("");
     try {
       if (!pending.current) {
-        const rate = vatRate.trim() ? Number(vatRate.replace(",", ".")) : null;
-        if (rate !== null && (!Number.isFinite(rate) || rate < 0 || rate > 100)) throw new Error("Ставка НДС должна быть от 0 до 100%.");
+        if (!tax) throw new Error("Выберите и подтвердите налоговый режим предложения.");
         pending.current = { warehouseId, expectedOfferVersion: offerVersion, expectedBalanceVersion: selectedDraft.baseline?.version ?? null,
-          idempotencyKey: crypto.randomUUID(), amountMinor: String(offerPriceMinor(price)), currency: "KZT", includesVat, vatRate: rate,
+          idempotencyKey: crypto.randomUUID(), amountMinor: String(offerPriceMinor(price)), currency: "KZT", ...vatLegacyFields(tax.selection), tax,
           ...(stockEditable ? { quantityOnHand: offerQuantity(selectedDraft.stock, true) } : {}) };
       }
       const result = stockEditable && "quantityOnHand" in pending.current
@@ -136,8 +138,7 @@ export function OfferCommercialEditor({ api, supplierId, offerId, warehouses, in
     <DmButton type="button" disabled={locked} onClick={() => void refreshWarehouses()}>Обновить склады</DmButton>
     {!activeWarehouses.length ? <p role="alert">Нет действующего склада. Добавьте склад в настройках организации.</p> : null}
     <DmField label="Цена за упаковку, ₸"><DmInput inputMode="decimal" value={price} disabled={locked || !selectedDraft} onChange={(_, data) => { setPrice(data.value); setSaved(false); }} /></DmField>
-    <DmField label="НДС в цене"><DmSelect value={includesVat ? "included" : "excluded"} disabled={locked || !selectedDraft} onChange={(_, data) => { setIncludesVat(data.value === "included"); setSaved(false); }}><option value="included">Включён в цену</option><option value="excluded">Без НДС</option></DmSelect></DmField>
-    <DmField label="Ставка НДС, % (если применима)"><DmInput inputMode="decimal" value={vatRate} disabled={locked || !selectedDraft} onChange={(_, data) => { setVatRate(data.value); setSaved(false); }} /></DmField>
+    {selectedDraft ? <OfferVatEditor api={api} supplierId={supplierId} initial={initialTax} applyDefault={newPrice} disabled={locked} onChange={setTax} onDirty={() => setSaved(false)} /> : null}
     {stockEditable ? <DmField label="Остаток, упаковок" hint="Фактический остаток выбранного склада. Количество другого склада сюда не переносится."><DmInput inputMode="decimal" value={selectedDraft?.stock ?? ""} disabled={locked || !selectedDraft} onChange={(_, data) => { setDrafts(current => ({ ...current, [warehouseId]: { ...current[warehouseId]!, stock: data.value } })); setSaved(false); }} /></DmField> : <a href={`/supplier/products/inventory?offer=${offerId}&edit=1${warehouseId ? `&warehouse=${warehouseId}` : ""}${selectedDraft?.baseline ? `&balance=${selectedDraft.baseline.id}` : ""}`}>Обновить остатки</a>}
     {selectedDraft ? <p>Зарезервировано: {selectedDraft.baseline?.quantityReserved ?? "0"}. Доступно по последним данным: {selectedDraft.baseline?.quantityAvailable ?? "0"}.</p> : null}
     {conflict ? <section aria-label="Конфликт условий"><p>Текущая цена: {conflict.price ? formatMoney(conflict.price.amountMinor, conflict.price.currency) : "не задана"}. НДС: {conflict.price?.includesVat ? "включён" : "не включён"}, ставка {conflict.price?.vatRate ?? "не указана"}. Остаток на складе: {conflict.balance?.quantityOnHand ?? "0"}; резерв: {conflict.balance?.quantityReserved ?? "0"}. Ваши значения оставлены в полях выше.</p>

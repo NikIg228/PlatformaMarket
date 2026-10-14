@@ -3,7 +3,9 @@ import { DmAction } from "@marketplace/ui/controls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { WorkspaceOffer } from "@marketplace/schemas";
-import { DmButton, DmDropdown, DmSearch, EmptyState, ErrorState, LoadingState, StatusTag, formatMoney, formatStatus } from "@marketplace/ui";
+import { DmButton, DmCheckbox, DmDropdown, DmSearch, EmptyState, ErrorState, LoadingState, StatusTag, formatMoney, formatStatus, usePermissions, errorMessage } from "@marketplace/ui";
+import { vatLabel } from "@marketplace/schemas";
+import { OfferVatBulk } from "./offer-vat-bulk";
 import { Tab, TabList } from "@fluentui/react-components";
 import { ChevronRight20Regular } from "@fluentui/react-icons/svg/chevron-right";
 import { Filter20Regular } from "@fluentui/react-icons/svg/filter";
@@ -19,6 +21,8 @@ import styles from "./products.module.css";
 
 export default function Products() {
   const { api, organizationId } = useWorkspace();
+  const has = usePermissions(), canTax = has("pricing.manage");
+  const [taxIds, setTaxIds] = useState<string[]>([]), [selectingTax, setSelectingTax] = useState(false), [taxError, setTaxError] = useState("");
   const { navigation, query, appliedQuery, attentionOnly, status, change } = useProductListState(organizationId);
   const setQuery = (value: string) => change("query", value), setAppliedQuery = (value: string) => change("appliedQuery", value);
   const setAttentionOnly = (value: boolean) => change("attentionOnly", value), setStatus = (value: typeof status) => change("status", value);
@@ -39,10 +43,29 @@ export default function Products() {
   }, [selectedOfferId, selected.data]);
   const items = resource.data?.items ?? [];
   const visible = items;
+  const eligible = (item: WorkspaceOffer) => ["MANUAL", "IMPORT"].includes(item.sourceType) && !["BLOCKED", "ARCHIVED"].includes(item.status) && item.prices.some(price => price.status === "ACTIVE" && price.currency === "KZT");
+  const selectAllTax = async () => {
+    if (selectingTax) return; setSelectingTax(true); setTaxError("");
+    try {
+      const ids: string[] = []; let cursor: string | undefined;
+      do {
+        const page = await api.workspaceOffers({ q: appliedQuery, publication: status || undefined, attention: attentionOnly ? "required" : undefined, cursor, limit: 100 });
+        ids.push(...page.items.filter(eligible).map(item => item.id)); cursor = page.nextCursor ?? undefined;
+        if (ids.length > 500 || (ids.length === 500 && cursor)) throw new Error("Найдено больше 500 предложений. Уточните поиск или выбирайте товары по страницам.");
+      } while (cursor);
+      setTaxIds(ids);
+    } catch (cause) { setTaxError(errorMessage(cause)); } finally { setSelectingTax(false); }
+  };
   const refresh = () => { if (navigation.cursor) navigation.reset(); else void resource.refresh(); };
   const open = (item: WorkspaceOffer, target: HTMLElement) => { trigger.current = target; setOffer(item); };
   return <div className={styles.page}>
     <ProductActions />
+    {canTax ? <div className={styles.taxActions}>
+      <DmButton disabled={selectingTax || resource.loading} onClick={() => void selectAllTax()}>{selectingTax ? "Выбираем товары…" : "Выбрать найденные для НДС"}</DmButton>
+      <OfferVatBulk offerIds={taxIds} onChanged={async () => { setTaxIds([]); await resource.refreshAfterWrite(); }} />
+      {taxIds.length ? <DmButton appearance="subtle" onClick={() => setTaxIds([])}>Снять выбор</DmButton> : null}
+      {taxError ? <ErrorState description={taxError} /> : null}
+    </div> : null}
     {selectedOfferId && selected.error ? <ErrorState description={selected.error} action={<DmButton onClick={() => void selected.refresh()}>Повторить загрузку предложения</DmButton>} /> : null}
     <section className={styles.listPanel} aria-label="Список товаров">
       <div className={styles.filters}>
@@ -58,8 +81,8 @@ export default function Products() {
           const price = item.prices.find(value => value.status === "ACTIVE");
           const warning = offerAttention(item);
           return <tr key={item.id}>
-            <td className={styles.identity}><DmAction variant="text" className={styles.productName} onClick={event => open(item, event.currentTarget)}>{item.productVariant.product.canonicalName}</DmAction><small>{item.supplierSku ?? "Без артикула"} · {item.packaging?.name ?? item.saleUnit?.nameRu ?? "Упаковка не указана"}</small></td>
-            <td className={styles.price} data-label="Цена"><span>{price ? formatMoney(price.amountMinor, price.currency) : "Не задана"}{price ? ` / ${item.saleUnit?.symbol ?? "ед."}` : ""}</span>{warning.priceWarning ? <small className={styles.warning}>{warning.priceWarning}</small> : null}</td>
+            <td className={styles.identity}><div className={styles.taxIdentity}>{canTax ? <DmCheckbox aria-label={`Выбрать для НДС: ${item.productVariant.product.canonicalName}`} checked={taxIds.includes(item.id)} disabled={!eligible(item) || selectingTax || (!taxIds.includes(item.id) && taxIds.length >= 500)} onChange={(_, data) => setTaxIds(current => data.checked ? [...current.filter(id => id !== item.id), item.id] : current.filter(id => id !== item.id))} /> : null}<DmAction variant="text" className={styles.productName} onClick={event => open(item, event.currentTarget)}>{item.productVariant.product.canonicalName}</DmAction></div><small>{item.supplierSku ?? "Без артикула"} · {item.packaging?.name ?? item.saleUnit?.nameRu ?? "Упаковка не указана"}</small></td>
+            <td className={styles.price} data-label="Цена"><span>{price ? formatMoney(price.amountMinor, price.currency) : "Не задана"}{price ? ` / ${item.saleUnit?.symbol ?? "ед."}` : ""}</span><small>{vatLabel(price?.taxSnapshot?.selection)}</small>{warning.priceWarning ? <small className={styles.warning}>{warning.priceWarning}</small> : null}</td>
             <td className={styles.available} data-label="Доступно"><span>{item.inventoryBalances.length ? totalAvailable(item) : "—"} {item.saleUnit?.symbol ?? "ед."}</span>{warning.stockWarning ? <small className={styles.warning}>{warning.stockWarning}</small> : null}</td>
             <td className={styles.publication} data-label="Публикация"><StatusTag tone={item.publication?.marketplaceVisible ? "success" : "neutral"}>{item.publication?.marketplaceVisible ? "В каталоге" : formatStatus(item.publication?.status ?? item.status)}</StatusTag>{item.publication?.blockedReason ? <small className={styles.warning}>{item.publication.blockedReason}</small> : null}</td>
             <td className={styles.openCell}><DmButton appearance="subtle" aria-label={`Подробнее: ${item.productVariant.product.canonicalName}`} icon={<ChevronRight20Regular />} iconPosition="after" onClick={event => open(item, event.currentTarget)}><span className={styles.mobileDetailLabel}>Подробнее</span></DmButton></td>

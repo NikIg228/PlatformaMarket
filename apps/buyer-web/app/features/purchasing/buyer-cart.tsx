@@ -1,5 +1,5 @@
 "use client";
-import { ActionFeedback, useToast } from "@marketplace/ui";
+import { ActionFeedback, useToast, VatLineAmount, VatBreakdown } from "@marketplace/ui";
 import { cartChangeNotice } from "./cart-notice";
 
 import { useEffect, useRef } from "react";
@@ -181,6 +181,7 @@ export function BuyerCart({
                       }
                     >
                       <td data-label="Товар">
+                        <div>
                         <strong>
                           {item.offer?.productVariant?.product?.canonicalName ??
                             `Позиция ${item.offerId.slice(0, 8)}`}
@@ -205,12 +206,14 @@ export function BuyerCart({
                           Акция: {itemValidation.current.promotion.name} · цена {formatMoney(itemValidation.current.promotion.unitPriceMinor, item.currency)}
                           {itemValidation.current.promotion.gift ? ` · Подарок: ${itemValidation.current.promotion.gift.name} × ${itemValidation.current.promotion.gift.quantity}` : ""}
                         </small> : null}
+                        </div>
                       </td>
                       <td data-label="Поставщик">
                         {item.offer?.supplier?.organization?.displayName ??
                           "Поставщик"}
                       </td>
                       <td data-label="Количество">
+                        <div>
                         <CartQuantityEditor id={item.id} name={item.offer?.productVariant?.product?.canonicalName ?? `Позиция ${item.offerId.slice(0, 8)}`} quantity={item.quantity} editor={editor} disabled={locked} />
                         <small
                           className={
@@ -222,6 +225,7 @@ export function BuyerCart({
                             ? ` → ${current?.availableQuantity ?? "0"}`
                             : ""}
                         </small>
+                        </div>
                       </td>
                       <td data-label="Цена">
                         <div className={styles.valueChange}>
@@ -259,6 +263,7 @@ export function BuyerCart({
                               current?.currency ?? item.currency,
                             )}
                           </strong>
+                          <VatLineAmount tax={current ? current.tax : itemValidation?.previous.tax} currency={current?.currency ?? item.currency} />
                         </div>
                       </td>
                     </tr>
@@ -266,6 +271,7 @@ export function BuyerCart({
                 })}
           </DmTable>
 
+          <div className={styles.taxSummary}><VatBreakdown lines={cart.items.map(item => { const checked = validationByItem.get(item.id); return checked?.current ? checked.current.tax : checked?.previous.tax; })} currency={cart.currency} /></div>
           <div className={styles.checkoutBar}>
             <div>
               <span>Итого по корзине</span>

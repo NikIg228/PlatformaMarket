@@ -2,7 +2,8 @@
 import { DmAction, DmFileInput } from "@marketplace/ui/controls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient, SupplierImportBatchResponse, SupplierImportDiagnosticsResponse } from "@marketplace/api-client";
-import { importPriceMinor, type SupplierColumnMappingInput, type SupplierImportPreview } from "@marketplace/schemas";
+import { importPriceMinor, vatLabel, type SupplierColumnMappingInput, type SupplierImportPreview, type SupplierImportTaxPreview } from "@marketplace/schemas";
+import { ImportVatOptions, type ImportVatOptionsValue } from "./import-vat-options";
 import { Tab } from "@fluentui/react-components";
 import { DmTabList, DmButton, DmField, DmInput, DmDropdown, DmTable, ErrorState, LoadingState, StatusTag, useUnsavedChanges, productWorkflowStyles as styles, errorMessage, formatStatus, formatDate, formatMoney } from "@marketplace/ui";
 import type { SupplierDataSource } from "./types";
@@ -14,6 +15,7 @@ const fields = [
   ["quantityOnHand", "Остаток", "Остаток"], ["unit", "Единица измерения", "Единица"],
   ["brand", "Бренд", "Бренд"], ["manufacturer", "Производитель", "Производитель"],
   ["lotNumber", "Номер партии", "Партия"], ["expirationDate", "Срок годности", "Срок годности"],
+  ["vatMode", "Режим НДС", "Режим НДС"], ["vatRate", "Ставка НДС", "Ставка НДС"], ["vatBasis", "Основание НДС", "Основание НДС"],
 ] as const;
 type RowFilter = "all" | "ready" | "attention" | "error";
 export function SpreadsheetImport({ api, supplierId, sources, onChanged, hideHeading = false }: {
@@ -23,6 +25,8 @@ export function SpreadsheetImport({ api, supplierId, sources, onChanged, hideHea
   const [file, setFile] = useState<File | null>(null), [preview, setPreview] = useState<SupplierImportPreview | null>(null);
   const [sourceId, setSourceId] = useState(""), [createdSource, setCreatedSource] = useState<SupplierDataSource | null>(null);
   const [mapping, setMapping] = useState<Record<string, string>>({}), [priceUnit, setPriceUnit] = useState<"MAJOR" | "MINOR">("MAJOR");
+  const [taxOptions, setTaxOptions] = useState<ImportVatOptionsValue | null>(null), [taxPreview, setTaxPreview] = useState<SupplierImportTaxPreview | null>(null);
+  const columnMapping = { ...Object.fromEntries(Object.entries(mapping).filter(([, value]) => value)), priceUnit, ...taxOptions } as SupplierColumnMappingInput;
   const [batch, setBatch] = useState<SupplierImportBatchResponse | null>(null), [diagnostics, setDiagnostics] = useState<SupplierImportDiagnosticsResponse | null>(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null), [unknownCreation, setUnknownCreation] = useState(false);
   const [filter, setFilter] = useState<RowFilter>("all"), [page, setPage] = useState(0), [reason, setReason] = useState("");
@@ -57,19 +61,22 @@ export function SpreadsheetImport({ api, supplierId, sources, onChanged, hideHea
     const price = value("priceMinor"), minor = price ? importPriceMinor(price, priceUnit) : null, quantity = value("quantityOnHand");
     const issue = !value("externalId") || !value("name") ? "Нужны код и название" : price && !minor ? "Некорректная цена" : quantity && !/^\d+(?:\.\d{1,6})?$/.test(quantity) ? "Некорректный остаток" : value("expirationDate") && Number.isNaN(Date.parse(value("expirationDate"))) ? "Некорректная дата" : null;
     const attention = !price || !value("currency") ? "Нужны цена и валюта" : value("currency").toUpperCase() !== "KZT" ? "Поддерживается валюта KZT" : value("expirationDate") && new Date(value("expirationDate")) <= new Date() ? "Срок годности истёк" : null;
-    return { ...row, name: value("name"), sku: value("supplierSku") || value("externalId"), quantity, minor, issue: issue ?? attention, state: (issue ? "error" : attention ? "attention" : "ready") as RowFilter };
+    const tax = taxPreview?.items.find(item => item.rowNumber === row.rowNumber);
+    const taxIssue = tax?.kind === "ERROR" ? tax.issue : tax?.kind === "UNKNOWN" ? "Укажите налоговый режим нового предложения" : null;
+    return { ...row, name: value("name"), sku: value("supplierSku") || value("externalId"), quantity, minor: tax?.amountMinor ?? minor, tax,
+      issue: issue ?? taxIssue ?? attention, state: (issue || taxIssue ? "error" : attention ? "attention" : "ready") as RowFilter };
   });
   const selectedRows = rows.filter(row => filter === "all" || row.state === filter), errors = rows.filter(row => row.state === "error").length;
   const process = () => run(async () => {
     if (!batchId.current) {
-      if (!file || !preview || !rows.length || errors) throw new Error("Исправьте ошибки файла перед загрузкой.");
+      if (!file || !preview || !rows.length || errors || !taxPreview || !taxOptions) throw new Error("Проверьте строки и налоговые условия перед загрузкой.");
       let selected = availableSources.find(source => source.id === sourceId);
       if (sourceId && !selected) throw new Error("Выберите источник для этого формата файла.");
       if (!selected) { selected = await api.post<SupplierDataSource>(`/suppliers/${supplierId}/data-sources`, { name: `Прайс ${fileType === "EXCEL" ? "Excel" : "CSV"}`, type: fileType }); setCreatedSource(selected); setSourceId(selected.id); }
       let created: SupplierImportBatchResponse;
       try { created = await api.createSupplierImportBatch(supplierId, { sourceId: selected.id, fileName: file.name, fileType, contentBase64: content.current,
-        columnMapping: { ...Object.fromEntries(Object.entries(mapping).filter(([, value]) => value)), priceUnit } as SupplierColumnMappingInput }); }
-      catch (cause) { const status = cause && typeof cause === "object" && "status" in cause ? Number(cause.status) : 0; if (!status || status >= 500 || status === 408) { setUnknownCreation(true); throw new Error(`Не удалось подтвердить создание загрузки. Проверьте историю перед повторной отправкой. ${errorMessage(cause)}`); } throw cause; }
+        columnMapping, taxPreviewHash: taxPreview.previewHash }); }
+      catch (cause) { const status = cause && typeof cause === "object" && "status" in cause ? Number(cause.status) : 0; if (status === 409) { setTaxPreview(null); setStep(1); throw new Error("Условия предложений или налоговый профиль изменились. Проверьте данные повторно; файл и столбцы сохранены."); } if (!status || status >= 500 || status === 408) { setUnknownCreation(true); throw new Error(`Не удалось подтвердить создание загрузки. Проверьте историю перед повторной отправкой. ${errorMessage(cause)}`); } throw cause; }
       batchId.current = created.id; setBatch(created);
     }
     const processed = await api.processSupplierImportBatch(supplierId, batchId.current!); setBatch(processed);
@@ -77,7 +84,7 @@ export function SpreadsheetImport({ api, supplierId, sources, onChanged, hideHea
     setDiagnostics(await api.getSupplierImportDiagnostics(supplierId, batchId.current!)); await onChanged(); await loadHistory();
   });
   const refresh = () => run(async () => { if (!batch) return; setBatch(await api.getSupplierImportBatch(supplierId, batch.id)); setDiagnostics(await api.getSupplierImportDiagnostics(supplierId, batch.id)); await loadHistory(); });
-  const reset = () => { setBatch(null); batchId.current = null; setDiagnostics(null); setFile(null); setPreview(null); content.current = ""; setStep(0); setReason(""); setError(null); setUnknownCreation(false); setTab("new"); };
+  const reset = () => { setTaxPreview(null); setTaxOptions(null); setBatch(null); batchId.current = null; setDiagnostics(null); setFile(null); setPreview(null); content.current = ""; setStep(0); setReason(""); setError(null); setUnknownCreation(false); setTab("new"); };
   return <div className={styles.form}>
     {!hideHeading ? <h2>Импорт товаров</h2> : null}
     <DmTabList aria-label="Импорт" selectedValue={tab} onTabSelect={(_, data) => { const value = data.value as "new" | "history"; setTab(value); if (value === "history") void loadHistory(); }}><Tab value="new">Новая загрузка</Tab><Tab value="history">История загрузок</Tab></DmTabList>
@@ -108,11 +115,13 @@ export function SpreadsheetImport({ api, supplierId, sources, onChanged, hideHea
         </> : step === 1 ? <>
           <h2>Сопоставьте столбцы</h2><p className={styles.hint}>{file?.name} · выберите столбец файла для каждого поля. Код и название обязательны.</p>
           <div className={styles.fields}>{fields.map(([key, label]) => <DmField key={key} label={label} required={key === "externalId" || key === "name"} hint={mapping[key] ? `Пример: ${String(preview?.rows[0]?.rawData[mapping[key]!] ?? "—").slice(0, 100)}` : undefined}><DmDropdown aria-label={label} value={mapping[key] ?? ""} onChange={(_, data) => setMapping(current => ({ ...current, [key]: data.value }))}><option value="">Не импортировать</option>{preview?.headers.map(header => <option key={header} value={header}>{header}</option>)}</DmDropdown></DmField>)}<DmField label="Цена в файле"><DmDropdown value={priceUnit} onChange={(_, data) => setPriceUnit(data.value as "MAJOR" | "MINOR")}><option value="MAJOR">Тенге (1 250 = 1 250 ₸)</option><option value="MINOR">Тиыны (125000 = 1 250 ₸)</option></DmDropdown></DmField></div>
-          <div className={styles.footer}><DmButton onClick={() => setStep(0)}>Назад</DmButton><DmButton appearance="primary" disabled={!mapping.externalId || !mapping.name} onClick={() => { setFilter("all"); setPage(0); setStep(2); }}>Проверить данные</DmButton></div>
+          <ImportVatOptions api={api} supplierId={supplierId} disabled={busy} onChange={setTaxOptions} />
+          <div className={styles.footer}><DmButton disabled={busy} onClick={() => setStep(0)}>Назад</DmButton><DmButton appearance="primary" disabled={busy || !mapping.externalId || !mapping.name || !taxOptions} onClick={() => void run(async () => { if (!preview) return; setTaxPreview(await api.previewSupplierImportTax(supplierId, { columnMapping, rows: preview.rows })); setFilter("all"); setPage(0); setStep(2); })}>{busy ? "Проверяем условия…" : "Проверить данные"}</DmButton></div>
         </> : step === 2 ? <>
           <h2>Проверьте данные</h2><p className={styles.hint}>{file?.name} · {rows.length} строк. Сопоставление с каталогом выполняется при обработке.</p>
+          {taxPreview ? <p role="status">НДС: наследуют настройки {taxPreview.counts.inherited} · индивидуальные условия {taxPreview.counts.individual} · без изменений {taxPreview.counts.unchanged} · ошибок {taxPreview.counts.errors} · без режима {taxPreview.counts.unknown}. Показана конечная цена с применимым НДС.</p> : null}
           <div className={local.filters}>{([["all", "Все"], ["ready", "Без ошибок"], ["attention", "Требуют внимания"], ["error", "Ошибки"]] as const).map(([value, label]) => <DmAction variant="choice" key={value} aria-pressed={filter === value} onClick={() => { setFilter(value); setPage(0); }}>{label} <span>{value === "all" ? rows.length : rows.filter(row => row.state === value).length}</span></DmAction>)}</div>
-          <table className={styles.table}><caption className="dm-sr-only">Предварительный просмотр строк файла</caption><thead><tr><th>Товар</th><th>Цена</th><th>Остаток</th><th>Проверка</th></tr></thead><tbody>{selectedRows.slice(page * 25, (page + 1) * 25).map(row => <tr key={row.rowNumber}><td data-label="Товар"><div><strong>{row.name || "Без названия"}</strong><small>{row.sku || "Нет кода"} · строка {row.rowNumber}</small></div></td><td data-label="Цена"><div>{row.minor ? formatMoney(row.minor, "KZT") : "—"}</div></td><td data-label="Остаток"><div>{row.quantity || "—"}</div></td><td data-label="Проверка"><div><StatusTag>{row.state === "ready" ? "Без ошибок формата" : row.state === "error" ? "Ошибка" : "Требует внимания"}</StatusTag>{row.issue ? <small>{row.issue}</small> : null}</div></td></tr>)}</tbody></table>
+          <table className={styles.table}><caption className="dm-sr-only">Предварительный просмотр строк файла</caption><thead><tr><th>Товар</th><th>Цена</th><th>Остаток</th><th>Проверка</th></tr></thead><tbody>{selectedRows.slice(page * 25, (page + 1) * 25).map(row => <tr key={row.rowNumber}><td data-label="Товар"><div><strong>{row.name || "Без названия"}</strong><small>{row.sku || "Нет кода"} · строка {row.rowNumber}</small></div></td><td data-label="Цена"><div>{row.minor ? formatMoney(row.minor, "KZT") : "—"}<small>{row.tax?.selection ? vatLabel(row.tax.selection) : "НДС не подтверждён"}</small></div></td><td data-label="Остаток"><div>{row.quantity || "—"}</div></td><td data-label="Проверка"><div><StatusTag>{row.state === "ready" ? "Без ошибок формата" : row.state === "error" ? "Ошибка" : "Требует внимания"}</StatusTag>{row.issue ? <small>{row.issue}</small> : null}</div></td></tr>)}</tbody></table>
           {!selectedRows.length ? <p className={styles.hint}>В этой группе нет строк.</p> : null}
           {selectedRows.length > 25 ? <div className={local.pagination}><DmButton disabled={page === 0} onClick={() => setPage(page - 1)}>Предыдущие строки</DmButton><span>{page + 1} / {Math.ceil(selectedRows.length / 25)}</span><DmButton disabled={(page + 1) * 25 >= selectedRows.length} onClick={() => setPage(page + 1)}>Следующие строки</DmButton></div> : null}
           {errors ? <p role="alert">Исправьте {errors} ошибок в исходном файле или сопоставлении столбцов.</p> : null}

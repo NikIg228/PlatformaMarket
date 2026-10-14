@@ -6,6 +6,8 @@ import { PrismaService } from "../../platform/prisma/prisma.service";
 import type { SupplierActorContext } from "../suppliers/supplier-access.service";
 import { normalizeCatalogText, rankVariants } from "../imports/matching";
 import { SupplierTermsService } from "../agreements/supplier-terms.service";
+import { vatLegacyFields } from "@marketplace/schemas";
+import { assertVatCurrent, storedVat } from "../vat/vat-rules";
 
 const importReviewInclude = Prisma.validator<Prisma.ProductCandidateInclude>()({
   supplier: { include: { organization: true } },
@@ -346,8 +348,11 @@ export class ModerationService {
           },
         });
         const freshnessExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-        await tx.offerPrice.create({ data: { offerId: offer.id, amountMinor: priceMinor, currency, includesVat: true, source: "IMPORT", freshnessExpiresAt } });
-        await tx.offerPriceHistory.create({ data: { offerId: offer.id, amountMinor: priceMinor, currency, includesVat: true, source: "IMPORT", changedById: context.actorId, reason: input.decisionReason } });
+        const tax = storedVat(normalized?.taxSnapshot);
+        if (tax) await assertVatCurrent(tx, candidate.supplierOrganizationId, tax);
+        const taxFields = tax ? { ...vatLegacyFields(tax.selection), taxSnapshot: tax as unknown as Prisma.InputJsonValue } : { includesVat: true };
+        await tx.offerPrice.create({ data: { offerId: offer.id, amountMinor: priceMinor, currency, ...taxFields, source: "IMPORT", freshnessExpiresAt } });
+        await tx.offerPriceHistory.create({ data: { offerId: offer.id, amountMinor: priceMinor, currency, ...taxFields, source: "IMPORT", changedById: context.actorId, reason: input.decisionReason } });
         await tx.inventoryBalance.create({
           data: {
             supplierOrganizationId: candidate.supplierOrganizationId,

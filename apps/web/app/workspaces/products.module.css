@@ -102,3 +102,5 @@
     gap: var(--dm-space-2);
   }
 }
+.taxActions { display: flex; flex-wrap: wrap; gap: var(--dm-space-3); align-items: center; }
+.taxIdentity { display: flex; align-items: center; gap: var(--dm-space-2); }

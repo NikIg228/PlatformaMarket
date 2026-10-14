@@ -1,4 +1,8 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import type { UpdateIntegrationTaxInput } from "@marketplace/schemas";
+import { taxBindingResponse, updateIntegrationTax } from "./integration-tax";
+import { currentVatProfile, vatConflict } from "../vat/vat-rules";
+import { resolveImportPrice } from "../imports/import-vat";
 import type { CreateIntegrationBindingInput, CreateIntegrationConnectionInput, ReconciliationQueryInput, ResolveReconciliationInput, UpdateIntegrationConnectionInput, UpsertIntegrationMappingInput } from "@marketplace/schemas";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
@@ -203,6 +207,7 @@ export class IntegrationsService {
   }
 
   async createBinding(supplierOrganizationId: string, connectionId: string, input: CreateIntegrationBindingInput, context: SupplierActorContext) {
+    if (input.priceTax && supplierOrganizationId !== context.organizationId) throw new ForbiddenException("Налоговые условия подтверждает представитель поставщика");
     await this.requireConnection(supplierOrganizationId, connectionId, context);
     if (input.warehouseId) {
       const warehouse = await this.prisma.warehouse.findFirst({ where: { id: input.warehouseId, supplierOrganizationId } });
@@ -214,7 +219,16 @@ export class IntegrationsService {
     }
     try {
       return await this.prisma.$transaction(async (tx) => {
-        const binding = await tx.integrationDataBinding.create({ data: { connectionId, dataType: input.dataType, warehouseId: input.warehouseId, offerId: input.offerId, priority: input.priority, configuration: input.configuration == null ? undefined : input.configuration as Prisma.InputJsonValue } });
+        let vatContext = null;
+        if (input.priceTax) {
+          const profile = await currentVatProfile(tx, supplierOrganizationId);
+          if (profile.version !== input.priceTax.expectedRequisitesVersion) throw vatConflict("Реквизиты изменились. Обновите налоговые настройки интеграции");
+          const initial = await resolveImportPrice(tx, supplierOrganizationId, context.actorId, {},
+            { externalId: "externalId", name: "name", ...input.priceTax, priceIncludesVat: true }, "0", null);
+          vatContext = { actorId: context.actorId, defaultTax: initial.declaration };
+        }
+        const configuration = { ...(input.configuration ?? {}), priceTax: input.priceTax ?? null, vatContext };
+        const binding = await tx.integrationDataBinding.create({ data: { connectionId, dataType: input.dataType, warehouseId: input.warehouseId, offerId: input.offerId, priority: input.priority, configuration: configuration as Prisma.InputJsonValue } });
         await tx.auditLog.create({ data: { ...context, action: "integration.binding.created", entityType: "IntegrationDataBinding", entityId: binding.id, after: binding } });
         return binding;
       });
@@ -222,6 +236,20 @@ export class IntegrationsService {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new ConflictException("An integration binding already exists for this scope");
       throw error;
     }
+  }
+
+  async listTaxBindings(supplierId: string, context: SupplierActorContext) {
+    if (supplierId !== context.organizationId) throw new ForbiddenException("Налоговые условия доступны в кабинете поставщика");
+    await this.access.requireProfile(supplierId);
+    const bindings = await this.prisma.integrationDataBinding.findMany({ where: { dataType: "PRICE", connection: { supplierOrganizationId: supplierId } }, include: { connection: true }, orderBy: [{ connectionId: "asc" }, { priority: "asc" }] });
+    return bindings.map(taxBindingResponse);
+  }
+
+  async updateTaxBinding(supplierId: string, connectionId: string, bindingId: string, input: UpdateIntegrationTaxInput, context: SupplierActorContext) {
+    if (supplierId !== context.organizationId) throw new ForbiddenException("Налоговые условия подтверждает представитель поставщика");
+    await this.requireConnection(supplierId, connectionId, context);
+    try { return await this.prisma.$transaction(db => updateIntegrationTax(db, supplierId, connectionId, bindingId, input, context), { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }); }
+    catch (error) { if (error instanceof Prisma.PrismaClientKnownRequestError && ["P2034", "P2002"].includes(error.code)) throw vatConflict("Настройки изменились параллельно. Обновите данные"); throw error; }
   }
 
   async deleteBinding(supplierOrganizationId: string, connectionId: string, bindingId: string, context: SupplierActorContext) {

@@ -1,5 +1,16 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+15.10 — **R7.6.1.4 VAT: LOCAL PASS, publication/CI pending**, main699047b + VAT patch.
+Владелец разрешил новый цикл: buyer browser2/2PASS390/1440, keyboard/computed
+и screenshots PASS после исправления композиции; supplier10PASS + price1PASS.
+Backend275/schema291/client74/UI89 tests PASS; types/build/lint/UI contract/
+web budget/runtime PASS. Full isolated PostgreSQL attempt2PASS (attempt1:
+collision test fixture indices); core-contract69 operations PASS.
+Команды, логи, оставшиеся checks и следующий шаг —
+[checkpoint R7.6.1.4](task-state/PRIMARY-SESSION.md). Прошлые PASS ниже не
+сертифицируют этот пакет; рабочая БД не мигрировалась. Legacy manual browser
+fixtures обновлены и typechecked, отдельная legacy suite не запускалась.
+
 Маршрут с08.10: приоритет №1 — [функциональная карта](../FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md),
 подробные требования — [PROJECT_OVERVIEW](../PROJECT_OVERVIEW.md),
 единый реестр исполнения — [Main Roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
