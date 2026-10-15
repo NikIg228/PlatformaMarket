@@ -49,25 +49,27 @@ export function OperationQueue() {
 }
 
 
-type AssignmentProps = ComponentProps<typeof import("./operation-assignment").OperationAssignmentPanel>;
+type AssignmentContentProps = ComponentProps<typeof import("./operation-assignment").OperationAssignmentContent>;
+type AssignmentProps = Omit<AssignmentContentProps, "onBusyChange"> & { onClose: () => void };
 function OperationAssignmentPanel(props: AssignmentProps) {
-  const [Panel, setPanel] = useState<ComponentType<AssignmentProps> | null>(null);
+  const [Panel, setPanel] = useState<ComponentType<AssignmentContentProps> | null>(null);
   const [failed, setFailed] = useState(false);
   const [revision, setRevision] = useState(0);
   const [open, setOpen] = useState(true);
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (!open) return;
     let active = true;
     setFailed(false);
     void import("./operation-assignment").then(module => {
-      if (active) setPanel(() => module.OperationAssignmentPanel);
+      if (active) setPanel(() => module.OperationAssignmentContent);
     }, () => { if (active) setFailed(true); });
     return () => { active = false; };
   }, [revision, open]);
-  if (Panel && open) return <Panel {...props} />;
-  return <DmDialog open={open} onOpenChange={setOpen} onClosed={props.onClose}
-    title="Назначение задачи" actions={<DmButton onClick={() => setOpen(false)}>Закрыть</DmButton>}>
-    {failed ? <ErrorState description="Не удалось открыть назначение." action={<DmButton onClick={() => setRevision(value => value + 1)}>Повторить открытие</DmButton>} />
+  // Keep the same modal and focus trap while its lazy content loads.
+  return <DmDialog open={open} onOpenChange={value => { if (!busy) setOpen(value); }} onClosed={props.onClose}
+    title={Panel ? `Задача: ${queueItemLabel(props.item)}` : "Назначение задачи"} actions={<DmButton disabled={busy} onClick={() => setOpen(false)}>Закрыть</DmButton>}>
+    {Panel ? <Panel {...props} onBusyChange={setBusy} /> : failed ? <ErrorState description="Не удалось открыть назначение." action={<DmButton onClick={() => setRevision(value => value + 1)}>Повторить открытие</DmButton>} />
       : <LoadingState label="Открываем назначение" />}
   </DmDialog>;
 }

@@ -6,6 +6,43 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 15.10 — точечное закрытие назначения по Escape: LOCAL PASS, публикация pending
+
+Запрос: исправить Escape в диалоге назначения; полный CI не запускать.
+HEAD fc57098/main; прежний WIP сохранён в .tmp/assignment-escape/baseline.json.
+План: воспроизвести потерю фокуса при lazy-load, минимально исправить жизненный
+цикл диалога; проверки loading/loaded/late chunk, Escape/кнопка/возврат фокуса,
+ошибка загрузки/retry и запрет закрытия во время сохранения. Mock API, без БД.
+Риск: переход loading→form и сохранение. DmDialog/controls/tokens без редизайна:
+radius16, Manrope14, controls44; исходный screenshot/computed в browser evidence.
+Completion: целевой browser regression, scoped types/lint и изолированный web
+build, review/diff-check; только собственный commit/push с [skip ci] по явному
+запрету полного CI. Старый CI FAIL не переименовывается в PASS.
+
+Результат: один DmDialog остаётся смонтированным при загрузке/ошибке/готовой форме;
+лениво загружается OperationAssignmentContent. Busy передаётся оболочке, Escape
+и кнопка закрытия сохраняют запрет во время write. API и стили не менялись.
+Воспроизведена потеря выбранного фокуса при замене loader→form (focus-dev-before
+FAIL); конкретный исторический CI timing не воспроизведён стабильно. Immediate
+Escape before-checks в dev и production PASS. Production chunk interception
+сначала не сработал: fixture открывала support и заранее загружала общий chunk;
+исправлена прямая overview fixture. После fix dev4PASS; save case сначала ожидал
+ошибку внутри dialog вместо штатного toast (assertion исправлен), mobile fixture
+искала скрытый overview link (исправлена навигация). Эти сбои не скрыты.
+Финал: production browser6/6PASS, включая10быстрых открытий на1440 и390,
+удержание фокуса при chunk completion, Escape до late chunk, retry chunk, busy
+Escape и recovery. Новая отдельная playwright.assignment-escape.config.ts;
+mock API без БД. Screenshot/computed просмотрены: Manrope, radius16.
+Admin typecheck PASS; scoped ESLint PASS; E2E types PASS; изолированная web
+webpack build+types49routes PASS (.tmp/assignment-escape/build-run.log).
+Команды: npm run typecheck --workspace=@marketplace/admin-web; npx --no-install
+tsc -p apps/e2e/tsconfig.json --noEmit; scoped eslint; node .tmp/assignment-escape/
+build-web.mjs; playwright test --config .tmp/assignment-escape/preview.config.ts.
+Temporary preview3105 PID11132 остановлен после proof; dev3000PID9140/API4012PID2220
+работают. Own source2files + newtest/config + own doc hunks; foreign WIP сохраняется.
+
+
+
 ### 15.10 — рамки предупреждений, разделители и подсказки кабинетов: LOCAL PASS, публикация pending
 
 Запрос владельца: предупреждения о недостающих реквизитах отделить тонкой рамкой

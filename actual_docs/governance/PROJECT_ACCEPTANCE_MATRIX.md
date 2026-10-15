@@ -1,5 +1,13 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+15.10 — **Escape назначения оператора: LOCAL PASS, публикация pending.**
+Один modal/focus trap сохраняется при lazy загрузке формы; закрытие и возврат
+фокуса проверены до/после загрузки, при повторном открытии1440/390, retry и busy.
+Фокус-регрессия воспроизведена до fix; production browser6/6PASS после fix,
+admin/E2E types, scoped lint, isolated frontend build/types PASS.
+Полный CI исключён явным запросом владельца; прежний CI FAIL сохраняется как история.
+Детали и неуспешные попытки: [checkpoint](task-state/PRIMARY-SESSION.md).
+
 15.10 — **Рамки, подсказки и разделение форм кабинетов: LOCAL PASS; публикация pending.**
 Общие DmHeading/InfoTip/FormSections; note с рамкой в цвет текста; обращения на
 «вы». Налоговый статус: статус и дата начала на виду, прочее раскрывается;
