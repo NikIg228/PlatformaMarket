@@ -57,7 +57,7 @@ test("CORE07: supplier confirmation and three-role analytics at desktop/mobile",
     const selectedFrom = await region.getByLabel("С даты", { exact: true }).inputValue();
     let fail = true;
     await page.route("**/commerce-analytics?**", async route => { if (fail) { fail = false; await route.abort("failed"); } else await route.continue(); });
-    await region.getByRole("button", { name: "Обновить аналитику", exact: true }).click();
+    await region.getByLabel("Часовой пояс", { exact: true }).selectOption("UTC");
     await expect(region.getByRole("button", { name: "Повторить загрузку", exact: true })).toBeVisible();
     await expect(region.getByLabel("С даты", { exact: true })).toHaveValue(selectedFrom);
     const retry = region.getByRole("button", { name: "Повторить загрузку", exact: true });

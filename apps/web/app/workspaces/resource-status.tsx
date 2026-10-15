@@ -2,11 +2,8 @@
 export function ResourceStatus({ resource }: { resource: {
   lastSuccessAt: number | null; refreshing: boolean; offline: boolean; error: string | null;
 } }) {
-  if (!resource.lastSuccessAt) return null;
+  if (!resource.lastSuccessAt || (!resource.offline && !resource.error)) return null;
   return <p role="status">
-    {resource.offline ? "Нет сети. Показаны ранее загруженные данные." : resource.error
-      ? `Не удалось обновить данные: ${resource.error}. Показана предыдущая версия.`
-      : resource.refreshing ? "Обновляем данные…" : "Данные обновлены"}
-    {" · "}<time dateTime={new Date(resource.lastSuccessAt).toISOString()}>{new Date(resource.lastSuccessAt).toLocaleTimeString("ru-RU")}</time>
+    {resource.offline ? "Нет сети. Показаны ранее загруженные данные." : `Не удалось загрузить данные: ${resource.error}. Показана предыдущая версия.`}
   </p>;
 }

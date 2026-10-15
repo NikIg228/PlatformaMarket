@@ -71,6 +71,6 @@ function IntegrationTaxEditor({ initial, onDirtyChange, onClose }: { initial: In
     </>}
     {conflict ? <p role="alert">Обновите данные и проверьте введённые условия перед повторным сохранением.</p> : null}
     {notice ? <DmFeedback tone="success" title="Сохранено" description={notice} /> : null}
-    <div className={layout.actions}><DmButton disabled={busy} onClick={() => void load()}>Обновить данные источника</DmButton><DmButton disabled={busy || dirty} onClick={onClose}>Другой источник</DmButton><DmButton appearance="primary" disabled={busy || !editable || conflict || !ack || !kind || !settings?.profile || Boolean(settings.profileIssue) || (override && !parseVatDraft(draft).success)} onClick={() => void save()}>Сохранить НДС источника</DmButton></div>
+    <div className={layout.actions}>{error || conflict ? <DmButton disabled={busy} onClick={() => void load()}>Повторить загрузку</DmButton> : null}<DmButton disabled={busy || dirty} onClick={onClose}>Другой источник</DmButton><DmButton appearance="primary" disabled={busy || !editable || conflict || !ack || !kind || !settings?.profile || Boolean(settings.profileIssue) || (override && !parseVatDraft(draft).success)} onClick={() => void save()}>Сохранить НДС источника</DmButton></div>
   </div>;
 }

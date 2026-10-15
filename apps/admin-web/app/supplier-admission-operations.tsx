@@ -33,9 +33,9 @@ export function SupplierAdmissionOperations() {
   };
   return <section className={styles.panel} id="agreements" aria-label="Договоры и допуск поставщиков">
     <h2>Договоры и допуск поставщиков</h2><p>Принятие договора и проверка поставщика — отдельные этапы. Для допуска проверьте организацию и полномочия представителя.</p>
-    <DmButton disabled={busy} onClick={() => void load()}>Обновить список</DmButton>
+
     {feedback ? <DmFeedback tone="success" title="Решение сохранено" description={feedback} /> : null}
-    {error ? <ErrorState description={error} /> : null}
+    {error ? <ErrorState description={error} action={<DmButton disabled={busy} onClick={() => void load()}>Повторить загрузку</DmButton>} /> : null}
     {loading ? <LoadingState label="Загружаем принятые договоры" /> : !items.length && !error ? <EmptyState title="Заявок пока нет" description="Поставщики появятся здесь после принятия опубликованных условий." /> : items.map((item) => <article key={item.id} className="mp-stack">
       <h3>{item.legalName} · БИН {item.bin}</h3>
       <div className="mp-inline-actions"><StatusTag tone="success">Договор принят</StatusTag><StatusTag tone={item.admissionStatus === "APPROVED" ? "success" : "warning"}>{labels[item.admissionStatus]}</StatusTag></div>

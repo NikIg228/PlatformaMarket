@@ -171,7 +171,7 @@ test("requisites errors retain drafts and retry keys; concurrent edits require a
   await page.getByRole("button", { name: "Изменить реквизиты", exact: true }).click(); await page.getByRole("textbox", { name: "Название банка", exact: true }).fill("Мой черновик");
   state.conflict = true; await page.getByRole("button", { name: "Сохранить черновик", exact: true }).click(); await expect(page.getByRole("region", { name: "Реквизиты организации", exact: true }).getByRole("alert")).toContainText("Реквизиты изменились");
   state.current.version = 2; state.current.current!.version = 2; state.current.current!.fields.bankAccounts[0].bankName = "Сохранено коллегой";
-  state.conflict = false; await page.getByRole("button", { name: "Обновить сохранённые данные", exact: true }).click();
+  state.conflict = false; await page.getByRole("button", { name: "Повторить загрузку", exact: true }).click();
   await expect(page.getByText("Есть более новая сохранённая версия", { exact: true })).toBeVisible(); await expect(page.getByRole("textbox", { name: "Название банка", exact: true })).toHaveValue("Мой черновик");
   await expect(page.getByRole("button", { name: "Сохранить черновик", exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "Продолжить с моим черновиком", exact: true }).click(); await page.getByRole("button", { name: "Сохранить черновик", exact: true }).click();

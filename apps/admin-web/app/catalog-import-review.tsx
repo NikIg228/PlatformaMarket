@@ -227,7 +227,7 @@ export function CatalogImportReviewQueue() {
           <h2 id="catalog-import-review-title">Проверка импорта перед публикацией</h2>
           <p>Сопоставьте строку поставщика с каноническим каталогом. До явного подтверждения предложение не появится у клиник.</p>
         </div>
-        <DmButton appearance="outline" onClick={() => { setLoading(true); void load(); }}>Обновить</DmButton>
+
       </div>
       {notice ? <DmFeedback tone="success" title="Очередь обновлена" description={notice} /> : null}
       {error ? (

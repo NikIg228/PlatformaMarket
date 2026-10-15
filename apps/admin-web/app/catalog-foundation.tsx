@@ -1,7 +1,7 @@
 "use client";
 
 import { Add20Regular } from "@fluentui/react-icons/svg/add";
-import { ArrowClockwise20Regular } from "@fluentui/react-icons/svg/arrow-clockwise";
+
 import {
   DmButton,
   DmFeedback,
@@ -193,15 +193,13 @@ export function CatalogFoundation() {
           <h2 id="catalog-foundation-title">Мастер-карточки и варианты</h2>
           <p>Создание и версионное управление canonical-данными PlatformaMarket.</p>
         </div>
-        <DmButton appearance="secondary" icon={<ArrowClockwise20Regular />} onClick={() => void load()} disabled={loading || working}>
-          {loading ? "Обновляем…" : "Обновить"}
-        </DmButton>
+
       </div>
 
       {feedback ? (
         <DmFeedback tone={feedback.tone} title={feedback.tone === "success" ? "Каталог обновлён" : "Действие не выполнено"} description={feedback.description} alert={feedback.tone === "danger"} />
       ) : null}
-      {loadError && hasLoaded ? <DmFeedback tone="danger" title="Не удалось обновить каталог" description={loadError} alert /> : null}
+      {loadError && hasLoaded ? <DmFeedback tone="danger" title="Не удалось обновить каталог" description={loadError} alert action={<DmButton onClick={() => void load()}>Повторить загрузку</DmButton>} /> : null}
 
       {loading && !hasLoaded ? (
         <LoadingState label="Загружаем данные каталога" />

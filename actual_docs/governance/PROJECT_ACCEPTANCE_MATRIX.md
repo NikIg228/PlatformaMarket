@@ -1,5 +1,15 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+15.10 — **Без ручного обновления: LOCAL PASS, публикация pending.**
+Постоянные refresh controls и время последней загрузки удалены из кабинетов;
+контекстный retry, automatic refresh и бизнес-команды сохранены. UI90,
+23 уникальных mock-browser сценария, scoped lint/types, UI contract и финальная
+isolated web build49routes PASS. Неуспешные попытки сохранены в
+[checkpoint](task-state/PRIMARY-SESSION.md). DB/full CI не запускались.
+Новые локальные operator modules и три untracked tests сохранены как WIP,
+не входят в собственную публикацию; рабочий UI исправлен также в них.
+
+
 15.10 — **Равные карточки и подчёркнутые категории: LOCAL PASS, публикация pending.**
 Карточки товаров равного размера; категории supplier/clinic/admin используют
 общие tab adapters без hover/selected заливки, с подчёркиванием как Settings.

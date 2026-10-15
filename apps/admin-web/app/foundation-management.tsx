@@ -39,6 +39,7 @@ export function FoundationManagement() {
   const [attributes, setAttributes] = useState<Attribute[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const notify = useToast();
 
   const request = useCallback(
@@ -54,7 +55,7 @@ export function FoundationManagement() {
   );
 
   const load = useCallback(async () => {
-    setLoading(true);
+    setLoading(true); setLoadFailed(false);
     try {
       const [roleData, membershipData, attributeData, categoryData, policy] =
         await Promise.all([
@@ -70,6 +71,7 @@ export function FoundationManagement() {
       setAttributes(attributeData);
       setCategories(categoryData);
     } catch {
+      setLoadFailed(true);
       notify("Не удалось загрузить управление. Повторите загрузку данных.", { tone: "error" });
     } finally {
       setLoading(false);
@@ -187,7 +189,7 @@ export function FoundationManagement() {
           <h2>Роли и справочники</h2>
           <p>Роли, участники и конфигурация динамических атрибутов.</p>
         </div>
-        <DmButton type="button" appearance="secondary" onClick={() => void load()}>Обновить данные</DmButton>
+
       </div>
       {loading ? (
         <div className={styles.loading} aria-label="Загрузка управления">
@@ -196,6 +198,7 @@ export function FoundationManagement() {
         </div>
       ) : (
         <div className={styles.grid}>
+          {loadFailed ? <DmButton disabled={loading} onClick={() => void load()}>Повторить загрузку данных</DmButton> : null}
           <div className={styles.panel}>
             <h3>Роли и участники</h3>
             {accessMode === "FULL_ACCESS" ? <p>Роли временно отключены. Активным сотрудникам доступны все функции своей организации.</p> : <>

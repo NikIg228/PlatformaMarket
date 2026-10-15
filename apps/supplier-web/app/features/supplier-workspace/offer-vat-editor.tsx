@@ -34,6 +34,6 @@ export function OfferVatEditor({ api, supplierId, initial, applyDefault = false,
     {applyDefault && settings.defaultTax && !settings.defaultIssue ? <p>Для нового предложения: {vatLabel(settings.defaultTax.selection)}. При необходимости измените режим этого товара.</p> : null}
     <VatFields value={draft} onChange={value => { setDraft(value); setAcknowledged(false); onDirty?.(); }} date={settings.date} profile={settings.profile} disabled={disabled || !settings.canEdit || !settings.profile || Boolean(settings.profileIssue)} />
     <DmCheckbox label="Подтверждаю применимость режима и ставки к этому товару" checked={acknowledged} disabled={disabled || !parseVatDraft(draft).success || !settings.profile || Boolean(settings.profileIssue)} onChange={(_, data) => setAcknowledged(data.checked === true)} />
-    <DmButton type="button" appearance="subtle" disabled={disabled} onClick={() => void load()}>Обновить налоговый профиль</DmButton>
+    {error || settings?.profileIssue ? <DmButton type="button" appearance="subtle" disabled={disabled} onClick={() => void load()}>Повторить загрузку</DmButton> : null}
   </section>;
 }

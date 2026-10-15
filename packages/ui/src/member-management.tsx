@@ -67,7 +67,7 @@ export function MemberManagement({ api, organizationId, actorId, permissions }: 
   if (!allowed) return <section className="mp-member-management"><h2>Сотрудники и доступ</h2><p>Управление сотрудниками доступно администратору организации.</p></section>;
   const assignable = data?.roles.filter(role => role.permissions.every(({ permission }) => permissions.includes(permission.code))) ?? [];
   return <section className="mp-member-management mp-stack" aria-label="Сотрудники и доступ">
-    <div className="mp-member-actions"><h2>Сотрудники и доступ</h2><DmButton disabled={busy || loading} onClick={() => { setError(null); void refresh(); }}>Обновить сотрудников</DmButton></div>
+    <div className="mp-member-actions"><h2>Сотрудники и доступ</h2></div>
     {fullAccess ? <p>Все активные сотрудники имеют полный доступ к функциям своей организации. Разделение по ролям временно отключено.</p> : null}
     {error ? <DmFeedback tone="danger" title="Действие не выполнено" description={error} alert /> : null}
     {notice ? <DmFeedback tone="success" title="Готово" description={notice} /> : null}

@@ -20,7 +20,7 @@ function NotificationList() {
   return <section className={styles.history} aria-label="История уведомлений">
     <div className={styles.toolbar}><DmTabList selectedValue={unreadOnly ? "unread" : "all"} onTabSelect={(_, value) => setUnreadOnly(value.value === "unread")} aria-label="Показать уведомления"><Tab value="all">Все</Tab><Tab value="unread">Непрочитанные{inbox.data?.unreadCount ? ` (${inbox.data.unreadCount})` : ""}</Tab></DmTabList>
       <div className={styles.category}><DmDropdown aria-label="Категория уведомлений" value={category ?? ""} onChange={(_, data) => setCategory(data.value ? data.value as NotificationInboxItem["category"] : undefined)}><option value="">Все категории</option>{Object.entries(notificationCategories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</DmDropdown></div>
-      <div className={styles.toolbarActions}><DmButton disabled={inbox.busy || !inbox.data?.unreadCount} onClick={() => void inbox.markRead()}>Прочитать все</DmButton><DmButton disabled={inbox.loading} onClick={() => void inbox.refresh()}>Обновить</DmButton></div>
+      <div className={styles.toolbarActions}><DmButton disabled={inbox.busy || !inbox.data?.unreadCount} onClick={() => void inbox.markRead()}>Прочитать все</DmButton></div>
     </div>
     <p className={styles.scope}>Общие уведомления отмечаются прочитанными для организации. Личные — только для вас. «Прочитать все» включает все категории и ранее загруженные события за пределами списка.</p>
     {inbox.error ? <ActionFeedback tone="error" description={inbox.error} action={<DmButton onClick={() => void inbox.refresh()}>Повторить</DmButton>} /> : null}

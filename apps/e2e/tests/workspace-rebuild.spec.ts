@@ -20,7 +20,7 @@ test("performance admin supplier loads once and preserves operations", async ({ 
   await page.getByRole("link", { name: "Загрузка товаров", exact: true }).click();
   const section = page.getByRole("region", { name: "Товары поставщика", exact: true });
   await expect(section.getByRole("heading", { name: "Партии и резервы", exact: true })).toBeVisible();
-  await expect(section.getByRole("button", { name: "Обновить", exact: true })).toBeEnabled();
+  await expect(section.getByRole("button", { name: "Обновить", exact: true })).toHaveCount(0);
   const measurements = Object.fromEntries([...new Set(reads)].map(path => [path, reads.filter(item => item === path).length]));
   const output = testInfo.outputPath("admin-requests.json");
   await writeFile(output, JSON.stringify(measurements, null, 2));
@@ -570,13 +570,13 @@ for (const width of [1440, 390]) test(`A08 orders retain data offline, deduplica
   await expect(page.getByRole("textbox", { name: "Поиск заказа" })).toHaveValue("A08");
   fail = true;
   await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-  await expect(page.getByText(/Не удалось обновить данные/)).toBeVisible();
+  await expect(page.getByText(/Не удалось загрузить данные/)).toBeVisible();
   await expect(page.getByRole("link", { name: "A08-2", exact: true })).toBeVisible();
   fail = false; version = 3; release = () => {};
   const before = count;
   await page.evaluate(() => { for (let i = 0; i < 5; i++) window.dispatchEvent(new Event("focus")); });
   await expect.poll(() => count).toBe(before + 1);
-  await expect(page.getByText(/Обновляем данные/)).toBeVisible();
+  await expect(page.getByText(/Обновляем данные|Данные обновлены/)).toHaveCount(0);
   await expect(page.getByRole("link", { name: "A08-2", exact: true })).toBeVisible();
   release!(); release = undefined;
   await expect(page.getByRole("link", { name: "A08-3", exact: true })).toBeVisible();
@@ -1052,7 +1052,7 @@ test("orders-ux notification recovery, filters and arrivals preserve reading pos
   await expect(history.getByRole("heading", { name: newer.title })).toHaveCount(0);
   await history.getByRole("button", { name: "Есть новые уведомления — показать" }).click();
   await expect(history.getByRole("heading", { name: newer.title })).toBeVisible();
-  state.setFailure(true); await history.getByRole("button", { name: "Обновить", exact: true }).click();
+  state.setFailure(true); await page.evaluate(() => window.dispatchEvent(new Event("focus")));
   await expect(page.locator('.dm-save-toast[role="alert"]')).toContainText("Сервис временно недоступен");
   await expect(history.getByRole("article")).toHaveCount(10);
   state.setFailure(false); await history.getByRole("button", { name: "Повторить", exact: true }).click();

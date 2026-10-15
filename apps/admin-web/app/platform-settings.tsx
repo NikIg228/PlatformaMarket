@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowClockwise20Regular } from "@fluentui/react-icons/svg/arrow-clockwise";
 import { Settings20Regular } from "@fluentui/react-icons/svg/settings";
 import {
   DmButton,
@@ -112,14 +111,7 @@ export function PlatformSettings({
             scope.
           </p>
         </div>
-        <DmButton
-          appearance="secondary"
-          icon={<ArrowClockwise20Regular />}
-          onClick={() => void load()}
-          disabled={loading}
-        >
-          {loading ? "Проверяем…" : "Обновить"}
-        </DmButton>
+
       </div>
 
       {error && hasLoaded ? (

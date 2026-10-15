@@ -74,7 +74,7 @@ for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const)
     await invitePage.screenshot({ path: test.info().outputPath(`accepted-${width}.png`) });
     const member = management.getByRole("article", { name: email, exact: true });
     if (operator) {
-      await management.getByRole("button", { name: "Обновить сотрудников" }).click();
+      await page.reload();
       await expect(member.getByText("Доступ открыт", { exact: true })).toBeVisible();
     }
     const added = await db.user.findUniqueOrThrow({ where: { email } });

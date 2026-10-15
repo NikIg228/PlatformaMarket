@@ -136,7 +136,7 @@ test("assignment loader retries a failed chunk without losing its selected task"
 test("assignment ignores Escape while saving and closes after a recoverable error", async ({page},info) => {
   const {opener,unexpected}=await assignmentPage(page);
   await page.route("**/api/access-control/permissions",route=>route.fulfill({json:["support.ticket.view","support.ticket.manage"]}));
-  await page.getByRole("region",{name:"Операционная очередь"}).getByRole("button",{name:"Обновить",exact:true}).click();
+  await page.reload(); await expect(page.getByRole("region",{name:"Операционная очередь"})).toBeVisible();
   let release!:()=>void;let saving=false;
   const pending=new Promise<void>(resolve=>{release=resolve;});
   await page.route("**/api/operations/work-queue/*/*/assignment",async route=>{

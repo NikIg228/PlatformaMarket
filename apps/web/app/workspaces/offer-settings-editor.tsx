@@ -33,7 +33,7 @@ export function OfferSettingsEditor(props: OfferEditorProps & { mode: "packaging
   const ready = Boolean(current.packaging && current.prices.some(item => item.status === "ACTIVE") && !attention.priceWarning && !attention.stockWarning);
   return <div className={styles.form}>
     {loading ? <p role="status">Загружаем условия предложения…</p> : null}{error ? <ErrorState description={error} /> : null}
-    {error || mustRefresh ? <DmButton disabled={loading || busy} onClick={() => setAttempt(value => value + 1)}>Обновить условия предложения</DmButton> : null}
+    {error || mustRefresh ? <DmButton disabled={loading || busy} onClick={() => setAttempt(value => value + 1)}>Повторить загрузку</DmButton> : null}
     {!loading && loaded ? <>{packaging ? <>
       <dl className={styles.readOnly}><div><dt>Артикул поставщика</dt><dd>{current.supplierSku ?? "Не указан"}</dd></div><div><dt>Единица продажи</dt><dd>{current.saleUnit?.nameRu ?? "Не указана"}</dd></div><div><dt>Минимальный заказ</dt><dd>{current.minimumOrderQuantity} {current.saleUnit?.symbol}</dd></div><div><dt>Шаг заказа</dt><dd>{current.orderIncrement} {current.saleUnit?.symbol}</dd></div></dl>
       {current.packaging ? <div className={styles.summary}><strong>{current.packaging.name}</strong><p>{current.packaging.quantityInBaseUnit} {current.packaging.unit.symbol}</p><p>Упаковка уже назначена. Для изменения обратитесь к оператору каталога.</p></div> : packs.length ? <>

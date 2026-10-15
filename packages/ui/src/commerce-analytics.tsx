@@ -43,7 +43,7 @@ export function CommerceAnalytics({ load, orderHref, operator = false }: Props) 
       <DmField label="По дату включительно"><DmInput type="date" value={through} onChange={(_, value) => filter(() => setThrough(value.value))} /></DmField>
       <DmField label="Часовой пояс"><DmSelect value={timezone} onChange={event => filter(() => setTimezone(event.target.value as typeof timezone))}><option value="Asia/Qyzylorda">Кызылорда (UTC+5)</option><option value="UTC">UTC</option></DmSelect></DmField>
       <DmField label="Набор данных"><DmSelect value={dataset} onChange={event => filter(() => setDataset(event.target.value as typeof dataset))}>{Object.entries(datasets).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</DmSelect></DmField>
-      <DmButton disabled={loading || !parsed.success} onClick={() => setRevision(value => value + 1)}>Обновить аналитику</DmButton>
+
       {organizationId ? <DmButton onClick={() => filter(() => setOrganizationId(undefined))}>Все организации</DmButton> : null}
     </div>
     {!parsed.success ? <p role="alert">Выберите даты: окончание не раньше начала, период — не больше 93 дней.</p> : null}
@@ -53,7 +53,7 @@ export function CommerceAnalytics({ load, orderHref, operator = false }: Props) 
       <p>События за выбранный период · {datasets[data.dataset]} · KZT. Комиссия 10% с полученного товара после скидок, с корректировкой возвратов. Оборот не является доходом площадки.</p>
       <Summary value={data.totals} />
       <p>Повторные покупатели после исполнения за 30 / 60 дней: <strong>{data.repeatBuyers30Days} / {data.repeatBuyers60Days}</strong>. Просроченные поставки сейчас: <strong>{data.overdueShipmentsAsOfNow}</strong>.</p>
-      <p role="note">{data.coverage.note} Заказов периода без событий оформления: {data.coverage.untrackedOrdersInPeriod}. Обновлено {new Intl.DateTimeFormat("ru-KZ", { dateStyle: "short", timeStyle: "short", timeZone: data.period.timezone }).format(new Date(data.generatedAt))}.</p>
+      <p role="note">{data.coverage.note} Заказов периода без событий оформления: {data.coverage.untrackedOrdersInPeriod}.</p>
       <div><h3>Организации</h3><p>Одна сделка видна у обеих сторон. Строки сторон не суммируются повторно в общий оборот.</p>
         <div style={{ overflowX: "auto" }} tabIndex={0} role="region" aria-label="Оборот организаций"><table style={{ width: "100%", borderSpacing: "12px 10px" }}><thead><tr><th scope="col">Организация</th><th scope="col">Сторона</th><th scope="col">Создано товаров</th><th scope="col">Получение минус возвраты</th><th scope="col">Комиссия</th></tr></thead><tbody>
           {data.organizations.map(row => <tr key={`${row.organizationId}:${row.side}`}><th scope="row">{operator ? <DmButton appearance="subtle" onClick={() => filter(() => setOrganizationId(row.organizationId))}>{row.name}</DmButton> : row.name}</th><td>{row.side === "BUYER" ? "Покупатель" : "Поставщик"}</td><td>{formatMoney(row.totals.createdGoodsMinor, "KZT")}</td><td>{formatMoney(row.totals.netReceivedGoodsMinor, "KZT")}</td><td>{formatMoney(row.totals.accruedCommissionMinor, "KZT")}</td></tr>)}

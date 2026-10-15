@@ -6,6 +6,71 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 15.10 — убрать ручное обновление и время загрузки: LOCAL PASS, публикация pending
+
+Запрос владельца: убрать refresh-кнопки (текст/иконки) и статусы времени
+обновления со всех client/supplier/admin страниц. HEAD e854799/main.
+План: удалить штатные ручные GET-refresh controls и декоративные timestamps,
+в shared компонентах и отдельных страницах; сохранить automatic refresh,
+пагинацию, бизнес-команды (изменение остатков/цен), recovery после ошибок/409.
+Recovery — контекстный «Повторить», без постоянного refresh в toolbar.
+Риск: потеря recovery и пустые toolbar после удаления. Паспорт: текущие
+DmButton/ResourceStatus/headers, Manrope14,44px, действующие два JSON;
+новые параметры не вводятся. До исправления сверены текущие screenshots
+предыдущей задачи (товары/заказы/документы/admin), код и consumers.
+Проверки: scoped lint/types, focused UI tests; browser mock desktop/mobile
+на представителях трёх ролей, сохранность retry/filter/pagination;
+изолированная web build/types один раз, diff hygiene и selective publish
+[skip ci] по действующему запрету полного CI. Без DB writes.
+Baseline .tmp/remove-refresh/baseline.json; чужой WIP сохранять, новые чужие
+файлы не публиковать целиком в этом change set.
+
+Результат: удалены постоянные refresh-кнопки и timestamps загрузки из общих
+документов/сообщений/аналитики/сотрудников, кабинетов и legacy entry points.
+ResourceStatus показывает только ошибку/офлайн без времени; автоматическая
+загрузка, фильтры, пагинация и бизнес-команды сохранены. Recovery доступен
+только в контексте ошибки/конфликта. После удаления позиции корзины фокус
+переносится на заголовок; retry сохраняет черновик количества.
+
+Проверки (mock API на dev3000, БД не изменялась):
+- npm run typecheck --workspace @marketplace/ui — PASS;
+  npx --no-install tsc -p apps/web/tsconfig.json --noEmit — PASS на финальном коде;
+  npx --no-install tsc -p apps/e2e/tsconfig.json --noEmit — PASS.
+- npm run test --workspace @marketplace/ui — 18 файлов, 90 tests PASS.
+- scoped ESLint собственных TS/TSX (lint-2.log + lint-final.log) — PASS.
+- npm run verify:ui-contract — PASS, 386 файлов; финальный повтор PASS.
+- playwright --config apps/e2e/playwright.workspaces.config.ts, grep
+  'orders-ux notification recovery|profile-edit errors|profile-edit address conflict|VAT settings ERP save keyboard and recovery'
+  — 5/5 PASS (recovery-1.log).
+- playwright --config .tmp/remove-refresh/visual.config.ts — 8/8 PASS,
+  desktop1440/mobile390, supplier/clinic/admin, отсутствие refresh/time,
+  computed styles/keyboard/overflow и просмотр screenshots. Попытка1 прервана
+  после ошибок JSX при добавлении recovery в foundation; после исправления
+  попытка2 PASS (visual-1.log/visual-2.log).
+- playwright --config .tmp/remove-refresh/flows.config.ts, selected9 —
+  сначала4 PASS/5 FAIL из-за устаревших expectations и fixtures (session/profile);
+  обновлены только тесты под удалённые controls/статусы, текущую сессию и профиль.
+  Повтор пяти затронутых сценариев PASS (flows-1.log/flows-2.log).
+  Подтверждены automatic order reconnect/focus, operator queue, retry/access denial,
+  организация и shared-control screenshots двух размеров.
+- playwright --config .tmp/remove-refresh/cart.config.ts — 2/2 PASS:
+  retry сохраняет ввод и получает текущий snapshot, удаление переносит focus.
+  Попытка1: неверный mock GET endpoint; попытка2: промежуточный JSX;
+  после исправления fixture/JSX и parse/typecheck попытка3 PASS (cart-1..3.log).
+  Итого23 уникальных browser-сценария PASS; profile address повторён в двух наборах.
+- node .tmp/remove-refresh/build-web.mjs — финальный PASS, pilot isolated dist,
+  web types и49 routes. Попытка1 PASS до последнего focus fix; попытка2 FAIL
+  на промежуточном JSX; попытка3 PASS после parse/typecheck (build-run-1/2/3,
+  первый лог build-run.log). next-env восстановлен. Полный CI не запускать.
+
+Evidence и baseline: .tmp/remove-refresh; screenshots output/playwright/remove-refresh-*.
+Source hashes — final-inputs.json. Проверки относятся к рабочему дереву с сохранённым
+предыдущим WIP. Commit включает только собственные изменения относительно HEAD.
+Удаление refresh из нового локального operator-organizations.tsx и нового варианта
+LiveMetrics остаётся с неопубликованной реализацией владельца; её целиком не staging.
+Адаптация трёх ранее untracked operator tests также остаётся локальной.
+Новые backend/projection модули не публиковались; это не приёмка их готовности.
+
 ### 15.10 — равные карточки действий и подчёркнутые категории: LOCAL PASS, публикация pending
 
 Запрос: анализ и исправление сжатых backgrounds ProductActions; одинаковый размер

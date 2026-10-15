@@ -136,7 +136,7 @@ function OrderWorkflowSession({ hideHeading = false, orderId, organizationId, ap
   return <div className="dm-order-detail">
     <header className="dm-order-identity"><a href={backHref}>{backLabel}</a><div>{hideHeading ? <h2>Заказ № {data.order.orderNumber}</h2> : <h1>Заказ № {data.order.orderNumber}</h1>}<span>{supplier ? data.order.buyer?.displayName ?? "Клиника" : data.order.supplier?.displayName ?? "Поставщик"}{data.order.createdAt ? ` · ${formatDate(data.order.createdAt)}` : ""}</span><strong className="dm-order-identity-total">{formatMoney(data.order.subtotalAmountMinor, data.order.currency)}</strong></div></header>
     {readError ? <DmFeedback tone="warning" title="Не удалось обновить заказ" description={readError} action={<DmButton disabled={busy} onClick={() => void refresh()}>Повторить загрузку</DmButton>} /> : null}
-    {error ? <DmFeedback tone="danger" title="Требуется внимание" description={error} action={<DmButton disabled={busy} onClick={() => void refresh()}>Обновить условия</DmButton>} /> : null}
+    {error ? <DmFeedback tone="danger" title="Требуется внимание" description={error} action={<DmButton disabled={busy} onClick={() => void refresh()}>Повторить загрузку</DmButton>} /> : null}
     {notice ? <DmFeedback tone="success" title="Готово" description={notice} /> : null}
     <OrderDetailOverview data={data} supplier={supplier} onTab={selectTab} confirmation={renderConfirmation?.(data, refresh)} conversation={conversation} />
     <Suspense fallback={null}><OrderPromotionSummary data={data} /></Suspense>

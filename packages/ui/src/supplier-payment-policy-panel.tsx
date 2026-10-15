@@ -50,7 +50,7 @@ export function SupplierPaymentPolicyPanel({ api, onSaved }: { api: PaymentPolic
     <p>Настройка общая для заказов поставщика. Напоминание основному сотруднику — через 15 рабочих минут, резервному — через 30, обращение в поддержку — через 60. Укажите фактический график, включая перерывы.</p>
     {error ? <DmFeedback tone="danger" title="Настройки не сохранены" description={error} /> : null}
     {notice ? <DmFeedback tone="success" title="Готово" description={notice} /> : null}
-    <DmButton disabled={busy} onClick={() => void load()}>{busy ? "Загрузка…" : state ? "Обновить версию настроек, сохранив ввод" : "Открыть настройки проверки"}</DmButton>
+    {!state || error ? <DmButton disabled={busy} onClick={() => void load()}>{busy ? "Загрузка…" : state ? "Повторить загрузку настроек" : "Открыть настройки проверки"}</DmButton> : null}
     {state && draft ? <div style={{ display: "grid", gap: "var(--dm-space-3)" }}>
       {state.eligibleMembers.length < 2 ? <DmFeedback tone="warning" title="Нужны два ответственных сотрудника" description="Назначьте двум активным сотрудникам право подтверждения переводов в настройках организации." /> : null}
       <DmField label="Основной ответственный"><DmSelect value={draft.primaryUserId} disabled={busy} onChange={(_, d) => setDraft({ ...draft, primaryUserId: d.value })}><option value="">Выберите сотрудника</option>{state.eligibleMembers.map(member => <option key={member.userId} value={member.userId}>{member.displayName}</option>)}</DmSelect></DmField>

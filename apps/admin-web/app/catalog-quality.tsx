@@ -87,9 +87,7 @@ export function CatalogQuality() {
             Структурные пропуски и запросы клиник без результата
           </span>
         </div>
-        <DmButton appearance="secondary" onClick={() => void load()} disabled={busy}>
-          {busy ? "Проверяем…" : "Обновить"}
-        </DmButton>
+
       </div>
 
       {error && quality ? (
@@ -97,6 +95,7 @@ export function CatalogQuality() {
           tone="warning"
           title="Не удалось обновить отчёт"
           description={`${error}. Ниже показаны последние успешно загруженные данные.`}
+          action={<DmButton onClick={() => void load()}>Повторить загрузку</DmButton>}
         />
       ) : null}
       {error && !quality ? (

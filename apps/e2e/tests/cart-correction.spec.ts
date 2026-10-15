@@ -56,7 +56,7 @@ async function evidence(index: number, name: string) {
 test('desktop explicit correction preserves price diff and requires fresh acceptance', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const entry = await open(page, 1), quantity = page.getByRole('textbox', { name: `Количество: ${entry.name}`, exact: true });
-  await fixture('price-stock', 1); await page.getByRole('button', { name: 'Обновить корзину', exact: true }).click();
+  await fixture('price-stock', 1); await page.evaluate(() => window.dispatchEvent(new Event('focus')));
   await expect(page.getByRole('button', { name: 'Оформить заказ', exact: true })).toBeDisabled();
   await expect(quantity).toHaveValue('4');
   await quantity.fill('2');
@@ -94,14 +94,14 @@ test('mobile validation, keyboard help, unavailable removal and empty state', as
   await page.screenshot({ path: test.info().outputPath('buyer-cart-invalid-mobile-390.png'), fullPage: true });
   await page.getByRole('button', { name: 'Отменить ввод', exact: true }).click();
   await expect(quantity).toHaveValue('4'); await expect(quantity).toBeFocused();
-  await fixture('unavailable', 2); await page.getByRole('button', { name: 'Обновить корзину', exact: true }).click();
+  await fixture('unavailable', 2); await page.evaluate(() => window.dispatchEvent(new Event('focus')));
   await expect(page.getByRole('button', { name: 'Удалить позицию', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Удалить позицию', exact: true }).click();
   await page.getByRole('button', { name: 'Оставить', exact: true }).click(); expect((await evidence(2, 'cancel-delete')).items).toHaveLength(1);
   await page.getByRole('button', { name: 'Удалить позицию', exact: true }).click();
   await page.getByRole('button', { name: 'Да, удалить', exact: true }).click();
   await expect(page.getByText('Корзина пока пуста', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Обновить корзину', exact: true })).toBeFocused();
+  await expect(page.getByRole('heading', { name: 'Корзина', exact: true })).toBeFocused();
   const empty = await evidence(2, 'unavailable-last-line-removed'); expect(empty.items).toEqual([]); expect(empty.removals).toBe(1); expect(empty.status).toBe('ACTIVE');
   await page.screenshot({ path: test.info().outputPath('buyer-cart-empty-mobile-390.png') });
 });
@@ -113,7 +113,7 @@ test('real concurrent edit retains draft; simulated lost response reconciles wit
   await expect(page.getByRole('alert').filter({ hasText: 'Корзина изменилась' })).toBeVisible(); await expect(quantity).toHaveValue('2');
   expect((await evidence(3, 'actual-409')).items[0].quantity).toBe('3');
   await page.screenshot({ path: test.info().outputPath('buyer-cart-concurrent-conflict-desktop-1440.png'), fullPage: true });
-  await page.getByRole('button', { name: 'Обновить корзину', exact: true }).click();
+  await page.getByRole('button', { name: 'Повторить проверку корзины', exact: true }).click();
   await expect(page.getByText('Сохранено: 3', { exact: true })).toBeVisible(); await expect(quantity).toHaveValue('2');
   await expect(page.getByRole('button', { name: 'Сохранить количество', exact: true })).toBeEnabled();
   // Deliberate transport simulation AFTER an actual API commit. Not a real backend outage.
@@ -122,7 +122,7 @@ test('real concurrent edit retains draft; simulated lost response reconciles wit
   await page.getByRole('button', { name: 'Сохранить количество', exact: true }).click();
   await expect(page.getByRole('alert').filter({ hasText: 'Сервер не подтвердил изменение' })).toBeVisible(); await expect(quantity).toHaveValue('2');
   expect((await evidence(3, 'simulated-lost-response-real-commit')).edits).toBe(2);
-  await page.getByRole('button', { name: 'Обновить корзину', exact: true }).click();
+  await page.getByRole('button', { name: 'Повторить проверку корзины', exact: true }).click();
   await expect(page.getByText('Сохранено: 2', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Сохранить количество', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Сохранить количество', exact: true }).click();
@@ -132,7 +132,7 @@ test('real concurrent edit retains draft; simulated lost response reconciles wit
   await quantity.fill('5'); await fixture('concurrent-checkout', 3);
   await page.getByRole('button', { name: 'Сохранить количество', exact: true }).click();
   await expect(page.getByRole('alert').filter({ hasText: 'Корзина изменилась' })).toBeVisible();
-  await page.getByRole('button', { name: 'Обновить корзину', exact: true }).click();
+  await page.getByRole('button', { name: 'Повторить проверку корзины', exact: true }).click();
   await expect(page.getByRole('alert').filter({ hasText: 'Несохранённое количество: 5' })).toBeVisible();
   expect(await fixture('order-readback', 3)).toEqual([{ quantity: '2', price: '100000' }]);
 });

@@ -99,7 +99,7 @@ function RequisitesEditor({ initial, onDirtyChange }: { initial: OrganizationReq
   }
   const organizationLink = <Link href={`/${role}/settings`} {...dmLinkButtonProps({ appearance: "secondary" })}>Контакты и адреса организации<ArrowRight20Regular aria-hidden="true" /></Link>;
   const issues = saved.readiness.issues.filter(issue => issue.code !== "UNCONFIRMED");
-  const problem = error ? <DmFeedback tone="danger" presentation="note" alert title="Действие не завершено" description={error} action={!confirmOpen ? <DmButton disabled={busy} onClick={() => void reload()}>Обновить сохранённые данные</DmButton> : undefined} /> : null;
+  const problem = error ? <DmFeedback tone="danger" presentation="note" alert title="Действие не завершено" description={error} action={!confirmOpen ? <DmButton disabled={busy} onClick={() => void reload()}>Повторить загрузку</DmButton> : undefined} /> : null;
   return <div className={`${styles.page} ${layout.page}`}>
     <DmSurface className={styles.card} role="region" aria-label="Реквизиты организации">
       <div className={styles.toolbar}><DmHeading inline title="Реквизиты для документов" description="Общие данные используются в документах вашей организации. Изменения сохраняются новой версией." />{!editing && editable ? <DmButton disabled={busy || refreshRequired} onClick={beginEdit}>Изменить реквизиты</DmButton> : null}</div>

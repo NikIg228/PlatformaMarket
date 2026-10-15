@@ -15,7 +15,7 @@ import { readMarketplaceCatalog, marketplaceCatalogUrl } from "./catalog/marketp
 import { Spinner } from "@fluentui/react-components";
 import { DmButton as Button, DmCheckbox as Checkbox, DmField as Field, DmInput as Input, DmSelect as Select } from "@marketplace/ui/controls";
 import { Alert24Regular } from "@fluentui/react-icons/svg/alert";
-import { ArrowSync24Regular } from "@fluentui/react-icons/svg/arrow-sync";
+
 import { Cart24Regular } from "@fluentui/react-icons/svg/cart";
 import { ClipboardTaskListLtr24Regular } from "@fluentui/react-icons/svg/clipboard-task-list-ltr";
 import { Dismiss24Regular } from "@fluentui/react-icons/svg/dismiss";
@@ -114,7 +114,6 @@ const ruCount = (count: number, one: string, few: string, many: string) => {
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
   return many;
 };
-
 
 const bestPromotionPercent = (product: SearchProduct) =>
   frontendFeatures.promotions ? product.offers.reduce(
@@ -316,7 +315,6 @@ export default function BuyerWorkspace({
     {},
   );
   const [submittedReviews, setSubmittedReviews] = useState<string[]>([]);
-
 
   const activeCart = carts.find((cart) => cart.status === "ACTIVE") ?? null;
   const buyerOrders = orders.filter(
@@ -1234,7 +1232,6 @@ export default function BuyerWorkspace({
     />
   );
 
-
   const renderDocuments = () => (
     <div className="mp-stack">
       <PageHeader
@@ -1416,12 +1413,7 @@ export default function BuyerWorkspace({
         handoff ? (
           <>
             <BuyerServicesMenu onNavigate={setActive} />
-            <Button
-              appearance="subtle"
-              icon={<ArrowSync24Regular />}
-              onClick={() => void refresh()}
-              aria-label="Обновить данные"
-            />
+
           </>
         ) : (
           <Button

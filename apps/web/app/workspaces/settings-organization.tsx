@@ -126,6 +126,6 @@ function OrganizationEditor({ initial, cities, onDirtyChange }: { initial: Organ
     </DmSurface>
     {!editable ? <DmFeedback tone="warning" title="Настройки доступны только для просмотра" description="Изменить их может сотрудник с правом управления организацией." /> : null}
     {!cities.length ? <DmFeedback tone="warning" title="Справочник городов пока пуст" description="Обратитесь в поддержку, чтобы заполнить адрес организации." /> : null}
-    {error ? <DmFeedback tone="danger" title="Изменения не сохранены" description={error} alert action={<DmButton disabled={busy} onClick={() => void reload()}>Обновить сохранённые данные</DmButton>} /> : null}
+    {error ? <DmFeedback tone="danger" title="Изменения не сохранены" description={error} alert action={<DmButton disabled={busy} onClick={() => void reload()}>Повторить загрузку</DmButton>} /> : null}
   </div>;
 }

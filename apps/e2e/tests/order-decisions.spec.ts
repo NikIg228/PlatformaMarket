@@ -140,16 +140,16 @@ test('real conflicting supplier decision returns 409 without losing the local dr
  expect(await readback(index,'conflict')).toMatchObject({status:'CONFIRMED',total:'50004',audit:1,outbox:1,reserved:'4'});
 });
 
-test('explicitly simulated new snapshot blocks stale draft until an explicit restart',async({page})=>{
+test('browser reload starts a closed decision from the current snapshot',async({page})=>{
  const index=5,entry=await fixture<Entry>('create',{index});await openRole(page,'supplier',entry.supplierHandoff);
  const trigger=row(page,entry).getByRole('button',{name:'Проверить и подтвердить',exact:true});await trigger.click();
  const dialog=page.getByRole('dialog'),quantity=dialog.getByRole('spinbutton',{name:`Подтверждаемое количество: ${entry.name}`,exact:true});
  await quantity.fill('2');await dialog.getByRole('textbox',{name:`Причина изменения: ${entry.name}`,exact:true}).fill('Черновик старой версии');await page.keyboard.press('Escape');
  await page.route('**/supplier-orders',async route=>{const response=await route.fetch();const rows=await response.json();await route.fulfill({response,json:rows.map((order:{id:string;version:number})=>order.id===entry.orderId?{...order,version:order.version+1}:order)});},{times:1});
- await page.getByRole('button',{name:'Обновить данные',exact:true}).click();await expect(page.getByRole('button',{name:'Обновить данные',exact:true})).toBeEnabled();
- await trigger.click();await expect(dialog).toContainText('Заказ обновился');await expect(quantity).toHaveValue('2');await expect(quantity).toBeDisabled();await expect(dialog.getByRole('button',{name:'Подтвердить заказ',exact:true})).toBeDisabled();
+ await page.reload();
+ await trigger.click();await expect(quantity).toHaveValue('4');await expect(quantity).toBeEnabled();await expect(dialog.getByRole('button',{name:'Подтвердить заказ',exact:true})).toBeEnabled();
  await expect(dialog).toHaveCSS('opacity','1');await page.screenshot({path:test.info().outputPath('simulated-new-snapshot-stale-draft.png'),animations:'disabled'});
- await dialog.getByRole('button',{name:'Начать заново по актуальному заказу',exact:true}).click();await expect(quantity).toHaveValue('4');await expect(quantity).toBeEnabled();
+ await expect(dialog.getByRole('button',{name:'Начать заново по актуальному заказу',exact:true})).toHaveCount(0);
  await expect(dialog).not.toContainText('Заказ обновился');await expect(dialog.getByRole('button',{name:'Подтвердить заказ',exact:true})).toBeEnabled();
  await dialog.getByRole('button',{name:'Закрыть окно',exact:true}).click();await expect(dialog).toBeHidden();await expect(trigger).toBeFocused();
  expect(await readback(index,'simulated-snapshot-no-write')).toMatchObject({status:'AWAITING_CONFIRMATION',version:1,audit:0,outbox:0});

@@ -1,4 +1,4 @@
-import { StatusTag, formatDate, formatStatus } from "@marketplace/ui";
+import { StatusTag, formatStatus } from "@marketplace/ui";
 import styles from "./order-shipments.module.css";
 
 export type BuyerShipment = {
@@ -29,7 +29,7 @@ export function OrderShipments({ shipments }: { shipments: BuyerShipment[] }) {
             <div>
               <strong>{shipment.shipmentNumber}</strong>
               <p>{shipment.warehouse?.name ?? "Склад"} · {shipment.carrierName || "перевозчик уточняется"}{shipment.trackingNumber ? ` · трек ${shipment.trackingNumber}` : ""}</p>
-              <small>Обновлено {formatDate(shipment.updatedAt, true)}</small>
+
             </div>
             <StatusTag tone={tone(shipment.status)}>{formatStatus(shipment.status)}</StatusTag>
           </article>

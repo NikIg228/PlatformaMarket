@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowClockwise20Regular } from "@fluentui/react-icons/svg/arrow-clockwise";
 import { CheckmarkCircle20Regular } from "@fluentui/react-icons/svg/checkmark-circle";
 import { ShieldError20Regular } from "@fluentui/react-icons/svg/shield-error";
 import { MarketplaceApiClient } from "@marketplace/api-client";
@@ -199,14 +198,7 @@ export function TrustOperations() {
             контуре.
           </p>
         </div>
-        <DmButton
-          appearance="secondary"
-          icon={<ArrowClockwise20Regular />}
-          onClick={() => void load()}
-          disabled={loading || busy !== null}
-        >
-          {loading ? "Обновляем…" : "Обновить"}
-        </DmButton>
+
       </div>
 
       {feedback ? (
@@ -222,6 +214,7 @@ export function TrustOperations() {
           tone="danger"
           title="Не удалось обновить раздел"
           description={loadError}
+          action={<DmButton onClick={() => void load()}>Повторить загрузку</DmButton>}
           alert
         />
       ) : null}

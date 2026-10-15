@@ -47,8 +47,8 @@ export function SupplierTermsPanel({ apiContext }: { apiContext: ApiContext }) {
         {state.acceptance.reviewReason ? <p>Решение оператора: {state.acceptance.reviewReason}</p> : null}
         <DmButton disabled={busy} onClick={() => void download()}>Скачать принятые условия</DmButton>
       </div> : null}
-      {error ? <DmFeedback tone="danger" title="Действие не выполнено" description={error} alert /> : null}
-      <DmButton appearance="secondary" disabled={busy} onClick={() => void load()}>Обновить статус</DmButton>
+      {error ? <DmFeedback tone="danger" title="Действие не выполнено" description={error} alert action={<DmButton disabled={busy} onClick={() => void load()}>Повторить загрузку</DmButton>} /> : null}
+
       {!state.contractAccepted ? <AcceptanceForm key={`${apiContext.organizationId}:${state.organization.version}:${state.bundle.hash}`} state={state} busy={busy} onAccept={async (viewed, authority) => {
         setBusy(true); setError(null);
         try {

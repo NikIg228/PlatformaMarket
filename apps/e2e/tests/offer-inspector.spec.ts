@@ -164,7 +164,7 @@ test("publication read failure cannot publish stale data and role denial stays v
   await page.goto("/supplier/products"); await page.getByRole("button", { name: "Композит для реставрации", exact: true }).click();
   let fail = true; await page.route(`**/api/workspaces/supplier/offers/${offerId}`, route => route.fulfill(fail ? { status: 503, json: { message: "Нет актуальных условий" } } : { json: state.offer }));
   await page.getByRole("button", { name: "Действия с предложением" }).click(); await page.getByRole("menuitem", { name: "Публикация", exact: true }).click(); await expect(page.getByText("Нет актуальных условий")).toBeVisible();
-  expect(state.writes).toEqual([]); fail = false; await page.getByRole("button", { name: "Обновить условия предложения" }).click(); await expect(page.getByText("Публикация недоступна вашей роли или источнику предложения.")).toBeVisible(); await expect(page.getByRole("button", { name: "Опубликовать предложение" })).toBeDisabled();
+  expect(state.writes).toEqual([]); fail = false; await page.getByRole("button", { name: "Повторить загрузку" }).click(); await expect(page.getByText("Публикация недоступна вашей роли или источнику предложения.")).toBeVisible(); await expect(page.getByRole("button", { name: "Опубликовать предложение" })).toBeDisabled();
 });
 
 test("delivery uncertain result preserves input for explicit comparison", async ({ page }) => {

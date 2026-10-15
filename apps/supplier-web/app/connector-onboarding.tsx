@@ -1,11 +1,11 @@
 "use client";
 
 import { ProgressBar, Spinner } from "@fluentui/react-components";
-import { ArrowClockwise20Regular } from "@fluentui/react-icons/svg/arrow-clockwise";
+
 import { CheckmarkCircle20Regular } from "@fluentui/react-icons/svg/checkmark-circle";
 import { Circle20Regular } from "@fluentui/react-icons/svg/circle";
 import { MarketplaceApiClient, type ApiContext } from "@marketplace/api-client";
-import { DmButton as Button } from "@marketplace/ui";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./connector-onboarding.module.css";
 
@@ -19,5 +19,5 @@ export function ConnectorOnboarding({ supplierId, apiContext }: { supplierId: st
   if (error) return <div className={styles.error}>{error}</div>;
   if (!data) return <div className={styles.loading}><Spinner size="tiny" /> Проверяем подключение…</div>;
   const target = data.channel ? data.timeTargets[data.channel] : null;
-  return <section className={styles.panel} aria-labelledby="connector-wizard-title"><header><div><p>Подготовка к продажам</p><h2 id="connector-wizard-title">Готово {data.completedSteps} из {data.totalSteps}</h2><small>{data.channel ? `Способ загрузки: ${data.channel}` : "Выберите способ загрузки товаров"}{target ? `. Срок: ${target}` : ""}</small></div><div className={styles.percent}><strong>{data.progressPercent}%</strong><Button appearance="subtle" icon={<ArrowClockwise20Regular />} aria-label="Обновить" onClick={load} /></div></header><ProgressBar value={data.progressPercent / 100} /><div className={styles.steps}>{data.steps.map((step) => <article key={step.id} data-complete={step.complete}><span>{step.complete ? <CheckmarkCircle20Regular /> : <Circle20Regular />}</span><div><strong>{step.label}</strong><p>{step.evidence}</p></div></article>)}</div><footer>Проверьте заказ, подпишите договор и подтвердите товары. Если работаете в 1С, мы поможем с подключением.</footer></section>;
+  return <section className={styles.panel} aria-labelledby="connector-wizard-title"><header><div><p>Подготовка к продажам</p><h2 id="connector-wizard-title">Готово {data.completedSteps} из {data.totalSteps}</h2><small>{data.channel ? `Способ загрузки: ${data.channel}` : "Выберите способ загрузки товаров"}{target ? `. Срок: ${target}` : ""}</small></div><div className={styles.percent}><strong>{data.progressPercent}%</strong></div></header><ProgressBar value={data.progressPercent / 100} /><div className={styles.steps}>{data.steps.map((step) => <article key={step.id} data-complete={step.complete}><span>{step.complete ? <CheckmarkCircle20Regular /> : <Circle20Regular />}</span><div><strong>{step.label}</strong><p>{step.evidence}</p></div></article>)}</div><footer>Проверьте заказ, подпишите договор и подтвердите товары. Если работаете в 1С, мы поможем с подключением.</footer></section>;
 }

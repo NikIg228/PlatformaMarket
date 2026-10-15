@@ -1,9 +1,8 @@
 "use client";
 import { DmAction } from "@marketplace/ui/controls";
 
-
 import { Add20Regular } from "@fluentui/react-icons/svg/add";
-import { ArrowClockwise20Regular } from "@fluentui/react-icons/svg/arrow-clockwise";
+
 import { Key20Regular } from "@fluentui/react-icons/svg/key";
 import { Link20Regular } from "@fluentui/react-icons/svg/link";
 import { Play20Regular } from "@fluentui/react-icons/svg/play";
@@ -508,14 +507,7 @@ export function IntegrationOperations() {
               ))}
             </DmSelect>
           </DmField>
-          <DmButton
-            appearance="secondary"
-            icon={<ArrowClockwise20Regular />}
-            onClick={() => void load()}
-            disabled={loading || working}
-          >
-            Обновить
-          </DmButton>
+
         </div>
       </div>
 
@@ -525,6 +517,7 @@ export function IntegrationOperations() {
           title={messageTone === "danger" ? "Операция не выполнена" : "Операция выполнена"}
           description={message}
           alert={messageTone === "danger"}
+          action={messageTone === "danger" ? <DmButton onClick={() => void load()}>Повторить загрузку</DmButton> : undefined}
         />
       ) : null}
       {oneTimeSecret && (

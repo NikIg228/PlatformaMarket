@@ -34,11 +34,11 @@ export function OperationQueue() {
   }, [api, offset]);
   useEffect(() => { void load(); }, [load]);
   return <section className={styles.panel} aria-label="Операционная очередь">
-    <div className={styles.header}><div><h2 className={styles.title}>Операционная очередь</h2><p className={styles.subtitle}>Причина задачи, ответственный, срок и история решений.</p></div><div className={styles.total}><strong>{data?.totalOpenItems ?? "—"}</strong><span>задач в выборке</span></div><DmButton disabled={busy} onClick={() => void load()}>Обновить</DmButton></div>
+    <div className={styles.header}><div><h2 className={styles.title}>Операционная очередь</h2><p className={styles.subtitle}>Причина задачи, ответственный, срок и история решений.</p></div><div className={styles.total}><strong>{data?.totalOpenItems ?? "—"}</strong><span>задач в выборке</span></div></div>
     {error ? <ErrorState description={error} action={<DmButton onClick={() => void load()}>Повторить</DmButton>} /> : null}
     {busy && !data ? <LoadingState label="Загружаем очередь" /> : null}
     <label>Раздел очереди<DmSelect value={kind} onChange={event => setKind(event.target.value)}><option value="ALL">Все разделы</option>{Object.entries(queueLabels).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</DmSelect></label>
-    {data && !data.totalOpenItems ? <EmptyState title="Нет задач в этой выборке" description="Проверьте предыдущую страницу или обновите очередь." /> : null}
+    {data && !data.totalOpenItems ? <EmptyState title="Нет задач в этой выборке" description="Измените раздел очереди или проверьте предыдущую страницу." /> : null}
     <div className={styles.items}>{data?.sections.filter(section => kind === "ALL" || kind === section.type).flatMap(section => section.items.map(item => <article className={styles.item} key={`${section.type}:${item.id}`}>
       <div><strong>{queueLabels[section.type]} · {queueItemLabel(item)}</strong><p>{item.reason}</p><StatusTag tone={(item.assignment?.priority ?? section.priority) === "CRITICAL" ? "danger" : "warning"}>{priorityLabels[item.assignment?.priority ?? section.priority]}</StatusTag><p>Ответственный: {item.assignment?.assigneeName ?? "Не назначен"} · Срок: {item.assignment?.dueAt ? new Date(item.assignment.dueAt).toLocaleString("ru-KZ") : "Не задан"}</p>{item.assignment?.reason ? <p>Последнее решение: {item.assignment.reason}</p> : null}</div>
       <DmButton onClick={event => { openerRef.current = event.currentTarget; setSelected({ section, item }); }}>Назначение и история</DmButton><DmButton as="a" href={item.href}>Открыть объект</DmButton>

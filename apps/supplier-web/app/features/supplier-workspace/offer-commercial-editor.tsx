@@ -135,7 +135,7 @@ export function OfferCommercialEditor({ api, supplierId, offerId, warehouses, in
     <DmField label="Склад"><DmSelect value={warehouseId} disabled={locked} onChange={(_, data) => void selectWarehouse(data.value)}>
       <option value="">Выберите склад</option>{activeWarehouses.map(warehouse => <option value={warehouse.id} key={warehouse.id}>{warehouse.name}</option>)}
     </DmSelect></DmField>
-    <DmButton type="button" disabled={locked} onClick={() => void refreshWarehouses()}>Обновить склады</DmButton>
+    {error ? <DmButton type="button" disabled={locked} onClick={() => void refreshWarehouses()}>Повторить загрузку</DmButton> : null}
     {!activeWarehouses.length ? <p role="alert">Нет действующего склада. Добавьте склад в настройках организации.</p> : null}
     <DmField label="Цена за упаковку, ₸"><DmInput inputMode="decimal" value={price} disabled={locked || !selectedDraft} onChange={(_, data) => { setPrice(data.value); setSaved(false); }} /></DmField>
     {selectedDraft ? <OfferVatEditor api={api} supplierId={supplierId} initial={initialTax} applyDefault={newPrice} disabled={locked} onChange={setTax} onDirty={() => setSaved(false)} /> : null}

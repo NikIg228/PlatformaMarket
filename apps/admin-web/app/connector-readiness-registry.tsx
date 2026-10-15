@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowClockwise20Regular } from "@fluentui/react-icons/svg/arrow-clockwise";
 import { PlugConnected20Regular } from "@fluentui/react-icons/svg/plug-connected";
 import {
   DmButton,
@@ -127,14 +126,7 @@ export function ConnectorReadinessRegistry() {
             прогона.
           </p>
         </div>
-        <DmButton
-          appearance="secondary"
-          icon={<ArrowClockwise20Regular />}
-          onClick={() => void load()}
-          disabled={loading}
-        >
-          Обновить
-        </DmButton>
+
       </div>
 
       {data ? (

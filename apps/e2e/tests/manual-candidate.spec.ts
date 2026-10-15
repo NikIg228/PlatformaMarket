@@ -38,7 +38,7 @@ test("manual proposal is reviewed by the operator, configured by supplier and sh
     const unit = await db.unitOfMeasure.findFirstOrThrow();
     await operatorPage.goto("http://127.0.0.1:3010");
     await operatorPage.getByRole("button", { name: "Каталог", exact: true }).click();
-    await expect(operatorPage.getByRole("button", { name: "Обновить очередь заявок", exact: true })).toBeEnabled();
+    await expect(operatorPage.getByRole("button", { name: "Обновить очередь заявок", exact: true })).toHaveCount(0);
     const card = operatorPage.locator("section").filter({ has: operatorPage.getByRole("heading", { name, exact: true }) }).last();
     for (let index = 0; index < 20 && !(await card.isVisible()); index++) {
       const next = operatorPage.getByRole("button", { name: "Следующие заявки", exact: true });

@@ -82,7 +82,10 @@ export function BuyerCart({
   }, [validation, validationLoading, notify]);
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!editor.pending && editor.notice === "Позиция удалена из корзины.") root.current?.querySelector<HTMLButtonElement>('[data-cart-refresh]')?.focus();
+    if (!editor.pending && editor.notice === "Позиция удалена из корзины.") {
+      const heading = root.current?.querySelector<HTMLElement>("h1, h2") ?? root.current?.ownerDocument.querySelector<HTMLElement>("h1");
+      if (heading) { heading.tabIndex = -1; heading.focus(); }
+    }
   }, [editor.pending, editor.notice]);
   const locked = Boolean(busy) || editor.pending || cart?.status !== "ACTIVE" || Boolean(cart.checkout);
   useCartAutoRefresh(cart?.id, locked || validationLoading, () => editor.reload(true));
@@ -97,19 +100,13 @@ export function BuyerCart({
 
   return (
     <div className="mp-stack" ref={root}>
-      <PageHeader descriptionAsHelp
-        hideHeading={hideHeading}
+      {!hideHeading ? <PageHeader descriptionAsHelp
         eyebrow="Заказ"
         title="Корзина клиники"
         description="Перед резервированием система повторно проверяет цену, остаток и доступность каждой позиции."
-        actions={
-          <DmButton data-cart-refresh icon={<ArrowSync24Regular />} disabled={Boolean(busy) || editor.pending} onClick={cart ? () => void editor.reload() : onRefresh}>
-            Обновить корзину
-          </DmButton>
-        }
-      />
+      /> : null}
       {editor.pending ? <p role="status">Сохраняем и проверяем корзину…</p> : null}
-      {editor.error ? <ActionFeedback tone="error" description={editor.error} /> : null}
+      {editor.error ? <ActionFeedback tone="error" description={editor.error} action={<DmButton disabled={Boolean(busy) || editor.pending} onClick={cart ? () => void editor.reload() : onRefresh}>Повторить проверку корзины</DmButton>} /> : null}
       {editor.notice ? <ActionFeedback tone="success" description={editor.notice} /> : null}
       {Object.entries(editor.drafts).filter(([id]) => !cart?.items.some(item => item.id === id)).map(([id, draft]) => <p key={id} role="alert">Позиция больше не находится в корзине. Несохранённое количество: {draft.value}. <DmButton onClick={() => editor.discard(id)}>Отменить ввод удалённой позиции</DmButton></p>)}
       {!cart?.items.length ? (

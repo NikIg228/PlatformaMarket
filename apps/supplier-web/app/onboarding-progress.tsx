@@ -30,7 +30,7 @@ export function OnboardingProgress({ apiContext, supplierId, onNavigate }: { api
   const completed = progress.steps.filter(step => step.complete).length;
   const warehouseMissing = progress.steps.some(step => step.id === "warehouse" && !step.complete);
   return <section className={styles.panel} aria-label="Подключение поставщика">
-    <header><div><p>Подключение организации</p><h2>{progress.ready ? "Организация готова к работе" : `${completed} из ${progress.steps.length} шагов завершено`}</h2></div><Button onClick={() => void load()}>Обновить статус</Button></header>
+    <header><div><p>Подключение организации</p><h2>{progress.ready ? "Организация готова к работе" : `${completed} из ${progress.steps.length} шагов завершено`}</h2></div></header>
     <ProgressBar value={completed / progress.steps.length} aria-label="Прогресс подключения" />
     {error ? <DmFeedback tone="danger" title="Не удалось сохранить или обновить данные" description={error} alert action={<Button onClick={() => void load()}>Повторить обновление</Button>} /> : null}
     {feedback ? <DmFeedback tone="success" title={feedback} description="Статус подключения обновлён." /> : null}

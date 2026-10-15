@@ -58,7 +58,7 @@ for(const role of ["clinic","supplier"] as const) for(const width of [1440,390])
 test("profile-edit errors preserve drafts and email waits for confirmation",async({page})=>{
  const state=await fixture(page,"supplier"); await page.goto("/supplier/profile"); const region=page.getByRole("region",{name:"Данные профиля"});
  await region.getByRole("button",{name:"Изменить: Имя",exact:true}).click(); const field=region.getByRole("textbox",{name:"Имя",exact:false}); await field.fill("Сохранённый черновик"); state.conflict=true; await field.press("Enter"); await expect(region.getByRole("alert")).toContainText("Профиль изменился"); await expect(field).toHaveValue("Сохранённый черновик"); state.conflict=false; state.personal.version=2;
- await region.getByRole("button",{name:"Обновить данные",exact:true}).click(); await field.press("Enter"); await expect(region.getByText("Сохранённый черновик",{exact:true})).toBeVisible(); expect(state.writes.at(-1)?.expectedVersion).toBe(2);
+ await region.getByRole("button",{name:"Повторить загрузку",exact:true}).click(); await field.press("Enter"); await expect(region.getByText("Сохранённый черновик",{exact:true})).toBeVisible(); expect(state.writes.at(-1)?.expectedVersion).toBe(2);
  await region.getByRole("button",{name:"Изменить: Электронная почта",exact:true}).click(); const email=region.getByRole("textbox",{name:"Электронная почта",exact:false}); await email.fill("new@example.invalid"); await email.press("Enter"); await expect(page.locator(".dm-save-toast")).toContainText("Подтвердите"); await expect(region.getByText("user@example.invalid",{exact:true})).toBeVisible();
  await region.locator('input[type="file"]').setInputFiles({name:"bad.svg",mimeType:"image/svg+xml",buffer:Buffer.from("<svg/>")}); await expect(page.getByRole("alert").filter({hasText:"Фото не обновлено"})).toContainText("JPG или PNG");
 });
@@ -81,7 +81,7 @@ test("profile-edit address conflict preserves local draft and fresh remote conta
   await page.getByRole("button", { name: "Сохранить адреса", exact: true }).click();
   await expect(page.getByRole("alert").filter({hasText:"Изменения не сохранены"})).toContainText("Профиль изменился");
   state.organization.version = 2; state.organization.profile!.phone = "+77005556677";
-  await page.getByRole("button", { name: "Обновить сохранённые данные", exact: true }).click();
+  await page.getByRole("button", { name: "Повторить загрузку", exact: true }).click();
   await expect(page.locator(".dm-save-toast")).toContainText("Данные обновлены");
   await expect(address).toHaveValue("Мой новый адрес, 22"); state.conflict = false;
   await page.getByRole("button", { name: "Сохранить адреса", exact: true }).click();
@@ -187,7 +187,7 @@ for (const [role, width] of [["clinic", 390], ["supplier", 1440]] as const) test
   await page.clock.fastForward(4750); await expect(toast).toHaveAttribute("data-leaving", "true");
   await page.clock.fastForward(220); await expect(toast).toHaveCount(0);
   await expect(address).toHaveValue("Сохраняемый адрес, 12");
-  await expect(page.getByRole("button", {name:"Обновить сохранённые данные", exact:true})).toBeEnabled();
+  await expect(page.getByRole("button", {name:"Повторить загрузку", exact:true})).toBeEnabled();
   await submit.click(); await expect(toast).toContainText("Сервис временно недоступен"); await expect(toast).toHaveCount(1);
   state.fail = false; await submit.click(); await expect(toast).toHaveAttribute("role", "status");
   await expect(toast).toHaveAttribute("data-tone", "success"); await expect(toast).toContainText("Изменения сохранены");

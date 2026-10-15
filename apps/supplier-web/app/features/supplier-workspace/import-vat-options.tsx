@@ -34,6 +34,6 @@ export function ImportVatOptions({ api, supplierId, disabled, onChange }: {
     <DmCheckbox label="Указать режим для новых товаров этой загрузки" checked={override} disabled={disabled} onChange={(_, data) => { setOverride(data.checked === true); setAck(false); }} />
     {override ? <VatFields value={draft} onChange={value => { setDraft(value); setAck(false); }} date={settings.date} profile={settings.profile} disabled={disabled} /> : null}
     <DmCheckbox label="Подтверждаю налоговые условия строк и формат цен этого прайса" checked={ack} disabled={disabled || !settings.profile || Boolean(settings.profileIssue)} onChange={(_, data) => setAck(data.checked === true)} />
-    <DmButton disabled={disabled} onClick={() => void load()}>Обновить налоговый профиль</DmButton>
+    {error || settings.profileIssue ? <DmButton disabled={disabled} onClick={() => void load()}>Повторить загрузку</DmButton> : null}
   </section>;
 }

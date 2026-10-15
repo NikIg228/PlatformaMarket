@@ -1,7 +1,7 @@
 "use client";
 
 import { DmButton, DmFeedback } from "@marketplace/ui";
-import { ArrowSync20Regular } from "@fluentui/react-icons/svg/arrow-sync";
+
 import { Document20Regular } from "@fluentui/react-icons/svg/document";
 import { Money20Regular } from "@fluentui/react-icons/svg/money";
 import { Search20Regular } from "@fluentui/react-icons/svg/search";
@@ -169,14 +169,7 @@ export function PlatformAssurance() {
           >
             {working === "notifications" ? "Обрабатываем…" : "Обработать очередь"}
           </DmButton>
-          <DmButton
-            appearance="subtle"
-            icon={<ArrowSync20Regular />}
-            onClick={() => void load()}
-            disabled={loading}
-          >
-            Обновить
-          </DmButton>
+
         </div>
       </div>
       <div className={styles.metrics}>
@@ -237,6 +230,7 @@ export function PlatformAssurance() {
             title={failed ? "Операция не выполнена" : "Операция выполнена"}
             description={message}
             alert={failed}
+            action={failed ? <DmButton disabled={loading} onClick={() => void load()}>Повторить загрузку</DmButton> : undefined}
           />
         </div>
       ) : null}

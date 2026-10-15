@@ -56,7 +56,7 @@ export function ConversationCounter({ api, href, icon, showLabel = false, onClic
   </DmButton>;
 }
 
-export function ConversationWorkspace({ api, organizationId, initialId, context, canWrite = true, operator = false, contextHref, hideHeading = false, hideRefresh = false, compactList = false, onSelect }: { api: ConversationApi; organizationId: string; initialId?: string; context?: Context; canWrite?: boolean; operator?: boolean; contextHref?: (type: "OFFER" | "ORDER", id: string) => string | undefined; hideHeading?: boolean; hideRefresh?: boolean; compactList?: boolean; onSelect?: (id?: string) => void }) {
+export function ConversationWorkspace({ api, organizationId, initialId, context, canWrite = true, operator = false, contextHref, hideHeading = false, compactList = false, onSelect }: { api: ConversationApi; organizationId: string; initialId?: string; context?: Context; canWrite?: boolean; operator?: boolean; contextHref?: (type: "OFFER" | "ORDER", id: string) => string | undefined; hideHeading?: boolean; hideRefresh?: boolean; compactList?: boolean; onSelect?: (id?: string) => void }) {
   const [selected, setSelected] = useState(initialId);
   useEffect(() => { setSelected(initialId); }, [initialId]);
   const [filter, setFilter] = useState<ConversationQuery["filter"]>("ALL");
@@ -161,7 +161,7 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
   const identity = current?.context ?? (!selected ? lookupContext : undefined) ?? (current ? { title: current.title, counterpartyName: current.counterpartyName, productId: current.productId, productName: null, variantLabel: null, packagingLabel: null, imageUrl: null } : undefined);
   const messageContext = current ? { contextType: current.contextType, contextId: current.contextId } : context;
   return <section className="dm-conversations" aria-label="Сообщения">
-    {!hideHeading || !hideRefresh ? <div className="dm-conversations-toolbar">{!hideHeading ? <h1>Сообщения</h1> : null}{!hideRefresh ? <DmButton disabled={loading || busy} onClick={() => void refresh()}>Обновить</DmButton> : null}</div> : null}
+    {!hideHeading ? <div className="dm-conversations-toolbar"><h1>Сообщения</h1></div> : null}
     {error ? <ActionFeedback tone="error" description={`${error} Введённый текст сохранён. Повторите действие после проверки соединения.`} action={<DmButton disabled={busy} onClick={() => { if (!lookupReady && context) setLookupAttempt(value => value + 1); else void refresh(); }}>Повторить загрузку</DmButton>} /> : null}
     {feedback ? <ActionFeedback tone="success" description={feedback} /> : null}
     {actionError ? <ActionFeedback {...actionError} description={`${actionError.description} Текст и файлы сохранены. Повторная отправка защищена от дублей.`} /> : null}

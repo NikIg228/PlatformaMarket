@@ -29,7 +29,7 @@ async function shellPage(page: Page, ticketCount = 0, logout?: (route: Route) =>
   });
   await page.goto("/admin?section=support");
   await expect(page.getByRole("heading", { level: 1, name: "Обращения и споры" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Обновить", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Обновить", exact: true })).toHaveCount(0);
   return unexpected;
 }
 

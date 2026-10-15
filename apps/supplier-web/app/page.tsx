@@ -6,7 +6,7 @@ import { useVerifiedSession, sessionApiContext, sessionStore, logoutSession } fr
 import { confirmationOutcomeMessage } from "./order-confirmation-model";
 
 import { Menu, MenuItem, MenuList, MenuPopover, MenuTrigger } from "@fluentui/react-components";
-import { ArrowSync24Regular } from "@fluentui/react-icons/svg/arrow-sync";
+
 import { Box24Regular } from "@fluentui/react-icons/svg/box";
 import { BuildingShop24Regular } from "@fluentui/react-icons/svg/building-shop";
 import { ClipboardTaskListLtr24Regular } from "@fluentui/react-icons/svg/clipboard-task-list-ltr";
@@ -603,15 +603,7 @@ export default function SupplierWorkspace() {
               </MenuList>
             </MenuPopover>
           </Menu>
-          <DmButton
-            className={styles.refreshButton}
-            appearance="subtle"
-            icon={<ArrowSync24Regular />}
-            disabled={loading || refreshing}
-            aria-busy={refreshing}
-            onClick={() => void refresh(true)}
-            aria-label="Обновить данные"
-          />
+
         </>
       }
     >

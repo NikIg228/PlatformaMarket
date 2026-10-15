@@ -12,9 +12,7 @@ export default function Dashboard() {
   const load = useCallback((signal: AbortSignal) => api.workspaceSummary({ signal }), [api, organizationId]);
   const resource = useResource(load, { intervalMs: 30_000 });
   return <div className={styles.stack}>
-    <header className={styles.heading}>
-      <DmButton disabled={resource.loading} onClick={() => void resource.refresh()}>Обновить</DmButton>
-    </header>
+
     <ResourceStatus resource={resource} />
     {resource.error && !resource.data ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : resource.initialLoading ? <LoadingState label="Загружаем сводку" /> : null}
     <div className={styles.cards}>

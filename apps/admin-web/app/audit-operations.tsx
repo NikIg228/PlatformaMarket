@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowClockwise20Regular } from "@fluentui/react-icons/svg/arrow-clockwise";
 import { Filter20Regular } from "@fluentui/react-icons/svg/filter";
 import {
   DmButton,
@@ -111,14 +110,7 @@ export function AuditOperations() {
             записей.
           </p>
         </div>
-        <DmButton
-          appearance="secondary"
-          icon={<ArrowClockwise20Regular />}
-          onClick={() => void load()}
-          disabled={loading}
-        >
-          {loading ? "Обновляем…" : "Обновить"}
-        </DmButton>
+
       </div>
 
       {message && !error ? (
@@ -129,6 +121,7 @@ export function AuditOperations() {
           tone="danger"
           title="Не удалось обновить журнал"
           description={error}
+          action={<DmButton onClick={() => void load()}>Повторить загрузку</DmButton>}
           alert
         />
       ) : null}

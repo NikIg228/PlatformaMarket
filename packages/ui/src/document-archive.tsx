@@ -5,7 +5,7 @@ import { DmFileInput, DmAction } from "./controls";
 import { Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Spinner, Tag } from "@fluentui/react-components";
 import { DmButton as Button, DmField as Field, DmInput as Input, DmSelect as Select, DmTextarea as Textarea, DmSurface } from "./controls";
 import { ArrowDownload24Regular } from "@fluentui/react-icons/svg/arrow-download";
-import { ArrowSync24Regular } from "@fluentui/react-icons/svg/arrow-sync";
+
 import { Dismiss24Regular } from "@fluentui/react-icons/svg/dismiss";
 import { Document24Regular } from "@fluentui/react-icons/svg/document";
 import { DmSearch } from "./dm-search";
@@ -386,7 +386,7 @@ export function DocumentArchiveWorkspace({
         </div> : null}
         <div className="dm-document-archive-actions">
           {uploadAction}
-          <Button appearance="secondary" icon={<ArrowSync24Regular />} onClick={onRefresh} disabled={loading}>Обновить</Button>
+
         </div>
       </header>
 

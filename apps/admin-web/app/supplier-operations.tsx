@@ -40,13 +40,7 @@ export function SupplierOperations() {
               </option>
             ))}
           </DmSelect>
-          <DmButton
-            appearance="secondary"
-            onClick={() => void load()}
-            disabled={loading || Boolean(busy)}
-          >
-            Обновить
-          </DmButton>
+
         </div>
       </div>
       {message ? (
@@ -61,6 +55,7 @@ export function SupplierOperations() {
           }
           description={message}
           alert={messageTone === "danger"}
+          action={messageTone === "danger" ? <DmButton onClick={() => void load()}>Повторить загрузку</DmButton> : undefined}
         />
       ) : null}
       {loading ? (

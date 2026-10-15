@@ -30,15 +30,15 @@ export function useCartCorrection({ cart, api, onChanged, onValidated }: Props) 
   }, [cart?.id]);
 
   const failure = (cause: unknown) => {
-    if (cause instanceof MarketplaceApiError && cause.status === 409) return "Корзина изменилась или уже оформляется. Ваш ввод сохранён. Обновите корзину, проверьте сохранённое количество и повторите действие.";
+    if (cause instanceof MarketplaceApiError && cause.status === 409) return "Корзина изменилась или уже оформляется. Ваш ввод сохранён. Повторите проверку корзины, сравните сохранённое количество и повторите действие.";
     if (cause instanceof MarketplaceApiError && (cause.status === 401 || cause.status === 403)) return "Нет доступа к изменению корзины. Ваш ввод сохранён; проверьте вход и права сотрудника.";
-    return "Сервер не подтвердил изменение. Ваш ввод сохранён. Обновите корзину, чтобы проверить результат, затем повторите при необходимости.";
+    return "Сервер не подтвердил изменение. Ваш ввод сохранён. Повторите проверку корзины, чтобы узнать результат, затем повторите действие при необходимости.";
   };
   async function validate(next: Cart) {
     onValidated(null);
     if (next.status !== "ACTIVE" || next.checkout || !next.items.length) return;
     try { onValidated(await api.validateCart(next.id)); }
-    catch { setError("Корзина сохранена, но цены и остатки не проверены. Нажмите «Обновить корзину» перед оформлением."); }
+    catch { setError("Корзина сохранена, но цены и остатки не проверены. Повторите проверку корзины перед оформлением."); }
   }
   function discard(id: string) { setDrafts(previous => { const next = { ...previous }; delete next[id]; return next; }); }
   function edit(id: string, value: string) {

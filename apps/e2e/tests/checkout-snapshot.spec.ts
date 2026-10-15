@@ -154,7 +154,7 @@ for (const width of [1440, 390]) {
       await clarify.click(); await lostResponse;
       await expect(clarify).toBeEnabled();
       const refreshAfterCommit = page.waitForResponse(response => response.request().method() === "GET" && response.url().endsWith(`/supplier-orders/${order.id}/workflow`));
-      await page.getByRole("button", { name: "Обновить условия", exact: true }).click();
+      await page.getByRole("button", { name: "Повторить загрузку", exact: true }).click();
       await refreshAfterCommit;
       await clarify.click();
       await expect(page.getByRole("status").filter({ hasText: "Изменение сохранено. Обе стороны увидят обновлённый статус." })).toBeVisible();

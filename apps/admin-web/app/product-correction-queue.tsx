@@ -123,9 +123,7 @@ export function ProductCorrectionQueue() {
             публикации.
           </p>
         </div>
-        <DmButton appearance="secondary" onClick={() => void load()}>
-          Обновить
-        </DmButton>
+
       </div>
 
       {notice ? (

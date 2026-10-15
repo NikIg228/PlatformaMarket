@@ -1,13 +1,6 @@
 "use client";
 
-import { ArrowClockwise20Regular } from "@fluentui/react-icons/svg/arrow-clockwise";
-import {
-  DmButton,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  StatusTag,
-} from "@marketplace/ui";
+import { DmButton, EmptyState, ErrorState, LoadingState, StatusTag } from "@marketplace/ui";
 import { useCallback, useEffect, useState } from "react";
 import { adminAuthHeaders } from "./admin-auth";
 import {
@@ -86,15 +79,9 @@ export function ResourceLists() {
           <h2>Операционные данные</h2>
           <p>Последние организации и мастер-карточки из API.</p>
         </div>
-        <DmButton
-          appearance="secondary"
-          icon={<ArrowClockwise20Regular />}
-          onClick={() => void load()}
-          disabled={loading}
-        >
-          {loading ? "Обновляем…" : "Обновить"}
-        </DmButton>
+
       </div>
+      {organizations.status === "error" || products.status === "error" ? <DmButton disabled={loading} onClick={() => void load()}>Повторить загрузку</DmButton> : null}
       <div className={styles.columns}>
         <ResourcePanel
           title="Организации"

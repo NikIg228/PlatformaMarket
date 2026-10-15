@@ -3,7 +3,7 @@ import { DmAction } from "@marketplace/ui/controls";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowClockwise20Regular } from "@fluentui/react-icons/svg/arrow-clockwise";
+
 import { ChartMultiple20Regular } from "@fluentui/react-icons/svg/chart-multiple";
 import { DmButton, DmSearch, DmDropdown, EmptyState, ErrorState, LoadingState, StatusTag, formatDate, formatMoney, orderStatusLabel, orderStatusTone, orderPaymentPresentation, orderItemCount } from "@marketplace/ui";
 import { workspaceOrderStatusSchema, workspaceOrderGroupSchema, type WorkspaceOrderPage } from "@marketplace/schemas";
@@ -40,7 +40,7 @@ export default function Orders() {
       <DmButton as="a" href={`/${role}/analytics`} appearance="secondary" icon={<ChartMultiple20Regular />}>Аналитика {role === "clinic" ? "закупок" : "продаж"}</DmButton>
     </div>
     <div className={styles.tabs} role="group" aria-label="Группы заказов">{groups.map(([value, label]) => <DmAction variant="tab" key={value} type="button" aria-pressed={(group ?? "") === value} onClick={() => change("group", value)}>{label}</DmAction>)}</div>
-    <div className={styles.freshness}><ResourceStatus resource={resource} /><DmButton appearance="subtle" aria-label="Обновить заказы" title="Обновить заказы" disabled={resource.loading} icon={<ArrowClockwise20Regular />} onClick={refresh} /></div>
+    <ResourceStatus resource={resource} />
     {resource.error && !resource.data ? <ErrorState description={resource.error} action={<DmButton onClick={refresh}>Повторить</DmButton>} /> : resource.initialLoading ? <LoadingState label="Загружаем заказы" /> : !visible.length ? <EmptyState title={appliedQuery || status || group ? "Заказы не найдены" : "Заказов пока нет"} description={appliedQuery || status || group ? "Попробуйте другие фильтры." : role === "clinic" ? "Оформленные заказы появятся здесь." : "Здесь появятся заказы покупателей."} action={appliedQuery || status || group ? <DmButton onClick={reset}>Сбросить фильтры</DmButton> : undefined} /> : <>
       <table className={styles.table}><caption className={styles.srOnly}>Заказы: исполнение и оплата</caption><thead><tr><th>Заказ</th><th>{role === "clinic" ? "Поставщик" : "Клиника"}</th><th>Исполнение</th><th>Оплата</th><th className={styles.money}>Сумма</th></tr></thead><tbody>{visible.map(order => {
         const payment = orderPaymentPresentation(order);

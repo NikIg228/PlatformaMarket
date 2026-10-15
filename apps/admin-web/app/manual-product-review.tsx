@@ -42,7 +42,7 @@ function Proposal({ review, options, api, reload }: { review: Review; options: M
   return <Section title={review.proposedName} description={`Поставщик: ${review.supplier.displayName}`}>
     <p>Артикул: {review.proposedSku ?? "не указан"} · Штрихкод: {review.proposedGtin ?? "не указан"} · Бренд: {review.proposedBrand ?? "не указан"}</p>
     <p>{review.description ?? "Дополнительные материалы не представлены."}</p>
-    {error ? <ErrorState description={error} /> : null}
+    {error ? <ErrorState description={error} action={<DmButton disabled={busy} onClick={() => void reload()}>Повторить загрузку</DmButton>} /> : null}
     <form className="mp-stack" onSubmit={event => { event.preventDefault(); void decide(true); }}>
       <DmField label="Каноническое название" required><DmInput value={name} disabled={busy} onChange={(_, data) => setName(data.value)} /></DmField>
       <DmField label="Адрес карточки (slug)" required><DmInput value={slug} disabled={busy} onChange={(_, data) => setSlug(data.value)} /></DmField>
@@ -72,7 +72,7 @@ export function ManualProductReview() {
   }, [api]);
   useEffect(() => { void reload(); }, [reload]);
   return <Section title="Заявки поставщиков на новые товары" description="Проверьте материалы и дубли. Одобрение создаёт мастер-карточку и скрытое предложение.">
-    <DmButton disabled={busy} onClick={() => void reload()}>Обновить очередь заявок</DmButton>
+
     {error ? <ErrorState description={error} /> : null}
     {busy ? <LoadingState label="Загружаем заявки" /> : null}
     {queue?.items.length === 0 ? <EmptyState title="Новых заявок нет" description="Ручные заявки поставщиков появятся здесь." /> : null}

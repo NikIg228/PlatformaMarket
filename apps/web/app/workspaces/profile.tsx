@@ -66,7 +66,7 @@ export default function Profile() {
         </div>
       </div> : null}
       {avatarError ? <DmFeedback tone="danger" title="Фото не обновлено" description={avatarError} alert /> : null}
-      {resource.data && (saveError || avatarError) ? <div className={styles.refresh}><DmButton appearance="subtle" density="compact" disabled={avatarBusy || resource.loading} onClick={() => { setAvatarError(null); setAvatarRevision(value => value + 1); void resource.refresh(); }}>Обновить данные</DmButton></div> : null}
+      {resource.data && (saveError || avatarError) ? <div className={styles.refresh}><DmButton appearance="subtle" density="compact" disabled={avatarBusy || resource.loading} onClick={() => { setAvatarError(null); setAvatarRevision(value => value + 1); void resource.refresh(); }}>Повторить загрузку</DmButton></div> : null}
     </DmSurface>
     <ProfileSessions />
     <DmButton appearance="outline" intent="brand" className={styles.logout} disabled={logout.logoutPending} onClick={logout.onLogout}>{logout.logoutPending ? "Выходим…" : "Выйти из профиля"}</DmButton>

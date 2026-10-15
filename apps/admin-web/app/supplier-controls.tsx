@@ -349,7 +349,7 @@ export function SupplierControls() {
               </option>
             ))}
           </DmSelect>
-          <DmButton appearance="secondary" onClick={() => void load()}>Обновить</DmButton>
+
         </div>
       </div>
       {message ? (
@@ -358,6 +358,7 @@ export function SupplierControls() {
           title={messageTone === "danger" ? "Операция не выполнена" : "Операция выполнена"}
           description={message}
           alert={messageTone === "danger"}
+          action={messageTone === "danger" ? <DmButton onClick={() => void load()}>Повторить загрузку</DmButton> : undefined}
         />
       ) : null}
       {loading ? (
