@@ -1,3 +1,4 @@
+export * from "./shipment-waybill";
 import { z } from "zod";
 import { integrationPriceTaxSchema } from "./integration-tax";
 export * from "./integration-tax";

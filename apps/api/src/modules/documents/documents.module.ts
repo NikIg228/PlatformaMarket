@@ -7,6 +7,9 @@ import { OrderDocumentsController } from "./order-documents.controller";
 import { OrderInvoiceController } from "./order-invoice.controller";
 import { OrderInvoiceService } from "./order-invoice.service";
 import { InvoiceRendererService } from "./invoice-renderer.service";
+import { ShipmentWaybillController } from "./shipment-waybill.controller";
+import { ShipmentWaybillService } from "./shipment-waybill.service";
+import { WaybillRendererService } from "./waybill-renderer.service";
 
-@Module({ controllers: [DocumentsController, OrderDocumentsController, OrderInvoiceController], providers: [DocumentsService, DocumentRendererService, SignatureAdapterRegistry, OrderInvoiceService, InvoiceRendererService], exports: [DocumentsService, OrderInvoiceService] })
+@Module({ controllers: [DocumentsController, OrderDocumentsController, OrderInvoiceController, ShipmentWaybillController], providers: [DocumentsService, DocumentRendererService, SignatureAdapterRegistry, OrderInvoiceService, InvoiceRendererService, ShipmentWaybillService, WaybillRendererService], exports: [DocumentsService, OrderInvoiceService] })
 export class DocumentsModule {}

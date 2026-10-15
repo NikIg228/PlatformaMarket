@@ -1,3 +1,4 @@
+import { verifyShipmentWaybills } from "./verify-shipment-waybills.mjs";
 import path from "node:path";
 import { randomUUID, createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
@@ -5,7 +6,7 @@ import { calculateVatLine } from "@marketplace/schemas";
 import { completeFixtureOrganization } from "./organization-profile-fixture.mjs";
 import { verifyOrderInvoiceUpgrade } from "./verify-order-invoice-upgrade.mjs";
 
-export async function verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId, offers, storageRoot }) {
+export async function verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId, offers, storageRoot, waybills = false }) {
   await verifyOrderInvoiceUpgrade(prisma, assert);
   const [buyer, person, outsider, supplier2] = await Promise.all([21, 22, 23, 24].map(index => createBuyer(index)));
   const identity = { userId: person.userId, organizationId: supplierId }, orderIds = [];
@@ -109,6 +110,7 @@ export async function verifyOrderInvoices({ prisma, createBuyer, createCartWithI
     const proof = await prisma.document.create({ data: { ownerOrganizationId: buyer.organizationId, supplierOrderId: order.id, kind: "PAYMENT_PROOF", source: "UPLOADED", format: "PDF", status: "GENERATED", title: "Synthetic proof", documentNumber: randomUUID() } });
     await prisma.orderTransferClaim.create({ data: { supplierOrderId: order.id, invoiceDocumentId: current.manualInvoiceDocumentId, documentId: proof.id, amountMinor: "11600", currency: "KZT", paidAt: new Date(), reportedById: buyer.userId, comment: "Synthetic invoice payment lock fixture" } });
     await call(endpoint(order.id) + "/prepare", { expectedVersion: current.version, idempotencyKey: randomUUID() }, 409);
+    if (waybills) await verifyShipmentWaybills({ prisma, call, request, assert, identity, buyer, outsider, order, otherOrder, role, storageRoot });
     await prisma.rolePermission.deleteMany({ where: { roleId: role.id, permission: { code: "document.issue" } } });
     await call(endpoint(otherOrder.id) + "/prepare", { expectedVersion: 1, idempotencyKey: randomUUID() }, 403);
     const file = await readFile(path.join(storageRoot, stored.storageKey));

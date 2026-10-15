@@ -6,6 +6,51 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 15.10 — R7.6.4.1: подготовка накладной фактической партии — SCOPED PASS
+
+Поручение владельца: SDK и обращение в НУЦ на паузе; выполнить подготовку
+накладной до отправки и предпросмотр поставщика. База main/76d5c1d.
+Чужой Admin/catalog WIP сохраняется; baseline .tmp/waybill-flow/baseline.json.
+Граница: существующие Shipment/ShipmentItem → snapshot фактических количеств,
+цен и налогов → версия черновика PDF → кабинет поставщика. Связи с заказом,
+отправлением и документами доставки; чужая партия и stale version отвергаются.
+Без подписания, приёмки клиникой, новых денежных/товарных движений и рабочей БД.
+Риски: tenant/permissions, частичная сумма/НДС, конкурентная смена отгрузки,
+повтор запроса, сбой генерации, подмена snapshot и смешение черновика с подписью.
+Проверки: после service/rules — focused tests; завершение — schema/client,
+API types/build, isolated PostgreSQL (tenant/race/replay/rollback), runtime split,
+затронутый frontend types/build, targeted browser desktop/mobile/keyboard и
+screenshot/computed styles, PDF визуально, lint и diff hygiene. Полный release
+и общая E2E не требуются. Подписи R7.6.4.2/3 и весь R7.6.4 не закрывать.
+UI-паспорт до реализации: supplier /supplier/orders/:id, 1440×1000, RU, 100%;
+исходный screenshot output/playwright/waybill-before/shipment-waybill-baseline-shipment-surface/waybill-before.png.
+Текущий dev из canonical root; отдельный fixture-browser (все API замокированы).
+JSON market-components-v1 / platforma-semantic-light-v1: Manrope body14,
+control44/radius8, card12, gaps12/16; sidebar200/logo144 сохраняются.
+Новый блок использует DmButton/DmDialog mobileFullscreen/DmTable/DmFeedback,
+без локальных overrides; добавляется внутрь существующей карточки партии.
+DoD: поставщик создаёт и открывает корректный черновик по выбранной партии;
+повтор безопасен, изменённые входы требуют новой версии, чужие данные закрыты.
+
+
+Результат: подготовка PACKING/READY, immutable-by-version snapshot, PDF DRAFT,
+история/устаревание, supplier UI и ссылки документов доставки реализованы.
+Общие sign/version endpoints и старый document-pack не выпускают этот черновик.
+Исправлена сумма частичной партии в legacy pack; регрессия проверена.
+95 document tests PASS; после изменений legacy guards зависимые 42/42 PASS.
+Schema 2/2, client 1/1, API isolated build/types, client build, web build/types,
+E2E types, lint, runtime split и core contract PASS. PostgreSQL --waybill-only
+(включая invoice dependency): итоговый PASS; первый запуск выявил отсутствующий
+адрес склада, добавлен понятный 409 и regression. Рабочая БД не менялась.
+Browser: 3/3 (1440/390, retry/conflict/permissions/focus/computed styles), отдельный
+mobile download/stale 1/1 PASS. До финального PASS исправлены inline feedback
+и длинная подпись кнопки. PDF: 1 и 6 страниц просмотрены, кириллица/границы PASS.
+Evidence: .tmp/waybill-flow; output/playwright/waybill-final и waybill-download.
+Изолированные API artifacts использовали существующий .tmp/invoice-flow/client
+и API dist; исходники только canonical. Schema/migration не менялись.
+CI пропускается по постоянному решению владельца; только собственный scope.
+SDK и запрос НУЦ на паузе по последнему решению; R7.6.4.2/3 не запускались.
+
 ### 15.10 — R7.6.3.1: подготовка PASS; реальный прототип BLOCKED
 
 Поручение владельца «приступай» после счёта, база0586a2d/main. Владелец явно

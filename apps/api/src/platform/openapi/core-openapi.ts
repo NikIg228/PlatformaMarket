@@ -1,3 +1,4 @@
+import { prepareShipmentWaybillSchema, shipmentWaybillViewSchema, shipmentWaybillsResponseSchema } from "@marketplace/schemas";
 import { prepareOrderInvoiceSchema, orderInvoiceViewSchema, orderInvoicesResponseSchema } from "@marketplace/schemas";
 import { supplierVatSettingsSchema, saveSupplierVatSettingsSchema, previewOfferVatSchema, applyOfferVatSchema, offerVatPreviewSchema, offerVatApplyResultSchema, integrationTaxBindingsSchema, integrationTaxBindingSchema, updateIntegrationTaxSchema } from "@marketplace/schemas";
 import { supplierImportTaxPreviewInputSchema, supplierImportTaxPreviewSchema } from "@marketplace/schemas";
@@ -353,6 +354,9 @@ const coreZodSchemas = {
   ShipmentResponse: shipmentResponseSchema,
   ShipmentListResponse: shipmentListResponseSchema,
   OrderDocumentPackResponse: orderDocumentPackResponseSchema,
+  PrepareShipmentWaybillRequest: prepareShipmentWaybillSchema,
+  ShipmentWaybillView: shipmentWaybillViewSchema,
+  ShipmentWaybillsResponse: shipmentWaybillsResponseSchema,
   PrepareOrderInvoiceRequest: prepareOrderInvoiceSchema,
   OrderInvoiceView: orderInvoiceViewSchema,
   OrderInvoicesResponse: orderInvoicesResponseSchema,

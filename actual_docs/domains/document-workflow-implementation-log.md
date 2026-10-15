@@ -4,6 +4,49 @@
 Требования — [Workflow документооборота](MARKET_DOCUMENT_WORKFLOW.md), единственный
 checklist — [R7.6 основного roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#document-workflow).
 
+## 15.10 — R7.6.4.1: подготовка накладной партии — SCOPED PASS
+
+Реализован [контракт предпросмотра](MARKET_DOCUMENT_WORKFLOW.md#shipment-waybill-preview-runtime).
+API/schema/client → ShipmentWaybillService/rules → WaybillRendererService →
+ShipmentPanel/ShipmentWaybillPanel в /supplier/orders/:id. PDF остаётся DRAFT,
+не подтверждает передачу, подпись или приёмку. SDK/запрос НУЦ на паузе;
+R7.6.4.2/3 открыты. Новых миграций, рабочих данных, интеграций нет.
+
+Доказательства на main/76d5c1d + собственный diff (foreign WIP исключён):
+
+- npm run build --workspace=@marketplace/schemas; npm run build --workspace=@marketplace/api-client — PASS.
+- npm run test --workspace=@marketplace/schemas -- shipment-waybill.test.ts — 2/2;
+  npm run test --workspace=@marketplace/api-client -- shipment-waybill.test.ts — 1/1.
+- Из apps/api: npm exec -- vitest run --config ../../.tmp/invoice-flow/vitest.config.mts src/modules/documents — 95/95;
+  после последних guards/legacy amount правок повторены documents.service.spec.ts
+  и document-consolidation-security.spec.ts — 42/42 PASS.
+- npm exec --workspace=@marketplace/api -- nest build --path ../../.tmp/invoice-flow/tsconfig.json --config ../../.tmp/invoice-flow/nest-cli.json — PASS;
+  tsc с тем же --path config через -p и --noEmit — PASS. Изолированный generated
+  Prisma client соответствует неизменённой schema, исходники не копировались.
+- npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs --waybill-only — PASS;
+  новый scoped flag включает invoice fixtures/dependency. Проверены partial VAT,
+  tenant/role, invalid input, replay/race, stale, audit rollback, delivery links,
+  запрет generic signing/старого pack. NODE_OPTIONS переключал только generated
+  client/API artifacts через .tmp/invoice-flow/client-hook.cjs и client-loader.mjs.
+  Использовалась штатная disposable dentmarket_audit_20260914, cleanup завершён.
+- node scripts/verify-runtime-split.mjs; npm run db:test -- exec -- node scripts/verify-pilot-backend.mjs --contract-only — PASS с теми же artifacts.
+- node .tmp/waybill-flow/build-web.mjs — unified web pilot build/typecheck PASS,
+  отдельный distDir .tmp/waybill-flow/next; текущий dev не останавливался.
+  npm run typecheck --workspace=@marketplace/e2e — PASS.
+- Playwright: playwright.shipment-waybill.config.ts на canonical dev3000,
+  все API замокированы, рабочие данные не затрагиваются. Основные 3/3 PASS,
+  отдельный mobile PDF download/stale 1/1 PASS. Keyboard/focus/1440/390,
+  Manrope14/control44/radius8 и отсутствие overflow подтверждены.
+- PDF unit test и визуальная проверка Poppler: краткий1 и длинный6 страниц PASS;
+  .tmp/waybill-flow/pdf, screenshots output/playwright/waybill-final и waybill-download.
+- Scoped ESLint --max-warnings=0 и git diff --check — PASS. Полный release/E2E
+  не запускался: task scope не является общей приёмкой или production выпуском.
+
+Первый PG выявил nullable адрес склада: исправлен validation 409 + regression.
+Browser исправления: постоянная inline ошибка в диалоге и короткая кнопка новой
+версии. Финальные результаты выше; попытки/логи .tmp/waybill-flow. Commit/push
+по standing permission, [skip ci] по решению владельца; публикация проверяется отдельно.
+
 ## 15.10 — R7.6.3.1: воспроизводимый пакет, внешний прогон BLOCKED
 
 Владелец подтвердил отсутствие SDK/тестовых сертификатов. NCALayer установлен,

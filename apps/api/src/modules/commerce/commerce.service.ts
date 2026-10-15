@@ -1,3 +1,4 @@
+import { waybillPreviewVisibility } from "../documents/shipment-waybill.rules";
 import { createActiveCart } from "./create-active-cart";
 import { metricFact, recordCheckoutMetrics } from "./commerce-metric-facts";
 import {
@@ -985,7 +986,7 @@ export class CommerceService {
             paymentAllocation: true,
             documents: {
               include: documentReferenceInclude,
-              where: { kind: { in: ["ORDER_SPECIFICATION", "INVOICE", "WAYBILL"] } },
+              where: { AND: [waybillPreviewVisibility()], kind: { in: ["ORDER_SPECIFICATION", "INVOICE", "WAYBILL"] } },
               orderBy: [{ kind: "asc" }, { version: "desc" }],
             },
           },
@@ -1043,7 +1044,7 @@ export class CommerceService {
         },
         documents: {
           include: documentReferenceInclude,
-          where: { kind: { in: ["ORDER_SPECIFICATION", "INVOICE", "WAYBILL"] } },
+          where: { AND: [waybillPreviewVisibility()], kind: { in: ["ORDER_SPECIFICATION", "INVOICE", "WAYBILL"] } },
           orderBy: [{ kind: "asc" }, { version: "desc" }],
         },
       },
@@ -1082,7 +1083,7 @@ export class CommerceService {
         },
         documents: {
           include: documentReferenceInclude,
-          where: { kind: { in: ["ORDER_SPECIFICATION", "INVOICE", "WAYBILL"] } },
+          where: { AND: [waybillPreviewVisibility()], kind: { in: ["ORDER_SPECIFICATION", "INVOICE", "WAYBILL"] } },
           orderBy: [{ kind: "asc" }, { version: "desc" }],
         },
       },

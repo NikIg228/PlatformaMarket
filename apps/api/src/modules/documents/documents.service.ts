@@ -9,6 +9,7 @@ import type { SupplierActorContext } from "../suppliers/supplier-access.service"
 import { DocumentRendererService } from "./document-renderer.service";
 import { documentTaxTemplate, documentVat } from "./document-vat";
 import { calculateLineTotal } from "../commerce/commerce-rules";
+import { WAYBILL_PREVIEW, waybillPreviewVisibility } from "./shipment-waybill.rules";
 import { SignatureAdapterRegistry } from "./signature-adapter-registry.service";
 import { FileUploadPolicyService } from "../../platform/security/file-upload-policy.service";
 import { collectConsistentDocuments, documentReferenceInclude, hasConfirmedDocumentPayment, hasConsistentDocumentReferences, operationalReferenceError, sameDocumentReferences, withoutReferenceRelations, type DocumentGraph } from "./document-reference-graph";
@@ -112,9 +113,9 @@ export class DocumentsService {
 
   private async archiveAccessWhere(context: SupplierActorContext): Promise<Prisma.DocumentWhereInput> {
     const invoiceVisibility: Prisma.DocumentWhereInput = { OR: [{ invoicePreparation: { is: null } }, { invoicePreparation: { is: { confirmedAt: { not: null } } } }, { ownerOrganizationId: context.organizationId }] };
-    if (await this.isOperator(context.organizationId)) return invoiceVisibility;
+    if (await this.isOperator(context.organizationId)) return { AND: [invoiceVisibility, waybillPreviewVisibility(context.organizationId)] };
     return {
-      AND: [invoiceVisibility],
+      AND: [invoiceVisibility, waybillPreviewVisibility(context.organizationId)],
       OR: [
         { ownerOrganizationId: context.organizationId },
         { participants: { some: { organizationId: context.organizationId } } },
@@ -292,7 +293,7 @@ export class DocumentsService {
     const operator = await this.isOperator(context.organizationId);
     const documents = await collectConsistentDocuments((take, cursor) => this.prisma.document.findMany({
       where: {
-        AND: [{ OR: [{ invoicePreparation: { is: null } }, { invoicePreparation: { is: { confirmedAt: { not: null } } } }, { ownerOrganizationId: context.organizationId }] }],
+        AND: [waybillPreviewVisibility(context.organizationId), { OR: [{ invoicePreparation: { is: null } }, { invoicePreparation: { is: { confirmedAt: { not: null } } } }, { ownerOrganizationId: context.organizationId }] }],
         ownerOrganizationId: input.ownerOrganizationId,
         supplierOrderId: input.supplierOrderId,
         checkoutId: input.checkoutId,
@@ -318,6 +319,7 @@ export class DocumentsService {
   async get(documentId: string, context: SupplierActorContext) {
     const document = await this.prisma.document.findUnique({ where: { id: documentId }, include: { ...documentReferenceInclude, invoicePreparation: { select: { confirmedAt: true } }, template: true, signatures: { orderBy: { createdAt: "asc" } }, participants: true, supplierOrder: true, shipment: { include: { supplierOrder: documentReferenceInclude.supplierOrder } }, buyerSupplierAgreement: true, marketplaceAgreement: true, previousVersion: true, nextVersions: true } });
     if (!document) throw new NotFoundException("Document not found");
+    if (document.externalId?.startsWith(WAYBILL_PREVIEW) && document.ownerOrganizationId !== context.organizationId) throw new NotFoundException("Document not found");
     if (document.invoicePreparation && !document.invoicePreparation.confirmedAt && document.ownerOrganizationId !== context.organizationId) throw new NotFoundException("Document not found");
     const isParty = document.ownerOrganizationId === context.organizationId
       || document.participants.some(({ organizationId }) => organizationId === context.organizationId)
@@ -584,6 +586,9 @@ export class DocumentsService {
     if (order.paymentStatus !== "PAID") throw new ConflictException("Order documents require confirmed payment");
     const shipment = order.shipments[0];
     if (!shipment) throw new BadRequestException("Shipment does not belong to this supplier order");
+    if (await this.prisma.document.findFirst({ where: { shipmentId: shipment.id, kind: "WAYBILL", externalId: { startsWith: WAYBILL_PREVIEW } } })) {
+      throw new ConflictException("Для партии подготовлен предпросмотр накладной. Подписание и выпуск будут доступны после подключения ЭЦП");
+    }
     if (!["DISPATCHED", "IN_TRANSIT", "PARTIALLY_DELIVERED", "DELIVERED"].includes(shipment.status)) {
       throw new ConflictException("Shipment must be dispatched before generating the document pack");
     }
@@ -617,6 +622,7 @@ export class DocumentsService {
       return { offerSnapshot: orderItem.offerSnapshot, totalPriceMinor: calculateLineTotal(orderItem.unitPriceMinor.toString(), item.quantity.toString()) };
     });
     const shipmentTax = documentVat(shipmentTaxItems);
+    const shipmentTotal = shipmentTaxItems.reduce((sum, item) => sum.plus(item.totalPriceMinor), new Prisma.Decimal(0));
     const shipmentItems = shipment.items.map((item, index) => {
       const orderItem = orderItemById.get(item.supplierOrderItemId);
       return `${index + 1}. ${orderItem?.offer.productVariant.product.canonicalName ?? "Товар"} — ${item.quantity.toString()}; ${shipmentTax.lineText[index]}`;
@@ -645,7 +651,7 @@ export class DocumentsService {
       }
 
       const data = {
-        order: { number: order.orderNumber, total, currency: order.currency, items: orderItems },
+        order: { number: order.orderNumber, total: definition.kind === "WAYBILL" ? formatMinorUnits(shipmentTotal) : total, currency: order.currency, items: orderItems },
         invoice: { number: documentNumber, total, currency: order.currency, taxSummary: tax.summary },
         shipment: { number: shipment.shipmentNumber, items: shipmentItems, trackingNumber: shipment.trackingNumber },
         supplier: { name: order.supplier.legalName, bin: order.supplier.bin },
@@ -662,7 +668,7 @@ export class DocumentsService {
           shipmentId: shipment.id,
           title: definition.title(order.orderNumber),
           documentNumber,
-          amountMinor: order.subtotalAmountMinor.toString(),
+          amountMinor: definition.kind === "WAYBILL" ? shipmentTotal.toString() : order.subtotalAmountMinor.toString(),
           currency: order.currency,
           data,
           metadata: { purpose: "ORDER_DOCUMENT_PACK", snapshotVersion: 2, tax: definition.kind === "WAYBILL"
@@ -686,6 +692,7 @@ export class DocumentsService {
 
   async createVersion(documentId: string, input: CreateDocumentVersionInput, context: SupplierActorContext) {
     const current = await this.get(documentId, context);
+    if (current.externalId?.startsWith(WAYBILL_PREVIEW)) throw new ConflictException("Новая версия предпросмотра формируется из актуальной партии");
     if (current.invoicePreparation) throw new ConflictException("Новая версия счёта формируется в заказе поставщика");
     if (current.source !== "GENERATED") throw new ConflictException("Only generated documents can be regenerated as a new version");
     const templateId = input.templateId ?? current.templateId;
@@ -762,6 +769,7 @@ export class DocumentsService {
 
   async createSignatureSession(documentId: string, input: CreateSignatureSessionInput, context: SupplierActorContext) {
     const document = await this.get(documentId, context);
+    if (document.externalId?.startsWith(WAYBILL_PREVIEW)) throw new ConflictException("Подписание предпросмотра накладной ещё недоступно");
     if (document.invoicePreparation) throw new ConflictException("Выставление этого счёта подтверждается в заказе, без ЭЦП");
     const operator = await this.isOperator(context.organizationId);
     if (input.signerOrganizationId && input.signerOrganizationId !== context.organizationId && !operator) throw new ForbiddenException("Signer organization must be the active organization");
@@ -792,6 +800,7 @@ export class DocumentsService {
 
   async createLocalEdsSignatureSession(documentId: string, input: Omit<CreateSignatureSessionInput, "method"> & { method: "EDS" }, context: SupplierActorContext) {
     const document = await this.get(documentId, context);
+    if (document.externalId?.startsWith(WAYBILL_PREVIEW)) throw new ConflictException("Подписание предпросмотра накладной ещё недоступно");
     const operator = await this.isOperator(context.organizationId);
     if (input.signerOrganizationId && input.signerOrganizationId !== context.organizationId && !operator) throw new ForbiddenException("Signer organization must be the active organization");
     if (input.signerUserId && input.signerUserId !== context.actorId && !operator) throw new ForbiddenException("Signer user must be the authenticated user");

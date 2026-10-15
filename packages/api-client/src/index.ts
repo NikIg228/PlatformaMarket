@@ -1,3 +1,4 @@
+import type { PrepareShipmentWaybillInput, ShipmentWaybillView, ShipmentWaybillsResponse } from "@marketplace/schemas";
 import type { PrepareOrderInvoiceInput, OrderInvoiceView, OrderInvoicesResponse } from "@marketplace/schemas";
 import type { AccessPolicy, CommerceAnalyticsQuery, CommerceAnalyticsResponse, WorkspaceCorrectionOfferPage, WorkspaceInventoryPage, WorkspaceLotPage, WorkspaceReservationPage, WorkspaceOverridePage } from "@marketplace/schemas";
 import type { CreateInvitationInput, AcceptInvitationInput, UpdateMembershipInput, IdentityMember, IdentityRole, IdentitySession, IdentitySessionRevoked, InvitationSummary, InvitationCreated, InvitationDelivered, InvitationAccepted, InvitationDetails } from "@marketplace/schemas";
@@ -456,6 +457,14 @@ export class MarketplaceApiClient {
       `/supplier-orders/${orderId}/document-pack`,
       input,
     );
+  }
+
+  getShipmentWaybills(orderId: string, shipmentId: string) {
+    return this.get<ShipmentWaybillsResponse>(`/supplier-orders/${orderId}/shipments/${shipmentId}/waybills`);
+  }
+
+  prepareShipmentWaybill(orderId: string, shipmentId: string, input: PrepareShipmentWaybillInput) {
+    return this.post<ShipmentWaybillView>(`/supplier-orders/${orderId}/shipments/${shipmentId}/waybills/prepare`, input);
   }
 
   getOrderInvoices(orderId: string) {

@@ -9,12 +9,14 @@ import {
   DmInput as Input,
   DmSelect as Select,
   StatusTag,
+  PermissionFields,
   errorMessage,
   formatDate,
   formatStatus,
 } from "@marketplace/ui";
 import { useEffect, useState } from "react";
 import { shipmentPlanning } from "./shipment-planning";
+import { ShipmentWaybillPanel } from "./shipment-waybill-panel";
 import styles from "./shipment-panel.module.css";
 
 export type ShipmentRecord = {
@@ -178,6 +180,7 @@ export function ShipmentPanel({
                     {busy === `transition:${shipment.id}` ? "Сохраняем…" : action.label}
                   </Button>
                 ) : null}
+                <PermissionFields required={["document.issue"]}><ShipmentWaybillPanel key={shipment.id} api={api} orderId={order.id} shipmentId={shipment.id} shipmentVersion={shipment.version} busy={busy !== null} /></PermissionFields>
               </article>
             );
           })}

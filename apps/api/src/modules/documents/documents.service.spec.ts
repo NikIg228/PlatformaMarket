@@ -2,6 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 import { DocumentsService } from "./documents.service";
 
 describe("DocumentsService signature status", () => {
+  it("does not sign or regenerate a shipment preview through generic document endpoints", async () => {
+    const service = new DocumentsService({} as never, {} as never, {} as never, {} as never, {} as never);
+    vi.spyOn(service, "get").mockResolvedValue({ externalId: "WAYBILL_PREVIEW:test", source: "GENERATED", status: "DRAFT" } as never);
+    await expect(service.createSignatureSession("draft", { method: "EDS", expiresInMinutes: 60 }, { actorId: "actor", organizationId: "org" })).rejects.toThrow("ещё недоступно");
+    await expect(service.createVersion("draft", { reason: "change", data: {} }, { actorId: "actor", organizationId: "org" })).rejects.toThrow("актуальной партии");
+  });
   it("does not let a stale partial refresh regress a signed document", async () => {
     const prisma = {
       document: {

@@ -598,7 +598,8 @@ try {
   await prisma.$connect();
   const commercialOnly = process.argv.includes("--commercial-only");
   const requisitesOnly = process.argv.includes("--requisites-only");
-  const invoiceOnly = process.argv.includes("--invoice-only");
+  const waybillOnly = process.argv.includes("--waybill-only");
+  const invoiceOnly = process.argv.includes("--invoice-only") || waybillOnly;
   const vatOnly = process.argv.includes("--vat-only");
   if (!commercialOnly && !requisitesOnly && !vatOnly && !invoiceOnly) {
     await verifyManualPaymentUpgrade(prisma, assert);
@@ -627,7 +628,7 @@ try {
   await waitUntilReady();
 
   if (invoiceOnly) {
-    await verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer], storageRoot });
+    await verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer], storageRoot, waybills: !invoiceOnly || waybillOnly });
     console.log("Focused PostgreSQL invoice verification PASS");
   } else if (vatOnly) {
     await verifySupplierVat({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer] });
@@ -917,7 +918,7 @@ try {
       "Failed checkout was not fully compensated",
     );
 
-  await verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer], storageRoot });
+  await verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer], storageRoot, waybills: !invoiceOnly || waybillOnly });
   await verifySupplierVat({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer] });
   console.log(
     JSON.stringify(

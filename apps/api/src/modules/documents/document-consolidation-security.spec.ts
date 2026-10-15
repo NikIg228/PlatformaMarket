@@ -124,8 +124,9 @@ describe("Independent consolidation review regressions", () => {
   it("reuses prepayment invoice and specification without a shipment link", async () => {
     const f = fixture();
     const order = { ...ownOrder, orderNumber: "ORDER-A", currency: "KZT", subtotalAmountMinor: 1000n,
-      supplier: { legalName: "Supplier", bin: "fixture" }, buyer: { legalName: "Buyer", bin: "fixture" }, items: [],
-      shipments: [{ id: "shipment-a", shipmentNumber: "SHIP-A", status: "DISPATCHED", destinationAddress: { city: "Test" }, items: [], warehouse: { name: "Fixture" } }] };
+      supplier: { legalName: "Supplier", bin: "fixture" }, buyer: { legalName: "Buyer", bin: "fixture" },
+      items: [{ id: "item-a", acceptedQuantity: 2, unitPriceMinor: 500n, totalPriceMinor: 1000n, currency: "KZT", offerSnapshot: {}, offer: { productVariant: { product: { canonicalName: "Fixture" } } } }],
+      shipments: [{ id: "shipment-a", shipmentNumber: "SHIP-A", status: "DISPATCHED", destinationAddress: { city: "Test" }, items: [{ supplierOrderItemId: "item-a", quantity: 1 }], warehouse: { name: "Fixture" } }] };
     f.prisma.supplierOrder.findUnique.mockResolvedValue(order);
     Object.assign(f.prisma, { documentTemplate: { findMany: vi.fn().mockResolvedValue(["ORDER_SPECIFICATION_RU", "INVOICE_RU", "WAYBILL_RU"].map((code) => ({ id: code, code }))) } });
     Object.assign(f.prisma.document, { findFirst: vi.fn().mockResolvedValue(null), findFirstOrThrow: vi.fn().mockImplementation(async ({ where }) => ({ ...ownOrder, id: where.documentNumber, supplierOrderId: ownOrder.id, shipmentId: null, kind: where.documentNumber.startsWith("SPEC") ? "ORDER_SPECIFICATION" : "INVOICE" })) });
@@ -137,6 +138,7 @@ describe("Independent consolidation review regressions", () => {
     const result = await f.service.generateOrderDocumentPack("order-a", { shipmentId: "shipment-a" }, { ...context, organizationId: "supplier-a" });
     expect(result.documents).toHaveLength(3);
     expect(result.documents[0].shipmentId).toBeNull();
+    expect(f.service.generate).toHaveBeenCalledWith(expect.objectContaining({ templateId: "WAYBILL_RU", amountMinor: "500", data: expect.objectContaining({ order: expect.objectContaining({ total: "5.00" }) }) }), expect.anything());
   });
 
   it.each([false, true])("does not certify an unpaid sibling allocation (transaction=%s)", async (withTransaction) => {
