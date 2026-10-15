@@ -165,6 +165,8 @@ for (const width of [1440,390]) test(`supplier-order contact presentation and na
   const order = { id, orderNumber: "SO-TEST", version: 1, supplierOrganizationId: cityId, buyerOrganizationId: organizationId, status: "CANCELLED", paymentStatus: "UNPAID", currency: "KZT", subtotalAmountMinor: "10000", createdAt: "2026-10-07T10:00:00Z", items: [], shipments: [] };
   const official = { contactName: "Официальный представитель", phone: "+77000000000", email: "office@example.invalid" };
   const reserves = [1,2].map(n=>({contactName:`Резервный сотрудник ${n}`,phone:`+7700000000${n}`,email:`reserve${n}@example.invalid`}));
+  await page.route(`**/api/supplier-orders/${id}/invoices`, route=>route.fulfill({json:{orderId:id,orderVersion:order.version,currentDocumentId:null,canPrepare:false,issues:[],invoices:[]}}));
+  await page.route(`**/api/supplier-orders/${id}/discrepancies`, route=>route.fulfill({json:{orderId:id,orderVersion:order.version,party:"BUYER",canWrite:false,shipments:[],discrepancies:[]}}));
   await page.route(`**/api/supplier-orders/${id}/workflow`, route=>route.fulfill({json:{orderId:id,order,version:1,status:order.status,paymentStatus:order.paymentStatus,invoiceDocumentId:null,claims:[],events:[],supplierContacts:{official,reserves}}}));
   await page.goto(`/clinic/orders/${id}`);
   const contacts=page.getByRole("region",{name:"Контакты поставщика",exact:true}); await expect(contacts.getByText(official.contactName,{exact:true})).toBeVisible();
