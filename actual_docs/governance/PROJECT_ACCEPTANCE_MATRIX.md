@@ -1,5 +1,17 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+15.10 — **R7.6.2 GENERATED-счёт: SCOPED PASS; CI SKIPPED.**
+Подготовка → PDF preview → подтверждение поставщиком → текущий счёт/история
+клиники реализованы. Isolated PostgreSQL (включая dependent suites), migration
+upgrade, core-contract, runtime split, focused unit/client, API/web build/types,
+UI contract и browser3/3 (1440/390, keyboard/retry/stale) PASS. PDF1/10pages
+и screenshots/computed styles проверены. Browser — mocks; backend — real PG.
+Рабочая миграция/deploy не выполнялись. Полный CI исключён владельцем.
+История попыток и команды — [checkpoint](task-state/PRIMARY-SESSION.md).
+Публикация — отдельный feature-коммит текущего пакета; SHA/remote в Git-квитанции.
+
+
+
 15.10 — **Без ручного обновления: LOCAL PASS, публикация pending.**
 Постоянные refresh controls и время последней загрузки удалены из кабинетов;
 контекстный retry, automatic refresh и бизнес-команды сохранены. UI90,

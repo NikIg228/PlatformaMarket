@@ -1,3 +1,4 @@
+import type { PrepareOrderInvoiceInput, OrderInvoiceView, OrderInvoicesResponse } from "@marketplace/schemas";
 import type { AccessPolicy, CommerceAnalyticsQuery, CommerceAnalyticsResponse, WorkspaceCorrectionOfferPage, WorkspaceInventoryPage, WorkspaceLotPage, WorkspaceReservationPage, WorkspaceOverridePage } from "@marketplace/schemas";
 import type { CreateInvitationInput, AcceptInvitationInput, UpdateMembershipInput, IdentityMember, IdentityRole, IdentitySession, IdentitySessionRevoked, InvitationSummary, InvitationCreated, InvitationDelivered, InvitationAccepted, InvitationDetails } from "@marketplace/schemas";
 import type { CreateOfferPromotion, ReviseOfferPromotion, OfferPromotionCommand, OfferPromotion, PromotionPage, PublicPromotionPage, PromotionListQuery } from "@marketplace/schemas";
@@ -455,6 +456,14 @@ export class MarketplaceApiClient {
       `/supplier-orders/${orderId}/document-pack`,
       input,
     );
+  }
+
+  getOrderInvoices(orderId: string) {
+    return this.get<OrderInvoicesResponse>(`/supplier-orders/${orderId}/invoices`);
+  }
+
+  prepareOrderInvoice(orderId: string, input: PrepareOrderInvoiceInput) {
+    return this.post<OrderInvoiceView>(`/supplier-orders/${orderId}/invoices/prepare`, input);
   }
 
   prepareOrderDocuments(orderId: string) {

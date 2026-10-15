@@ -22,7 +22,7 @@ describe("supplier contact visibility", () => {
       orderPaymentReduction: { findMany: vi.fn(async () => []) }, orderManualReturn: { findMany: vi.fn(async () => []) },
     };
     const access = { hasAll: vi.fn(async () => true) };
-    const service = new OrderWorkflowService(db, access as never);
+    const service = new OrderWorkflowService(db, access as never, {} as never);
     const context = { actorId: "person", organizationId: "clinic" };
     expect((await service.get("order", context)).supplierContacts).toEqual({ official, reserves });
     expect(db.supplierOrder.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "order", OR: [{ buyerOrganizationId: "clinic" }, { supplierOrganizationId: "clinic" }] } }));

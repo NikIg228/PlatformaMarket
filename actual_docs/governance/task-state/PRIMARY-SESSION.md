@@ -6,6 +6,72 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 15.10 — R7.6.2: GENERATED-счёт — SCOPED PASS
+
+Запрос «приступаем», затем явное «продолжай» после лимита PostgreSQL.
+Canonical main; старт 2112e6a, финальная база 3940016. Чужой Admin/catalog WIP
+сохранён; baseline .tmp/invoice-flow/baseline.json. Пакет подготовлен к обычному
+commit/push в origin/main по §8, с [skip ci] по запрету полного CI владельцем.
+
+Результат: PM_INVOICE_V1, независимые номера PM-INV-YYYY-######## (Asia/Qyzylorda),
+атомарный резерв/версии, восстановление рендера с прежним ключом, snapshot,
+предпросмотр и отдельное подтверждение поставщиком; текущий PDF/история клиники.
+Проверяются права, стороны, актуальность заказа/реквизитов, checksum, суммы,
+ограничения оплаты/резерва; подтверждение/event/audit/outbox — одна транзакция.
+UPLOADED путь сохранён. НУЦ/ЭСФ/накладные и рабочая миграция не входят в пакет.
+Контракт: DWF §17.8; schema/API/client → order workflow → shared invoice panel.
+
+Проверки (логи .tmp/invoice-flow):
+- Schema tests2; rules/requisites15; invoice service7; renderer2;
+  зависимые document/workflow/contact suites67 — PASS предыдущего этапа,
+  соответствующие backend/schemas входы после API build-3 не менялись.
+- Prisma validate PASS, API build/types в isolated api-dist PASS;
+  npm exec -- nest build --path ../../.tmp/invoice-flow/tsconfig.json
+  --config ../../.tmp/invoice-flow/nest-cli.json из apps/api.
+- npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs:
+  pg-full-3.log PASS всего набора; отдельно --invoice-only pg-upgrade-1.log
+  PASS после добавления migration upgrade и исправления обработки cleanup.
+- npm run db:test -- exec -- node scripts/verify-pilot-backend.mjs --contract-only:
+  core-1.log PASS. node scripts/verify-runtime-split.mjs: runtime-1.log PASS.
+  Это underlying commands штатных aliases; prerequisites schemas/API build
+  выполнены, NODE_OPTIONS направлял Prisma/API только в isolated artifacts.
+- npm run test --workspace=@marketplace/api-client -- order-invoice.test.ts:
+  2/2 PASS; UI typecheck PASS; scoped eslint PASS; verify:ui-contract PASS.
+- Изолированная npm web build (штатные prepare + next build --webpack):
+  build-web.log PASS, TypeScript +49routes, dist .tmp/invoice-flow/next.
+- npm exec --workspace=@marketplace/e2e -- playwright test
+  --config=playwright.order-invoice.config.ts: browser-final.log 3/3 PASS;
+  API mocks, supplier/clinic1440/390, keyboard, read/write retry с тем же ключом,
+  stale/new preview, checkbox, текущий счёт/история. Real API/DB — PG выше.
+  Screenshots/computed styles: output/playwright/invoice-final; Manrope14,
+  button44/radius8, shared DmDialog/mobileFullscreen, table mobile labels.
+- PDF visual QA: preview1page и final-long10pages, кириллица/казахские символы,
+  длинная строка, повтор заголовка/номер страницы, итог и отметка подтверждения;
+  .tmp/invoice-flow/pdf. Финальный diff hygiene PASS.
+
+Попытки сохранены, не объявлены ретроактивно успешными:
+1. До возобновления pg-1/2/3 FAIL: общая корзина, cartItemId, FK cleanup,
+   скрывший первичное исключение. Владелец разрешил изменённый план.
+2. pg-resume-1 FAIL показал отсутствующий comment в payment fixture; cleanup
+   исправлен. pg-resume-2 PASS после заполнения обязательного поля.
+3. pg-full-1 FAIL — индексы пользователей совпали с другими suites;
+   pg-full-2 FAIL — трёхзначный индекс превысил длину БИН; свободные21–24
+   проверены по всем consumers, pg-full-3 PASS. Последний targeted upgrade PASS.
+4. Browser1 FAIL: ошибка чтения скрывалась заменённым toast; блокирующее
+   состояние переведено в inline. Browser2 FAIL: длинная кнопка на desktop,
+   неполный buyer profile fixture. Browser3 PASS; финальный повтор после
+   mobile data-label и отключения анимации screenshots также3/3PASS.
+5. Web build1 FAIL: лишний аргумент errorMessage; после fix builds PASS.
+   Lint1 FAIL no-unsafe-finally; ошибка теперь выбрасывается после cleanup,
+   original cause сохраняется, focused PG и lint PASS после исправления.
+
+Все DB writes — disposable dentmarket_audit_20260914, localhost5432; рабочая
+DB не менялась. Собственные API/Next процессы завершены, fixtures очищены.
+Полный CI, production deploy и рабочая миграция NOT_RUN по scope.
+Применены development-toolkit (backend/frontend/verification), Agency backend
+architect/code reviewer и PDF/Playwright practices; агенты не запускались.
+
+
 ### 15.10 — убрать ручное обновление и время загрузки: LOCAL PASS, публикация pending
 
 Запрос владельца: убрать refresh-кнопки (текст/иконки) и статусы времени

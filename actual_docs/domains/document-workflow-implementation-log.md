@@ -1,8 +1,27 @@
 # Документооборот — выполненные этапы и технические решения
 
-Обновлено 14.10.2026. Журнал реализации полного документального процесса сделки.
+Обновлено 15.10.2026. Журнал реализации полного документального процесса сделки.
 Требования — [Workflow документооборота](MARKET_DOCUMENT_WORKFLOW.md), единственный
 checklist — [R7.6 основного roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#document-workflow).
+
+## 15.10 — GENERATED-счёт R7.6.2: SCOPED PASS
+
+Реализованы подготовка из подтверждённых реквизитов/налогового snapshot заказа,
+независимая нумерация, PDF preview, отдельное подтверждение поставщиком,
+неизменная история и видимость текущего счёта клинике. Контракт и права —
+[DWF §17.8](MARKET_DOCUMENT_WORKFLOW.md#order-invoice-runtime).
+
+После первоначальной остановки владелец явно поручил продолжить. Исправлены
+fixtures/cleanup; полный isolated PostgreSQL, upgrade-path, core-contract,
+runtime split, focused unit/client tests, API/web build/types и scoped lint PASS.
+Browser3/3: supplier/clinic1440/390, keyboard, read/write retry и stale preview.
+Финальные screenshots/computed styles и длинный10page PDF проверены визуально.
+API/DB инварианты проверены реальным PG, браузерные состояния — API mocks.
+
+Рабочая DB/production не менялись; НУЦ/ЭСФ/накладные не входят в пакет.
+Full CI пропущен по решению владельца, feature-коммит с [skip ci].
+Подробные команды, неудачные попытки, cleanup и пути evidence —
+[checkpoint R7.6.2](../governance/task-state/PRIMARY-SESSION.md).
 
 ## 14.10 — подготовка налоговой цепочки R7.6.1.4
 

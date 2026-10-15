@@ -1,3 +1,4 @@
+import { verifyOrderInvoices } from "./lib/verify-order-invoices.mjs";
 import { spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { mkdir, rm } from "node:fs/promises";
@@ -456,6 +457,7 @@ async function cleanupFixtures() {
     await prisma.orderTransferClaim.deleteMany({ where: orderWhere });
     await prisma.orderPaymentReduction.deleteMany({ where: orderWhere });
     await prisma.orderManualReturn.deleteMany({ where: orderWhere });
+    await prisma.orderInvoicePreparation.deleteMany({ where: { supplierOrder: { checkoutId: { in: checkoutIds } } } });
     await prisma.document.deleteMany({ where: { supplierOrder: { checkoutId: { in: checkoutIds } } } });
     await prisma.orderWorkflowEvent.deleteMany({ where: orderWhere });
     await prisma.commerceMetricEvent.deleteMany({ where: orderWhere });
@@ -596,13 +598,14 @@ try {
   await prisma.$connect();
   const commercialOnly = process.argv.includes("--commercial-only");
   const requisitesOnly = process.argv.includes("--requisites-only");
+  const invoiceOnly = process.argv.includes("--invoice-only");
   const vatOnly = process.argv.includes("--vat-only");
-  if (!commercialOnly && !requisitesOnly && !vatOnly) {
+  if (!commercialOnly && !requisitesOnly && !vatOnly && !invoiceOnly) {
     await verifyManualPaymentUpgrade(prisma, assert);
     await verifyPromotionUpgrade(prisma, assert);
     await verifyCommerceMetricUpgrade(prisma, assert);
   }
-  if (!commercialOnly && !vatOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
+  if (!commercialOnly && !vatOnly && !invoiceOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
   const [rollbackOffer, idempotencyOffer, concurrencyOffer, correctionOffer, snapshotOffer, ...lotOffers] =
     requisitesOnly ? [] : await createFixtureCatalog();
   const [
@@ -623,7 +626,10 @@ try {
   api.stderr.on("data", rememberLog);
   await waitUntilReady();
 
-  if (vatOnly) {
+  if (invoiceOnly) {
+    await verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer], storageRoot });
+    console.log("Focused PostgreSQL invoice verification PASS");
+  } else if (vatOnly) {
     await verifySupplierVat({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer] });
     console.log("Focused PostgreSQL VAT verification PASS");
   } else if (requisitesOnly) {
@@ -911,6 +917,7 @@ try {
       "Failed checkout was not fully compensated",
     );
 
+  await verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer], storageRoot });
   await verifySupplierVat({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer] });
   console.log(
     JSON.stringify(

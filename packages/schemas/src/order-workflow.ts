@@ -15,7 +15,7 @@ export const orderWorkflowCommandSchema = z.discriminatedUnion("action", [
   z.object({ ...command, action: z.literal("REORDER") }),
   z.object({ ...command, action: z.literal("RECEIVE_SHIPMENT"), shipmentId: z.string().uuid(), items: z.array(z.object({ shipmentItemId: z.string().uuid(), deliveredQuantity: z.string().regex(/^\d{1,12}(\.\d{1,6})?$/) })).min(1).max(500) }),
   z.object({ ...command, action: z.literal("ACCEPT_COMPOSITION") }),
-  z.object({ ...command, action: z.literal("ISSUE_INVOICE"), documentId: z.string().uuid() }),
+  z.object({ ...command, action: z.literal("ISSUE_INVOICE"), documentId: z.string().uuid(), previewChecksum: z.string().regex(/^[a-f0-9]{64}$/).optional() }),
   z.object({ ...command, action: z.literal("REPORT_TRANSFER"), documentId: z.string().uuid(), invoiceDocumentId: z.string().uuid(), amountMinor: z.string().regex(/^[1-9]\d{0,19}$/), paidAt: z.string().datetime(), comment: z.string().trim().max(2000).default("") }),
   z.object({ ...command, action: z.literal("REQUEST_PAYMENT_DETAILS"), comment: z.string().trim().min(3).max(2000) }),
   z.object({ ...command, action: z.literal("CONFIRM_TRANSFER"), claimId: z.string().uuid(), receivedAmountMinor: positiveMinorAmountSchema.optional() }),

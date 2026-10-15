@@ -22,7 +22,7 @@ function fixture(overrides: Record<string, unknown> = {}) {
   };
   const prisma = { ...tx, $transaction: async (action: (client: typeof tx) => Promise<unknown>) => action(tx) };
   const access = { hasAll: vi.fn(async () => true) };
-  return { order, events, tx, access, service: new OrderWorkflowService(prisma as unknown as PrismaService, access as unknown as AccessControlService) };
+  return { order, events, tx, access, service: new OrderWorkflowService(prisma as unknown as PrismaService, access as unknown as AccessControlService, { confirm: vi.fn() } as never) };
 }
 describe("order workflow invariants", () => {
   it("refuses a first transfer report after the deadline before creating a claim", async () => {

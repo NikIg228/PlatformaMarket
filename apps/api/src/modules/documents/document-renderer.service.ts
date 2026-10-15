@@ -6,7 +6,7 @@ import { join } from "node:path";
 const pdfFontPath = join(__dirname, "fonts", "NotoSans.ttf");
 const pdfFontCoverage = require("./fonts/coverage.json") as { ranges: [number, number][] };
 
-function assertPdfCharacters(text: string) {
+export function assertPdfCharacters(text: string) {
   for (const character of text) {
     if (character === "\n" || character === "\r" || character === "\t") continue;
     const codepoint = character.codePointAt(0)!;

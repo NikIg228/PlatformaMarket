@@ -16,6 +16,7 @@ import { manualReturn, manualReturnActions } from "./order-manual-return";
 import { reorder } from "./order-reorder";
 import { metricFact, receivedGoodsSnapshot, recordReceiptMetrics } from "./commerce-metric-facts";
 import { publicContactSelect, supplierOrderContacts } from "../organizations/contact-projection";
+import { OrderInvoiceService } from "../documents/order-invoice.service";
 
 const include = { items: { include: { reservation: { include: { externalReservation: true, inventoryLot: true } } } }, transferClaims: { orderBy: { createdAt: "asc" as const } }, paymentAllocation: true };
 export type Order = Prisma.SupplierOrderGetPayload<{ include: typeof include }>;
@@ -23,7 +24,7 @@ const manualPaymentStatuses: string[] = ["AWAITING_PAYMENT", "PAID", "ASSEMBLING
 
 @Injectable()
 export class OrderWorkflowService {
-  constructor(private readonly prisma: PrismaService, private readonly access: AccessControlService) {}
+  constructor(private readonly prisma: PrismaService, private readonly access: AccessControlService, private readonly invoices: OrderInvoiceService) {}
 
   private async visible(orderId: string, context: SupplierActorContext, operatorRead = false) {
     if (!context.actorId || !context.organizationId) throw new ForbiddenException("Требуется активная организация");
@@ -151,7 +152,9 @@ export class OrderWorkflowService {
     if (input.action === "ISSUE_INVOICE") {
       const replacementAfterReduction = !order.manualInvoiceDocumentId && order.transferClaims.length > 0 && order.transferClaims.every(claim => claim.status === "CONFIRMED");
       if (!(["CONFIRMED", "AWAITING_PAYMENT"].includes(order.status) || (order.status === "PAID" && replacementAfterReduction)) || (order.transferClaims.length > 0 && !replacementAfterReduction)) throw new ConflictException("Сначала согласуйте состав; заявленный перевод блокирует замену счёта");
-      const doc = await this.document(tx, order, input.documentId, order.supplierOrganizationId, "INVOICE");
+      const generated = await tx.document.findFirst({ where: { id: input.documentId, supplierOrderId: order.id, ownerOrganizationId: order.supplierOrganizationId, kind: "INVOICE", source: "GENERATED" }, select: { id: true, source: true } });
+      const doc = generated?.source === "GENERATED" ? await this.invoices.confirm(tx, order.id, generated.id, input.previewChecksum, context)
+        : await this.document(tx, order, input.documentId, order.supplierOrganizationId, "INVOICE");
       if (!doc.amountMinor?.eq(order.subtotalAmountMinor) || doc.currency !== order.currency) throw new ConflictException("Сумма и валюта счёта должны совпадать с заказом");
       return { manualInvoiceDocumentId: doc.id, status: order.paymentStatus === "PAID" ? order.status : "AWAITING_PAYMENT" };
     }

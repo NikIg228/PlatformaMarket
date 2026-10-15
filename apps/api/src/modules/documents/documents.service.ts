@@ -111,8 +111,10 @@ export class DocumentsService {
   }
 
   private async archiveAccessWhere(context: SupplierActorContext): Promise<Prisma.DocumentWhereInput> {
-    if (await this.isOperator(context.organizationId)) return {};
+    const invoiceVisibility: Prisma.DocumentWhereInput = { OR: [{ invoicePreparation: { is: null } }, { invoicePreparation: { is: { confirmedAt: { not: null } } } }, { ownerOrganizationId: context.organizationId }] };
+    if (await this.isOperator(context.organizationId)) return invoiceVisibility;
     return {
+      AND: [invoiceVisibility],
       OR: [
         { ownerOrganizationId: context.organizationId },
         { participants: { some: { organizationId: context.organizationId } } },
@@ -290,6 +292,7 @@ export class DocumentsService {
     const operator = await this.isOperator(context.organizationId);
     const documents = await collectConsistentDocuments((take, cursor) => this.prisma.document.findMany({
       where: {
+        AND: [{ OR: [{ invoicePreparation: { is: null } }, { invoicePreparation: { is: { confirmedAt: { not: null } } } }, { ownerOrganizationId: context.organizationId }] }],
         ownerOrganizationId: input.ownerOrganizationId,
         supplierOrderId: input.supplierOrderId,
         checkoutId: input.checkoutId,
@@ -313,8 +316,9 @@ export class DocumentsService {
   }
 
   async get(documentId: string, context: SupplierActorContext) {
-    const document = await this.prisma.document.findUnique({ where: { id: documentId }, include: { ...documentReferenceInclude, template: true, signatures: { orderBy: { createdAt: "asc" } }, participants: true, supplierOrder: true, shipment: { include: { supplierOrder: documentReferenceInclude.supplierOrder } }, buyerSupplierAgreement: true, marketplaceAgreement: true, previousVersion: true, nextVersions: true } });
+    const document = await this.prisma.document.findUnique({ where: { id: documentId }, include: { ...documentReferenceInclude, invoicePreparation: { select: { confirmedAt: true } }, template: true, signatures: { orderBy: { createdAt: "asc" } }, participants: true, supplierOrder: true, shipment: { include: { supplierOrder: documentReferenceInclude.supplierOrder } }, buyerSupplierAgreement: true, marketplaceAgreement: true, previousVersion: true, nextVersions: true } });
     if (!document) throw new NotFoundException("Document not found");
+    if (document.invoicePreparation && !document.invoicePreparation.confirmedAt && document.ownerOrganizationId !== context.organizationId) throw new NotFoundException("Document not found");
     const isParty = document.ownerOrganizationId === context.organizationId
       || document.participants.some(({ organizationId }) => organizationId === context.organizationId)
       || document.supplierOrder?.supplierOrganizationId === context.organizationId
@@ -682,6 +686,7 @@ export class DocumentsService {
 
   async createVersion(documentId: string, input: CreateDocumentVersionInput, context: SupplierActorContext) {
     const current = await this.get(documentId, context);
+    if (current.invoicePreparation) throw new ConflictException("Новая версия счёта формируется в заказе поставщика");
     if (current.source !== "GENERATED") throw new ConflictException("Only generated documents can be regenerated as a new version");
     const templateId = input.templateId ?? current.templateId;
     if (!templateId) throw new ConflictException("Document template is missing");
@@ -757,6 +762,7 @@ export class DocumentsService {
 
   async createSignatureSession(documentId: string, input: CreateSignatureSessionInput, context: SupplierActorContext) {
     const document = await this.get(documentId, context);
+    if (document.invoicePreparation) throw new ConflictException("Выставление этого счёта подтверждается в заказе, без ЭЦП");
     const operator = await this.isOperator(context.organizationId);
     if (input.signerOrganizationId && input.signerOrganizationId !== context.organizationId && !operator) throw new ForbiddenException("Signer organization must be the active organization");
     if (input.signerUserId && input.signerUserId !== context.actorId && !operator) throw new ForbiddenException("Signer user must be the authenticated user");

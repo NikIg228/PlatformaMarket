@@ -25,6 +25,22 @@ function revision(value: StoredRevision) {
   });
 }
 
+export async function organizationRequisitesSource(db: Database, organization: Prisma.OrganizationGetPayload<{ include: { capabilities: true } }>) {
+    const profile = await organizationProfileFields(db, organization.id);
+    const requiresPaymentDetails = organization.capabilities.some(item => item.capability === "SUPPLIER");
+    const cities = profile ? await db.city.findMany({ where: { id: { in: [profile.legalAddress.cityId, profile.deliveryAddress.cityId] } }, include: { region: { include: { country: true } } } }) : [];
+    const addressText = (address: NonNullable<typeof profile>["legalAddress"] | undefined) => {
+      const city = cities.find(item => item.id === address?.cityId);
+      return address && city ? [city.region.country.nameRu, city.region.nameRu, city.nameRu, address.line1, address.postalCode].filter(Boolean).join(", ") : null;
+    };
+    return organizationRequisitesSourceSchema.parse({
+      organizationVersion: organization.version, legalName: organization.legalName, displayName: organization.displayName, identifier: organization.bin,
+      profile, legalAddressText: addressText(profile?.legalAddress), deliveryAddressText: addressText(profile?.deliveryAddress),
+      profileComplete: requiresPaymentDetails ? supplierOrganizationProfileFieldsSchema.safeParse(profile).success : Boolean(profile), requiresPaymentDetails,
+    });
+  }
+
+
 @Injectable()
 export class OrganizationRequisitesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -43,27 +59,13 @@ export class OrganizationRequisitesService {
     return member;
   }
 
-  private async source(db: Database, organization: Awaited<ReturnType<OrganizationRequisitesService["member"]>>["organization"]) {
-    const profile = await organizationProfileFields(db, organization.id);
-    const requiresPaymentDetails = organization.capabilities.some(item => item.capability === "SUPPLIER");
-    const cities = profile ? await db.city.findMany({ where: { id: { in: [profile.legalAddress.cityId, profile.deliveryAddress.cityId] } }, include: { region: { include: { country: true } } } }) : [];
-    const addressText = (address: NonNullable<typeof profile>["legalAddress"] | undefined) => {
-      const city = cities.find(item => item.id === address?.cityId);
-      return address && city ? [city.region.country.nameRu, city.region.nameRu, city.nameRu, address.line1, address.postalCode].filter(Boolean).join(", ") : null;
-    };
-    return organizationRequisitesSourceSchema.parse({
-      organizationVersion: organization.version, legalName: organization.legalName, displayName: organization.displayName, identifier: organization.bin,
-      profile, legalAddressText: addressText(profile?.legalAddress), deliveryAddressText: addressText(profile?.deliveryAddress),
-      profileComplete: requiresPaymentDetails ? supplierOrganizationProfileFieldsSchema.safeParse(profile).success : Boolean(profile), requiresPaymentDetails,
-    });
-  }
 
   async current(context: AuthorityActorContext): Promise<OrganizationRequisitesResponse> {
     return this.prisma.$transaction(async tx => {
       const { organization } = await this.member(context, false, tx);
       let canEdit = false;
       try { await this.member(context, true, tx); canEdit = true; } catch (error) { if (!(error instanceof ForbiddenException)) throw error; }
-      const source = await this.source(tx, organization);
+      const source = await organizationRequisitesSource(tx, organization);
       const head = await tx.organizationRequisites.findUnique({ where: { organizationId: organization.id } });
       const current = head?.version ? revision(await tx.organizationRequisitesRevision.findUniqueOrThrow({ where: { organizationId_version: { organizationId: organization.id, version: head.version } } })) : null;
       return { organizationId: organization.id, canEdit, version: head?.version ?? 0, source, current, readiness: requisitesReadiness(source, current) };
@@ -114,7 +116,7 @@ export class OrganizationRequisitesService {
       const member = await this.member(context, true, tx);
       const replay = await this.replay(tx, scope, command.idempotencyKey, requestHash);
       if (replay) return replay;
-      const source = await this.source(tx, member.organization);
+      const source = await organizationRequisitesSource(tx, member.organization);
       if (source.organizationVersion !== command.expectedOrganizationVersion) throw conflict("Данные организации изменились. Обновите их перед сохранением реквизитов");
       const head = await tx.organizationRequisites.upsert({ where: { organizationId: context.organizationId }, create: { organizationId: context.organizationId }, update: {} });
       if (head.version !== command.expectedVersion) throw conflict();
@@ -150,7 +152,7 @@ export class OrganizationRequisitesService {
       if (replay) return replay;
       const head = await tx.organizationRequisites.findUnique({ where: { organizationId: context.organizationId } });
       if (!head || head.version !== command.expectedVersion) throw conflict();
-      const source = await this.source(tx, member.organization);
+      const source = await organizationRequisitesSource(tx, member.organization);
       if (source.organizationVersion !== command.expectedOrganizationVersion) throw conflict("Данные организации изменились. Обновите их перед подтверждением");
       const current = revision(await tx.organizationRequisitesRevision.findUniqueOrThrow({ where: { organizationId_version: { organizationId: context.organizationId, version: head.version } } }));
       const now = new Date(), readiness = requisitesReadiness(source, current, now);

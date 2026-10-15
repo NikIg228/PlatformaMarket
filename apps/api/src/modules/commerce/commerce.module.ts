@@ -16,6 +16,7 @@ import { SupplierPaymentPolicyService } from "./supplier-payment-policy.service"
 import { PaymentReviewService } from "./payment-review.service";
 import { CommerceAnalyticsController } from "./commerce-analytics.controller";
 import { CommerceAnalyticsService } from "./commerce-analytics.service";
+import { DocumentsModule } from "../documents/documents.module";
 
-@Module({ imports: [InventoryModule, SuppliersModule, IntegrationsModule, ComplianceModule, MarketplaceAgreementsModule], controllers: [CommerceController, OrderWorkflowController, WorkspaceReadsController, SupplierPaymentPolicyController, CommerceAnalyticsController], providers: [SupplierAuxiliaryReadsService, CommerceService, OrderWorkflowService, WorkspaceReadsService, SupplierPaymentPolicyService, PaymentReviewService, CommerceAnalyticsService], exports: [CommerceService] })
+@Module({ imports: [InventoryModule, SuppliersModule, IntegrationsModule, ComplianceModule, MarketplaceAgreementsModule, DocumentsModule], controllers: [CommerceController, OrderWorkflowController, WorkspaceReadsController, SupplierPaymentPolicyController, CommerceAnalyticsController], providers: [SupplierAuxiliaryReadsService, CommerceService, OrderWorkflowService, WorkspaceReadsService, SupplierPaymentPolicyService, PaymentReviewService, CommerceAnalyticsService], exports: [CommerceService] })
 export class CommerceModule {}

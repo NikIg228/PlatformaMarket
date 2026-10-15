@@ -2414,6 +2414,7 @@ model SupplierOrder {
   refunds                  Refund[]
   shipments                Shipment[]
   documents                Document[]
+  invoicePreparations      OrderInvoicePreparation[]
   complianceChecks         ComplianceCheck[]
   createdAt                DateTime                @default(now())
   updatedAt                DateTime                @updatedAt
@@ -3081,6 +3082,30 @@ model DocumentTemplate {
   @@index([kind, status, effectiveFrom])
 }
 
+model InvoiceNumberCounter {
+  year Int @id
+  value BigInt @default(0)
+}
+
+model OrderInvoicePreparation {
+  documentId String @id @db.Uuid
+  supplierOrderId String @db.Uuid
+  idempotencyKey String
+  requestHash String
+  actorId String @db.Uuid
+  number String
+  version Int
+  confirmedAt DateTime?
+  confirmedById String? @db.Uuid
+  confirmedByName String?
+  document Document @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  supplierOrder SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Restrict)
+
+  @@unique([supplierOrderId, idempotencyKey])
+  @@unique([number, version])
+  @@index([supplierOrderId, confirmedAt])
+}
+
 model Document {
   id                     String                  @id @default(uuid()) @db.Uuid
   ownerOrganizationId    String                  @db.Uuid
@@ -3119,6 +3144,7 @@ model Document {
   externalId             String?
   failureReason          String?
   metadata               Json?
+  invoicePreparation     OrderInvoicePreparation?
   owner                  Organization            @relation("DocumentOwner", fields: [ownerOrganizationId], references: [id], onDelete: Restrict)
   template               DocumentTemplate?       @relation(fields: [templateId], references: [id], onDelete: SetNull)
   checkout               Checkout?               @relation(fields: [checkoutId], references: [id], onDelete: SetNull)

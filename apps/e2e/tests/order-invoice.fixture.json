@@ -1,0 +1,186 @@
+{
+  "templateVersion": "PM_INVOICE_V1",
+  "orderId": "10000000-0000-4000-8000-000000000010",
+  "orderNumber": "TEST-1",
+  "orderVersion": 1,
+  "number": "PM-INV-2026-00000001",
+  "version": 1,
+  "date": "2026-10-15",
+  "supplier": {
+    "id": "10000000-0000-4000-8000-000000000001",
+    "version": 1,
+    "fields": {
+      "legalForm": "LEGAL_ENTITY",
+      "bankAccounts": [
+        {
+          "id": "10000000-0000-4000-8000-000000000030",
+          "bankName": "Тестовый банк",
+          "iban": "KZ86125KZT5004100100",
+          "bic": "FAKEKZXX",
+          "kbe": "17",
+          "currency": "KZT"
+        }
+      ],
+      "defaultBankAccountId": "10000000-0000-4000-8000-000000000030",
+      "taxPeriods": [
+        {
+          "id": "10000000-0000-4000-8000-000000000031",
+          "status": "VAT_PAYER",
+          "effectiveFrom": "2026-01-01",
+          "effectiveTo": null,
+          "reference": null
+        }
+      ]
+    },
+    "source": {
+      "organizationVersion": 1,
+      "legalName": "Тестовая организация 1",
+      "displayName": "Тест",
+      "identifier": "999999999999",
+      "profile": {
+        "contactName": "Тестовый контакт",
+        "phone": "+77000000000",
+        "email": "invoice@example.invalid",
+        "additionalContacts": [],
+        "legalAddress": {
+          "cityId": "10000000-0000-4000-8000-000000000090",
+          "line1": "Тестовый адрес 10",
+          "postalCode": null
+        },
+        "deliveryAddress": {
+          "cityId": "10000000-0000-4000-8000-000000000090",
+          "line1": "Тестовый адрес 10",
+          "postalCode": null
+        }
+      },
+      "legalAddressText": "Казахстан, тестовый город, улица 10",
+      "deliveryAddressText": "Казахстан, тестовый город, улица 10",
+      "profileComplete": true,
+      "requiresPaymentDetails": true
+    },
+    "createdAt": "2026-10-14T10:00:00.000Z",
+    "createdBy": {
+      "id": "10000000-0000-4000-8000-000000000091",
+      "displayName": "Сотрудник"
+    },
+    "confirmedAt": "2026-10-14T10:00:00.000Z",
+    "confirmedBy": {
+      "id": "10000000-0000-4000-8000-000000000091",
+      "displayName": "Сотрудник"
+    }
+  },
+  "buyer": {
+    "id": "10000000-0000-4000-8000-000000000002",
+    "version": 1,
+    "fields": {
+      "legalForm": "LEGAL_ENTITY",
+      "bankAccounts": [
+        {
+          "id": "10000000-0000-4000-8000-000000000030",
+          "bankName": "Тестовый банк",
+          "iban": "KZ86125KZT5004100100",
+          "bic": "FAKEKZXX",
+          "kbe": "17",
+          "currency": "KZT"
+        }
+      ],
+      "defaultBankAccountId": "10000000-0000-4000-8000-000000000030",
+      "taxPeriods": [
+        {
+          "id": "10000000-0000-4000-8000-000000000031",
+          "status": "VAT_PAYER",
+          "effectiveFrom": "2026-01-01",
+          "effectiveTo": null,
+          "reference": null
+        }
+      ]
+    },
+    "source": {
+      "organizationVersion": 1,
+      "legalName": "Тестовая организация 2",
+      "displayName": "Тест",
+      "identifier": "999999999999",
+      "profile": {
+        "contactName": "Тестовый контакт",
+        "phone": "+77000000000",
+        "email": "invoice@example.invalid",
+        "additionalContacts": [],
+        "legalAddress": {
+          "cityId": "10000000-0000-4000-8000-000000000090",
+          "line1": "Тестовый адрес 10",
+          "postalCode": null
+        },
+        "deliveryAddress": {
+          "cityId": "10000000-0000-4000-8000-000000000090",
+          "line1": "Тестовый адрес 10",
+          "postalCode": null
+        }
+      },
+      "legalAddressText": "Казахстан, тестовый город, улица 10",
+      "deliveryAddressText": "Казахстан, тестовый город, улица 10",
+      "profileComplete": true,
+      "requiresPaymentDetails": false
+    },
+    "createdAt": "2026-10-14T10:00:00.000Z",
+    "createdBy": {
+      "id": "10000000-0000-4000-8000-000000000091",
+      "displayName": "Сотрудник"
+    },
+    "confirmedAt": "2026-10-14T10:00:00.000Z",
+    "confirmedBy": {
+      "id": "10000000-0000-4000-8000-000000000091",
+      "displayName": "Сотрудник"
+    }
+  },
+  "bankAccount": {
+    "id": "10000000-0000-4000-8000-000000000030",
+    "bankName": "Тестовый банк",
+    "iban": "KZ86125KZT5004100100",
+    "bic": "FAKEKZXX",
+    "kbe": "17",
+    "currency": "KZT"
+  },
+  "lines": [
+    {
+      "id": "10000000-0000-4000-8000-000000000040",
+      "name": "Тестовый стоматологический материал",
+      "article": "SKU-TEST",
+      "unit": "шт.",
+      "quantity": "2",
+      "unitPriceMinor": "5800",
+      "totalMinor": "11600",
+      "tax": {
+        "declaration": {
+          "selection": {
+            "mode": "TAXABLE",
+            "rate": "16",
+            "basis": null
+          },
+          "ruleId": "KZ_STANDARD_2026_V1",
+          "profile": {
+            "revisionId": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "organizationVersion": 1,
+            "taxPeriodId": "10000000-0000-4000-8000-000000000031",
+            "status": "VAT_PAYER",
+            "effectiveFrom": "2026-01-01",
+            "effectiveTo": null
+          },
+          "declaredAt": "2026-10-14T12:00:00.000Z",
+          "declaredById": "10000000-0000-4000-8000-000000000091",
+          "source": "EXPLICIT",
+          "defaultVersion": null
+        },
+        "calculationVersion": "GROSS_LINE_HALF_UP_V1",
+        "grossMinor": "11600",
+        "baseMinor": "10000",
+        "vatMinor": "1600"
+      },
+      "gift": false
+    }
+  ],
+  "currency": "KZT",
+  "totalMinor": "11600",
+  "baseMinor": "10000",
+  "vatMinor": "1600"
+}

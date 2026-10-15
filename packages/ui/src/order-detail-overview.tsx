@@ -34,5 +34,5 @@ export function OrderDetailDocuments({ data, download }: { data: OrderWorkflowRe
     ...(data.invoiceDocumentId ? [{ id: data.invoiceDocumentId, title: "Счёт на оплату", detail: "PDF" }] : []),
     ...data.claims.map((claim, index) => ({ id: claim.documentId, title: `Квитанция о переводе ${index + 1}`, detail: formatDate(claim.paidAt, true) })),
   ];
-  return <section className="dm-order-card"><h2>Документы по оплате</h2>{documents.length ? documents.map(doc => <div className="dm-order-document" key={doc.id}><div><strong>{doc.title}</strong><p>{doc.detail}</p></div><DmButton onClick={() => void download(doc.id)}>Скачать</DmButton></div>) : <p>Счёт и квитанции появятся здесь после загрузки.</p>}<p className="dm-order-muted">Документы по возвратам доступны во вкладке «Возвраты».</p></section>;
+  return <section className="dm-order-card"><h2>Документы по оплате</h2>{documents.length ? documents.map(doc => <div className="dm-order-document" key={doc.id}><div><strong>{doc.title}</strong><p>{doc.detail}</p></div><DmButton onClick={() => void download(doc.id)}>Скачать</DmButton></div>) : <p>Выставленный счёт и квитанции появятся здесь.</p>}<p className="dm-order-muted">Документы по возвратам доступны во вкладке «Возвраты».</p></section>;
 }
