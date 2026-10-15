@@ -55,7 +55,8 @@ describe("Admin performance boundaries", () => {
     expect(source).toContain('import("./operation-object-focus")');
     expect(source).toContain('import("./commerce-analytics")');
     expect(source).toContain('import("./identity-settings")');
-    expect(dynamicImports).toHaveLength(22);
+    expect(source).toContain('import("./operator-organizations")');
+    expect(dynamicImports).toHaveLength(23);
   });
 
   it("keeps domain forms and schemas out of eager shell imports", () => {

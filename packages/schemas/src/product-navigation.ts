@@ -1,3 +1,6 @@
+import { parseAdminQuery } from "./admin-query";
+export { adminSections, adminQueueTypes, defaultAdminQuery, parseAdminQuery, serializeAdminQuery, adminSectionQuery } from "./admin-query";
+export type { AdminQuery, AdminSection, AdminQueueType } from "./admin-query";
 const navigationOrigin = "https://navigation.invalid";
 const productPath = /^\/products\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const unsafeCharacters = /[\\#\u0000-\u001f\u007f]/;
@@ -12,22 +15,11 @@ export function requestedWorkspaceCapability(value: unknown): "BUYER" | "SUPPLIE
 
 /** Admin read destinations; identity, actions and nested redirects never enter this URL. */
 export function adminReturnPath(value: unknown): string | undefined {
-  if (typeof value !== "string" || value.length > 2048 || unsafeCharacters.test(value)) return;
+  if (typeof value !== "string" || value.length > 4096 || unsafeCharacters.test(value)) return;
   if (!/^\/admin(?:\?|$)/.test(value)) return;
   const url = new URL(value, navigationOrigin);
   if (url.origin !== navigationOrigin || url.pathname !== "/admin") return;
-  const sections = ["analytics", "overview", "organizations", "access", "catalog", "imports", "orders", "support", "security", "settings"];
-  const queues = ["ORGANIZATION_REVIEW", "PROMOTION_REVIEW", "CATALOG_REVIEW", "COMPLIANCE_REVIEW", "INTEGRATION_RECONCILIATION", "IMPORT_ATTENTION", "AGREEMENT_SIGNATURE", "SUPPLIER_CONFIRMATION", "STALE_INVENTORY"];
-  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  for (const [key, field] of url.searchParams) {
-    if (url.searchParams.getAll(key).length !== 1) return;
-    if (key === "section") { if (!sections.includes(field)) return; }
-    else if (key === "queueType") { if (!queues.includes(field)) return; }
-    else if (["object", "ticketId", "conversationId"].includes(key)) { if (!uuid.test(field)) return; }
-    else return;
-  }
-  if (url.searchParams.has("queueType") !== url.searchParams.has("object")) return;
-  if ((url.searchParams.has("ticketId") || url.searchParams.has("conversationId")) && url.searchParams.get("section") !== "support") return;
+  if (!parseAdminQuery(url.search)) return;
   return url.pathname + url.search;
 }
 

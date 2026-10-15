@@ -147,7 +147,7 @@ for (const width of [1280, 390]) {
     if (await drawer.isVisible()) await drawer.click();
     await page
       .getByRole("navigation")
-      .getByRole("button", { name: "Контроль и аудит", exact: true })
+      .getByRole("link", { name: "Контроль и аудит", exact: true })
       .click();
     await expect(
       page.getByRole("heading", { name: "Журнал оператора", exact: true }),

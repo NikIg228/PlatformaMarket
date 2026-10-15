@@ -142,6 +142,14 @@ export class MarketplaceApiClient {
     return this.download(`/conversations/${encodeURIComponent(conversationId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(assetId)}`);
   }
   operationWorkQueue(offset = 0) { return this.get<import("@marketplace/schemas").OperationWorkQueue>(`/operations/work-queue?offset=${offset}`); }
+  operatorDashboard(signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorDashboard>("/operations/dashboard", { signal }); }
+  operatorCapabilities(signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorCapabilities>("/operations/capabilities", { signal }); }
+  operatorOrganizations(query: Partial<import("@marketplace/schemas").OperatorOrganizationsQuery> = {}, signal?: AbortSignal) {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) if (value !== undefined) params.set(key, String(value));
+    return this.get<import("@marketplace/schemas").OperatorOrganizations>(`/operations/organizations?${params}`, { signal });
+  }
+  operatorOrganization(id: string, signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorOrganizationDetail>(`/operations/organizations/${encodeURIComponent(id)}`, { signal }); }
   operationAssignees() { return this.get<{ id: string; displayName: string }[]>("/operations/work-queue/assignees"); }
   assignOperation(type: import("@marketplace/schemas").OperationQueueType, id: string, input: import("@marketplace/schemas").OperationAssignment) { return this.post<import("@marketplace/schemas").OperationAssignmentResult>(`/operations/work-queue/${type}/${encodeURIComponent(id)}/assignment`, input); }
   operationHistory(type: import("@marketplace/schemas").OperationQueueType, id: string) { return this.get<import("@marketplace/schemas").OperationHistory>(`/operations/work-queue/${type}/${encodeURIComponent(id)}/history`); }

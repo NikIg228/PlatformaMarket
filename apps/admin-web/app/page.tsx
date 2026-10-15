@@ -16,7 +16,9 @@ import { DmButton } from "@marketplace/ui/actions";
 import { ActionFeedback } from "@marketplace/ui/action-feedback";
 import { AdminShell } from "./admin-shell";
 import { frontendFeatures } from "@marketplace/api-client";
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
+import { adminSectionQuery, type AdminSection } from "@marketplace/schemas/product-navigation";
+import { useAdminQuery } from "./use-admin-query";
 import styles from "./page.module.css";
 import {
   IdentitySettings,
@@ -34,7 +36,7 @@ import {
   PlatformAssurance,
   PlatformSettings,
   ProductCorrectionQueue,
-  ResourceLists,
+  OperatorOrganizations,
   SupplierControls,
   SupplierOperations,
   SupportOperations,
@@ -48,17 +50,7 @@ import { OperationQueue } from "./operation-queue";
 import { useAdminAccess } from "./use-admin-access";
 import { OperatorNotifications } from "./operator-notifications";
 
-type SectionId =
-  | "analytics"
-  | "overview"
-  | "organizations"
-  | "access"
-  | "catalog"
-  | "imports"
-  | "orders"
-  | "support"
-  | "security"
-  | "settings";
+type SectionId = AdminSection;
 
 const navigation: Array<{ id: SectionId; label: string; icon: ReactNode }> = [
   { id: "analytics", label: "Аналитика", icon: <DocumentTable24Regular /> },
@@ -123,17 +115,9 @@ const modules: Array<{ id: SectionId; title: string; description: string; icon: 
 
 export default function OperationsWorkspace() {
   const access = useAdminAccess();
-  const [active, setActive] = useState<SectionId>("overview");
-
-  const navigate = (id: SectionId) => {
-    setActive(id); const url = new URL(window.location.href);
-    url.searchParams.set("section", id); url.searchParams.delete("ticketId"); url.searchParams.delete("conversationId");
-    window.history.pushState(null, "", url.pathname + url.search);
-  };
-  useEffect(() => {
-    const sync = () => { const section = new URLSearchParams(window.location.search).get("section"); setActive(navigation.some(item => item.id === section) ? section as SectionId : "overview"); };
-    sync(); window.addEventListener("popstate", sync); return () => window.removeEventListener("popstate", sync);
-  }, []);
+  const { state, valid, write } = useAdminQuery();
+  const active = state.section;
+  const navigate = (id: SectionId) => write(adminSectionQuery(state, id));
   if (!access.ready) return <main className={styles.authLoading}>{access.error ? <ActionFeedback tone="error" description={access.error} action={<DmButton onClick={access.retry}>Повторить проверку</DmButton>} /> : "Проверяем вход…"}</main>;
 
   const meta = sectionMeta[active];
@@ -176,9 +160,9 @@ export default function OperationsWorkspace() {
     analytics: <OperatorCommerceAnalytics />,
     support: <SupportOperations />,
     overview,
-    organizations: <><ResourceLists /><FoundationManagement /></>,
+    organizations: <OperatorOrganizations />,
     access: <><SupplierControls /><PlatformAssurance /></>,
-    catalog: <><ManualProductReview />{frontendFeatures.promotions ? <PromotionModeration /> : null}<ProductCorrectionQueue /><CatalogQuality /><CatalogFoundation /></>,
+    catalog: <><ManualProductReview />{frontendFeatures.promotions ? <PromotionModeration /> : null}<ProductCorrectionQueue /><CatalogQuality /><CatalogFoundation /><FoundationManagement catalogOnly /></>,
     imports: <><CatalogImportReviewQueue /><SupplierOperations /><IntegrationOperations /><ConnectorReadinessRegistry /></>,
     orders: <><OperationQueue /><AgreementOperations /></>,
     security: <>{frontendFeatures.trust && <TrustOperations />}<AuditOperations /></>,
@@ -194,7 +178,7 @@ export default function OperationsWorkspace() {
       actions={
         <>
 
-          <OperatorNotifications onSupport={() => navigate("support")} />
+          <OperatorNotifications onSupport={ticketId => write({ ...adminSectionQuery(state, "support"), ticketId, supportMode: "tickets" })} />
         </>
       }
     >
@@ -203,7 +187,7 @@ export default function OperationsWorkspace() {
           <p className={styles.description}>{meta.description}</p>
           {active === "organizations" ? <OrganizationQuickCreate /> : null}
         </div>
-        <div className={styles.sectionStack}><OperationObjectFocus />{content[active]}</div>
+        <div className={styles.sectionStack}>{valid ? <><OperationObjectFocus />{content[active]}</> : <ActionFeedback tone="error" description="В ссылке указаны недопустимые параметры. Откройте раздел заново." action={<DmButton onClick={() => navigate("overview")}>Открыть обзор</DmButton>} />}</div>
       </div>
     </AdminShell>
   );

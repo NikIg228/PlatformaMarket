@@ -1,0 +1,9 @@
+.section { display: grid; gap: var(--dm-space-4); margin-top: var(--dm-space-6); }
+.header { display: flex; align-items: center; justify-content: space-between; gap: var(--dm-space-4); flex-wrap: wrap; }
+.header h2 { margin: 0; font-size: var(--dm-font-size-heading); line-height: var(--dm-line-heading); }
+.header p, .caption { margin: var(--dm-space-2) 0 var(--dm-space-4); color: var(--dm-text-muted); font-size: var(--dm-font-size-caption); line-height: var(--dm-line-compact); }
+.metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--dm-space-4); }
+.metric { margin: 0; }
+.metric dt { color: var(--dm-text-secondary); font-size: var(--dm-font-size-body); }
+.metric dd { margin: var(--dm-space-4) 0 0; font-size: var(--dm-font-size-page); font-weight: var(--dm-font-weight-bold); line-height: var(--dm-line-heading); overflow-wrap: anywhere; }
+@media (max-width: 900px) { .metrics { grid-template-columns: 1fr; } }

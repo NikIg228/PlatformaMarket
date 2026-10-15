@@ -32,7 +32,7 @@ const organizationId =
   process.env.NEXT_PUBLIC_DEV_ORGANIZATION_ID ??
   "00000000-0000-4000-8000-000000000001";
 
-export function FoundationManagement() {
+export function FoundationManagement({ catalogOnly = false }: { catalogOnly?: boolean }) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [accessMode, setAccessMode] = useState<AccessPolicy["mode"]>("ROLE_BASED");
   const [memberships, setMemberships] = useState<Membership[]>([]);
@@ -59,11 +59,11 @@ export function FoundationManagement() {
     try {
       const [roleData, membershipData, attributeData, categoryData, policy] =
         await Promise.all([
-          request<Role[]>(`/organizations/${organizationId}/roles`),
-          request<Membership[]>(`/organizations/${organizationId}/memberships`),
+          catalogOnly ? Promise.resolve([]) : request<Role[]>(`/organizations/${organizationId}/roles`),
+          catalogOnly ? Promise.resolve([]) : request<Membership[]>(`/organizations/${organizationId}/memberships`),
           request<Attribute[]>("/catalog/attributes"),
           request<Category[]>("/catalog/categories"),
-          request<AccessPolicy>("/access-control/policy"),
+          catalogOnly ? Promise.resolve({ mode: "ROLE_BASED" as const }) : request<AccessPolicy>("/access-control/policy"),
         ]);
       setRoles(roleData);
       setAccessMode(policy.mode);
@@ -76,7 +76,7 @@ export function FoundationManagement() {
     } finally {
       setLoading(false);
     }
-  }, [request, notify]);
+  }, [request, notify, catalogOnly]);
 
   useEffect(() => {
     void load();
@@ -183,11 +183,11 @@ export function FoundationManagement() {
   }
 
   return (
-    <section className={styles.section} aria-label="Роли и справочники">
+    <section className={styles.section} aria-label={catalogOnly ? "Атрибуты и правила каталога" : "Роли и справочники"}>
       <div className={styles.heading}>
         <div>
-          <h2>Роли и справочники</h2>
-          <p>Роли, участники и конфигурация динамических атрибутов.</p>
+          <h2>{catalogOnly ? "Атрибуты и правила каталога" : "Роли и справочники"}</h2>
+          <p>{catalogOnly ? "Конфигурация динамических атрибутов и правил категорий." : "Роли, участники и конфигурация динамических атрибутов."}</p>
         </div>
 
       </div>
@@ -198,8 +198,8 @@ export function FoundationManagement() {
         </div>
       ) : (
         <div className={styles.grid}>
-          {loadFailed ? <DmButton disabled={loading} onClick={() => void load()}>Повторить загрузку данных</DmButton> : null}
-          <div className={styles.panel}>
+        {loadFailed ? <DmButton disabled={loading} onClick={() => void load()}>Повторить загрузку данных</DmButton> : null}
+          {!catalogOnly ? <div className={styles.panel}>
             <h3>Роли и участники</h3>
             {accessMode === "FULL_ACCESS" ? <p>Роли временно отключены. Активным сотрудникам доступны все функции своей организации.</p> : <>
             <form className={styles.form} onSubmit={submitRole}>
@@ -261,7 +261,7 @@ export function FoundationManagement() {
                 ))
               )}
             </div>
-          </div>
+          </div> : null}
 
           <div className={styles.panel}>
             <h3>Атрибуты каталога</h3>

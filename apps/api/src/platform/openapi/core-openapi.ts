@@ -3,6 +3,8 @@ import { prepareShipmentWaybillSchema, shipmentWaybillViewSchema, shipmentWaybil
 import { prepareOrderInvoiceSchema, orderInvoiceViewSchema, orderInvoicesResponseSchema } from "@marketplace/schemas";
 import { supplierVatSettingsSchema, saveSupplierVatSettingsSchema, previewOfferVatSchema, applyOfferVatSchema, offerVatPreviewSchema, offerVatApplyResultSchema, integrationTaxBindingsSchema, integrationTaxBindingSchema, updateIntegrationTaxSchema } from "@marketplace/schemas";
 import { supplierImportTaxPreviewInputSchema, supplierImportTaxPreviewSchema } from "@marketplace/schemas";
+import { operatorDashboardSchema, operatorDashboardQuerySchema, operatorCapabilitiesSchema } from "@marketplace/schemas";
+import { operatorOrganizationsSchema, operatorOrganizationsQuerySchema, operatorOrganizationDetailSchema } from "@marketplace/schemas";
 import { personalProfileSchema, updatePersonalProfileSchema, requestProfileEmailSchema, profileEmailRequestedSchema, uploadProfileAvatarSchema, profileAvatarSchema } from "@marketplace/schemas";
 import { sessionLogoutRequestSchema, sessionLogoutResponseSchema } from "@marketplace/schemas";
 import { notificationInboxQuerySchema, notificationInboxSchema, notificationReadAllSchema, notificationReadAllResultSchema } from "@marketplace/schemas";
@@ -164,6 +166,12 @@ const coreZodSchemas = {
   OperationHistory: operationHistorySchema,
   OperationAssignees: operationAssigneesSchema,
   OperationWorkQueue: operationWorkQueueSchema,
+  OperatorDashboard: operatorDashboardSchema,
+  OperatorDashboardQuery: operatorDashboardQuerySchema,
+  OperatorCapabilities: operatorCapabilitiesSchema,
+  OperatorOrganizations: operatorOrganizationsSchema,
+  OperatorOrganizationsQuery: operatorOrganizationsQuerySchema,
+  OperatorOrganizationDetail: operatorOrganizationDetailSchema,
   OperationObject: operationObjectSchema,
   OperationWorkQueueQuery: operationWorkQueueQuerySchema,
   AuthEmailLoginRequest: emailLoginSchema,

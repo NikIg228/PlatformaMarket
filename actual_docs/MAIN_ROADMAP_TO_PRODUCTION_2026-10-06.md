@@ -1,5 +1,24 @@
 # Main Roadmap to Production — PlatformaMarket
 
+### Актуальный срез 16.10.2026 — опубликованный код и текущая работа
+
+Опубликованный `main@4582db1` проверен: [CI38793466059](https://github.com/NikIg228/PlatformaMarket/actions/runs/38793466059)
+и [Security38793466256](https://github.com/NikIg228/PlatformaMarket/actions/runs/38793466256) SUCCESS.
+Основной browser121/121, FlowB3 7/7, full-access3/3 и promotion4/4 PASS.
+Счёт R7.6.2 опубликован в0586a2d; подготовка накладной R7.6.4.1 — в6b2b383;
+заявление/ответы/история (часть R7.6.5.2) — в1e65365. Их целевые evidence
+сохранены в журнале документооборота; общий CI не заменяет отдельные НУЦ/live gates.
+Строки ниже с датами13–15.10, прежними FAIL и SKIPPED сохраняют историю запусков,
+но не являются последним статусом опубликованного кода.
+
+По поручению владельца16.10 выполняется последовательность: сверка статусов и
+приёмка существующего Admin WIP (R7.7.1.3, R7.7.2, read-only часть R7.7.3), затем
+операционная допоставка по согласованной недостаче в R7.6.5.1–3. Admin WIP пока
+не входит в4582db1; его публикация/CI принимаются отдельно. Каталог и прочий
+несвязанный WIP сохраняются. AGREED означает только согласование; исполнение,
+исправленные подписанные документы и RESOLVED этим статусом не подтверждаются.
+Рабочая миграция, реальный НУЦ и deploy не входят в это поручение.
+
 Редакция14.10.2026: представление исполнения, подшаги и раздельные статусы.
 Интеграция полного документооборота и переработки Admin от13.10 сохранена.
 Путь и ID R0–R9 сохранены для совместимости ссылок и прежнего evidence.
@@ -46,9 +65,9 @@ promotion operator fixture. Общий browser, full-access, promotion workspace
 сборки, PostgreSQL и остальные включённые CI gates PASS. Это приёмка текущего
 пакета, не закрытие всего R7.2 или production roadmap.
 R7.6.1.4: профиль реквизитов опубликован/проверен; 14.10 владелец согласовал
-налоговую модель и реализацию. Пакет в dirty checkout; 15.10 после разрешённого
-нового цикла LOCAL PASS: buyer/supplier UI, PostgreSQL, contracts, builds/tests.
-Выборочная публикация и actual CI pending; рабочая миграция отдельно.
+налоговую модель и реализацию. Пакет опубликован15.10 в9c5e38c: buyer/supplier UI,
+PostgreSQL, contracts, builds/tests PASS; actual CI38624076481 и Security38624076310
+PASS. Рабочая миграция и активация dev — отдельный scope.
 Подробные receipts — [PRIMARY-SESSION](governance/task-state/PRIMARY-SESSION.md).
 
 Цель владельца08.10 — production с необходимыми интеграциями,
@@ -588,10 +607,10 @@ R7.6/R7.7 PLANNED. Полная переработка Admin теперь вхо
 | Пакет | Реализация | Проверки | Публикация | CI пакета | Зависимость / следующий шаг |
 | --- | --- | --- | --- | --- | --- |
 | R7.6.1 Контракт | PARTIAL: инвентаризация завершена; контракт не реализован | Inventory review PASS; runtime NOT_RUN | Карта в текущей docs-публикации | Не сертификат runtime | R1: формы/полномочия; R7.6.3.1 для signature-полей |
-| R7.6.2 Счёт | GENERATED: подготовка/PDF/подтверждение/история | SCOPED PASS15.10: PG/core/runtime/UI/PDF | Текущий feature-пакет | SKIPPED по решению владельца | НУЦ/прочие документы отдельно; рабочая миграция не выполнялась |
-| R7.6.3 НУЦ | BASE: интерфейс адаптера | NOT_RUN | BASE:1ff5d98 | NOT_RUN | Проверить реальный путь/доступы, затем контракт и интеграция |
-| R7.6.4 Партия и подписи | BASE: заказ/отправления/документы | NOT_RUN | BASE:1ff5d98 | NOT_RUN | Формы, план сторон и рабочий путь R7.6.3 |
-| R7.6.5 Исключения | BASE: товарные/денежные события | NOT_RUN | BASE:1ff5d98 | NOT_RUN | Утвердить формы и участников исправления/возврата |
+| R7.6.2 Счёт | GENERATED: подготовка/PDF/подтверждение/история | SCOPED PASS15.10: PG/core/runtime/UI/PDF | 0586a2d | Общий CI4582db1 SUCCESS16.10 | НУЦ/прочие документы отдельно; рабочая миграция отдельно |
+| R7.6.3 НУЦ | PARTIAL: adapter boundary, неизменные signing bytes, unsigned prototype packet | Подготовка PASS; реальный прототип NOT_RUN | 76d5c1d | Общий CI4582db1 SUCCESS; не evidence реальной подписи | SDK/тестовые сертификаты отсутствуют, работа НУЦ на паузе |
+| R7.6.4 Партия и подписи | PARTIAL: .4.1 черновик накладной фактической партии | Подготовка/PDF/PG/UI SCOPED PASS; подписи NOT_RUN | 6b2b383 | Общий CI4582db1 SUCCESS | Подписи и документальная приёмка .4.2/3 требуют R7.6.3 |
+| R7.6.5 Исключения | PARTIAL: заявление, ответы сторон, история; AGREED без исполнения | SCOPED PASS операционного пакета; .5.3 целиком не принят | 1e65365 | Общий CI4582db1 SUCCESS; целевой PG/UI в журнале | Исполнение допоставки, уменьшение/возврат и подписанные исправления остаются |
 | R7.6.6 SMS физлица | NOT_STARTED | NOT_RUN | NOT_PUBLISHED | NOT_RUN | Личный заказ/получатель, параметры и канал R5.3 |
 | R7.6.7 Архив | BASE: хранение/скачивание | NOT_RUN | BASE:1ff5d98 | NOT_RUN | Условия хранения, доказательства подписи и изолированное восстановление |
 | R7.6.8 Общая приёмка | NOT_STARTED | NOT_RUN | NOT_PUBLISHED | NOT_RUN | R7.6.1–7 и единый manifest; live отдельно в R9 |
@@ -620,7 +639,7 @@ SMS физлица — отдельный согласованный докум�
   <a id="document-vat"></a>
 
   - [ ] **R7.6.1.4** Реквизиты и НДС: профиль поставщика → предложение → заказ → документы.
-    LOCAL PASS15.10: VAT implementation, full isolated PG/core-contract, API/web build, runtime и supplier/buyer browser PASS; новый цикл разрешён владельцем. Выборочная publication/actual CI pending, рабочая миграция отдельно. Первый пакет профиля опубликован в dd1dac8; targeted UI/API/PostgreSQL, рабочая миграция/dev и общий CI03828c3 PASS относятся к прежнему пакету. [Контракт пакета](domains/MARKET_DOCUMENT_WORKFLOW.md#organization-requisites-runtime), [evidence/блокеры](governance/task-state/PRIMARY-SESSION.md). Модель оставшейся цепочки согласована владельцем14.10;
+    PUBLISHED15.10 в9c5e38c: VAT implementation, full isolated PG/core-contract, API/web build, runtime и supplier/buyer browser PASS; actual CI38624076481/Security38624076310 PASS. Рабочая миграция и активация dev отдельно. Первый пакет профиля опубликован в dd1dac8; targeted UI/API/PostgreSQL, рабочая миграция/dev и общий CI03828c3 PASS относятся к прежнему пакету. [Контракт пакета](domains/MARKET_DOCUMENT_WORKFLOW.md#organization-requisites-runtime), [evidence/блокеры](governance/task-state/PRIMARY-SESSION.md). Модель оставшейся цепочки согласована владельцем14.10;
     описание оставшейся цепочки не означает её реализацию. Контракт — [DWF §17.5–17.6](domains/MARKET_DOCUMENT_WORKFLOW.md#supplier-vat-proposal).
     Последовательность и границы результата:
     - **Профиль:** общие реквизиты вводятся и подтверждаются один раз, затем
@@ -781,9 +800,9 @@ NOT_RUN в остальных строках — проверки именно �
 
 | Пакет | Реализация | Проверки | Публикация | CI пакета | Зависимость / следующий шаг |
 | --- | --- | --- | --- | --- | --- |
-| R7.7.1 Shell/auth/URL | PARTIAL: auth37fa69a; shell LOCAL_PASS | Shell browser5/real auth/consumers и Admin bundle PASS | Auth37fa69a; shell publication pending | Auth b197d8d FAILURE; shell NOT_RUN | Публикация/CI shell; карта URL .3 отдельно |
-| R7.7.2 Показатели/возможности | BASE: текущие панели | NOT_RUN | BASE:1ff5d98 | NOT_RUN | Семантика totals и безопасная capability projection |
-| R7.7.3 Организации/доступ | BASE: membership/допуск | NOT_RUN | BASE:1ff5d98 | NOT_RUN | Матрица операторских действий и list/detail contract |
+| R7.7.1 Shell/auth/URL | PARTIAL: auth/shell опубликованы; typed URL готов | LOCAL_PASS16.10: navigation7, object390/keyboard, unit/types/build | URL: текущий Admin пакет | CI4582db1 SUCCESS для прежней основы; новый pending | Полная приёмка R7.7.1 отдельно; исторический viewport NOT_RUN закрыт |
+| R7.7.2 Показатели/возможности | IMPLEMENTED: server totals и безопасная projection | LOCAL_PASS16.10: unit/API/real UI/1440+390/build/review | Текущий Admin пакет | Pending | Публикация и CI текущего пакета |
+| R7.7.3 Организации/доступ | PARTIAL: .3.1 и read-only UI .3.3 | LOCAL_PASS16.10: paging151/denial/real UI/recovery/1440+390 | Текущий Admin пакет | Pending | .3.2 и остальные действия .3.3 не реализованы |
 | R7.7.4 Каталог | BASE: модерация/редакторы | NOT_RUN | BASE:1ff5d98 | NOT_RUN | Полный поиск/paging, перенос без потери доменных guards |
 | R7.7.5 Заказы | BASE: detail workflow | NOT_RUN | BASE:1ff5d98 | NOT_RUN | Операторский реестр; документальные состояния из R7.6 |
 | R7.7.6 Очередь/support | PARTIAL: готов support slice | BASE: LOCAL_PASS MA-01–05 | BASE:55744ff/1ff5d98 | BASE: FAIL1ff5d98; новый NOT_RUN | Общий paging/assignment/SLA, импорты и документальные исключения |
@@ -810,9 +829,14 @@ DoD: оператор находит любой разрешённый объе�
     14.10: реализовано opt-in shared AppShell/Admin composition; targeted browser5,
     real login/logout, screenshots/computed styles и default consumer PASS.
     Admin bundle исправлен:1033817raw/314381gzip,15files PASS; review PASS.
-    Приёмка открыта до публикации/CI; прежний общий CI FAILURE не снят.
+    Опубликовано59d944a; CI59d944a/2876648 FAILURE на dependent FlowB3 selector,
+    Security PASS; адресная совместимость проверяется с .3. Общий CI FAILURE не снят.
     Evidence/попытки — [технический журнал](applications/admin-implementation-log.md).
   - [ ] **R7.7.1.3** Навигация: принять карту старых и новых URL, уведомлений и объектов; проверить прямой вход, refresh, Back/Forward и доступный возврат без потери контекста.
+    14.10: typed query-state реализован; parser/return84, final browser7, real
+    safe-return/logout, FlowB3/full-access и builds PASS. Дополнительный object-mobile
+    запуск тогда NOT_RUN (automatic approval denied). 16.10: review и
+    object390/keyboard PASS на production build; публикация/CI pending. Карта/evidence — [технический журнал](applications/admin-implementation-log.md).
 
 - [ ] **R7.7.2** Достоверный рабочий стол и статусы возможностей (агрегаты ADM-02,
   projection ADM-11): server totals, полнота/время данных, отличие нуля от ошибки;
@@ -822,6 +846,11 @@ DoD: оператор находит любой разрешённый объе�
   - [ ] **R7.7.2.1** Агрегаты/API: определить семантику totals/периода/полноты; заменить подсчёт длины страницы, доказать выборку за лимитом и отказ источника.
   - [ ] **R7.7.2.2** Возможности/API: безопасная projection из flags/guards/readiness различает доступно/отключено/не настроено/не подтверждено; секреты не выдаются.
   - [ ] **R7.7.2.3** UI/приёмка: рабочий стол отображает достоверные значения и причины, unknown не равен нулю; проверить переходы к объектам, loading/empty/error/retry.
+    14.10: все три подшага реализованы и имеют LOCAL_PASS на `2876648` + scoped diff.
+    Реальный API доказал totals за100 и authorization; новые панели прошли состояния,
+    реальный операторский сценарий и screenshot/computed styles1440/390, read-only review.
+    16.10: текущая проверка navigation/object390 и всех трёх подшагов PASS; публикация/CI pending.
+    Семантика, команды и ограничения — [технический журнал](applications/admin-implementation-log.md).
 
 - [ ] **R7.7.3** Организации и доступ (ADM-04/05, профиль ADM-11): paginated list/detail,
   поиск всех организаций, акцепт/допуск/сотрудники/сессии/подключения; явная операторская
@@ -831,6 +860,12 @@ DoD: оператор находит любой разрешённый объе�
   - [ ] **R7.7.3.1** Реестр/API: paginated поиск и detail организации с явной операторской авторизацией; проверить полный набор, недопустимый ввод и tenant denial.
   - [ ] **R7.7.3.2** Доступ/API: принять матрицу разрешённых действий над сотрудниками/приглашениями/сессиями и допуском; сохранить FULL_ACCESS, запрет самоодобрения и защищённый revoke.
   - [ ] **R7.7.3.3** UI/приёмка: карточка организации, допуск, сотрудники и профиль оператора доступны в правильном контексте; конфликт сохраняет ввод, фильтры восстанавливаются.
+
+  Результат14.10: .3.1 и read-only list/detail часть .3.3 локально проверены:
+  поиск/фильтры/paging151, безопасная анкета с городами, supplier-only readiness,
+  Back/reload/denial/recovery/1440+390. Полномочия .3.2 не расширялись.
+  [Команды, attempts, границы и review](applications/admin-implementation-log.md).
+  16.10: повторная scoped приёмка PASS, прежний viewport gate закрыт; публикация/CI pending.
 
 - [ ] **R7.7.4** Каталог и модерация (ADM-06): реестры/карточки/поиск за первой страницей,
   исправления/акции/качество/справочники, контекст варианта/предложения и причина решения.

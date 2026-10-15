@@ -7,8 +7,9 @@ import { DmButton } from "@marketplace/ui/actions";
 import { DmDialog, EmptyState, LoadingState } from "@marketplace/ui/primitives";
 import { errorMessage } from "@marketplace/ui/format";
 import { adminApiContext, readAdminSession } from "./admin-auth";
+import { useAdminQuery } from "./use-admin-query";
 
-export function OperatorNotifications({ onSupport }: { onSupport: () => void }) {
+export function OperatorNotifications({ onSupport }: { onSupport: (ticketId?: string) => void }) {
   const api = useMemo(() => new MarketplaceApiClient(process.env.NEXT_PUBLIC_API_URL ?? "/api", adminApiContext()), []);
   const organizationId = readAdminSession()?.activeOrganizationId;
   const [data, setData] = useState<NotificationInbox | null>(null);
@@ -16,6 +17,8 @@ export function OperatorNotifications({ onSupport }: { onSupport: () => void }) 
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const running = useRef(false);
+  const { state: navigation } = useAdminQuery();
+  const currentNavigation = useRef(navigation); currentNavigation.current = navigation;
   const refresh = useCallback(async () => {
     if (!organizationId || running.current) return;
     running.current = true;
@@ -36,8 +39,8 @@ export function OperatorNotifications({ onSupport }: { onSupport: () => void }) 
       {!data && !error ? <LoadingState label="Загружаем уведомления" /> : data?.items.length === 0 ? <EmptyState title="Новых событий нет" description="Здесь появятся обращения участников и ответы по ним." /> : null}
       <div className="mp-stack">{data?.items.map(item => <article key={item.id}><strong>{item.title}{!item.readAt ? " · Новое" : ""}</strong><p>{item.description}</p><DmButton disabled={busy} onClick={() => {
         setBusy(true); void api.readNotification(item.id).then(() => {
-          setOpen(false); onSupport();
-          if (item.target?.type === "support") { const url = new URL(window.location.href); url.searchParams.set("ticketId", item.target.id); window.history.replaceState(null, "", url.pathname + url.search); window.dispatchEvent(new PopStateEvent("popstate")); }
+          setOpen(false);
+          if (currentNavigation.current === navigation) onSupport(item.target?.type === "support" ? item.target.id : undefined);
           void refresh();
         }).catch(cause => setError(errorMessage(cause))).finally(() => setBusy(false));
       }}>Открыть обращение</DmButton></article>)}</div>

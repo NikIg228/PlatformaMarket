@@ -4,6 +4,7 @@ import { LoadingState } from "@marketplace/ui/primitives";
 import dynamic from "next/dynamic";
 
 const loading = () => <LoadingState label="Загружаем раздел" />;
+export const OperatorOrganizations = dynamic(() => import("./operator-organizations").then(module => module.OperatorOrganizations), { loading });
 export const IdentitySettings = dynamic(() => import("./identity-settings").then(module => module.IdentitySettings), { loading });
 export const OperatorCommerceAnalytics = dynamic(() => import("./commerce-analytics").then(module => module.OperatorCommerceAnalytics), { loading });
 export const SupportOperations = dynamic(() => import("./support-operations").then(module => module.SupportOperations), { loading });

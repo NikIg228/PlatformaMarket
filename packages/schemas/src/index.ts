@@ -1456,6 +1456,9 @@ export * from "./commerce-analytics.js";
 export * from "./notification-inbox";
 export * from "./personal-profile.js";
 export * from "./session-logout.js";
+export * from "./operator-dashboard.js";
+export * from "./operator-organizations.js";
+
 export * from "./order-invoice";
 
 export * from "./order-discrepancy";

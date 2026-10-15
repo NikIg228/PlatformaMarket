@@ -56,11 +56,20 @@ export function ConversationCounter({ api, href, icon, showLabel = false, onClic
   </DmButton>;
 }
 
-export function ConversationWorkspace({ api, organizationId, initialId, context, canWrite = true, operator = false, contextHref, hideHeading = false, compactList = false, onSelect }: { api: ConversationApi; organizationId: string; initialId?: string; context?: Context; canWrite?: boolean; operator?: boolean; contextHref?: (type: "OFFER" | "ORDER", id: string) => string | undefined; hideHeading?: boolean; hideRefresh?: boolean; compactList?: boolean; onSelect?: (id?: string) => void }) {
-  const [selected, setSelected] = useState(initialId);
+export function ConversationWorkspace({ api, organizationId, initialId, context, canWrite = true, operator = false, contextHref, hideHeading = false, compactList = false, onSelect, controlledSelection = false, listState }: { api: ConversationApi; organizationId: string; initialId?: string; context?: Context; canWrite?: boolean; operator?: boolean; contextHref?: (type: "OFFER" | "ORDER", id: string) => string | undefined; hideHeading?: boolean; hideRefresh?: boolean; compactList?: boolean; onSelect?: (id?: string) => void; controlledSelection?: boolean; listState?: { filter: ConversationQuery["filter"]; offset: number; onChange: (state: { filter: ConversationQuery["filter"]; offset: number }) => void } }) {
+  const [localSelected, setSelected] = useState(initialId);
+  const selected = controlledSelection ? initialId : localSelected;
   useEffect(() => { setSelected(initialId); }, [initialId]);
-  const [filter, setFilter] = useState<ConversationQuery["filter"]>("ALL");
-  const [offset, setOffset] = useState(0);
+  const [localFilter, setFilter] = useState<ConversationQuery["filter"]>("ALL");
+  const [localOffset, setOffset] = useState(0);
+  const filter = listState?.filter ?? localFilter;
+  const offset = listState?.offset ?? localOffset;
+  const viewKey = `${selected ?? ""}:${filter}:${offset}`;
+  const view = useRef({ key: viewKey, generation: 0 });
+  if (view.current.key !== viewKey) view.current = { key: viewKey, generation: view.current.generation + 1 };
+  const viewGeneration = view.current.generation;
+  const changeFilter = (next: ConversationQuery["filter"]) => { setPage(null); if (listState) listState.onChange({ filter: next, offset: 0 }); else { setFilter(next); setOffset(0); } };
+  const changeOffset = (next: number) => { if (listState) listState.onChange({ filter, offset: next }); else setOffset(next); };
   const listEnd = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState<ConversationPage | null>(null);
   const [detail, setDetail] = useState<ConversationDetail | null>(null);
@@ -71,6 +80,7 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState<ReturnType<typeof actionFailure> | null>(null);
   const [feedback, setFeedback] = useState("");
+  useEffect(() => { if (controlledSelection) { setError(""); setActionError(null); setFeedback(""); } }, [controlledSelection, initialId]);
   const [busy, setBusy] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, ConversationDraft>>({});
   const request = useRef(0);
@@ -93,19 +103,20 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
   }, [api, context?.contextId, context?.contextType, lookupAttempt]);
 
   const refresh = useCallback(async () => {
+    if (controlledSelection && view.current.generation !== viewGeneration) return;
     const current = ++request.current;
     setLoading(true);
     try {
       const [nextPage, nextDetail] = await Promise.all([compactList ? conversationPages(query => api.conversations(query), filter, offset) : api.conversations({ filter, offset }), selected ? api.conversation(selected) : Promise.resolve(null)]);
-      if (current !== request.current) return;
+      if (current !== request.current || controlledSelection && view.current.generation !== viewGeneration) return;
       const complete = nextDetail ? await completeConversationUpdate(detailRef.current, nextDetail,
-        before => api.conversation(nextDetail.conversation.id, before), () => current === request.current) : null;
-      if (current !== request.current) return;
+        before => api.conversation(nextDetail.conversation.id, before), () => current === request.current && (!controlledSelection || view.current.generation === viewGeneration)) : null;
+      if (current !== request.current || controlledSelection && view.current.generation !== viewGeneration) return;
       setPage(nextPage); setDetail(complete);
       if (lookupReady) setError("");
-    } catch (cause) { if (current === request.current) setError(errorMessage(cause)); }
-    finally { if (current === request.current) setLoading(false); }
-  }, [api, selected, filter, offset, lookupReady, compactList]);
+    } catch (cause) { if (current === request.current && (!controlledSelection || view.current.generation === viewGeneration)) setError(errorMessage(cause)); }
+    finally { if (current === request.current && (!controlledSelection || view.current.generation === viewGeneration)) setLoading(false); }
+  }, [api, selected, filter, offset, lookupReady, compactList, controlledSelection, viewGeneration]);
   useEffect(() => { void refresh(); return () => { request.current++; }; }, [refresh]);
   useEffect(() => {
     const reload = () => { if (!lock.current && !polling.current && document.visibilityState === "visible") { polling.current = true; void refresh().finally(() => { polling.current = false; }); } };
@@ -131,7 +142,7 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
     if (lock.current) return;
     lock.current = true; setBusy(true); setActionError(null); setFeedback("");
     try { await action(); announce(); }
-    catch (cause) { setActionError(actionFailure(cause, { write: true })); }
+    catch (cause) { if (!controlledSelection || view.current.generation === viewGeneration) setActionError(actionFailure(cause, { write: true })); }
     finally { lock.current = false; setBusy(false); }
   };
   const send = () => run(async () => {
@@ -144,6 +155,7 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
     const result = selected ? await api.sendConversationMessage(selected, input) : context ? await api.startConversation({ ...context, ...input }) : null;
     if (!result) return;
     setDrafts(value => ({ ...value, [draftId]: emptyConversationDraft() })); messageKeys.current.delete(draftId);
+    if (controlledSelection && view.current.generation !== viewGeneration) return;
     setSent(value => value + 1);
     if (selected === result.conversationId) await refresh(); else { setSelected(result.conversationId); onSelect?.(result.conversationId); }
   });
@@ -156,7 +168,8 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
       announce();
     }, () => { readThrough.current.delete(id); });
   }, [api, selected]);
-  const current = detail?.conversation;
+  const visibleDetail = !controlledSelection || detail?.conversation.id === selected ? detail : null;
+  const current = visibleDetail?.conversation;
   const href = current?.productId ? `/products/${current.productId}` : current ? contextHref?.(current.contextType, current.contextId) : undefined;
   const identity = current?.context ?? (!selected ? lookupContext : undefined) ?? (current ? { title: current.title, counterpartyName: current.counterpartyName, productId: current.productId, productName: null, variantLabel: null, packagingLabel: null, imageUrl: null } : undefined);
   const messageContext = current ? { contextType: current.contextType, contextId: current.contextId } : context;
@@ -169,28 +182,28 @@ export function ConversationWorkspace({ api, organizationId, initialId, context,
       <aside className="dm-conversations-list" aria-label="Список диалогов" aria-busy={!page && loading}>
         {compactList ? <Dropdown className="dm-conversations-filter" aria-label="Фильтр диалогов" disabled={busy}
           positioning={dmDropdownPositioning} selectedOptions={[filter]} value={{ ALL: "Все", UNREAD: "Непрочитанные", ORDERS: "По заказам" }[filter]}
-          onOptionSelect={(_, data) => { if (data.optionValue && data.optionValue !== filter) { setPage(null); setFilter(data.optionValue as ConversationQuery["filter"]); setOffset(0); } }}>
+          onOptionSelect={(_, data) => { if (data.optionValue && data.optionValue !== filter) { changeFilter(data.optionValue as ConversationQuery["filter"]); } }}>
           <Option value="ALL">Все</Option><Option value="UNREAD">Непрочитанные</Option><Option value="ORDERS">По заказам</Option>
-        </Dropdown> : <DmField label="Показать"><DmSelect value={filter} disabled={busy} onChange={event => { setPage(null); setFilter(event.target.value as ConversationQuery["filter"]); setOffset(0); }}><option value="ALL">Все</option><option value="UNREAD">Непрочитанные</option><option value="ORDERS">По заказам</option></DmSelect></DmField>}
+        </Dropdown> : <DmField label="Показать"><DmSelect value={filter} disabled={busy} onChange={event => { changeFilter(event.target.value as ConversationQuery["filter"]); }}><option value="ALL">Все</option><option value="UNREAD">Непрочитанные</option><option value="ORDERS">По заказам</option></DmSelect></DmField>}
         {loading && !page ? <div className="dm-conversations-placeholder" /> : page?.items.length === 0 ? <EmptyState title="Диалогов пока нет" description="Начните переписку из предложения поставщика или заказа." /> : null}
         {page?.items.map(item => <DmAction variant="row" density="compact" className="dm-conversations-item" key={item.id} disabled={busy} aria-pressed={selected === item.id} onClick={() => choose(item.id)} title={[item.counterpartyName, item.title, item.lastMessage].join(" · ")}>
           <span><span className="dm-conversations-row-top"><strong>{item.counterpartyName}</strong><time dateTime={item.updatedAt}>{time(item.updatedAt)}</time>{item.unread ? <span className="dm-conversation-unread" aria-label="Непрочитанное сообщение" /> : null}</span>
           <span className="dm-conversations-preview">{item.context?.productName ?? item.title} · {item.lastMessage}</span></span></DmAction>)}
-        {compactList ? <div ref={listEnd} className="dm-conversations-list-end" /> : <div className="dm-conversations-toolbar"><DmButton disabled={!offset || busy || loading} onClick={() => setOffset(value => Math.max(0, value - 30))}>Назад</DmButton><DmButton disabled={!page?.hasMore || busy || loading} onClick={() => setOffset(value => value + 30)}>Далее</DmButton></div>}
+        {compactList ? <div ref={listEnd} className="dm-conversations-list-end" /> : <div className="dm-conversations-toolbar"><DmButton disabled={!offset || busy || loading} onClick={() => changeOffset(Math.max(0, offset - 30))}>Назад</DmButton><DmButton disabled={!page?.hasMore || busy || loading || Boolean(listState && offset >= 99990)} onClick={() => changeOffset(offset + 30)}>Далее</DmButton></div>}
       </aside>
       <div className="dm-conversations-detail">
         {selected || context ? <>
           <DmButton className="dm-conversations-back" disabled={busy} as={context ? "a" : undefined} href={context ? "?" : undefined} onClick={context ? undefined : () => choose(undefined)}>← К списку</DmButton>
           <header className="dm-conversation-header">
             {identity ? <ConversationContext key={identity.productId ?? draftId} context={identity} href={href ?? (identity.productId ? "/products/" + identity.productId : undefined)} /> : <div aria-busy="true" className="dm-conversations-placeholder" />}
-            <ConversationActions api={api} conversation={current} operator={operator} canWrite={canWrite} busy={busy} run={run} refresh={refresh} feedback={setFeedback} />
+            <ConversationActions api={api} conversation={current} operator={operator} canWrite={canWrite} busy={busy} run={run} refresh={refresh} feedback={value => { if (!controlledSelection || view.current.generation === viewGeneration) setFeedback(value); }} />
           </header>
-          <ConversationHistory key={`history:${draftId}`} api={api} detail={detail} organizationId={organizationId} busy={busy} sent={sent} onRead={markRead} onOlder={() => void run(async () => {
+          <ConversationHistory key={`history:${draftId}`} api={api} detail={visibleDetail} organizationId={organizationId} busy={busy} sent={sent} onRead={markRead} onOlder={() => void run(async () => {
             if (!selected || !detail?.messages.length) return;
             const older = await api.conversation(selected, detail.messages[0].sequence);
             setDetail(value => value && value.conversation.id === older.conversation.id ? { ...value, hasOlder: older.hasOlder, messages: [...older.messages, ...value.messages] } : value);
           })} />
-          {canWrite && messageContext ? <ConversationComposer key={`composer:${draftId}`} api={api} context={messageContext} draft={draft} onChange={updateDraft} disabled={!lookupReady || Boolean(selected && !detail)} busy={busy} onSubmit={() => void send()} /> : <p>У вашей роли нет права отправлять сообщения.</p>}
+          {canWrite && messageContext ? <ConversationComposer key={`composer:${draftId}`} api={api} context={messageContext} draft={draft} onChange={updateDraft} disabled={!lookupReady || Boolean(selected && !visibleDetail)} busy={busy} onSubmit={() => void send()} /> : <p>У вашей роли нет права отправлять сообщения.</p>}
         </> : <EmptyState title="Выберите диалог" description="Здесь появится история переписки по предложению или заказу." />}
       </div>
     </div>

@@ -77,6 +77,10 @@ test("shell keeps navigation and profile reachable on short and long viewports",
 async function assignmentPage(page: Page) {
   const unexpected = await shellPage(page);
   await page.route("**/api/catalog/products", route => route.fulfill({ json: [] }));
+  await page.route("**/api/operations/dashboard", route => route.fulfill({ json: {
+    observedAt: new Date().toISOString(), scope: "PLATFORM_CURRENT_ALL_STATUSES",
+    organizations: { status: "AVAILABLE", value: 1 }, masterProducts: { status: "AVAILABLE", value: 0 }, effectivePermissions: { status: "AVAILABLE", value: 1 },
+  } }));
   await page.route("**/api/operations/work-queue?offset=0", route => route.fulfill({ json: {
     generatedAt: new Date().toISOString(), operatorOrganizationId: organization, totalOpenItems: 1,
     sections: [{ type: "CATALOG_REVIEW", priority: "NORMAL", count: 1, hasMore: false,

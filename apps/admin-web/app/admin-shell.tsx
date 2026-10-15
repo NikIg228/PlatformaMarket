@@ -3,6 +3,8 @@ import { useState, type ReactNode } from "react";
 import { AppShell, type NavigationItem } from "@marketplace/ui/app-shell";
 import { workspacePath } from "@marketplace/api-client/frontend-routes";
 import { logoutAdmin, readAdminSession } from "./admin-auth";
+import { adminSectionQuery, serializeAdminQuery, type AdminSection } from "@marketplace/schemas/product-navigation";
+import { useAdminQuery } from "./use-admin-query";
 import brand from "../../buyer-web/public/brand/platforma-market.webp";
 
 /** Composition only: identity, renewal and exact-session logout stay in admin-auth. */
@@ -17,6 +19,7 @@ export function AdminShell({ navigation, active, title, onNavigate, actions, chi
   const [logoutPending, setLogoutPending] = useState(false);
   const [logoutError, setLogoutError] = useState("");
   const home = workspacePath("ADMIN");
+  const { state } = useAdminQuery();
   const logout = () => {
     if (logoutPending) return;
     setLogoutPending(true); setLogoutError("");
@@ -28,7 +31,7 @@ export function AdminShell({ navigation, active, title, onNavigate, actions, chi
   return <AppShell variant="workspace" productName="PlatformaMarket" productMark="PM"
     brandHref={home} brandImage={brand.src} workspaceLabel="Операторский кабинет"
     userName={readAdminSession()?.user?.displayName ?? "Команда PlatformaMarket"} userMeta="Оператор"
-    navigation={navigation.map(item => ({ ...item, href: `${home}?section=${encodeURIComponent(item.id)}` }))}
+    navigation={navigation.map(item => ({ ...item, href: home + serializeAdminQuery(adminSectionQuery(state, item.id as AdminSection)) }))}
     activeNavigation={active} contextLabel={title} onNavigate={onNavigate}
     onLogout={logout} logoutPending={logoutPending} logoutError={logoutError} actions={actions}>
     {children}

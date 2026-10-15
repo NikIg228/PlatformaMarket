@@ -41,8 +41,8 @@ for (const width of [1366, 390]) test(`real promotion moderation and gift checko
     const hidden = await request.get(`http://127.0.0.1:4012/api/promotions/storefront?q=${encodeURIComponent(name)}`);
     expect(hidden.status()).toBe(200); expect((await hidden.json()).items).toHaveLength(0);
     await page.goto("/admin?section=catalog");
-    if (width < 760) await page.getByRole("combobox", { name: "Раздел админки", exact: true }).selectOption("catalog");
-    else await page.getByRole("button", { name: "Каталог", exact: true }).click();
+    if (width <= 760) await page.getByRole("button", { name: "Открыть меню", exact: true }).click();
+    await page.getByRole("link", { name: "Каталог", exact: true }).click();
     await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
     await expect(page.getByText(/Минимум за последние 30 дней/)).toBeVisible();
     await page.getByRole("textbox", { name: "Причина решения", exact: true }).fill("Исходная цена и подарок проверены на тестовой акции");

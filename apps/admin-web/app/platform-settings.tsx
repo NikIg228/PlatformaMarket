@@ -1,217 +1,57 @@
 "use client";
-
-import { Settings20Regular } from "@fluentui/react-icons/svg/settings";
-import {
-  DmButton,
-  DmFeedback,
-  ErrorState,
-  LoadingState,
-  StatusTag,
-} from "@marketplace/ui";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { adminAuthHeaders } from "./admin-auth";
+import { type MarketplaceApiClient, frontendDeploymentProfile, workspacePath } from "@marketplace/api-client";
+import { DmButton, DmSurface } from "@marketplace/ui/actions";
+import { DmFeedback, ErrorState, LoadingState, StatusTag } from "@marketplace/ui/primitives";
+import type { OperatorCapability } from "@marketplace/schemas";
+import { adminSectionQuery, serializeAdminQuery } from "@marketplace/schemas/product-navigation";
+import { useOperatorProjection } from "./use-operator-projection";
+import { capabilityLinks, capabilityNames, capabilityProjectionPartial, capabilityReasons, capabilityStates, formatOperatorCount } from "./operator-projection-view-model";
 import styles from "./platform-settings.module.css";
-import { summarizePilotSettings } from "./platform-settings-view-model";
+import { useAdminQuery } from "./use-admin-query";
 
-type Readiness = {
-  summary: {
-    total: number;
-    ready: number;
-    externalDependency: number;
-    liveVerified: number;
-  };
-};
-type PaymentProvider = { id: string; code?: string; status?: string };
-type ComplianceRule = { id: string; status: string };
-type Target = "imports" | "orders" | "security";
-
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4012/api";
-const excludedCapabilities = [
-  ["AI-помощник", "Не входит в первый пилот"],
-  ["Billing и тарифные планы", "Не входят в первый пилот"],
-  ["Публичный trust score", "Отключён вместе с рейтингами и отзывами"],
-  ["Автоматические выплаты", "Требуют отдельного go-live решения"],
-] as const;
-
-export function PlatformSettings({
-  onNavigate,
-}: {
-  onNavigate?: (target: Target) => void;
-}) {
-  const [readiness, setReadiness] = useState<Readiness | null>(null);
-  const [providers, setProviders] = useState<PaymentProvider[]>([]);
-  const [rules, setRules] = useState<ComplianceRule[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [error, setError] = useState("");
-
-  const request = useCallback(async <T,>(path: string): Promise<T> => {
-    const response = await fetch(`${apiUrl}${path}`, {
-      headers: adminAuthHeaders(false),
-      cache: "no-store",
-    });
-    if (!response.ok) throw new Error(`API вернул статус ${response.status}`);
-    return response.json() as Promise<T>;
-  }, []);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const [nextReadiness, nextProviders, nextRules] = await Promise.all([
-        request<Readiness>("/integrations/readiness"),
-        request<PaymentProvider[]>("/payment-providers"),
-        request<ComplianceRule[]>("/compliance/rules"),
-      ]);
-      setReadiness(nextReadiness);
-      setProviders(nextProviders);
-      setRules(nextRules);
-      setHasLoaded(true);
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Не удалось загрузить профиль пилота",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [request]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const summary = useMemo(
-    () =>
-      summarizePilotSettings({
-        channels: readiness?.summary ?? {
-          total: 0,
-          ready: 0,
-          externalDependency: 0,
-          liveVerified: 0,
-        },
-        paymentProviderCount: providers.length,
-        activeComplianceRules: rules.filter(({ status }) => status === "ACTIVE")
-          .length,
-      }),
-    [providers, readiness, rules],
-  );
-
-  return (
-    <section className={styles.section} aria-labelledby="platform-settings-title">
-      <div className={styles.header}>
-        <div>
-          <span className={styles.eyebrow}>
-            <Settings20Regular /> Профиль запуска
-          </span>
-          <h2 id="platform-settings-title">Настройки закрытого пилота</h2>
-          <p>
-            Статусы доступности без опасных demo-операций и скрытого расширения
-            scope.
-          </p>
-        </div>
-
+const read = (api: MarketplaceApiClient, signal: AbortSignal) => api.operatorCapabilities(signal);
+type Target = NonNullable<OperatorCapability["section"]>;
+export function PlatformSettings({ onNavigate }: { onNavigate?: (target: Target) => void }) {
+  const { data, loading, error, refresh } = useOperatorProjection(read);
+  const { state: query } = useAdminQuery();
+  const counts = data?.connectors.status === "AVAILABLE" ? data.connectors.counts : null;
+  const mismatch = data && data.profile !== frontendDeploymentProfile;
+  const link = (section: Target) => <DmButton as="a" href={workspacePath("ADMIN", "/") + serializeAdminQuery(adminSectionQuery(query, section))} onClick={event => {
+    if (onNavigate && !event.button && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) { event.preventDefault(); onNavigate(section); }
+  }}>{capabilityLinks[section]}</DmButton>;
+  return <section aria-labelledby="platform-settings-title" aria-busy={loading}><DmSurface variant="section" className={styles.section}>
+    <div className={styles.header}>
+      <div><h2 id="platform-settings-title">Возможности платформы</h2>
+        <p>Статусы текущей конфигурации. Доступ организации зависит от её прав и условий.</p>
+        {data ? <p>{data.profile === "pilot" ? "Пилотный профиль" : "Профиль запуска"}</p> : null}
       </div>
 
-      {error && hasLoaded ? (
-        <DmFeedback
-          tone="danger"
-          title="Не удалось обновить профиль"
-          description={error}
-          alert
-        />
-      ) : null}
-      {loading && !hasLoaded ? (
-        <LoadingState label="Проверяем настройки пилота" />
-      ) : error && !hasLoaded ? (
-        <ErrorState
-          title="Настройки недоступны"
-          description={error}
-          action={
-            <DmButton appearance="secondary" onClick={() => void load()}>
-              Повторить
-            </DmButton>
-          }
-        />
-      ) : (
-        <>
-          <div className={styles.metrics} aria-label="Сводка профиля пилота">
-            <div>
-              <span>Каналы поставщиков</span>
-              <strong>
-                {summary.channelsReadyInside} / {summary.channelsConfigured}
-              </strong>
-              <small>готовы внутри платформы</small>
-            </div>
-            <div>
-              <span>Проверены вживую</span>
-              <strong>{summary.channelsLiveVerified}</strong>
-              <small>внешних зависимостей: {summary.externalDependencies}</small>
-            </div>
-            <div>
-              <span>Платёжный процесс</span>
-              <strong>
-                {summary.paymentProviderRegistered
-                  ? "Есть кандидат"
-                  : "Не назначен"}
-              </strong>
-              <small>провайдеров в реестре: {summary.paymentProviderCount}</small>
-            </div>
-            <div>
-              <span>Правила комплаенса</span>
-              <strong>{summary.activeComplianceRules}</strong>
-              <small>активных правил</small>
-            </div>
-          </div>
-          <div className={styles.grid}>
-            <article>
-              <h3>Где управлять рабочими данными</h3>
-              <p>
-                Настройки не дублируют операционные формы профильных разделов.
-              </p>
-              <div className={styles.routes}>
-                <DmButton
-                  appearance="secondary"
-                  onClick={() => onNavigate?.("imports")}
-                >
-                  Подключения и загрузка
-                </DmButton>
-                <DmButton
-                  appearance="secondary"
-                  onClick={() => onNavigate?.("orders")}
-                >
-                  Заказы и договоры
-                </DmButton>
-                <DmButton
-                  appearance="secondary"
-                  onClick={() => onNavigate?.("security")}
-                >
-                  Контроль и аудит
-                </DmButton>
-              </div>
-            </article>
-            <article>
-              <h3>Функции вне границы пилота</h3>
-              <p>
-                Код может оставаться в backend, но интерфейс не выдаёт его за
-                готовую функцию.
-              </p>
-              <div className={styles.excluded}>
-                {excludedCapabilities.map(([name, description]) => (
-                  <div key={name}>
-                    <span>
-                      <strong>{name}</strong>
-                      <small>{description}</small>
-                    </span>
-                    <StatusTag tone="neutral">Выключено</StatusTag>
-                  </div>
-                ))}
-              </div>
-            </article>
-          </div>
-        </>
-      )}
-    </section>
-  );
+    </div>
+    {loading && !data ? <LoadingState label="Проверяем возможности платформы" /> : null}
+    {error ? data ? <DmFeedback presentation="inline" tone="danger" title="Возможности не обновлены" description={`${error} Показаны ранее загруженные сведения.`} alert />
+      : <ErrorState presentation="inline" title="Возможности недоступны" description={error} action={<DmButton onClick={() => void refresh()}>Повторить загрузку возможностей</DmButton>} /> : null}
+    {mismatch ? <DmFeedback tone="warning" title="Профили интерфейса и API различаются" description="Ниже показана конфигурация API. Часть функций может быть недоступна в интерфейсе. Обратитесь к администратору платформы для согласования профилей." alert /> : null}
+    {data && capabilityProjectionPartial(data) ? <DmFeedback tone="warning" title="Часть источников недоступна" description="Неизвестные значения отмечены отдельно. Повторите загрузку." /> : null}
+    {data ? <>
+      <dl className={styles.metrics} aria-label="Сводка конфигурации">
+        <div><dt>Каналы со статусом «Готов»</dt><dd>{counts ? `${counts.readinessReady} / ${counts.total}` : "Нет данных"}</dd><p>{counts?.total === 0 ? "Реестр каналов пока пуст." : "Готовность по реестру каналов."}</p>{counts ? <p>Блокирующих условий: {counts.blocked}</p> : null}</div>
+        <div><dt>Отмечены как проверенные</dt><dd>{counts ? counts.registeredLiveVerified : "Нет данных"}</dd><p>Отметки реестра, не текущая проверка подключения.</p>{counts ? <p>Внешних зависимостей: {counts.externalDependencies}</p> : null}</div>
+        <div><dt>Активных платёжных провайдеров</dt><dd>{formatOperatorCount(data.activePaymentProviders)}</dd><p>Записи реестра, включая тестовые. Это не подтверждение работы платежей.</p></div>
+        <div><dt>Активных правил комплаенса</dt><dd>{formatOperatorCount(data.activeComplianceRules)}</dd><p>Правила со статусом «Активно».</p></div>
+      </dl>
+      <div className={styles.grid}>
+        <article><h3>Где управлять рабочими данными</h3><p>Настройки не дублируют формы профильных разделов.</p>
+          <div className={styles.routes}>{link("imports")}{link("orders")}{link("security")}</div>
+        </article>
+        <article><h3>Состояние функций</h3><p>Включение профилем не подтверждает готовность внешнего сервиса.</p>
+          <div className={styles.capabilities}>{data.capabilities.map(item => <div className={styles.capability} key={item.id}>
+            <div className={styles.capabilityHeading}><strong>{capabilityNames[item.id]}</strong><StatusTag tone={capabilityStates[item.status].tone}>{capabilityStates[item.status].label}</StatusTag></div>
+            <p>{capabilityReasons[item.reason]}</p>
+            {item.id === "AI_MODEL" && data.profile === "go_live" ? <p>Базовый помощник с разрешёнными инструментами работает без внешней модели.</p> : null}
+            {item.section ? link(item.section) : null}
+          </div>)}</div>
+        </article>
+      </div>
+    </> : null}
+  </DmSurface></section>;
 }

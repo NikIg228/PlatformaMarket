@@ -88,6 +88,8 @@ function assertOpenApiContract(openApi) {
     ["/api/identity/mfa/disable", "post", "201", "MfaDisabled", "MfaCode"],
     ["/api/documents/upload", "post", "201", "UploadedDocument", "UploadDocumentRequest"],
     ["/api/operations/work-queue", "get", "200", "OperationWorkQueue"],
+    ["/api/operations/dashboard", "get", "200", "OperatorDashboard"],
+    ["/api/operations/capabilities", "get", "200", "OperatorCapabilities"],
     ["/api/operations/work-queue/{type}/{id}", "get", "200", "OperationObject"],
     ["/api/operations/work-queue/{type}/{id}/history", "get", "200", "OperationHistory"],
     ["/api/operations/work-queue/{type}/{id}/assignment", "post", "201", "OperationAssignmentResult", "OperationAssignment"],
@@ -235,6 +237,8 @@ function assertOpenApiContract(openApi) {
   for (const pathName of [
     "/api/commerce-analytics",
     "/api/identity/mfa",
+    "/api/operations/dashboard",
+    "/api/operations/capabilities",
     "/api/documents/upload",
     "/api/operations/work-queue",
     "/api/marketplace/search",
