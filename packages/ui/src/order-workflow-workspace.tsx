@@ -1,4 +1,6 @@
 "use client";
+import { OrderDiscrepancyPanel } from "./order-discrepancy-panel";
+import type { OrderDiscrepancyApi } from "./order-discrepancy-resource";
 import { DmFileInput, DmCheckbox, DmTabList } from "./controls";
 import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import type { OrderWorkflowCommand, OrderWorkflowResponse, OrderWorkflowResult, UploadDocumentInput } from "@marketplace/schemas";
@@ -19,7 +21,7 @@ const OrderReturnPanel = lazy(() => import("./order-return-panel").then(module =
 const OrderPromotionSummary = lazy(() => import("./order-promotion-summary").then(module => ({ default: module.OrderPromotionSummary })));
 
 const errorMessage = (cause: unknown, fallback: string) => cause instanceof Error ? describeError(cause) : fallback;
-type Api = Partial<PaymentPolicyApi> & Partial<OrderInvoiceApi> & {
+type Api = Partial<OrderDiscrepancyApi> & Partial<PaymentPolicyApi> & Partial<OrderInvoiceApi> & {
   getOrderWorkflow(id: string): Promise<OrderWorkflowResponse>;
   executeOrderWorkflow(id: string, input: OrderWorkflowCommand): Promise<OrderWorkflowResult>;
   uploadDocument(input: UploadDocumentInput): Promise<{ id: string }>;
@@ -162,6 +164,7 @@ function OrderWorkflowSession({ hideHeading = false, orderId, organizationId, ap
     {buyer && ["DELIVERED", "CANCELLED"].includes(data.status) ? <Section title="Повторная закупка"><p>Создайте новую корзину по составу заказа. Перед оформлением проверьте текущие цены, доступность и условия; прежняя скидка не гарантируется.</p>{reordered ? <a href={cartHref}>Перейти в корзину и проверить текущие условия</a> : <DmButton disabled={busy || !canAct("REORDER")} onClick={() => void perform({ action: "REORDER" })}>Создать корзину для повторной закупки</DmButton>}</Section> : null}
     <div {...panel("shipments")}>
     {renderFulfillment?.(data, refresh)}
+    {(buyer || supplier) && api.getOrderDiscrepancies && api.executeOrderDiscrepancy && api.uploadDiscrepancyAttachment && api.downloadDiscrepancyAttachment ? <OrderDiscrepancyPanel api={api as OrderDiscrepancyApi} orderId={orderId} orderVersion={data.version} events={data.events} /> : null}
     {buyer ? <Section title="Поставки и получение">{data.order.shipments?.length ? data.order.shipments.map(shipment => <article key={shipment.id}><h3>{shipment.shipmentNumber}</h3><p>{formatStatus(shipment.status)} · {shipment.carrierName ?? "Перевозчик не указан"} · Трек: {shipment.trackingNumber ?? "ещё не присвоен"}</p>{["DISPATCHED", "IN_TRANSIT", "PARTIALLY_DELIVERED"].includes(shipment.status) ? <ReceiptForm shipment={shipment} busy={busy || !canAct("RECEIVE_SHIPMENT")} onReceive={items => perform({ action: "RECEIVE_SHIPMENT", shipmentId: shipment.id, items })} /> : null}</article>) : <p>Поставщик ещё не создал поставку.</p>}</Section> : null}
     </div><div {...panel("history")}>
     {buyer && unpaid && !data.claims.length && ["AWAITING_CONFIRMATION", "CONFIRMED", "PARTIALLY_CONFIRMED", "AWAITING_PAYMENT"].includes(data.status) ? <Section title="Отмена до оплаты"><DmField label="Причина отмены"><DmInput value={comment} onChange={(_, d) => setComment(d.value)} /></DmField><DmCheckbox checked={noTransfer} onChange={e => setNoTransfer(e.target.checked)} label="Перевод по этому заказу не выполнялся" /><DmButton disabled={busy || !canAct("CANCEL") || !noTransfer || comment.trim().length < 3} onClick={() => void perform({ action: "CANCEL", reason: comment, transferNotMade: true })}>Отменить заказ</DmButton></Section> : null}

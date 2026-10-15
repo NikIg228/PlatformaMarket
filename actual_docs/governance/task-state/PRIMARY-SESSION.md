@@ -6,6 +6,55 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 15.10 — R7.6.5.2: заявление, ответ сторон и история — SCOPED PASS
+
+Владелец согласовал операционные правила §8.1 DWF и поручил реализацию после
+пояснения pipeline. База main/483eba1, canonical root, чужой Admin/catalog WIP
+сохранён в .tmp/discrepancy-flow/baseline.json. Другие задачи не запускаются.
+Scope: заявление клиники по отправлению, сохраняемый черновик, причина/количества
+и необязательные доказательства; ответ поставщика (согласовать/отклонить/предложить),
+ответ клиники на встречное предложение; история обеих сторон в карточке заказа.
+Согласование не исполняет допоставку/refund/stock и не закрывает документально заказ.
+НУЦ, юридические формы и окончательное RESOLVED остаются вне пакета.
+Риски: tenant/permissions, подмена исходных данных, stale/race/replay,
+потеря черновика, доступ к вложениям, смешение заявления с физическим получением.
+План: schema/API → модель/миграция и сервис → focused tests до зависимого UI →
+client и shared UI в существующей карточке → целевая интеграционная приёмка.
+Gates: schema/client tests/build, API focused tests/types/build; Prisma validate,
+изолированный migration upgrade и PostgreSQL (две стороны, outsider/role denial,
+replay/concurrency/rollback/unchanged money-stock), core-contract/runtime split;
+web types/build и targeted browser обеих ролей desktop/mobile/keyboard,
+screenshots/computed styles, lint, diff hygiene. Рабочую БД не мигрировать.
+Применены development-toolkit/backend/verification, Backend Architect (границы,
+контракт, транзакции), DESIGN_SYSTEM и UI_UX_IMPLEMENTATION_STANDARD.
+UI-паспорт до UI-кода: аналог OrderInvoicePanel/ShipmentWaybillPanel, shared
+DmDialog mobileFullscreen, DmField/Input/Textarea/Dropdown/Button/Table/Feedback,
+DmFormSections; Manrope14, control44/radius8, dialog16, card12, gaps12/16/24,
+market-components-v1/platforma-semantic-light-v1. Shell sidebar200/logo144.
+RU, desktop1440×1000/mobile390×844, scale100%; baseline screenshot и runtime
+источник подтвердить перед UI-реализацией. Новых общих вариантов не планируется.
+Baseline проверен: output/playwright/discrepancy-before.png, canonical Next PID9140,
+fixture API only, текущие computed Manrope14/control44/radius8 совпадают.
+
+Результат выбранного пакета: schema/API/client, OrderDiscrepancy/Event и additive
+migration, сохраняемый черновик/submit, ответы/встречный вариант/решение клиники,
+связанная редакция после отказа, вложения и UI обеих сторон. Original/order/stock/
+money/receipt не изменяются; ЭЦП и финальное закрытие вне scope.
+PASS: schema2/client1/service5/rules3, API build/types, validate/upgrade, isolated
+PG/API (последний postgres-final.log после уточнения UOM и cleanup), core-contract,
+runtime split, ui/web types, production Next49, browser4 + visual/keyboard2,
+scoped ESLint, diff hygiene. Команды/границы/попытки:
+[журнал](../../domains/document-workflow-implementation-log.md#discrepancy-statements).
+Изолированный client/build: .tmp/discrepancy-flow; DB dentmarket_audit_20260914.
+Первый PG launcher ошибся Windows loader URL, второй — fonts; третий PASS;
+финальный rerun после изменения единицы упаковки/cleanup PASS.
+Browser 1/2 выявили потерю фокуса при success/403; run3 4 PASS. Финальные screenshots
+output/playwright/discrepancy-final-{1440,390}.png просмотрены. Pipeline в DWF §3.
+Своих фоновых серверов после приёмки нет. Чужие dev API4012/Next3000 не останавливали.
+Рабочая БД не мигрировалась; для запуска новой функции в ней требуется отдельное
+поручение на применение миграции. R7.6.5.1/2/3 целиком не закрыты; следующий этап
+не начинать без запроса. Git — только собственные изменения, main, [skip ci].
+
 ### 15.10 — R7.6.4.1: подготовка накладной фактической партии — SCOPED PASS
 
 Поручение владельца: SDK и обращение в НУЦ на паузе; выполнить подготовку

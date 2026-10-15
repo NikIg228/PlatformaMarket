@@ -249,3 +249,82 @@ commit и статус CI. Для документов указывать, че�
 обязательных сторон, идемпотентность и запрет чужого tenant, если они затронуты.
 Краткое описание сопровождает обновление основного roadmap; вопросы и выбранные
 варианты фиксируются в [журнале решений](../governance/ROADMAP-QUESTIONS-AND-DECISIONS.md).
+
+
+<a id="discrepancy-statements"></a>
+## 15.10 — R7.6.5.2: операционное заявление, ответы и история
+
+Поручение владельца после согласования §8.1 DWF. База main/483eba1; canonical
+checkout. Pipeline каталог → корзина → отдельные заказы поставщиков → состав →
+счёт → оплата → партии → получение/документы описан в
+[DWF §3](MARKET_DOCUMENT_WORKFLOW.md#order-pipeline).
+
+Реализована выбранная часть R7.6.5.2, не весь документальный пакет:
+
+- Клиника создаёт сохраняемый DRAFT по отправленной партии, указывает тип,
+  обязательную причину, точные фактические/повреждённые количества и решение.
+  Фото/PDF необязательны; PDF/PNG/JPEG до 5 МБ, до 10, проверка quarantine/CLEAN.
+- SUBMIT сохраняет редакцию и снимок источника; дальнейшая правка заявления
+  запрещена. Поставщик не видит черновик, его вложения и историю редактирования.
+- Поставщик согласует предложенное клиникой решение, отклоняет с причиной или
+  предлагает другой вариант. COUNTER → RESOLUTION_PROPOSED требует явного DECIDE
+  клиники. После REJECTED можно создать новую связанную редакцию.
+- AGREED означает согласованное решение. Нет RESOLVED, подписания, автоматического
+  согласия, допоставки, изменения количества получения, денежного/складского эффекта.
+  Полностью нулевое заявление разрешено; оно не подменяет RECEIVE_SHIPMENT.
+- Связь с накладной допускается только для доступной клинике выпущенной версии
+  этой партии с checksum. Supplier-only preview не раскрывается. При отсутствии
+  выпущенной накладной источник явно null. Ошибка получения требует ссылки на
+  действительное RECEIVE_SHIPMENT этой партии.
+
+Контракт: [order-discrepancy.ts](../../packages/schemas/src/order-discrepancy.ts).
+GET/POST /supplier-orders/:orderId/discrepancies; POST .../attachments;
+GET .../:discrepancyId/attachments/:assetId. Zod strict, OpenAPI и api-client
+согласованы. Read: участник заказа с order.create/order.confirm; write клиники —
+order.approve, поставщика — order.confirm. Чужой объект — 404, неверная сторона/роль —
+403, неверный payload — 400, версия/переход/ссылка — 409; стандартный error envelope.
+
+[Сервис](../../apps/api/src/modules/commerce/order-discrepancy.service.ts) блокирует
+SupplierOrder перед проверкой replay и трёх версий. Replay привязан к actor/org,
+key и hash; событие, новая версия, audit и outbox атомарны. DRAFT/SAVE не создают
+межсторонний outbox. История хранится в OrderDiscrepancyEvent отдельно от финансового
+workflow. Миграция 20261015170000_order_discrepancies добавляет две таблицы и связи,
+не переписывает старые события/документы. Рабочая БД не мигрировалась.
+
+[UI](../../packages/ui/src/order-discrepancy-panel.tsx) в существующей вкладке
+«Отгрузки» карточек clinic/supplier/orders/:id: состояние, количества, причина,
+вложения и хронология. Черновик восстанавливается после перезагрузки; при отказе
+ввод остаётся. Неизвестный исход повторяет ровно прежнюю команду/key; 409 требует
+обновления и явной сверки. Shared DmDialog/mobileFullscreen и adapters/tokens.
+
+Evidence (локальные ignored artifacts .tmp/discrepancy-flow и output/playwright):
+
+| Проверка | Команда / результат |
+| --- | --- |
+| Схемы | schemas build; vitest src/order-discrepancy.test.ts — 2 PASS |
+| Сервис/правила | API vitest с изолированным Prisma client: 5 service + 3 rules PASS; service повторён после уточнения единицы упаковки |
+| API build/types | tsc -p .tmp/discrepancy-flow/tsconfig.json, отдельный api-dist — PASS; client не заменяет dev client |
+| Prisma | prisma validate — PASS; generate в .tmp/discrepancy-flow/client; additive upgrade в транзакционном тестовом schema |
+| PostgreSQL/API | db:test → verify-postgres-integration.mjs --discrepancy-only: две партии, дроби/zero, tenant/party/role, вложения, replay/race, rollback outbox, неизменность денег/остатков/получения — PASS |
+| Core-contract | db:test → verify-pilot-backend.mjs --contract-only с актуальным isolated API: response/error validation PASS; 363 operations / 251 schemas / 69 core checks |
+| Runtime split | verify-runtime-split.mjs с isolated API — API/worker/all и production guards PASS |
+| Client | api-client build + vitest src/order-discrepancy.test.ts — 1 PASS |
+| Frontend | ui/web typecheck; isolated Next production build (49 pages) — PASS |
+| Browser | playwright.order-discrepancy.config.ts — 4 PASS: desktop1440/mobile390, read/write recovery, reload draft, stale review, both parties/counter/accept/reject/revision, denied role, keyboard/focus |
+| Visual | discrepancy-before.png; discrepancy-final-1440.png / discrepancy-final-390.png просмотрены; Manrope14/control44/radius8, no viewport overflow; 2 финальные visual/keyboard проверки PASS |
+| Hygiene | scoped ESLint и git diff --check; links/consistent scope |
+
+Browser использует intercepted fixture API и не считается HTTP/DB integration:
+это доказано отдельным PostgreSQL gate на dentmarket_audit_20260914.
+Первый Prisma validate не получил DATABASE_URL, исправлен read-only validation URL.
+Первые два запуска PG остановились до сценария из-за Windows loader URL и отсутствующих
+fonts в isolated build; третий PASS. После уточнения единицы упаковки и cleanup
+финальный focused PG rerun также PASS (postgres-final.log). Первый browser run выявил потерю фокуса после
+смены состояния, второй — после отказа; третий все 4 PASS. После группировки блоков
+и scroll-to-top выполнена только затронутая visual/keyboard сверка. Первая web build
+остановлена исполнителем при UI-исправлении; финальная сборка PASS. Client-test исправлен
+под фактический fetch GET (метод по умолчанию); повтор PASS.
+
+НУЦ, подписи, формы исправления/возврата, исполнение допоставки/денежного уменьшения,
+финальное закрытие и полный R7.6.5.3 NOT_RUN/вне выбранного пакета. Full release/E2E
+не требуются для этого scope. CI не запускать по постоянному решению владельца [skip ci].

@@ -1,3 +1,4 @@
+import type { OrderDiscrepanciesResponse, OrderDiscrepancyCommand, OrderDiscrepancyResult } from "@marketplace/schemas";
 import type { PrepareShipmentWaybillInput, ShipmentWaybillView, ShipmentWaybillsResponse } from "@marketplace/schemas";
 import type { PrepareOrderInvoiceInput, OrderInvoiceView, OrderInvoicesResponse } from "@marketplace/schemas";
 import type { AccessPolicy, CommerceAnalyticsQuery, CommerceAnalyticsResponse, WorkspaceCorrectionOfferPage, WorkspaceInventoryPage, WorkspaceLotPage, WorkspaceReservationPage, WorkspaceOverridePage } from "@marketplace/schemas";
@@ -457,6 +458,19 @@ export class MarketplaceApiClient {
       `/supplier-orders/${orderId}/document-pack`,
       input,
     );
+  }
+
+  getOrderDiscrepancies(orderId: string) {
+    return this.get<OrderDiscrepanciesResponse>(`/supplier-orders/${orderId}/discrepancies`);
+  }
+  executeOrderDiscrepancy(orderId: string, input: OrderDiscrepancyCommand) {
+    return this.post<OrderDiscrepancyResult>(`/supplier-orders/${orderId}/discrepancies`, input);
+  }
+  uploadDiscrepancyAttachment(orderId: string, input: { fileName: string; contentBase64: string }) {
+    return this.post<{ id: string; name: string; mimeType: string; sizeBytes: number }>(`/supplier-orders/${orderId}/discrepancies/attachments`, input);
+  }
+  downloadDiscrepancyAttachment(orderId: string, discrepancyId: string, assetId: string) {
+    return this.get<{ fileName: string; mimeType: string; contentBase64: string }>(`/supplier-orders/${orderId}/discrepancies/${discrepancyId}/attachments/${assetId}`);
   }
 
   getShipmentWaybills(orderId: string, shipmentId: string) {

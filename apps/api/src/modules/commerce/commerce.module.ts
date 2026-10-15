@@ -1,3 +1,5 @@
+import { OrderDiscrepancyController } from "./order-discrepancy.controller";
+import { OrderDiscrepancyService } from "./order-discrepancy.service";
 import { SupplierAuxiliaryReadsService } from "./supplier-auxiliary-reads.service";
 import { Module } from "@nestjs/common";
 import { InventoryModule } from "../inventory/inventory.module";
@@ -18,5 +20,5 @@ import { CommerceAnalyticsController } from "./commerce-analytics.controller";
 import { CommerceAnalyticsService } from "./commerce-analytics.service";
 import { DocumentsModule } from "../documents/documents.module";
 
-@Module({ imports: [InventoryModule, SuppliersModule, IntegrationsModule, ComplianceModule, MarketplaceAgreementsModule, DocumentsModule], controllers: [CommerceController, OrderWorkflowController, WorkspaceReadsController, SupplierPaymentPolicyController, CommerceAnalyticsController], providers: [SupplierAuxiliaryReadsService, CommerceService, OrderWorkflowService, WorkspaceReadsService, SupplierPaymentPolicyService, PaymentReviewService, CommerceAnalyticsService], exports: [CommerceService] })
+@Module({ imports: [InventoryModule, SuppliersModule, IntegrationsModule, ComplianceModule, MarketplaceAgreementsModule, DocumentsModule], controllers: [OrderDiscrepancyController, CommerceController, OrderWorkflowController, WorkspaceReadsController, SupplierPaymentPolicyController, CommerceAnalyticsController], providers: [OrderDiscrepancyService, SupplierAuxiliaryReadsService, CommerceService, OrderWorkflowService, WorkspaceReadsService, SupplierPaymentPolicyService, PaymentReviewService, CommerceAnalyticsService], exports: [CommerceService] })
 export class CommerceModule {}
