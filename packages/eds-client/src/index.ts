@@ -113,13 +113,16 @@ export class NcalayerClient {
       throw new NcalayerError("Data to sign must not be empty", "EMPTY_SIGNING_DATA");
     }
 
+    // The caller may reuse its buffer while the external signing dialog is open.
+    const signingBytes = new Uint8Array(data);
+
     const response = await this.invoke({
       module: "kz.gov.pki.knca.basics",
       method: "sign",
       args: {
         ...(this.allowedStorages ? { allowedStorages: this.allowedStorages } : {}),
         format: "cms",
-        data: encodeBase64(data),
+        data: encodeBase64(signingBytes),
         signingParams: {
           decode: true,
           encapsulate: false,
@@ -142,7 +145,7 @@ export class NcalayerClient {
 
     return {
       signedContainerBase64: extractSignature(response),
-      dataChecksumSha256: await sha256Hex(data),
+      dataChecksumSha256: await sha256Hex(signingBytes),
       format: "CMS",
     };
   }

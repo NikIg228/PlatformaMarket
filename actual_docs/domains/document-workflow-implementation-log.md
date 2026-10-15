@@ -4,6 +4,30 @@
 Требования — [Workflow документооборота](MARKET_DOCUMENT_WORKFLOW.md), единственный
 checklist — [R7.6 основного roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#document-workflow).
 
+## 15.10 — R7.6.3.1: воспроизводимый пакет, внешний прогон BLOCKED
+
+Владелец подтвердил отсутствие SDK/тестовых сертификатов. NCALayer установлен,
+но локальный порт13579 не слушает; проверенная версия пока неизвестна.
+Официальный [KNCA Basics protocol](https://github.com/pkigovkz/sdkinfo/wiki/KNCA-Basics-Module)
+повторно сверён. SDK/мобильный доступ не получены, заявки не отправлялись.
+
+Подготовка: npm run build --workspace=@marketplace/eds-client, затем
+node scripts/prepare-nca-prototype.mjs. В .tmp/nca-prototype/packet сохраняются
+оригинал без коммерческих обязательств, его однобайтовое изменение, checksums,
+запрос existing client и manifest. Все реальные проверки помечены NOT_RUN.
+Нет сетевой отправки, подписи, private key или подмены Kalkan mock-verifier.
+
+Исправлена воспроизведённая ошибка NcalayerClient: мутация входного буфера во
+время внешнего диалога не должна менять checksum отправленных байтов.
+Client tests3/3, consumer3/3, verifier/adapters5/5, package build/types и lint PASS.
+Проверки используют mocks и не доказывают валидность CMS, доверия/отзыва/TSP.
+
+Для продолжения владельцу нужен комплект официального SDK: runtime/библиотеки,
+пример проверки detached CMS, тестовые сертификаты и trust anchors, тестовые
+OCSP/CRL/TSP и правила проверки. После получения передать путь к комплекту;
+пароли и закрытые ключи в чат/Git не отправлять. Мобильный доступ — отдельно.
+R7.6.3.1 не закрыт; подготовка не является рабочей интеграцией подписи.
+
 ## 15.10 — GENERATED-счёт R7.6.2: SCOPED PASS
 
 Реализованы подготовка из подтверждённых реквизитов/налогового snapshot заказа,

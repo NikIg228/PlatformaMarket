@@ -6,6 +6,38 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 15.10 — R7.6.3.1: подготовка PASS; реальный прототип BLOCKED
+
+Поручение владельца «приступай» после счёта, база0586a2d/main. Владелец явно
+подтвердил отсутствие SDK/тестовых сертификатов. NCALayer.exe найден в AppData,
+локальный13579 не слушает; версия exe не указана, логи/ключи не читались.
+Клиентский protocol сверён с официальным KNCA Basics wiki; повторная попытка
+страницы разработчиков дала timeout, портал SDK требует JS. Заявки не подавались.
+
+Подготовлен scripts/prepare-nca-prototype.mjs: после npm run build
+--workspace=@marketplace/eds-client команда node scripts/prepare-nca-prototype.mjs
+создаёт .tmp/nca-prototype/packet: известный synthetic original, изменённый1байт,
+SHA256, запрос из существующего NcalayerClient, manifest с11NOT_RUN сценариями.
+Скрипт не соединяется с NCALayer/gateway, не создаёт CMS и не читает сертификаты.
+Реальный прототип и R7.6.3.1 остаются открытыми; mock не объявлен результатом НУЦ.
+
+Найден и исправлен связанный дефект: исходный Uint8Array мог измениться во время
+подписания, после чего checksum не совпадал с отправленными байтами. Теперь клиент
+копирует вход перед отправкой. Regression до fix1FAIL/2PASS, после fix3/3PASS.
+Проверки: npm run test --workspace=@marketplace/eds-client, npm run build
+--workspace=@marketplace/eds-client, scoped eslint — PASS; supplier signing
+consumer3/3 и verifier/adapters5/5PASS (mocks, не криптография). API/schema/DB/UI
+не менялись, полные app builds/PG/browser не нужны для этой подготовки.
+Логи .tmp/nca-prototype; diff hygiene PASS. Чужой WIP сохранён. Рабочие данные,
+реальные ключи, runtime конфигурация, НУЦ-интеграция R7.6.3.2/3 не менялись.
+Публикация только подготовки/исправления клиента, [skip ci] по решению владельца.
+
+Следующий необходимый вход: официальный SDK с примером detached CMS verification,
+тестовые сертификаты/цепочки и тестовые OCSP/CRL/TSP. После получения — версия
+SDK/NCALayer, реальная CMS исходных байтов, отрицательные кейсы и evidence.
+Мобильный NITEC-S-5096 требует отдельного подтверждённого доступа/контракта.
+Применён development-toolkit backend/verification; агенты не запускались.
+
 ### 15.10 — R7.6.2: GENERATED-счёт — SCOPED PASS
 
 Запрос «приступаем», затем явное «продолжай» после лимита PostgreSQL.

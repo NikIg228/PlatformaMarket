@@ -20,6 +20,21 @@ class FakeSocket implements NcalayerWebSocket {
 }
 
 describe("NcalayerClient", () => {
+  it("keeps the checksum bound to the original bytes while signing is pending", async () => {
+    const data = new Uint8Array([0, 1, 2]);
+    const client = new NcalayerClient({ webSocketFactory: () => {
+      const socket = new FakeSocket();
+      const send = socket.send.bind(socket);
+      socket.send = message => { data[0] = 99; send(message); };
+      queueMicrotask(() => socket.onopen?.());
+      return socket;
+    } });
+    const result = await client.signCmsDetached(data);
+    expect(data[0]).toBe(99);
+    expect((FakeSocket.lastMessage?.args as { data: string }).data).toBe("AAEC");
+    expect(result.dataChecksumSha256).toBe("ae4b3280e56e2faf83f414a6e3dabe9d5fbe18976544c05fed121accb85b53fc");
+  });
+
   it("requests detached CMS signing through the official basics module shape", async () => {
     FakeSocket.lastMessage = null;
     const client = new NcalayerClient({
