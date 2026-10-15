@@ -1,8 +1,9 @@
 "use client";
+import { DmTabList } from "./controls";
 import { ActionFeedback } from "./action-feedback";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { OfferPromotion, OfferPromotionCommand, PromotionPage, PromotionListQuery } from "@marketplace/schemas";
-import { Tab, TabList } from "@fluentui/react-components";
+import { Tab } from "@fluentui/react-components";
 import { DmSearch, DmButton, DmField, DmInput, DmDropdown as DmSelect, EmptyState, ErrorState, LoadingState, Section, StatusTag, errorMessage, formatDate, formatMoney } from "./index";
 import { PromotionEditor } from "./promotion-editor";
 import { promotionLabels as labels, promotionLocalDate, type PromotionWorkspaceApi } from "./promotion-workspace-types";
@@ -89,7 +90,7 @@ export function PromotionWorkspace({ api, operator = false, hideHeading = false,
       <DmSelect aria-label="Статус согласования" value={status} onChange={(_, data) => { setStatus(data.value); setOffset(0); }}><option value="">Все статусы</option>{["DRAFT", "PENDING", "CHANGES_REQUESTED", "REJECTED", "APPROVED"].map(value => <option key={value} value={value}>{labels[value]}</option>)}</DmSelect>
       {!operator ? <DmButton appearance="primary" onClick={() => openEditor({})}>Новая акция</DmButton> : null}
     </div>
-    {!operator ? <TabList data-dm-tab-kind="filter" aria-label="Срок акций" selectedValue={phase ?? "ALL"} onTabSelect={(_, data) => { setOffset(0); setPhase(data.value === "ALL" ? undefined : data.value as PromotionListQuery["phase"]); }}><Tab value="ALL">Все</Tab><Tab value="ACTIVE">Действующие</Tab><Tab value="SCHEDULED">Запланированные</Tab><Tab value="ENDED">Архив</Tab></TabList> : null}
+    {!operator ? <DmTabList aria-label="Срок акций" selectedValue={phase ?? "ALL"} onTabSelect={(_, data) => { setOffset(0); setPhase(data.value === "ALL" ? undefined : data.value as PromotionListQuery["phase"]); }}><Tab value="ALL">Все</Tab><Tab value="ACTIVE">Действующие</Tab><Tab value="SCHEDULED">Запланированные</Tab><Tab value="ENDED">Архив</Tab></DmTabList> : null}
     {error ? <ErrorState description={error} action={<DmButton onClick={() => void load()}>Повторить загрузку акций</DmButton>} /> : null}
     {loading ? <LoadingState label="Загружаем акции" /> : page?.items.length ? operator ? page.items.map(item => <PromotionCard key={`${item.id}:${item.version}`} item={item} api={api} operator reload={saved} edit={template => openEditor(template ? { template: item } : { selected: item })} />) : <>
       <div className={workflow.panel}><table className={workflow.table}><caption className="dm-sr-only">Акции поставщика</caption><thead><tr><th>Акция и товар</th><th>Условия</th><th>Период</th><th>Статус</th><th>Действие</th></tr></thead><tbody>{page.items.map(item => <tr key={item.id} data-selected={detailId === item.id}><td data-label="Акция"><div><strong>{item.terms.name}</strong><small>{item.offerName}</small></div></td><td data-label="Условия"><div>{item.terms.kind === "BUY_X_GET_Y" ? `${item.terms.buyQuantity} + ${item.terms.giftQuantity} в подарок` : formatMoney(item.unitPriceMinor, item.currency)}<small>Оформлено {item.claimedQuantity} из {item.terms.quantityLimit}</small></div></td><td data-label="Период"><div>{formatDate(item.terms.startsAt)} — {formatDate(item.terms.endsAt)}</div></td><td data-label="Статус"><div><StatusTag>{labels[item.moderationStatus === "APPROVED" ? item.temporalStatus : item.moderationStatus]}</StatusTag></div></td><td data-label="Действие"><DmButton onClick={() => setDetailId(detailId === item.id ? null : item.id)}>Подробнее</DmButton></td></tr>)}</tbody></table></div>

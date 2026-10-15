@@ -1,8 +1,9 @@
 "use client";
+import { DmTabList } from "@marketplace/ui/controls";
 import { ActionFeedback } from "@marketplace/ui";
 import { useState } from "react";
 import { DmButton, DmDropdown, EmptyState, LoadingState } from "@marketplace/ui";
-import { Tab, TabList } from "@fluentui/react-components";
+import { Tab } from "@fluentui/react-components";
 import type { NotificationInboxItem } from "@marketplace/schemas";
 import { useWorkspace } from "./workspace";
 import { PermissionBoundary } from "./permission-boundary";
@@ -17,7 +18,7 @@ function NotificationList() {
   const [category, setCategory] = useState<NotificationInboxItem["category"]>();
   const inbox = useNotificationInbox({ unreadOnly, category });
   return <section className={styles.history} aria-label="История уведомлений">
-    <div className={styles.toolbar}><TabList data-dm-tab-kind="filter" selectedValue={unreadOnly ? "unread" : "all"} onTabSelect={(_, value) => setUnreadOnly(value.value === "unread")} aria-label="Показать уведомления"><Tab value="all">Все</Tab><Tab value="unread">Непрочитанные{inbox.data?.unreadCount ? ` (${inbox.data.unreadCount})` : ""}</Tab></TabList>
+    <div className={styles.toolbar}><DmTabList selectedValue={unreadOnly ? "unread" : "all"} onTabSelect={(_, value) => setUnreadOnly(value.value === "unread")} aria-label="Показать уведомления"><Tab value="all">Все</Tab><Tab value="unread">Непрочитанные{inbox.data?.unreadCount ? ` (${inbox.data.unreadCount})` : ""}</Tab></DmTabList>
       <div className={styles.category}><DmDropdown aria-label="Категория уведомлений" value={category ?? ""} onChange={(_, data) => setCategory(data.value ? data.value as NotificationInboxItem["category"] : undefined)}><option value="">Все категории</option>{Object.entries(notificationCategories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</DmDropdown></div>
       <div className={styles.toolbarActions}><DmButton disabled={inbox.busy || !inbox.data?.unreadCount} onClick={() => void inbox.markRead()}>Прочитать все</DmButton><DmButton disabled={inbox.loading} onClick={() => void inbox.refresh()}>Обновить</DmButton></div>
     </div>

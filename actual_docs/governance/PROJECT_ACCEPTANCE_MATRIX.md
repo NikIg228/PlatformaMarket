@@ -1,5 +1,14 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+15.10 — **Равные карточки и подчёркнутые категории: LOCAL PASS, публикация pending.**
+Карточки товаров равного размера; категории supplier/clinic/admin используют
+общие tab adapters без hover/selected заливки, с подчёркиванием как Settings.
+UI unit90, contract2, types/lint, UI contract386files, browser18/18,
+изолированная pilot web build/types49routes — PASS. Initial visual6/8 исправлен
+сверкой толщины underline с Settings; повтор8/8PASS. Полный CI исключён запросом
+владельца, [skip ci]. Детали: [checkpoint](task-state/PRIMARY-SESSION.md).
+
+
 15.10 — **Escape назначения оператора: LOCAL PASS, публикация pending.**
 Один modal/focus trap сохраняется при lazy загрузке формы; закрытие и возврат
 фокуса проверены до/после загрузки, при повторном открытии1440/390, retry и busy.

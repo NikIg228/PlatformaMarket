@@ -6,6 +6,50 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 15.10 — равные карточки действий и подчёркнутые категории: LOCAL PASS, публикация pending
+
+Запрос: анализ и исправление сжатых backgrounds ProductActions; одинаковый размер
+всех карточек. Категории/фильтры всех кабинетов — selected underline как Settings,
+без hover/selected заливки. HEAD1efdc2c/main; baseline .tmp/category-tabs.
+Причина: общий width:fit-content для dm-link-button, ссылки-карточки без fullWidth;
+сетка при этом repeat6/5 равных колонок. План: fullWidth карточкам, равные grid rows;
+DmTabList вместо raw filter TabList; shared DmAction tab вместо category choices
+и mode buttons; единый underline без изменений фильтрации/API.
+Граница: supplier/clinic products/orders/docs/notifications/promotions/import,
+категории каталога, admin support modes и shared consumers. Формовые choices,
+строки таблиц и sidebar не являются такими вкладками. Паспорт: Manrope14,
+controls44, underline3/inset12, shared tokens; settings DmTabList — аналог.
+Исходный пользовательский screenshot просмотрен. Риск: shared CSS, mobileoverflow,
+selected/focus и скрытые категории. Checks: UI unit/types/contract, scoped lint,
+целевые existing/browsermock UI+screenshots/computed1440/390 по каждой семье,
+keyboard/click/filter state; итоговая isolated frontend build/types, review/diff,
+selective commit/push [skip ci] с сохранением запрета общего CI. Без DB writes.
+
+
+Результат: шесть карточек fullWidth с равной высотой grid rows; desktop1440
+186×80, mobile390 114×97.1875. Shared DmAction tab/DmTabList: transparent rest,
+hover/selected, selected underline3px как Settings; focus сохранён. Формовые choices
+сохранены. Категории каталога без текущих callers проверены статически.
+Проверки (mock API/dev3000, без записи в БД):
+- npm run typecheck --workspace @marketplace/ui — PASS.
+- npm run test --workspace @marketplace/ui — 18 файлов/90 tests PASS;
+  после добавления токена: -- --run src/component-contract.test.ts — 2 PASS.
+- scoped eslint 9 TSX paths (.tmp/category-tabs/lint.log) — PASS.
+- npm run verify:ui-contract — PASS, 386 files; повтор после нового токена PASS.
+- npx --no-install playwright test --config .tmp/category-tabs/visual.config.ts:
+  попытка1 6/8, ожидание2px не совпало с фактическими Settings3px;
+  после приведения общего токена к Settings попытка2 8/8PASS.
+  Screenshots/computed/hover/keyboard: products, orders/docs двух ролей, admin modes;
+  desktop/mobile без overflow, изображения просмотрены.
+- npx --no-install playwright test --config apps/e2e/playwright.workspaces.config.ts
+  workspace-rebuild.spec.ts settings-profile.spec.ts hybrid-promotions.spec.ts
+  --grep 'orders-ux notification popover and history|orders-ux list and terminal detail|supplier-sources cards request retry and import tabs|local campaign artwork and filters (1440|390)'
+  — 10/10 PASS, 1.1m.
+- node .tmp/category-tabs/build-web.mjs — PASS, pilot isolated build/types,49 routes;
+  отдельный distDir, next-env восстановлен. git diff --check — PASS.
+Evidence: .tmp/category-tabs и output/playwright/category-tabs-visual (local ignored).
+Полный CI не запускать по запросу владельца, commit [skip ci].
+
 ### 15.10 — точечное закрытие назначения по Escape: LOCAL PASS, публикация pending
 
 Запрос: исправить Escape в диалоге назначения; полный CI не запускать.

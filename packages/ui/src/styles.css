@@ -59,6 +59,7 @@
   --dm-radius-pill: 999px;
   --dm-radius-circle: 50%;
   --dm-space-micro: 2px;
+  --dm-tab-indicator-height: 3px;
   --dm-space-10: 40px;
   --dm-space-12: 48px;
   --dm-space-14: 56px;
@@ -608,8 +609,8 @@ html[data-input-modality] .fui-Button:focus { box-shadow: none !important; }
 .dm-action[data-dm-action="text"]:hover { text-decoration: none; }
 .dm-action[data-dm-action="choice"] { border-radius: var(--dm-radius-card); background: var(--dm-surface-subtle); }
 .dm-action[data-dm-action="row"] { width: 100%; border-radius: var(--dm-radius-card); }
-.dm-action:not(:disabled):not([aria-disabled="true"]):hover { background: var(--dm-surface-hover); }
-.dm-action:is(:active,[aria-expanded="true"],[aria-pressed="true"],[aria-selected="true"],[aria-current="page"]):not(:disabled):not([aria-disabled="true"]) { background: var(--dm-brand-surface); color: var(--dm-brand-deep); border-color: transparent; }
+.dm-action:not([data-dm-action="tab"]):not(:disabled):not([aria-disabled="true"]):hover { background: var(--dm-surface-hover); }
+.dm-action:not([data-dm-action="tab"]):is(:active,[aria-expanded="true"],[aria-pressed="true"],[aria-selected="true"],[aria-current="page"]):not(:disabled):not([aria-disabled="true"]) { background: var(--dm-brand-surface); color: var(--dm-brand-deep); border-color: transparent; }
 .dm-action:is(:disabled,[aria-disabled="true"]) { background: var(--dm-disabled-surface); color: var(--dm-disabled-content); border-color: transparent; cursor: not-allowed; }
 .dm-file-input { max-width: 100%; width: 100%; min-height: var(--dm-control-default); padding: var(--dm-space-1); border: 1px solid transparent; border-radius: var(--dm-radius-field); background: var(--dm-surface-subtle); color: var(--dm-text-primary); font: inherit; }
 .dm-file-input::file-selector-button { min-height: var(--dm-control-compact); margin-right: var(--dm-space-2); padding: 0 var(--dm-space-3); border: 1px solid transparent; border-radius: var(--dm-radius-button); background: var(--dm-surface-subtle); color: var(--dm-text-primary); font: inherit; cursor: pointer; }
@@ -622,7 +623,8 @@ html[data-input-modality] .fui-Button:focus { box-shadow: none !important; }
 .fui-Tab { min-height: var(--dm-control-default); font-size: var(--dm-font-size-body); }
 .fui-TabList:not([aria-orientation="vertical"]) { min-width: 0; max-width: 100%; overflow-x: auto; }
 .dm-navigation-tabs.fui-TabList { gap: 0; flex-wrap: nowrap; border-bottom: 1px solid var(--dm-border); }
-.dm-navigation-tabs .fui-Tab { flex-shrink: 0; border-radius: 0; padding-inline: var(--dm-space-3); }
+.dm-navigation-tabs .fui-Tab { flex-shrink: 0; border-radius: 0; padding-inline: var(--dm-space-3); background: transparent; }
+.dm-navigation-tabs.fui-TabList .fui-Tab:is(:hover,:active,[aria-selected="true"]) { background: transparent; }
 .dm-navigation-tabs .fui-Tab::before, .dm-navigation-tabs .fui-Tab::after { border-radius: 0; }
 .dm-info-tip { max-width: min(320px, calc(100vw - 32px)); font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); }
 .dm-heading { display: flex; align-items: center; gap: var(--dm-space-2); min-width: 0; margin-bottom: var(--dm-space-4); }
@@ -646,18 +648,19 @@ html[data-input-modality="keyboard"] .dm-surface[data-dm-surface="composer"]:has
 @media (max-width: 760px) { .dm-textarea-composer .fui-Textarea__textarea { font-size: var(--dm-font-size-body-lg); } }
 .mp-provider summary { min-height: var(--dm-control-default); align-content: center; }
 
-/* Filters indicate selection with fill; navigation tabs retain their underline. */
-.dm-action[data-dm-action="tab"][aria-pressed] { border: 0; box-shadow: none; font-size: var(--dm-font-size-body); }
-.dm-action[data-dm-action="tab"][aria-pressed="true"] { background: var(--dm-brand-surface); color: var(--dm-brand-deep); font-weight: var(--dm-font-weight-semibold); }
-.fui-TabList[data-dm-tab-kind="filter"] .fui-Tab { border-radius: var(--dm-radius-button); }
-.fui-TabList[data-dm-tab-kind="filter"] .fui-Tab::before,
-.fui-TabList[data-dm-tab-kind="filter"] .fui-Tab::after { display: none; }
-.fui-TabList[data-dm-tab-kind="filter"] .fui-Tab[aria-selected="true"] { background: var(--dm-brand-surface); color: var(--dm-brand-deep); }
-/* Fluent adds a focus shadow outside TabList's scroll clip. Use an interior fill. */
+/* Category filters share navigation tabs' underline without state fills. */
+.dm-action[data-dm-action="tab"] { position: relative; border: 0; border-radius: 0; box-shadow: none; font-size: var(--dm-font-size-body); }
+.dm-action[data-dm-action="tab"], .dm-action[data-dm-action="tab"]:is(:hover,:active,:disabled,[aria-disabled="true"],[aria-pressed="true"],[aria-selected="true"]) { background: transparent; }
+.dm-action[data-dm-action="tab"]::after { content: ""; position: absolute; inset-inline: var(--dm-space-3); bottom: 0; height: var(--dm-tab-indicator-height); background: transparent; pointer-events: none; }
+.dm-action[data-dm-action="tab"]:hover:not(:disabled):not([aria-disabled="true"])::after { background: var(--dm-text-secondary); }
+.dm-action[data-dm-action="tab"]:is([aria-pressed="true"],[aria-selected="true"]):not(:disabled):not([aria-disabled="true"]) { color: var(--dm-brand-deep); font-weight: var(--dm-font-weight-semibold); }
+.dm-action[data-dm-action="tab"]:is([aria-pressed="true"],[aria-selected="true"]):not(:disabled):not([aria-disabled="true"])::after { background: var(--dm-brand-primary); }
+/* Fluent adds a focus shadow outside TabList's scroll clip. Use an interior dotted text underline. */
 html[data-input-modality] .fui-Tab.fui-Tab:focus { box-shadow: none !important; outline: none !important; }
-html[data-input-modality="keyboard"] .fui-Tab:focus { background: var(--dm-surface-hover); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: var(--dm-space-1); }
+html[data-input-modality="keyboard"] .fui-Tab:focus { text-decoration: underline; text-decoration-style: dotted; text-underline-offset: var(--dm-space-1); }
 @media (forced-colors: active) {
   html[data-input-modality="keyboard"] .fui-Tab:focus { color: Highlight; text-decoration-color: Highlight; }
+  .dm-action[data-dm-action="tab"]:is([aria-pressed="true"],[aria-selected="true"])::after { background: Highlight; forced-color-adjust: none; }
 }
 .dm-inline-edit { display: grid; gap: var(--dm-space-1); min-width: 0; align-content: start; }
 .dm-inline-edit-label { display: flex; align-items: center; gap: var(--dm-space-1); min-height: var(--dm-control-compact); }

@@ -55,7 +55,8 @@
     "--dm-line-relaxed": "1.65",
     "--dm-tracking-heading": "-.035em",
     "--dm-tracking-label": ".06em",
-    "--dm-tracking-normal": "0"
+    "--dm-tracking-normal": "0",
+    "--dm-tab-indicator-height": "3px"
   },
   "controlStates": {
     "version": "neutral-fill-v1",
@@ -69,5 +70,17 @@
     "keyboardFocus": "focus.ring",
     "invalidBorder": "danger.content",
     "disabledFill": "disabled.surface"
+  },
+  "categoryTabs": {
+    "version": "underline-v1",
+    "rest": "transparent",
+    "hover": "transparent",
+    "pressed": "transparent",
+    "selected": "transparent",
+    "indicator": "brand.default",
+    "indicatorThickness": "--dm-tab-indicator-height",
+    "indicatorInset": "--dm-space-3",
+    "keyboardFocus": "preserve-visible-focus",
+    "minHeight": "--dm-control-default"
   }
 }

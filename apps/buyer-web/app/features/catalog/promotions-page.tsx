@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { frontendFeatures } from "@marketplace/api-client";
 import type { PromotionListQuery, PublicPromotion } from "@marketplace/schemas";
-import { DmButton, DmSearch, DmSelect, EmptyState } from "@marketplace/ui";
+import { DmAction, DmButton, DmSearch, DmSelect, EmptyState } from "@marketplace/ui";
 import { MarketplaceHeader } from "../marketplace-header/marketplace-header";
 import { fetchLiveCatalog } from "../../catalog/live-search";
 import type { SearchResult } from "../../catalog-search-types";
@@ -82,7 +82,7 @@ export default function PromotionsPage() {
       </div>
       {facetsFailed ? <DmButton onClick={() => setFacetAttempt(n => n + 1)}>Повторить загрузку категорий и поставщиков</DmButton> : null}
       <div className={styles.kinds} aria-label="Вид акции">
-        {([[undefined, "Все акции"], ["PERCENTAGE", "Скидки в процентах"], ["FIXED_AMOUNT", "Скидки в сумме"], ["BUY_X_GET_Y", "Подарки за покупку"]] as const).map(([kind, label]) => <DmButton key={label} appearance="subtle" aria-pressed={filters.kind === kind} onClick={() => change({ kind })}>{label}</DmButton>)}
+        {([[undefined, "Все акции"], ["PERCENTAGE", "Скидки в процентах"], ["FIXED_AMOUNT", "Скидки в сумме"], ["BUY_X_GET_Y", "Подарки за покупку"]] as const).map(([kind, label]) => <DmAction variant="tab" key={label} aria-pressed={filters.kind === kind} onClick={() => change({ kind })}>{label}</DmAction>)}
       </div>
       {data.error ? <div className={styles.error} role="alert"><p>Не удалось загрузить акции. {items.length ? "Уже загруженные предложения сохранены." : "Попробуйте ещё раз."}</p><DmButton onClick={data.retry}>Повторить загрузку акций</DmButton></div> : null}
       {!ready || (data.loading && !items.length) || (data.page?.total === 0 && previewProbe.loading) ? <p role="status">Загружаем акции…</p> : displayed.length ? <>

@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MarketplaceApiClient } from "@marketplace/api-client";
 import type { SupportTicketSummary } from "@marketplace/schemas";
-import { ActionFeedback, ConversationWorkspace, DmButton, DmField, DmInput, DmSelect, EmptyState, LoadingState, StatusTag, errorMessage } from "@marketplace/ui";
+import { DmAction, ActionFeedback, ConversationWorkspace, DmButton, DmField, DmInput, DmSelect, EmptyState, LoadingState, StatusTag, errorMessage } from "@marketplace/ui";
 import { adminApiContext, readAdminSession } from "./admin-auth";
 import { SupportTicketPanel } from "./support-ticket-panel";
 import styles from "./support-operations.module.css";
@@ -58,7 +58,7 @@ export function SupportOperations() {
   const selectTicket = (id?: string) => { setSelected(id); const url = new URL(window.location.href); if (id) url.searchParams.set("ticketId", id); else url.searchParams.delete("ticketId"); window.history.replaceState(null, "", url.pathname + url.search); };
   const selectConversation = (id?: string) => { setConversationId(id); const url = new URL(window.location.href); url.searchParams.delete("ticketId"); if (id) url.searchParams.set("conversationId", id); else url.searchParams.delete("conversationId"); window.history.replaceState(null, "", url.pathname + url.search); };
   return <section ref={sectionRef} tabIndex={-1} className="mp-stack" aria-label="Обращения и диалоги">
-    <div className={styles.toolbar}><div className="dm-conversations-toolbar"><DmButton aria-pressed={mode === "tickets"} onClick={() => { setMode("tickets"); selectConversation(); }}>Обращения</DmButton><DmButton aria-pressed={mode === "conversations"} onClick={() => { selectConversation(); setMode("conversations"); }}>Диалоги с оператором</DmButton></div><span className={styles.updated} role="status">{updatedAt ? `Обновлено ${updatedAt.toLocaleTimeString("ru-KZ", { hour: "2-digit", minute: "2-digit" })}` : ""}</span></div>
+    <div className={styles.toolbar}><div className="dm-conversations-toolbar"><DmAction variant="tab" aria-pressed={mode === "tickets"} onClick={() => { setMode("tickets"); selectConversation(); }}>Обращения</DmAction><DmAction variant="tab" aria-pressed={mode === "conversations"} onClick={() => { selectConversation(); setMode("conversations"); }}>Диалоги с оператором</DmAction></div><span className={styles.updated} role="status">{updatedAt ? `Обновлено ${updatedAt.toLocaleTimeString("ru-KZ", { hour: "2-digit", minute: "2-digit" })}` : ""}</span></div>
     {error ? <ActionFeedback tone="error" description={`${error} Последние загруженные данные сохранены.`} action={<DmButton onClick={() => void load()}>Повторить</DmButton>} /> : null}
     {mode === "conversations" && organizationId ? <ConversationWorkspace hideHeading key="operator-conversations" api={api} organizationId={organizationId} operator initialId={conversationId} onSelect={selectConversation} canWrite={permissions.includes("support.ticket.create") && permissions.includes("support.ticket.manage")} /> : mode === "tickets" ? <>
       <form className={styles.filters} onSubmit={event => { event.preventDefault(); setOffset(0); setQuery(search.trim()); }}>

@@ -1,8 +1,9 @@
 "use client";
+import { DmTabList } from "@marketplace/ui/controls";
 import { ActionFeedback } from "@marketplace/ui";
 import { useState } from "react";
 import Link from "next/link";
-import { Popover, PopoverSurface, PopoverTrigger, Tab, TabList } from "@fluentui/react-components";
+import { Popover, PopoverSurface, PopoverTrigger, Tab } from "@fluentui/react-components";
 import { Alert24Regular } from "@fluentui/react-icons/svg/alert";
 import { Dismiss20Regular } from "@fluentui/react-icons/svg/dismiss";
 import { DmButton, EmptyState, LoadingState } from "@marketplace/ui";
@@ -21,7 +22,7 @@ export function NotificationBell() {
     <PopoverTrigger disableButtonEnhancement><DmButton className={styles.bell} appearance="subtle" title="Уведомления" icon={<><Alert24Regular /><span className={styles.badge} hidden={!count} aria-hidden="true">{count > 99 ? "99+" : count}</span></>} aria-label={count ? `Уведомления: ${count} непрочитанных` : "Уведомления"} aria-expanded={open} /></PopoverTrigger>
     <PopoverSurface className={styles.popover} aria-label="Последние уведомления">
       <div className={styles.popoverHeading}><h2>Уведомления{count ? <span>{count}</span> : null}</h2><DmButton appearance="subtle" icon={<Dismiss20Regular />} aria-label="Закрыть уведомления" onClick={() => setOpen(false)} /></div>
-      <div className={styles.popoverControls}><TabList data-dm-tab-kind="filter" selectedValue={unreadOnly ? "unread" : "all"} onTabSelect={(_, state) => setUnreadOnly(state.value === "unread")} aria-label="Показать уведомления"><Tab value="all">Все</Tab><Tab value="unread">Непрочитанные</Tab></TabList><DmButton appearance="subtle" size="small" disabled={inbox.busy || !count} onClick={() => void inbox.markRead()} title="Включая уведомления за пределами списка. Общие уведомления отмечаются для организации.">Прочитать все</DmButton></div>
+      <div className={styles.popoverControls}><DmTabList selectedValue={unreadOnly ? "unread" : "all"} onTabSelect={(_, state) => setUnreadOnly(state.value === "unread")} aria-label="Показать уведомления"><Tab value="all">Все</Tab><Tab value="unread">Непрочитанные</Tab></DmTabList><DmButton appearance="subtle" size="small" disabled={inbox.busy || !count} onClick={() => void inbox.markRead()} title="Включая уведомления за пределами списка. Общие уведомления отмечаются для организации.">Прочитать все</DmButton></div>
       {inbox.error ? <ActionFeedback tone="error" description={inbox.error} action={<DmButton onClick={() => void inbox.refresh()}>Повторить</DmButton>} /> : null}
       {inbox.newEvents ? <DmButton className={styles.newEvents} appearance="subtle" onClick={() => void inbox.refresh()}>Есть новые уведомления — показать</DmButton> : null}
       <div className={styles.popoverList}>{inbox.loading && !inbox.data ? <LoadingState label="Загружаем уведомления" /> : inbox.data?.items.length ? <NotificationItems items={inbox.data.items} role={role} compact busy={inbox.busy} onRead={item => void inbox.markRead(item)} onNavigate={() => setOpen(false)} /> : !inbox.error ? <EmptyState title={unreadOnly ? "Всё прочитано" : "Уведомлений пока нет"} description="Здесь появятся важные изменения по вашей работе." /> : null}</div>
