@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Route } from "@playwright/test";
+import { queueItem, queuePage } from "../fixtures/operation-queue-view";
 
 const actor = "30000000-0000-4000-8000-000000000001";
 const organization = "20000000-0000-4000-8000-000000000001";
@@ -81,13 +82,12 @@ async function assignmentPage(page: Page) {
     observedAt: new Date().toISOString(), scope: "PLATFORM_CURRENT_ALL_STATUSES",
     organizations: { status: "AVAILABLE", value: 1 }, masterProducts: { status: "AVAILABLE", value: 0 }, effectivePermissions: { status: "AVAILABLE", value: 1 },
   } }));
-  await page.route("**/api/operations/work-queue?offset=0", route => route.fulfill({ json: {
-    generatedAt: new Date().toISOString(), operatorOrganizationId: organization, totalOpenItems: 1,
-    sections: [{ type: "CATALOG_REVIEW", priority: "NORMAL", count: 1, hasMore: false,
-      items: [{ id: actor, proposedName: "Проверка загрузки назначения", reason: "Нужно проверить карточку", href: "/admin?section=catalog", assignment: null }] }],
-  } }));
+  await page.route("**/api/operations/work-queue?**", route => route.fulfill({ json: queuePage([queueItem({ id: actor })], { operatorOrganizationId: organization }) }));
   await page.route("**/api/operations/work-queue/*/*/history", route => route.fulfill({ json: [] }));
   await page.getByRole("link", { name: "Обзор", exact: true }).click();
+  // The support screen imports localDate from the assignment module. Reload the
+  // queue destination so lazy-loader failure tests start without that cached module.
+  await page.reload();
   const opener = page.getByRole("button", { name: "Назначение и история", exact: true });
   await expect(opener).toBeVisible();
   return { opener, unexpected };
@@ -100,7 +100,7 @@ test("assignment loader remains closed when its pending chunk finishes after Esc
   const pending = new Promise<void>(resolve => { release = resolve; });
   await page.route("**/_next/static/chunks/*.js", async route => {
     const response = await route.fetch();
-    if ((await response.text()).includes("Назначение сохранено.")) {
+    if (/Назначение сохранено\.|\.operationHistory\(/.test(await response.text())) {
       intercepted = true;
       await pending;
     }
@@ -129,7 +129,7 @@ test("assignment loader retries a failed chunk without losing its selected task"
   let rejectChunk = true;
   await page.route("**/_next/static/chunks/*.js", async route => {
     const response = await route.fetch();
-    if (rejectChunk && (await response.text()).includes("Назначение сохранено.")) {
+    if (rejectChunk && /Назначение сохранено\.|\.operationHistory\(/.test(await response.text())) {
       rejected = true;
       return route.abort("failed");
     }

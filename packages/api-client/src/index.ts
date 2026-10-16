@@ -142,7 +142,11 @@ export class MarketplaceApiClient {
   downloadConversationAttachment(conversationId: string, messageId: string, assetId: string) {
     return this.download(`/conversations/${encodeURIComponent(conversationId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(assetId)}`);
   }
-  operationWorkQueue(offset = 0) { return this.get<import("@marketplace/schemas").OperationWorkQueue>(`/operations/work-queue?offset=${offset}`); }
+  operationWorkQueue(query: Partial<import("@marketplace/schemas").OperationWorkQueueQuery> = {}, signal?: AbortSignal) {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) if (value !== undefined && value !== "") params.set(key, String(value));
+    return this.get<import("@marketplace/schemas").OperationWorkQueue>(`/operations/work-queue?${params}`, { signal });
+  }
   operatorDashboard(signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorDashboard>("/operations/dashboard", { signal }); }
   operatorCapabilities(signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorCapabilities>("/operations/capabilities", { signal }); }
   operatorOrganizations(query: Partial<import("@marketplace/schemas").OperatorOrganizationsQuery> = {}, signal?: AbortSignal) {

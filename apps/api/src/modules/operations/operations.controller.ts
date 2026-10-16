@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   Headers,
   Param,
   Post,
@@ -27,6 +28,7 @@ import {
 } from "../../platform/openapi/core-openapi";
 import { OperationsService } from "./operations.service";
 import { OperationWorkflowService } from "./operation-workflow.service";
+import { OperationQueueService } from "./operation-queue.service";
 import { operationAssignmentSchema, operationQueueTypeSchema, operationWorkQueueQuerySchema } from "@marketplace/schemas";
 import { z } from "zod";
 
@@ -36,7 +38,7 @@ import { z } from "zod";
 @UseGuards(PermissionsGuard)
 @Controller("operations")
 export class OperationsController {
-  constructor(private readonly operations: OperationsService, private readonly workflow: OperationWorkflowService) {}
+  constructor(private readonly operations: OperationsService, private readonly workflow: OperationWorkflowService, private readonly queue: OperationQueueService) {}
 
   @Get("work-queue/assignees") @RequirePermissions("organization.view")
   @ApiCoreResponse("OperationAssignees")
@@ -70,17 +72,18 @@ export class OperationsController {
   }
 
   @Get("work-queue")
+  @Header("Cache-Control", "no-store")
   @ApiCoreQuery("OperationWorkQueueQuery")
   @ApiCoreResponse("OperationWorkQueue")
   @RequirePermissions("organization.view")
   workQueue(
-    @Query("offset") offset: string | undefined,
+    @Query() query: unknown,
     @Headers("x-user-id") actorId: string,
     @Headers("x-organization-id") organizationId: string,
   ) {
-    const parsed = operationWorkQueueQuerySchema.safeParse({ offset });
-    if (!parsed.success) throw new BadRequestException("Invalid queue offset");
-    return this.operations.workQueue({ actorId, organizationId }, parsed.data.offset);
+    const parsed = operationWorkQueueQuerySchema.safeParse(query);
+    if (!parsed.success) throw new BadRequestException("Invalid queue filters");
+    return this.queue.list(parsed.data, { actorId, organizationId });
   }
 
   @Get("outbox/dead-letter")

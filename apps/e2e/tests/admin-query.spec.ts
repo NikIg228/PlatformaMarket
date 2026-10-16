@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { history, id, summary } from "./messages.fixture";
+import { queueItem, queuePage } from "../fixtures/operation-queue-view";
 
 async function fixture(page: Page) {
   const state = { reads: [] as string[], unexpected: [] as string[], errors: [] as string[], objectStatus: 200, holdObject: "", objectHeld: false, releaseObject: () => {}, failNotification: false, holdNotification: false, notificationHeld: false, releaseNotification: () => {}, holdConversation: "", conversationHeld: false, releaseConversation: () => {}, writeHeld: false, releaseWrite: () => {}, failWrite: false };
@@ -21,7 +22,7 @@ async function fixture(page: Page) {
     else if (path === "/support/tickets") json = Number(url.searchParams.get("offset")) ? tickets.slice(0, 2) : tickets;
     else if (path.startsWith("/support/tickets/") && path.endsWith("/history")) json = [];
     else if (path.startsWith("/support/tickets/")) json = tickets.find(ticket => path.endsWith(ticket.id));
-    else if (path === "/operations/work-queue") json = { generatedAt: new Date().toISOString(), operatorOrganizationId: id(1), totalOpenItems: 2, sections: [{ type: "CATALOG_REVIEW", priority: "NORMAL", count: 2, hasMore: !Number(url.searchParams.get("offset")), items: [100, 101].map(n => ({ id: id(n), orderNumber: `Заказ ${n}`, reason: "Ожидает подтверждения", href: `/admin?section=overview&queueType=CATALOG_REVIEW&object=${id(n)}`, assignment: null })) }] };
+    else if (path === "/operations/work-queue") json = queuePage([100, 101].map(n => queueItem({ id: id(n), title: `Заказ ${n}`, reason: "Ожидает подтверждения", href: `/admin?section=overview&queueType=CATALOG_REVIEW&object=${id(n)}` })), { operatorOrganizationId: id(1), offset: Number(url.searchParams.get("offset")), total: 52, totalOpenItems: 52, hasMore: !Number(url.searchParams.get("offset")) });
     else if (path.startsWith("/operations/work-queue/CATALOG_REVIEW/")) {
       const target = path.split("/").at(-1)!;
       if (target === state.holdObject) { state.objectHeld = true; await new Promise<void>(resolve => { state.releaseObject = resolve; }); }

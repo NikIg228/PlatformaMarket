@@ -571,3 +571,122 @@ commerce-analytics ожидал карточку заказа, но его promo
 API4113/web3103, disposable DB. Локально сохранён чужой относительный API URL
 в тесте; в коммит входит только opt-in fixture, исходный CI URL4012 сохранён.
 Повторный общий CI запускается после push; предыдущий browser FAIL не скрывается.
+
+### R7.7.6.1 — общая очередь и назначения, начало 16.10.2026
+
+Поручение владельца: «Приступай» после завершения CI предыдущего пакета.
+База main/cb21c364fb9f54004955f5f8b6c0504d790d57d7, canonical root.
+Существующий несвязанный WIP сохранён. Другие этапы .2/.3 автоматически не начинаются.
+Scope: единый серверный поиск/фильтры/порядок/страницы и достоверный total для
+существующих источников очереди; достижимый UI; отдельная история назначений,
+expectedVersion/idempotency и доказательство неизменности доменного объекта.
+До новой логики определяются порядок и case identity; предложены приоритет→срок→
+возраст→тип/ID и case=(тип причины, ID исходной записи), разные причины не сливаются.
+По SLA предложено сохранить существующие ручные сроки/приоритеты, неизвестный срок
+показывать «Не задан»; новые нормативы не выдумывать. Вопросы владельцу отправлены.
+Независимый первый шаг — тесты существующих назначений и истории без смены правил.
+
+Риски: пропуск/дубли страницы, фильтрация только загруженной части, потеря ввода при
+конфликте, неверные totals, смешение назначений разных операторских организаций,
+изменение доменного статуса назначением, гонка/replay/rollback.
+Gates: schema/client/API focused tests после связных изменений; API types/build;
+изолированный PostgreSQL/API с реальными paging/role/tenant/race/replay/rollback;
+core-contract/runtime-split; admin/E2E types, isolated unified build, targeted
+browser desktop/mobile/keyboard и screenshot/computed styles, lint/diff hygiene.
+DB: только dentmarket_audit_20260914; рабочая БД не изменяется. Default budgets
+Workflow: probe2min/server5min/command20min/blocker15min; максимум3попытки/gate.
+Применены development-toolkit execution/backend/verification и Backend Architect:
+контракт/границы, минимальная архитектура, серверные права и транзакционные инварианты.
+
+16.10: владелец подтвердил порядок приоритет→назначенный срок→возраст и identity
+(тип причины, ID исходной записи); разные причины заказа не объединяются.
+Schema14tests PASS; назначения5tests PASS; API queue/outbox/assignment16tests PASS;
+schemas build и API build PASS. Модель Prisma не менялась. Новый read-контракт
+возвращает плоские items, total по фильтру и totalOpenItems по всем текущим источникам,
+offset/limit/hasMore. Counts/page читаются одним PostgreSQL statement; назначение
+подключается по operatorOrganizationId+queueType+entityId. Статус случая по-прежнему
+определяет исходный домен. Нормативные SLA не добавлены.
+
+UI-паспорт: operator /admin?section=overview, 1440×900 и390×900, scale100%.
+Baseline: .tmp/operator-queue/baseline-results/baseline-current-queue-baseline/
+before-{1440,390}.png (просмотрены), текущий isolated build .tmp/operator-orders/next.
+Контракты market-components-v1/platforma-semantic-light-v1; Manrope14,
+control44/radius8, line19.6 подтверждены computed styles. Sidebar200/logo144.
+Аналог фильтров и списка: apps/admin-web/app/operator-orders.tsx, DmSurface filters/
+section/card, DmField/Input/Dropdown/Button, StatusTag, Loading/Empty/ErrorState.
+Меняется композиция очереди: компактные фильтры, единый упорядоченный список,
+достоверный total и глобальные страницы; shared shell/tokens остаются текущими.
+Существующее растяжение desktop action по высоте строки не копируется: actions
+выравниваются по содержимому. gaps12/16/24, section/card radius12, без control overrides.
+
+Владелец подтвердил сохранение существующих сроков/приоритетов, новые нормативы SLA
+отложены; отсутствие срока показано как «Не задан». URL хранит queueQ/queueKind/
+queuePriority/queueAssignment/queueDue/queueSort/queueOffset. API принимает q/kind/
+priority/assignment/due/sort/offset/limit; поиск по названию/ID/артикулу/организации/БИН,
+фильтры выполняются до общего paging. total — число по фильтрам, totalOpenItems —
+все открытые случаи доступного профиля. Один случай — (queueType, source id).
+Порядок по умолчанию: CRITICAL/HIGH/NORMAL/LOW → dueAt ASC NULLS LAST → openedAt →
+queueType/id; дополнительные сортировки oldest/recent также имеют стабильный tie-break.
+OpenAPI и типизированный API client используют общие schemas; сервер валидирует
+query, соответствие ответа схеме проверено целевым API-тестом.
+
+Назначение сохраняет прежний write-контракт. Новый UI при409 загружает актуальную
+версию, показывает текущее назначение и сохраняет ввод для сравнения перед повтором.
+История назначений отделена от статуса исходного объекта, имеет error/retry/empty.
+После сохранения фокус возвращается в поле причины, если отключение формы оставило
+его на body/disabled control; фокус на кнопке закрытия не перехватывается.
+
+Проверки на main/cb21c36 + текущем scoped diff, unchanged lockfile, pilot:
+
+- schemas55 (workflow14/navigation8/admin-query33), API client1, Admin39 — PASS.
+  Команды: `npm run test --workspace @marketplace/schemas -- src/operations-workflow.test.ts src/operation-queue-navigation.test.ts src/admin-query.test.ts`,
+  `npm run test --workspace @marketplace/api-client -- src/operation-queue.test.ts`,
+  `npm run test --workspace @marketplace/admin-web`. Ранее API16 tests/build PASS
+  переиспользованы: backend после них не менялся.
+- `npm run db:test -- exec -- node node_modules/@playwright/test/cli.js test --config apps/e2e/playwright.operation-queue-api.config.ts` — PASS.
+  Реальный PostgreSQL/API:120 случаев, три страницы, literal wildcard search,
+  организация/БИН/SKU/ID, пустая поздняя страница,403/401/400, разные операторские
+  организации, replay/race/expectedVersion, audit и rollback command record,
+  исходные кандидаты неизменны после назначения. Дополнительно проверены сроки,
+  queue/oldest/recent и исчезновение закрытого источника. Первый запуск PASS;
+  повтор после добавления доказательств порядка/rollback также PASS.
+- `node .tmp/operator-queue/build-web.mjs` — PASS,49 routes, types; отдельные
+  distDir/tsconfig,API4113/web3103. Первый build PASS, второй обоснован focus fix.
+  `npm run typecheck --workspace @marketplace/admin-web`, E2E tsc и scoped ESLint
+  изменённых runtime/tests — PASS. Dependencies не переустанавливались.
+- Target browser `playwright.operation-queue.config.ts`: admin-query7 PASS;
+  assignment-escape6 PASS; новые desktop/mobile queue2 PASS; order transition1
+  и projections3 PASS. Итого19 различных сценариев, с переиспользованием неизменных.
+  Новый queue test: попытка1 FAIL из-за поиска portal-toast внутри panel; попытка2
+  выявила потерю фокуса после save; после исправления попытка3 PASS.
+  Два дополнительных admin-shell loader tests: первые2 запуска FAIL — после
+  support уже закеширован assignment module через localDate; холодная загрузка
+  overview в fixture, попытка3 PASS. Ошибки загрузки действительно внедрены,
+  проверки failure/retry/Escape не ослаблены. Всего21 уникальный browser scenario PASS.
+  Evidence: output/playwright/operation-queue и .tmp/operator-queue/shell-cold-results.
+  Скриншоты1440/390 просмотрены; controls44px/radius8/Manrope, responsive layout
+  и keyboard проверены. Toast перед финальными screenshots закрыт через штатную кнопку.
+- `npm run db:test -- exec -- node scripts/verify-pilot-backend.mjs --contract-only`
+  и `node scripts/verify-runtime-split.mjs` — PASS на уже собранном API.
+- `npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs` — FAIL,
+  попытка1. Не очередь: scripts/lib/verify-order-resupply.mjs:31 не находит
+  InventoryBalance. verify-order-invoices.mjs выбирает произвольный originalWarehouse
+  по supplierOrganizationId, не склад остатка offers[0]. Отдельное исправление
+  этого fixture запрошено у владельца; без ответа не менять и не повторять gate.
+  Log: .tmp/operator-queue/postgres.log. Runtime-split использует stub DB и не
+  делит с этим тестом данные. Рабочая БД не затрагивалась.
+
+Первоначальный статус: R7.7.6.1 IMPLEMENTED / ACCEPTANCE BLOCKED на общем PostgreSQL
+gate. Владелец затем явно разрешил исправление fixture. План: привязать склад к
+переданному balanceId и проверить совпадение offer/supplier; риск только в тестовых
+данных; проверки — scoped ESLint, полный PostgreSQL composition и diff hygiene.
+verify-order-invoices теперь читает точный offers[0].balanceId и использует его
+warehouseId, вместо произвольного первого склада поставщика. Все проверки403,
+tenant, stock, money, rollback и idempotency сохранены.
+
+PostgreSQL попытка2 — PASS: `npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs`,
+log .tmp/operator-queue/postgres-attempt2.log; включая resupply10/8/2, права,
+конкуренцию/replay, rollback и точный расход остатков. Исходный FAIL попытки1
+сохранён выше. Scoped ESLint fixture и финальный `git diff --check` PASS.
+Статус: R7.7.6.1 LOCAL_PASS. Git/CI проверяются при публикации; последующие этапы
+.2/.3 не начаты. Чужие dirty changes сохранены; рабочая БД не изменялась.

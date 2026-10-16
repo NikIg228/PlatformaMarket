@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { operatorOrderView, orderViewId as id, orderViewDate as at } from "../fixtures/operator-order-view";
+import { queueItem, queuePage } from "../fixtures/operation-queue-view";
 
 async function fixture(page: Page) {
   const { items, detail, document } = operatorOrderView();
@@ -92,7 +93,7 @@ test("analytics and operational queue reach the same order", async ({ page }) =>
   await expect(page.getByRole("heading", { name: "Заказ ORD-31", exact: true })).toBeVisible();
   expect(new URL(page.url()).searchParams.get("orderId")).toBe(id(130));
   await page.route("**/api/operations/dashboard", route => route.fulfill({ json: { observedAt: at, scope: "PLATFORM_CURRENT_ALL_STATUSES", organizations: { status: "AVAILABLE", value: 2 }, masterProducts: { status: "AVAILABLE", value: 1 }, effectivePermissions: { status: "AVAILABLE", value: 1 } } }));
-  await page.route("**/api/operations/work-queue?**", route => route.fulfill({ json: { generatedAt: at, operatorOrganizationId: id(40), totalOpenItems: 1, sections: [{ type: "SUPPLIER_CONFIRMATION", priority: "NORMAL", count: 1, hasMore: false, items: [{ id: id(130), orderNumber: "ORD-31", reason: "Подтверждение поставщика", href: `/admin?section=orders&queueType=SUPPLIER_CONFIRMATION&object=${id(130)}`, assignment: null }] }] } }));
+  await page.route("**/api/operations/work-queue?**", route => route.fulfill({ json: queuePage([queueItem({ id: id(130), queueType: "SUPPLIER_CONFIRMATION", title: "ORD-31", reason: "Подтверждение поставщика", href: `/admin?section=orders&queueType=SUPPLIER_CONFIRMATION&object=${id(130)}` })], { operatorOrganizationId: id(40) }) }));
   await page.goto("/admin?section=overview");
   await page.getByRole("link", { name: "Открыть объект", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Заказ ORD-31", exact: true })).toBeVisible();

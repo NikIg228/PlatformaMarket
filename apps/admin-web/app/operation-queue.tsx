@@ -1,60 +1,64 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps, type ComponentType } from "react";
 import { MarketplaceApiClient } from "@marketplace/api-client";
-import type { OperationWorkQueue } from "@marketplace/schemas";
-import { DmButton } from "@marketplace/ui/actions";
-import { DmSelect } from "@marketplace/ui/native-select";
+import type { OperationWorkQueue, OperationQueueItem } from "@marketplace/schemas";
+import { DmButton, DmSurface } from "@marketplace/ui/actions";
 import { DmDialog, EmptyState, ErrorState, LoadingState, StatusTag } from "@marketplace/ui/primitives";
-import { errorMessage } from "@marketplace/ui/format";
+import { errorMessage, formatDate } from "@marketplace/ui/format";
 import { adminApiContext } from "./admin-auth";
 import { adminSectionQuery, parseAdminQuery, serializeAdminQuery } from "@marketplace/schemas/product-navigation";
 import { useAdminQuery } from "./use-admin-query";
+import { OperationQueueFilters } from "./operation-queue-filters";
 import styles from "./operation-queue.module.css";
 
 export const queueLabels: Record<string, string> = { ORGANIZATION_REVIEW: "Допуск поставщиков", PROMOTION_REVIEW: "Модерация акций", CATALOG_REVIEW: "Карточки на проверке", COMPLIANCE_REVIEW: "Проверка документов", INTEGRATION_RECONCILIATION: "Расхождения в данных", IMPORT_ATTENTION: "Загрузки требуют проверки", AGREEMENT_SIGNATURE: "Договоры ждут подписи", SUPPLIER_CONFIRMATION: "Подтверждение заказов", STALE_INVENTORY: "Устаревшие остатки" };
 export const priorityLabels: Record<string, string> = { CRITICAL: "Критический", HIGH: "Высокий", NORMAL: "Обычный", LOW: "Низкий" };
-type QueueSection = OperationWorkQueue["sections"][number];
-export type QueueItem = QueueSection["items"][number];
-export const queueItemLabel = (item: QueueItem) => item.proposedName ?? item.orderNumber ?? item.agreementNumber ?? item.fileName ?? (typeof item.externalRef === "string" ? item.externalRef : item.id);
+export type QueueItem = OperationQueueItem;
+export const queueItemLabel = (item: QueueItem) => item.title;
 
 export function OperationQueue() {
   const api = useMemo(() => new MarketplaceApiClient(process.env.NEXT_PUBLIC_API_URL ?? "/api", adminApiContext()), []);
   const openerRef = useRef<HTMLElement | null>(null);
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
   const [data, setData] = useState<OperationWorkQueue | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [assignees, setAssignees] = useState<{ id: string; displayName: string }[]>([]);
-  const [selected, setSelected] = useState<{ section: QueueSection; item: QueueItem } | null>(null);
+  const [selected, setSelected] = useState<QueueItem | null>(null);
   const { state, write } = useAdminQuery();
-  const { queueKind: kind, queueOffset: offset } = state;
+  const { queueKind, queueOffset: offset, queueQ, queuePriority, queueAssignment, queueDue, queueSort } = state;
   const request = useRef(0);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   const load = useCallback(async () => {
     const serial = ++request.current;
     setBusy(true); setError("");
-    try { const [queue, members, rights] = await Promise.all([api.operationWorkQueue(offset), api.operationAssignees(), api.get<string[]>("/access-control/permissions")]); if (serial !== request.current) return; setData(queue); setAssignees(members); setPermissions(rights); }
-    catch (cause) { if (serial === request.current) setError(errorMessage(cause)); }
+    try { const [queue, members, rights] = await Promise.all([api.operationWorkQueue({ offset, q: queueQ, kind: queueKind, priority: queuePriority || undefined, assignment: queueAssignment, due: queueDue, sort: queueSort, limit: 50 }), api.operationAssignees(), api.get<string[]>("/access-control/permissions")]); if (serial !== request.current) return; setData(queue); setAssignees(members); setPermissions(rights); }
+    catch (cause) { if (serial === request.current) { setError(errorMessage(cause)); setData(null); } }
     finally { if (serial === request.current) setBusy(false); }
-  }, [api, offset]);
+  }, [api, offset, queueQ, queueKind, queuePriority, queueAssignment, queueDue, queueSort]);
   useEffect(() => { setData(null); setSelected(null); void load(); return () => { request.current += 1; }; }, [load]);
   const objectHref = (href: string) => {
     const url = new URL(href, window.location.origin);
     const destination = parseAdminQuery(url.search);
     return destination ? window.location.pathname + serializeAdminQuery({ ...adminSectionQuery(state, destination.section), queueType: destination.queueType, object: destination.object, orderId: destination.orderId }) : href;
   };
-  return <section className={styles.panel} aria-label="Операционная очередь">
-    <div className={styles.header}><div><h2 className={styles.title}>Операционная очередь</h2><p className={styles.subtitle}>Причина задачи, ответственный, срок и история решений.</p></div><div className={styles.total}><strong>{data?.totalOpenItems ?? "—"}</strong><span>задач в выборке</span></div></div>
-    {error ? <ErrorState description={error} action={<DmButton onClick={() => void load()}>Повторить</DmButton>} /> : null}
+  return <DmSurface variant="section" className={styles.panel} role="region" aria-label="Операционная очередь" aria-busy={busy}>
+    <div className={styles.header}><div><h2 ref={headingRef} tabIndex={-1} className={styles.title}>Операционная очередь</h2><p className={styles.subtitle}>Причина случая, ответственный, срок и история назначений.</p></div><DmButton disabled={busy} onClick={() => void load()}>Обновить очередь</DmButton></div>
+    <OperationQueueFilters state={state} write={write} />
+    {error ? <ErrorState title="Очередь недоступна" description={error} action={<DmButton onClick={() => void load()}>Повторить загрузку очереди</DmButton>} /> : null}
     {busy && !data ? <LoadingState label="Загружаем очередь" /> : null}
-    <label>Раздел очереди<DmSelect value={kind} onChange={event => write({ ...state, queueKind: event.target.value as typeof kind })}><option value="ALL">Все разделы</option>{Object.entries(queueLabels).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</DmSelect></label>
-    {data && !data.totalOpenItems ? <EmptyState title="Нет задач в этой выборке" description="Измените раздел очереди или проверьте предыдущую страницу." /> : null}
-    <div className={styles.items}>{data?.sections.filter(section => kind === "ALL" || kind === section.type).flatMap(section => section.items.map(item => <article className={styles.item} key={`${section.type}:${item.id}`}>
-      <div><strong>{queueLabels[section.type]} · {queueItemLabel(item)}</strong><p>{item.reason}</p><StatusTag tone={(item.assignment?.priority ?? section.priority) === "CRITICAL" ? "danger" : "warning"}>{priorityLabels[item.assignment?.priority ?? section.priority]}</StatusTag><p>Ответственный: {item.assignment?.assigneeName ?? "Не назначен"} · Срок: {item.assignment?.dueAt ? new Date(item.assignment.dueAt).toLocaleString("ru-KZ") : "Не задан"}</p>{item.assignment?.reason ? <p>Последнее решение: {item.assignment.reason}</p> : null}</div>
-      <DmButton onClick={event => { openerRef.current = event.currentTarget; setSelected({ section, item }); }}>Назначение и история</DmButton><DmButton as="a" href={objectHref(item.href)} onClick={event => { if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; const next = parseAdminQuery(new URL(event.currentTarget.href).search); if (next) { event.preventDefault(); write(next); } }}>Открыть объект</DmButton>
-    </article>))}</div>
-    <div className="dm-conversations-toolbar"><DmButton disabled={!offset || busy} onClick={() => write({ ...state, queueOffset: Math.max(0, offset - 50) })}>Предыдущие</DmButton><span>Выборка {offset + 1}–{offset + 50} в каждом разделе</span><DmButton disabled={busy || offset >= 100000 || !data?.sections.some(section => section.hasMore)} onClick={() => write({ ...state, queueOffset: offset + 50 })}>Следующие</DmButton></div>
-    {selected ? <OperationAssignmentPanel key={`${selected.section.type}:${selected.item.id}`} api={api} type={selected.section.type} item={selected.item} defaultPriority={selected.section.priority} assignees={assignees} canManage={permissions.includes("support.ticket.manage")} onClose={() => { openerRef.current?.focus(); setSelected(null); }} onSaved={async assignment => { setSelected(value => value ? { ...value, item: { ...value.item, assignment } } : null); await load(); }} /> : null}
-  </section>;
+    {data ? <p role="status" className={styles.summary}>Найдено случаев: {data.total} · Всего открыто: {data.totalOpenItems}</p> : null}
+    {data && !data.items.length ? <EmptyState title={data.total ? "На этой странице нет случаев" : "Случаи не найдены"} description="Измените фильтры или вернитесь к началу списка." action={offset ? <DmButton onClick={() => write({ ...state, queueOffset: 0 })}>К первой странице</DmButton> : undefined} /> : null}
+    <div className={styles.items}>{data?.items.map(item => <DmSurface variant="card" className={styles.item} key={item.caseKey}>
+      <div className={styles.details}><h3>{queueLabels[item.queueType]} · {queueItemLabel(item)}</h3><p>{item.organizations.map(org => org.name).join(" · ")}</p><p>{item.reason}</p>
+        <div className={styles.tags}><StatusTag tone={item.priority === "CRITICAL" ? "danger" : item.priority === "HIGH" ? "warning" : "neutral"}>{priorityLabels[item.priority]}</StatusTag>{item.isOverdue ? <StatusTag tone="danger">Просрочено</StatusTag> : null}</div>
+        <p>Ответственный: {item.assignment?.assigneeName ?? "Не назначен"} · Срок: {item.dueAt ? new Date(item.dueAt).toLocaleString("ru-KZ") : "Не задан"}</p>
+        <p>Обновлено: <time dateTime={item.updatedAt}>{formatDate(item.updatedAt)}</time></p>{item.assignment?.reason ? <p>Последнее назначение: {item.assignment.reason}</p> : null}</div>
+      <div className={styles.actions}><DmButton onClick={event => { openerRef.current = event.currentTarget; setSelected(item); }}>Назначение и история</DmButton><DmButton as="a" href={objectHref(item.href)} onClick={event => { if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; const next = parseAdminQuery(new URL(event.currentTarget.href).search); if (next) { event.preventDefault(); write(next); } }}>Открыть объект</DmButton></div>
+    </DmSurface>)}</div>
+    {data ? <div className={styles.pagination}><DmButton disabled={!offset || busy} onClick={() => write({ ...state, queueOffset: Math.max(0, offset - 50) })}>Предыдущие</DmButton><span>{data.items.length ? `Случаи ${offset + 1}–${offset + data.items.length} из ${data.total}` : `Всего по фильтру: ${data.total}`}</span><DmButton disabled={busy || offset >= 100000 || !data.hasMore} onClick={() => write({ ...state, queueOffset: offset + 50 })}>Следующие</DmButton></div> : null}
+    {selected ? <OperationAssignmentPanel key={selected.caseKey} api={api} type={selected.queueType} item={selected} defaultPriority={selected.priority} assignees={assignees} canManage={permissions.includes("support.ticket.manage")} onClose={() => { (openerRef.current?.isConnected ? openerRef.current : headingRef.current)?.focus(); setSelected(null); }} onSaved={async assignment => { setSelected(value => value ? { ...value, assignment } : null); await load(); }} /> : null}
+  </DmSurface>;
 }
 
 type AssignmentContentProps = ComponentProps<typeof import("./operation-assignment").OperationAssignmentContent>;

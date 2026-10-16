@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { queueItem, queuePage } from "../fixtures/operation-queue-view";
 
 const actor = "30000000-0000-4000-8000-000000000001";
 const organization = "20000000-0000-4000-8000-000000000001";
@@ -22,11 +23,7 @@ async function assignmentPage(page: Page) {
       observedAt: new Date().toISOString(), scope: "PLATFORM_CURRENT_ALL_STATUSES",
       organizations: { status: "AVAILABLE", value: 1 }, masterProducts: { status: "AVAILABLE", value: 0 }, effectivePermissions: { status: "AVAILABLE", value: 1 },
     };
-    else if (path === "/operations/work-queue") json = {
-      generatedAt: new Date().toISOString(), operatorOrganizationId: organization, totalOpenItems: 1,
-      sections: [{ type: "CATALOG_REVIEW", priority: "NORMAL", count: 1, hasMore: false,
-        items: [{ id: actor, proposedName: "Проверка загрузки назначения", reason: "Нужно проверить карточку", href: "/admin?section=catalog", assignment: null }] }],
-    };
+    else if (path === "/operations/work-queue") json = queuePage([queueItem({ id: actor })], { operatorOrganizationId: organization });
     else { unexpected.push(path); return route.fulfill({ status: 500, json: { message: "Unexpected assignment fixture endpoint" } }); }
     return route.fulfill({ json });
   });

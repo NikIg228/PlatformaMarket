@@ -18,6 +18,11 @@ export type AdminQuery = {
   conversationFilter: "ALL" | "UNREAD" | "ORDERS";
   conversationOffset: number;
   queueKind: "ALL" | AdminQueueType;
+  queueQ: string;
+  queuePriority: "" | "CRITICAL" | "HIGH" | "NORMAL" | "LOW";
+  queueAssignment: "ALL" | "MINE" | "UNASSIGNED" | "ASSIGNED";
+  queueDue: "ALL" | "OVERDUE" | "SCHEDULED" | "UNSCHEDULED";
+  queueSort: "queue" | "oldest" | "recent";
   queueOffset: number;
   orgId?: string;
   orgQ: string;
@@ -34,7 +39,7 @@ export type AdminQuery = {
   orderTo: string;
   orderOffset: number;
 };
-export const defaultAdminQuery: AdminQuery = { section: "overview", supportMode: "tickets", supportStatus: "", supportQ: "", supportSort: "queue", supportOffset: 0, conversationFilter: "ALL", conversationOffset: 0, queueKind: "ALL", queueOffset: 0, orgQ: "", orgStatus: "", orgCapability: "", orgOffset: 0, orderQ: "", orderBuyer: "", orderSupplier: "", orderStatus: "", orderPaymentStatus: "", orderFrom: "", orderTo: "", orderOffset: 0 };
+export const defaultAdminQuery: AdminQuery = { section: "overview", supportMode: "tickets", supportStatus: "", supportQ: "", supportSort: "queue", supportOffset: 0, conversationFilter: "ALL", conversationOffset: 0, queueKind: "ALL", queueQ: "", queuePriority: "", queueAssignment: "ALL", queueDue: "ALL", queueSort: "queue", queueOffset: 0, orgQ: "", orgStatus: "", orgCapability: "", orgOffset: 0, orderQ: "", orderBuyer: "", orderSupplier: "", orderStatus: "", orderPaymentStatus: "", orderFrom: "", orderTo: "", orderOffset: 0 };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const unsafe = /[\\#\u0000-\u001f\u007f]/;
 
@@ -43,10 +48,15 @@ export function parseAdminQuery(search: string): AdminQuery | undefined {
   const params = new URLSearchParams(search);
   const result = { ...defaultAdminQuery };
   for (const [key, value] of params) {
-    if (params.getAll(key).length !== 1 || (!["supportQ", "orgQ", "orderQ", "orderBuyer", "orderSupplier"].includes(key) && unsafe.test(value))) return;
+    if (params.getAll(key).length !== 1 || (!["supportQ", "orgQ", "orderQ", "orderBuyer", "orderSupplier", "queueQ"].includes(key) && unsafe.test(value))) return;
     if (key === "section" && adminSections.includes(value as AdminSection)) result.section = value as AdminSection;
     else if ((key === "queueType" || key === "queueKind") && adminQueueTypes.includes(value as AdminQueueType)) result[key] = value as AdminQueueType;
     else if (key === "queueKind" && value === "ALL") result.queueKind = value;
+    else if (key === "queueQ" && value.length <= 200 && !/[\u0000-\u001f\u007f]/.test(value)) result.queueQ = value.trim();
+    else if (key === "queuePriority" && ["CRITICAL", "HIGH", "NORMAL", "LOW"].includes(value)) result.queuePriority = value as AdminQuery["queuePriority"];
+    else if (key === "queueAssignment" && ["ALL", "MINE", "UNASSIGNED", "ASSIGNED"].includes(value)) result.queueAssignment = value as AdminQuery["queueAssignment"];
+    else if (key === "queueDue" && ["ALL", "OVERDUE", "SCHEDULED", "UNSCHEDULED"].includes(value)) result.queueDue = value as AdminQuery["queueDue"];
+    else if (key === "queueSort" && ["queue", "oldest", "recent"].includes(value)) result.queueSort = value as AdminQuery["queueSort"];
     else if (["object", "ticketId", "conversationId"].includes(key) && uuid.test(value)) result[key as "object" | "ticketId" | "conversationId"] = value;
     else if (key === "supportMode" && (value === "tickets" || value === "conversations")) result.supportMode = value;
     else if (key === "supportStatus" && ["OPEN", "IN_PROGRESS", "WAITING_CUSTOMER", "RESOLVED", "CLOSED"].includes(value)) result.supportStatus = value as AdminQuery["supportStatus"];

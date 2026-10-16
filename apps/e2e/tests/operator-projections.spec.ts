@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import type { OperatorCapabilities, OperatorDashboard } from "@marketplace/schemas";
+import { queuePage } from "../fixtures/operation-queue-view";
 
 const id = (n: number) => `40000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const observedAt = "2026-10-14T00:00:00.000Z";
@@ -25,7 +26,7 @@ async function fixture(page: Page) {
     }
     if (path === "/organizations") return route.fulfill({ json: [{ id: id(2), capabilities: [{ capability: "MARKETPLACE_OPERATOR" }] }] });
     if (path.startsWith("/notifications/")) return route.fulfill({ json: { items: [], unreadCount: 0, nextCursor: null, asOf: observedAt } });
-    if (path === "/operations/work-queue") return route.fulfill({ json: { generatedAt: observedAt, operatorOrganizationId: id(2), totalOpenItems: 0, sections: [] } });
+    if (path === "/operations/work-queue") return route.fulfill({ json: queuePage([], { operatorOrganizationId: id(2) }) });
     if (["/operations/work-queue/assignees", "/access-control/permissions", "/auth/sessions", "/support/tickets"].includes(path)) return route.fulfill({ json: [] });
     if (path === "/access-control/policy") return route.fulfill({ json: { mode: "ROLE_BASED", permissions: [] } });
     state.unexpected.push(path); return route.fulfill({ status: 500, json: { message: "Unexpected projection fixture endpoint" } });
