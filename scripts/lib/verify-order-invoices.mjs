@@ -44,7 +44,9 @@ export async function verifyOrderInvoices({ prisma, createBuyer, createCartWithI
     const originalOffer = await prisma.supplierOffer.findUniqueOrThrow({ where: { id: offers[0].offerId } });
     warehouse = await prisma.warehouse.create({ data: { supplierOrganizationId: supplier2.organizationId, code: runId, name: "Invoice fixture warehouse" } });
     secondOffer = await prisma.supplierOffer.create({ data: { supplierOrganizationId: supplier2.organizationId, productVariantId: originalOffer.productVariantId, status: "ACTIVE" } });
-    const originalWarehouse = await prisma.warehouse.findFirstOrThrow({ where: { supplierOrganizationId: supplierId } });
+    const originalBalance = await prisma.inventoryBalance.findUniqueOrThrow({ where: { id: offers[0].balanceId } });
+    assert(originalBalance.offerId === originalOffer.id && originalBalance.supplierOrganizationId === supplierId, "Invoice fixture balance must belong to its offer and supplier");
+    const originalWarehouse = await prisma.warehouse.findUniqueOrThrow({ where: { id: originalBalance.warehouseId } });
     const makeOrder = async (who, offer, warehouseId, requisites, index) => {
       const cart = await createCartWithItem(buyer, offers[0].offerId, 1);
       const cartItem = await prisma.cartItem.findFirstOrThrow({ where: { cartId: cart.id } });
