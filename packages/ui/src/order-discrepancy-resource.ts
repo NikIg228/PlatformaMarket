@@ -2,7 +2,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { OrderDiscrepanciesResponse, OrderDiscrepancyCommand, OrderDiscrepancyResult } from "@marketplace/schemas";
 import { errorMessage } from "./index";
-export type OrderDiscrepancyApi = {
+import type { ResupplyDocumentApi } from "./resupply-document-panel";
+export type OrderDiscrepancyApi = Partial<ResupplyDocumentApi> & {
   getOrderDiscrepancies(id: string): Promise<OrderDiscrepanciesResponse>;
   executeOrderDiscrepancy(id: string, input: OrderDiscrepancyCommand): Promise<OrderDiscrepancyResult>;
   uploadDiscrepancyAttachment(id: string, input: { fileName: string; contentBase64: string }): Promise<{ id: string; name: string; mimeType: string; sizeBytes: number }>;

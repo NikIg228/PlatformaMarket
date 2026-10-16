@@ -1462,3 +1462,4 @@ export * from "./operator-organizations.js";
 export * from "./order-invoice";
 
 export * from "./order-discrepancy";
+export * from "./resupply-document";

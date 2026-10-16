@@ -1,5 +1,6 @@
 import type { OrderDiscrepanciesResponse, OrderDiscrepancyCommand, OrderDiscrepancyResult } from "@marketplace/schemas";
 import type { PrepareShipmentWaybillInput, ShipmentWaybillView, ShipmentWaybillsResponse } from "@marketplace/schemas";
+import type { PrepareResupplyDocumentInput, ResupplyDocumentView, ResupplyDocumentsResponse } from "@marketplace/schemas";
 import type { PrepareOrderInvoiceInput, OrderInvoiceView, OrderInvoicesResponse } from "@marketplace/schemas";
 import type { AccessPolicy, CommerceAnalyticsQuery, CommerceAnalyticsResponse, WorkspaceCorrectionOfferPage, WorkspaceInventoryPage, WorkspaceLotPage, WorkspaceReservationPage, WorkspaceOverridePage } from "@marketplace/schemas";
 import type { CreateInvitationInput, AcceptInvitationInput, UpdateMembershipInput, IdentityMember, IdentityRole, IdentitySession, IdentitySessionRevoked, InvitationSummary, InvitationCreated, InvitationDelivered, InvitationAccepted, InvitationDetails } from "@marketplace/schemas";
@@ -470,6 +471,15 @@ export class MarketplaceApiClient {
 
   getOrderDiscrepancies(orderId: string) {
     return this.get<OrderDiscrepanciesResponse>(`/supplier-orders/${orderId}/discrepancies`);
+  }
+  getResupplyDocuments(orderId: string, discrepancyId: string) {
+    return this.get<ResupplyDocumentsResponse>(`/supplier-orders/${orderId}/discrepancies/${discrepancyId}/documents`);
+  }
+  prepareResupplyDocument(orderId: string, discrepancyId: string, input: PrepareResupplyDocumentInput) {
+    return this.post<ResupplyDocumentView>(`/supplier-orders/${orderId}/discrepancies/${discrepancyId}/documents/prepare`, input);
+  }
+  downloadResupplyDocument(orderId: string, discrepancyId: string, documentId: string) {
+    return this.get<{ fileName: string; mimeType: string; contentBase64: string }>(`/supplier-orders/${orderId}/discrepancies/${discrepancyId}/documents/${documentId}/download`);
   }
   executeOrderDiscrepancy(orderId: string, input: OrderDiscrepancyCommand) {
     return this.post<OrderDiscrepancyResult>(`/supplier-orders/${orderId}/discrepancies`, input);

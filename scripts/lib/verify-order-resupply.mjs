@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import PDFDocument from "pdfkit";
+import { verifyResupplyDocumentsBeforeReceipt } from "./verify-resupply-documents.mjs";
 
 export async function verifyOrderResupply({ prisma, call, request, assert, identity, buyer, outsider, otherSupplier, order, otherOrder, storageRoot }) {
   const migration = await readFile(new URL("../../apps/api/prisma/migrations/20261016010000_order_resupply/migration.sql", import.meta.url), "utf8");
@@ -122,6 +123,7 @@ export async function verifyOrderResupply({ prisma, call, request, assert, ident
     assert(extra.inventoryLotId === usableLot.id && extra.quantity.eq(2) && extra.supplierOrderItemId === null, "Additional goods lost distinct usable lot trace");
     assert((await prisma.inventoryLot.findUniqueOrThrow({ where: { id: expiredLot.id } })).quantityOnHand.eq(10), "Expired lot was consumed");
     await receive(shipment, "10", 409); await receive(replacement, "3", 409); await receive(replacement, "2", 403, identity);
+    const verifyDocumentsAfterReceipt = await verifyResupplyDocumentsBeforeReceipt({ prisma, call, request, assert, identity, buyer, otherSupplier, order, otherOrder, discrepancyId: draft.discrepancyId, replacement, sourceDocument });
     await receive(replacement, "2");
     const completed = await prisma.supplierOrder.findUniqueOrThrow({ where: { id: order.id }, include: { items: true } });
     assert(completed.status === "DELIVERED" && completed.subtotalAmountMinor.eq(58000) && completed.items[0].acceptedQuantity.eq(10), "Goods fulfillment changed sale or failed to complete");
@@ -131,9 +133,10 @@ export async function verifyOrderResupply({ prisma, call, request, assert, ident
     assert(finalClaim.status === "AGREED" && JSON.stringify(finalClaim.source) === JSON.stringify(originalClaim.source) && JSON.stringify(finalClaim.statement) === JSON.stringify(originalClaim.statement), "Execution rewrote claim or claimed legal closure");
     const view = (await call(endpoint, undefined, 200, buyer)).discrepancies.find(value => value.id === draft.discrepancyId);
     assert(view.resupply.documentStatus === "INCOMPLETE" && view.resupply.lines[0].deliveredQuantity === "2", "Buyer lacks truthful execution status");
-    assert(JSON.stringify(await prisma.document.findMany({ where: { supplierOrderId: order.id } })) === docsBefore, "Resupply rewrote original documents");
+    assert(JSON.stringify(await prisma.document.findMany({ where: { supplierOrderId: order.id, OR: [{ externalId: null }, { NOT: { externalId: { startsWith: "RESUPPLY_DOCUMENT_PREVIEW:" } } }] } })) === docsBefore, "Resupply rewrote original documents");
     assert(createHash("sha256").update(await readFile(path.join(storageRoot, storageKey))).digest("hex") === checksum, "Resupply rewrote original file");
     assert((await call(endpoint, dispatch)).eventId === first.eventId, "Replay after receipt failed");
+    await verifyDocumentsAfterReceipt();
     console.log("Resupply PostgreSQL/API PASS: additive upgrade, 10/8/2, tenant/party, invalid/stale input, insufficient stock, outbox rollback, concurrent replay, exact additional consumption, late original receipt denied, fulfillment and documentary incompleteness");
   } catch (error) {
     primaryError = error;
@@ -143,6 +146,9 @@ export async function verifyOrderResupply({ prisma, call, request, assert, ident
     await prisma.$executeRawUnsafe(`DROP TRIGGER IF EXISTS "${trigger}" ON "OutboxEvent"`); await prisma.$executeRawUnsafe(`DROP FUNCTION IF EXISTS "${trigger}"()`);
     const shipments = await prisma.shipment.findMany({ where: { supplierOrderId: order.id }, select: { id: true } });
     const ids = shipments.map(value => value.id);
+    const draftDocuments = await prisma.document.findMany({ where: { supplierOrderId: order.id, externalId: { startsWith: "RESUPPLY_DOCUMENT_PREVIEW:" } }, select: { id: true } });
+    await prisma.outboxEvent.deleteMany({ where: { aggregateId: { in: draftDocuments.map(d => d.id) } } });
+    await prisma.document.deleteMany({ where: { id: { in: draftDocuments.map(d => d.id) } } });
     if (sourceDocument) await prisma.document.delete({ where: { id: sourceDocument.id } });
     await prisma.fulfillmentStep.deleteMany({ where: { shipmentId: { in: ids } } });
     await prisma.shipmentItem.deleteMany({ where: { shipmentId: { in: ids } } });

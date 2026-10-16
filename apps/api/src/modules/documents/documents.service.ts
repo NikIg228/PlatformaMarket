@@ -10,6 +10,7 @@ import { DocumentRendererService } from "./document-renderer.service";
 import { documentTaxTemplate, documentVat } from "./document-vat";
 import { calculateLineTotal } from "../commerce/commerce-rules";
 import { WAYBILL_PREVIEW, waybillPreviewVisibility } from "./shipment-waybill.rules";
+import { RESUPPLY_PREVIEW } from "./resupply-document.rules";
 import { SignatureAdapterRegistry } from "./signature-adapter-registry.service";
 import { FileUploadPolicyService } from "../../platform/security/file-upload-policy.service";
 import { collectConsistentDocuments, documentReferenceInclude, hasConfirmedDocumentPayment, hasConsistentDocumentReferences, operationalReferenceError, sameDocumentReferences, withoutReferenceRelations, type DocumentGraph } from "./document-reference-graph";
@@ -693,6 +694,7 @@ export class DocumentsService {
 
   async createVersion(documentId: string, input: CreateDocumentVersionInput, context: SupplierActorContext) {
     const current = await this.get(documentId, context);
+    if (current.externalId?.startsWith(RESUPPLY_PREVIEW)) throw new ConflictException("Рабочий черновик допоставки формируется только из заявления");
     if (current.externalId?.startsWith(WAYBILL_PREVIEW)) throw new ConflictException("Новая версия предпросмотра формируется из актуальной партии");
     if (current.invoicePreparation) throw new ConflictException("Новая версия счёта формируется в заказе поставщика");
     if (current.source !== "GENERATED") throw new ConflictException("Only generated documents can be regenerated as a new version");
@@ -770,6 +772,7 @@ export class DocumentsService {
 
   async createSignatureSession(documentId: string, input: CreateSignatureSessionInput, context: SupplierActorContext) {
     const document = await this.get(documentId, context);
+    if (document.externalId?.startsWith(RESUPPLY_PREVIEW)) throw new ConflictException("Форма и полномочия подписантов не утверждены. Подписание рабочего черновика недоступно");
     if (document.externalId?.startsWith(WAYBILL_PREVIEW)) throw new ConflictException("Подписание предпросмотра накладной ещё недоступно");
     if (document.invoicePreparation) throw new ConflictException("Выставление этого счёта подтверждается в заказе, без ЭЦП");
     const operator = await this.isOperator(context.organizationId);
@@ -801,6 +804,7 @@ export class DocumentsService {
 
   async createLocalEdsSignatureSession(documentId: string, input: Omit<CreateSignatureSessionInput, "method"> & { method: "EDS" }, context: SupplierActorContext) {
     const document = await this.get(documentId, context);
+    if (document.externalId?.startsWith(RESUPPLY_PREVIEW)) throw new ConflictException("Форма и полномочия подписантов не утверждены. Подписание рабочего черновика недоступно");
     if (document.externalId?.startsWith(WAYBILL_PREVIEW)) throw new ConflictException("Подписание предпросмотра накладной ещё недоступно");
     const operator = await this.isOperator(context.organizationId);
     if (input.signerOrganizationId && input.signerOrganizationId !== context.organizationId && !operator) throw new ForbiddenException("Signer organization must be the active organization");

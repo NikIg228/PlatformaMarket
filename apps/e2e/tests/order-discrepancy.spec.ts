@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { productFixture, organizationId, id, noOverflow, choose } from "./supplier-products.fixture";
 import invoice from "./order-invoice.fixture.json";
-import type { OrderDiscrepancyView, OrderDiscrepancyCommand } from "@marketplace/schemas";
+import type { OrderDiscrepancyView, OrderDiscrepancyCommand, PrepareResupplyDocumentInput, ResupplyDocumentView } from "@marketplace/schemas";
 const orderId = invoice.orderId, shipmentId = id(160), itemId = id(161), date = "2026-10-15T12:00:00Z";
 const lines = [{ shipmentItemId: itemId, orderItemId: invoice.lines[0].id, name: invoice.lines[0].name, uom: "шт.", sentQuantity: "10", recordedReceivedQuantity: "0", unitPriceMinor: "5800", taxSnapshot: {}, isGift: false }];
 const source = { orderVersion: 1, shipmentVersion: 1, shipmentNumber: "PART-1", documentId: null, documentVersion: null, documentChecksum: null, documentSnapshot: null, sourceReceiptEventId: null, lines };
@@ -48,6 +48,68 @@ async function fixture(page: Page, buyer: boolean, state = stateFixture()) {
   return state;
 }
 const dialog = (page: Page) => page.getByRole("dialog");
+
+for (const width of [1440, 390]) test(`working resupply documents recovery, history and buyer view ${width}`, async ({ page }, info) => {
+  const state = stateFixture();
+  state.rows.push({ id: id(180), shipmentId, version: 4, status: "AGREED", previousDiscrepancyId: null,
+    statement: { kind: "SHORTAGE", reason: "Получено восемь из десяти", requestedResolution: "RESUPPLY", attachmentIds: [], lines: [{ shipmentItemId: itemId, actualQuantity: "8", damagedQuantity: "0" }] },
+    source, resolution: "RESUPPLY", createdAt: date, updatedAt: date, attachments: [], events: [],
+    resupply: { canDispatch: false, issues: [], documentStatus: "INCOMPLETE", warehouseName: "Склад", recipientName: "Клиника", method: "CARRIER",
+      shipment: { id: id(260), number: "RESUPPLY-2", status: "DELIVERED", dispatchedAt: date, deliveredAt: date, carrierName: null, trackingNumber: null },
+      lines: [{ shipmentItemId: itemId, orderItemId: invoice.lines[0].id, name: invoice.lines[0].name, uom: "шт.", originalReceivedQuantity: "8", quantity: "2", deliveredQuantity: "2" }] } });
+  const documents: ResupplyDocumentView[] = [], requests: PrepareResupplyDocumentInput[] = [];
+  let failure = 0, failRead = false, isBuyer = false;
+  const setup = async (buyer: boolean) => {
+    isBuyer = buyer; await fixture(page, buyer, state);
+    await page.route(`**/api/supplier-orders/${orderId}/discrepancies/${id(180)}/documents`, route => failRead
+      ? route.fulfill({ status: 503, json: { message: "Документы временно недоступны" } })
+      : route.fulfill({ json: { orderId, discrepancyId: id(180), party: isBuyer ? "BUYER" : "SUPPLIER", orderVersion: 1, shipmentVersion: 1, exceptionVersion: 4, resupplyVersion: 2,
+        canPrepare: !isBuyer, canPrepareSettlement: !isBuyer, issues: [], settlementIssues: [], documents } }));
+    await page.route(`**/api/supplier-orders/${orderId}/discrepancies/${id(180)}/documents/prepare`, route => {
+      const input = route.request().postDataJSON() as PrepareResupplyDocumentInput; requests.push(input);
+      if (failure) return route.fulfill({ status: failure, json: { message: failure === 409 ? "Данные изменились" : "Результат подготовки неизвестен" } });
+      const row: ResupplyDocumentView = { documentId: id(300 + documents.length), version: documents.filter(d => d.snapshot.kind === input.kind).length + 1, status: "PREVIEW", checksum: "a".repeat(64),
+        snapshot: { templateVersion: "PM_RESUPPLY_WORKING_DRAFT_V1", kind: input.kind, orderId, orderNumber: "DISCREPANCY-TEST", discrepancyId: id(180), exceptionVersion: 4,
+          supplier: { id: organizationId, name: "Поставщик" }, buyer: { id: id(104), name: "Клиника" }, sourceShipmentId: shipmentId, sourceShipmentNumber: "PART-1",
+          sourceDocumentId: null, sourceDocumentVersion: null, sourceDocumentChecksum: null, resupplyShipmentId: id(260), resupplyShipmentNumber: "RESUPPLY-2", resupplyVersion: 2,
+          dispatchedAt: date, deliveredAt: date, carrierName: null, trackingNumber: null, reason: "Получено восемь из десяти", number: "RD-TEST", version: 1, preparedAt: date,
+          preparedBy: { id: id(91), name: "Сотрудник поставщика" }, lines: [{ orderItemId: invoice.lines[0].id, name: invoice.lines[0].name, uom: "шт.", originalQuantity: "10", originalReceivedQuantity: "8", resupplyQuantity: "2", receivedQuantity: "2" }] } };
+      row.snapshot.version = row.version; documents.push(row); return route.fulfill({ status: 201, json: row });
+    });
+    await page.route(`**/api/supplier-orders/${orderId}/discrepancies/${id(180)}/documents/*/download`, route => route.fulfill({ json: { fileName: "working-draft.pdf", mimeType: "application/pdf", contentBase64: Buffer.from("%PDF fixture").toString("base64") } }));
+  };
+  await setup(false); await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 }); await visit(page, false);
+  failRead = true; await page.getByRole("button", { name: /Открыть заявление/ }).click();
+  const panel = page.getByRole("region", { name: "Рабочие документы допоставки" });
+  await expect(panel).toContainText("Документы временно недоступны"); failRead = false;
+  await panel.getByRole("button", { name: "Повторить загрузку документов" }).click();
+  await expect(panel).toContainText("Рабочих документов пока нет");
+  const transfer = panel.getByRole("button", { name: "Подготовить черновик допоставки", exact: true });
+  await transfer.scrollIntoViewIfNeeded();
+  expect(await transfer.evaluate(e => { const s = getComputedStyle(e); return { font: s.fontFamily, size: s.fontSize, height: s.minHeight, radius: s.borderRadius }; }))
+    .toMatchObject({ font: expect.stringContaining("Manrope"), size: "14px", radius: "8px" });
+  failure = 503; await transfer.focus(); await page.keyboard.press("Enter");
+  await expect(transfer).toBeDisabled(); failure = 0;
+  await panel.getByRole("button", { name: "Повторить подготовку черновика" }).click();
+  expect(requests[0]).toEqual(requests[1]); await expect(panel).toContainText("Рабочий черновик сохранён");
+  const settlement = panel.getByRole("button", { name: "Подготовить черновик урегулирования", exact: true });
+  failure = 409; await settlement.click(); await expect(settlement).toBeDisabled(); failure = 0;
+  await panel.getByRole("button", { name: "Сверить данные документов" }).click();
+  await panel.getByRole("button", { name: "Данные документов проверены" }).click(); await settlement.click();
+  await expect(panel.getByRole("table", { name: "Количества рабочего документа" })).toContainText("10");
+  await panel.getByRole("heading", { name: "Рабочие документы допоставки", exact: true }).scrollIntoViewIfNeeded();
+  await noOverflow(page); await page.screenshot({ path: info.outputPath(`working-documents-supplier-${width}.png`), animations: "disabled" });
+  await setup(true); await visit(page); await page.getByRole("button", { name: /Открыть заявление/ }).click();
+  await expect(panel.getByRole("button", { name: /Подготовить черновик/ })).toHaveCount(0);
+  await panel.getByRole("button", { name: "Показать урегулирование недостачи · редакция 1", exact: true }).click();
+  await expect(panel).toContainText("Подписи отсутствуют. Сумма заказа сохраняется.");
+  const download = page.waitForEvent("download"); await panel.getByRole("button", { name: "Скачать PDF · урегулирование недостачи · редакция 1", exact: true }).click();
+  expect((await download).suggestedFilename()).toBe("working-draft.pdf");
+  await panel.getByRole("heading", { name: "Рабочие документы допоставки", exact: true }).scrollIntoViewIfNeeded();
+  await noOverflow(page); await page.screenshot({ path: info.outputPath(`working-documents-buyer-${width}.png`), animations: "disabled" });
+  await expect(panel.getByRole("button", { name: "Скачать PDF · урегулирование недостачи · редакция 1", exact: true })).toBeFocused();
+  await page.keyboard.press("Escape"); await expect(page.getByRole("button", { name: /Открыть заявление/ })).toBeFocused();
+});
 async function visit(page: Page, buyer = true) { await page.goto(`/${buyer ? "clinic" : "supplier"}/orders/${orderId}`); await page.getByRole("tab", { name: "Отгрузки", exact: true }).click(); }
 async function createDraft(page: Page) {
   await page.getByRole("button", { name: "Сообщить о расхождении · PART-1", exact: true }).click();

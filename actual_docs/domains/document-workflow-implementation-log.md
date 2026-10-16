@@ -4,6 +4,73 @@
 Требования — [Workflow документооборота](MARKET_DOCUMENT_WORKFLOW.md), единственный
 checklist — [R7.6 основного roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#document-workflow).
 
+<a id="resupply-working-documents"></a>
+## 16.10 — R7.6.5.2: рабочие документы довоза — SCOPED PASS
+
+Владелец согласовал §8.2 и поручил реализацию; отдельно подтвердил отсутствие
+утверждённых форм. Граница: два явно неутверждённых PDF-черновика (допоставка и
+урегулирование), сохраняемые версии и просмотр/скачивание обеими сторонами.
+Итоговый черновик доступен после полного получения довоза. Выпуск, подписи и
+RESOLVED недоступны до утверждения форм/полномочий и НУЦ; это не полная R7.6.5.
+База main/ee33e35; чужой catalog/CI/docs WIP сохраняется.
+План: общие schema/API → сервис подготовки с tenant/permission/version/replay,
+неизменяемыми snapshots и PDF → focused backend tests до UI → client и общий
+блок в существующем диалоге расхождения обеих сторон → целевые проверки.
+Риски: чужой claim/document, подмена оригинала, преждевременный итог, повторная
+генерация/списание, обход запрета подписи через общий Documents API.
+Gates: schema/client tests/build; API focused tests/types/build; изолированный
+PostgreSQL с happy/invalid/tenant/replay/concurrency/rollback и неизменностью
+оригинала/денег/stock; core-contract/runtime split; frontend types/build,
+targeted browser supplier/buyer 1440/390, keyboard/recovery, screenshot/computed;
+PDF inspection, scoped lint и diff hygiene. Prisma schema не меняется, если
+существующий Document покрывает хранение; рабочая БД не изменяется.
+UI-паспорт: аналог packages/ui/src/order-resupply-panel.tsx и диалог
+order-discrepancy-panel.tsx; DmButton/DmFeedback/DmTable/DmFormSections, Manrope14,
+controls44/radius8, dialog16, market-components-v1/platforma-semantic-light-v1.
+Новые shared параметры/локальные control overrides не вводятся.
+
+Реализованы общие schema/client/OpenAPI и три endpoints, сервис PDF на существующем
+Document (OTHER/DRAFT), сохранение snapshot/версий/контрольной суммы, supplier-only
+подготовка с document.issue и двустороннее чтение с document.view. Обычные endpoints
+подписи и новой версии блокируют эти черновики. Транзакция заказа включает audit/
+outbox, файл незавершённой транзакции удаляется после проверки отсутствия записи.
+Никаких миграций/рабочих данных/НУЦ не изменено.
+
+Проверки на этой реализации:
+
+- `npm run build --workspace @marketplace/schemas`, schema resupply-document1 PASS;
+  `npm run build --workspace @marketplace/api-client`, client resupply-document1 PASS.
+- `npm run test --workspace @marketplace/api -- src/modules/documents/resupply-document.service.spec.ts src/modules/documents/resupply-document.rules.spec.ts src/modules/documents/documents.service.spec.ts`
+  —22 PASS; API typecheck PASS; `npm exec --workspace @marketplace/api -- nest build`
+  PASS. Prisma client/schema не менялись, повторная генерация не нужна.
+- `npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs --resupply-only`:
+  попытка1 — API не готов за60с, FAIL до бизнес-проверок (documents-postgres-1.log).
+  Попытка2 после завершения конкурирующих сборок — PASS/exit0, cleanup PASS
+  (documents-postgres-2.log). Проверены права/tenant, invalid/stale, преждевременный
+  итог, outbox rollback, concurrent replay, PDF/checksum, сохранённые версии,
+  чтение клиники и неизменность денег/stock/AGREED; исходный довоз10/8/2 также PASS.
+- `npm run db:test -- exec -- node scripts/verify-pilot-backend.mjs --contract-only`
+  PASS:366 operations/254 schemas, response/error validation; runtime-split PASS.
+- Unified web build через существующий изолированный NEXT_ADAPTER_PATH PASS49 routes;
+  повтор после исправления keyboard focus также PASS. E2E TypeScript PASS.
+  `npm run typecheck --workspace @marketplace/ui` PASS.
+- `npm exec -- playwright test --config .tmp/resupply-flow/ui.config.ts --workers=1 --grep 'working resupply documents'`:
+  попытка1 — оба сценария дошли до скачивания, но Escape после потери фокуса не
+  закрыл диалог. Возврат фокуса на trigger после download исправлен в компоненте.
+  Попытка2 —2/2 PASS (1440/390, обе роли, empty/error/replay/conflict/download/
+  keyboard, отсутствие overflow). Четыре финальных screenshot просмотрены;
+  computed Manrope14/radius8 и shared controls проверены.
+- PDF двух видов сформированы продуктовым renderer, преобразованы pdftoppm и
+  просмотрены: читаемость/маркировка/отсутствие обрезки PASS. Применён PDF skill для
+  визуальной проверки; development-toolkit — для backend/контрактов и UI.
+- Scoped ESLint PASS, повтор изменённого UI/test/fixture PASS. Логи и snapshots:
+  `.tmp/resupply-flow/documents-*`, `preview-*`, `ui-results/**/working-documents*`.
+  Diff hygiene и локальные ссылки PASS. Во время работы появился независимый
+  docs-only commit fb087be; затронутые runtime inputs не изменены, PASS сохранён.
+
+Полная R7.6.5 и юридический выпуск не приняты: отсутствуют утверждённые формы,
+основания полномочий и рабочий НУЦ. Full release/E2E вне выбранной границы.
+
 ## 16.10 — R7.6.5.1: предложение документального закрытия довоза
 
 По поручению владельца подготовлено [предложение §8.2](MARKET_DOCUMENT_WORKFLOW.md#resupply-document-proposal)

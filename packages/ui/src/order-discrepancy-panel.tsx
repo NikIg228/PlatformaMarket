@@ -5,6 +5,7 @@ import { DmButton, DmDialog, DmDropdown, DmFeedback, DmField, DmFormSections, Dm
 import { DiscrepancyForm, discrepancyKinds, discrepancyResolutions } from "./order-discrepancy-form";
 import { useOrderDiscrepancies, type OrderDiscrepancyApi } from "./order-discrepancy-resource";
 import { OrderResupplyPanel, discrepancyExecutionLabel } from "./order-resupply-panel";
+import { ResupplyDocumentPanel, type ResupplyDocumentApi } from "./resupply-document-panel";
 const statusLabels: Record<OrderDiscrepancyView["status"], string> = { DRAFT: "Черновик клиники", SUBMITTED: "Ожидает ответа поставщика", RESOLUTION_PROPOSED: "Ожидает решения клиники", REJECTED: "Отклонено — расхождение не урегулировано", AGREED: "Решение согласовано — требуется исполнение" };
 const eventLabels: Record<string, string> = { CREATE: "Создан черновик", SAVE: "Сохранён черновик", SUBMIT: "Клиника отправила заявление", RESPOND: "Поставщик ответил", DECIDE: "Клиника рассмотрела предложение", DISPATCH_RESUPPLY: "Поставщик отправил допоставку" };
 export function OrderDiscrepancyPanel({ api, orderId, orderVersion, events, onChanged }: { api: OrderDiscrepancyApi; orderId: string; orderVersion: number; events: OrderWorkflowResponse["events"]; onChanged?: () => Promise<void> }) {
@@ -83,6 +84,7 @@ export function OrderDiscrepancyPanel({ api, orderId, orderVersion, events, onCh
           {selected?.resupply ? <OrderResupplyPanel key={selected.id} claim={selected} supplier={data.party === "SUPPLIER"} disabled={disabled} events={events}
             onDispatch={details => command({ ...existing(), action: "DISPATCH_RESUPPLY", ...details })}
             onShipment={id => { shipmentFocus.current = id; setSelectedId(null); setNewShipment(null); }} /> : null}
+          {selected?.resupply && api.getResupplyDocuments && api.prepareResupplyDocument && api.downloadResupplyDocument ? <ResupplyDocumentPanel key={selected.id} api={api as ResupplyDocumentApi} orderId={orderId} discrepancyId={selected.id} revision={orderVersion} /> : null}
           {selected ? <div><h3>История заявления</h3><ol>{selected.events.map(event => {
             const details = event.details && typeof event.details === "object" ? event.details as Record<string, unknown> : {};
             return <li key={event.id}><p>{formatDate(event.createdAt, true)} — {eventLabels[event.action] ?? event.action} · редакция {event.version}</p>

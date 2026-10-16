@@ -1,4 +1,5 @@
 import { orderDiscrepancyCommandSchema, orderDiscrepancyResultSchema, orderDiscrepanciesResponseSchema, discrepancyUploadSchema, discrepancyAttachmentSchema, discrepancyDownloadSchema } from "@marketplace/schemas";
+import { prepareResupplyDocumentSchema, resupplyDocumentViewSchema, resupplyDocumentsResponseSchema } from "@marketplace/schemas";
 import { prepareShipmentWaybillSchema, shipmentWaybillViewSchema, shipmentWaybillsResponseSchema } from "@marketplace/schemas";
 import { prepareOrderInvoiceSchema, orderInvoiceViewSchema, orderInvoicesResponseSchema } from "@marketplace/schemas";
 import { supplierVatSettingsSchema, saveSupplierVatSettingsSchema, previewOfferVatSchema, applyOfferVatSchema, offerVatPreviewSchema, offerVatApplyResultSchema, integrationTaxBindingsSchema, integrationTaxBindingSchema, updateIntegrationTaxSchema } from "@marketplace/schemas";
@@ -369,6 +370,9 @@ const coreZodSchemas = {
   DiscrepancyUpload: discrepancyUploadSchema,
   DiscrepancyAttachment: discrepancyAttachmentSchema,
   DiscrepancyDownload: discrepancyDownloadSchema,
+  PrepareResupplyDocumentRequest: prepareResupplyDocumentSchema,
+  ResupplyDocumentView: resupplyDocumentViewSchema,
+  ResupplyDocumentsResponse: resupplyDocumentsResponseSchema,
   PrepareShipmentWaybillRequest: prepareShipmentWaybillSchema,
   ShipmentWaybillView: shipmentWaybillViewSchema,
   ShipmentWaybillsResponse: shipmentWaybillsResponseSchema,
