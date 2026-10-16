@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 
-export async function verifyResupplyDocumentsBeforeReceipt({ prisma, call, request, assert, identity, buyer, otherSupplier, order, otherOrder, discrepancyId, replacement, sourceDocument }) {
+export async function verifyResupplyDocumentsBeforeReceipt({ prisma, call, request, assert, identity, supplierRoleId, buyer, otherSupplier, order, otherOrder, discrepancyId, replacement, sourceDocument }) {
   const endpoint = `/supplier-orders/${order.id}/discrepancies/${discrepancyId}/documents`;
   const state = await call(endpoint, undefined, 200);
   const input = { kind: "TRANSFER", expectedOrderVersion: state.orderVersion, expectedShipmentVersion: state.shipmentVersion,
@@ -12,7 +12,9 @@ export async function verifyResupplyDocumentsBeforeReceipt({ prisma, call, reque
   await call(`${endpoint}/prepare`, input, 403, buyer);
   await call(`${endpoint}/prepare`, input, 404, otherSupplier);
   await call(`/supplier-orders/${otherOrder.id}/discrepancies/${discrepancyId}/documents/prepare`, input, 404, otherSupplier);
-  const role = await prisma.role.findFirstOrThrow({ where: { organizationId: identity.organizationId } });
+  // Other scenarios create roles in this organization; revoke the actor's exact fixture grant.
+  const role = await prisma.role.findUniqueOrThrow({ where: { id: supplierRoleId } });
+  assert(role.organizationId === identity.organizationId, "Permission fixture role belongs to another organization");
   const permission = await prisma.permission.findUniqueOrThrow({ where: { code: "document.issue" } });
   await prisma.rolePermission.deleteMany({ where: { roleId: role.id, permissionId: permission.id } });
   try { await call(`${endpoint}/prepare`, input, 403); }

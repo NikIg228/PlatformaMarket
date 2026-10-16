@@ -4,7 +4,7 @@ import path from "node:path";
 import PDFDocument from "pdfkit";
 import { verifyResupplyDocumentsBeforeReceipt } from "./verify-resupply-documents.mjs";
 
-export async function verifyOrderResupply({ prisma, call, request, assert, identity, buyer, outsider, otherSupplier, order, otherOrder, storageRoot }) {
+export async function verifyOrderResupply({ prisma, call, request, assert, identity, supplierRoleId, buyer, outsider, otherSupplier, order, otherOrder, storageRoot }) {
   const migration = await readFile(new URL("../../apps/api/prisma/migrations/20261016010000_order_resupply/migration.sql", import.meta.url), "utf8");
   const rollback = new Error("ROLLBACK_RESUPPLY_UPGRADE");
   try { await prisma.$transaction(async tx => {
@@ -123,7 +123,7 @@ export async function verifyOrderResupply({ prisma, call, request, assert, ident
     assert(extra.inventoryLotId === usableLot.id && extra.quantity.eq(2) && extra.supplierOrderItemId === null, "Additional goods lost distinct usable lot trace");
     assert((await prisma.inventoryLot.findUniqueOrThrow({ where: { id: expiredLot.id } })).quantityOnHand.eq(10), "Expired lot was consumed");
     await receive(shipment, "10", 409); await receive(replacement, "3", 409); await receive(replacement, "2", 403, identity);
-    const verifyDocumentsAfterReceipt = await verifyResupplyDocumentsBeforeReceipt({ prisma, call, request, assert, identity, buyer, otherSupplier, order, otherOrder, discrepancyId: draft.discrepancyId, replacement, sourceDocument });
+    const verifyDocumentsAfterReceipt = await verifyResupplyDocumentsBeforeReceipt({ prisma, call, request, assert, identity, supplierRoleId, buyer, otherSupplier, order, otherOrder, discrepancyId: draft.discrepancyId, replacement, sourceDocument });
     await receive(replacement, "2");
     const completed = await prisma.supplierOrder.findUniqueOrThrow({ where: { id: order.id }, include: { items: true } });
     assert(completed.status === "DELIVERED" && completed.subtotalAmountMinor.eq(58000) && completed.items[0].acceptedQuantity.eq(10), "Goods fulfillment changed sale or failed to complete");

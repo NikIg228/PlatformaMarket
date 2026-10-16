@@ -61,7 +61,7 @@ export async function verifyOrderInvoices({ prisma, createBuyer, createCartWithI
     };
     const order = await makeOrder(identity, originalOffer, originalWarehouse.id, supplierRequisites, 1);
     const otherOrder = await makeOrder(supplier2, secondOffer, warehouse.id, secondRequisites, 2);
-    if (resupply) { await verifyOrderResupply({ prisma, call, request, assert, identity, buyer, outsider, otherSupplier: supplier2, order, otherOrder, storageRoot }); }
+    if (resupply) { await verifyOrderResupply({ prisma, call, request, assert, identity, supplierRoleId: role.id, buyer, outsider, otherSupplier: supplier2, order, otherOrder, storageRoot }); }
     else if (discrepancies) { await verifyOrderDiscrepancies({ prisma, call, request, assert, identity, buyer, outsider, order, otherOrder }); } else {
     const endpoint = id => `/supplier-orders/${id}/invoices`, prepare = (id, expectedVersion = 1, key = randomUUID(), who = identity) => call(endpoint(id) + "/prepare", { expectedVersion, idempotencyKey: key }, 201, who);
     await call(endpoint(order.id) + "/prepare", { expectedVersion: 1, idempotencyKey: randomUUID() }, 409);

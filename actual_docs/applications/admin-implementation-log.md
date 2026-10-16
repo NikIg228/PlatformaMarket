@@ -531,3 +531,29 @@ subpath export UI money. Импорт заменён на существующи
 @marketplace/ui; финальная isolated build/types49 routes и scoped lint PASS.
 Изменение экспорта packages/ui не входит в этот пакет. Семантика formatMoney
 и проверенные browser-сценарии не изменились. Финальный diff hygiene PASS.
+
+### CI6923058 — исправление двух проверок 16.10.2026
+
+Scope: исправить Admin performance regression и fixture отзыва document.issue
+в PostgreSQL gate; runtime API/UI и полномочия сторон не изменять. Риск — ложная
+проверка отказа при нескольких ролях одной организации. Проверки: Admin unit suite,
+scoped types/lint, полный PostgreSQL integration на disposable DB, поскольку
+ошибка возникла только после предыдущих сценариев, diff hygiene и CI после push.
+Новая фаза R7.7.6 этим исправлением не запускается.
+
+Исходный CI38922410937 FAIL: performance-boundaries ожидал23 lazy imports вместо25;
+verify-resupply-documents отзывал permission у произвольной первой роли, а не у
+роли identity из verifyOrderInvoices. До отзыва проверки buyer403/foreign404 прошли;
+FAIL возник на line18 проверки отзыва прав. Точный supplierRoleId теперь проходит
+от создателя fixture до проверки; ожидаемый403 и все доменные guards сохранены.
+
+Результат локальной проверки: Admin unit suite12files/39tests PASS
+(`npm run test --workspace @marketplace/admin-web`); scoped typecheck PASS
+(`npm run typecheck --workspace @marketplace/admin-web`); ESLint четырёх
+изменённых test/helper файлов и `git diff --check` PASS.
+`npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs` PASS
+на disposable dentmarket_audit_20260914: весь composition, включая отзыв прав,
+resupply documents, tenant/party denial, replay/concurrency и rollback.
+Первая локальная попытка после исправления успешна. Runtime-код не менялся;
+повторные UI build/browser проверки не требуются. Результат нового CI проверяется
+после push; исходный failed run остаётся историческим FAIL.
