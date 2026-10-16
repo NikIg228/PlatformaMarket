@@ -150,6 +150,14 @@ export class MarketplaceApiClient {
     for (const [key, value] of Object.entries(query)) if (value !== undefined) params.set(key, String(value));
     return this.get<import("@marketplace/schemas").OperatorOrganizations>(`/operations/organizations?${params}`, { signal });
   }
+  operatorOrders(query: Partial<import("@marketplace/schemas").OperatorOrdersQuery> = {}, signal?: AbortSignal) {
+    const params = new URLSearchParams();
+    Object.entries(query).forEach(([key, value]) => { if (value !== undefined && value !== "") params.set(key, String(value)); });
+    return this.get<import("@marketplace/schemas").OperatorOrders>(`/operations/orders?${params}`, { signal });
+  }
+  operatorOrder(id: string, signal?: AbortSignal) {
+    return this.get<import("@marketplace/schemas").OperatorOrderDetail>(`/operations/orders/${encodeURIComponent(id)}`, { signal });
+  }
   operatorOrganization(id: string, signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorOrganizationDetail>(`/operations/organizations/${encodeURIComponent(id)}`, { signal }); }
   operationAssignees() { return this.get<{ id: string; displayName: string }[]>("/operations/work-queue/assignees"); }
   assignOperation(type: import("@marketplace/schemas").OperationQueueType, id: string, input: import("@marketplace/schemas").OperationAssignment) { return this.post<import("@marketplace/schemas").OperationAssignmentResult>(`/operations/work-queue/${type}/${encodeURIComponent(id)}/assignment`, input); }

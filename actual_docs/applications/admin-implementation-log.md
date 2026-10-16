@@ -410,3 +410,124 @@ silent refresh/filter/paging, delayed selection/drafts) PASS7; Admin navigation 
 и [Security38801739921](https://github.com/NikIg228/PlatformaMarket/actions/runs/38801739921) SUCCESS.
 R7.7.3.2 и полная .3.3 не реализованы;
 read-only реестр не означает приёмку всего Admin.
+# R7.7.5 — реестр и карточка заказа, 16.10.2026, IN_PROGRESS
+
+Поручение владельца: реализовать R7.7.5.1–3 после передачи боевых шаблонов
+документов в отдельную задачу. База main/705d58c, чужой catalog/CI/docs WIP
+сохранён. Поведение: защищённый операторский поиск/фильтры/paging, единая
+read-only карточка позиций/оплаты/партий/документов/возвратов/обращений и событий.
+Новых действий за стороны, форм документов, интеграций и изменений данных нет.
+
+Риск: platform authority и разрешения до чтения; точные minor units; связь
+документа/расхождения/обращения с заказом; получение, подпись и комплектность
+не объединяются. Переиспользовать OrderWorkflowService и документальный архив,
+сохранить ограничения на чужие черновики и не объявлять неизвестную комплектность.
+Проверки: schema/client/query regressions; focused service/controller tests сразу
+после backend; реальные HTTP на disposable test DB (paging, search, denied roles,
+wrong tenant, invalid input, exact money, forbidden party writes); API/types/build,
+core-contract/runtime-split при завершении; целевой browser с переходами из
+очереди/аналитики/support, loading/empty/error/recovery, Back/Forward,1440/390,
+keyboard, screenshot/computed styles; diff hygiene и review своего staged scope.
+Критерий остановки: принятый связанный read-only пакет R7.7.5, без расширения
+на остальные Admin/R7.6 задачи; неподдержанные внешние подписи остаются открытыми.
+
+UI-паспорт: ADMIN /admin?section=orders, ru-KZ,1440/390 CSS px, масштаб100%.
+Аналог — apps/admin-web/app/operator-organizations.tsx и его CSS: та же роль,
+реестр/карточка/URL/error recovery. Shared AdminShell сохраняется; controls DmField,
+DmInput/DmDropdown/DmButton44px/radius8px, DmSurface filters/card/section12px;
+Manrope body14/1.5, h2 24/1.25, h3 16/1.5, spacing8/12/16/24 из tokens.
+Контракты market-components-v1 и platforma-semantic-light-v1 (02.10) прочитаны.
+На preflight localhost3000/4012 не слушают, browser ERR_CONNECTION_REFUSED;
+текущий runtime screenshot отсутствует. Проверка аналога/исходного экрана и
+итоговых screenshots будет выполнена на изолированном frontend, без рабочей БД.
+
+### R7.7.5 — checkpoint 16.10.2026: BLOCKED verification (не ACCEPTED)
+
+В рабочем дереве реализованы read-only API реестра/карточки, schema/client,
+Admin UI с фильтрами и пагинацией, документы/версии, связанные обращения и
+переходы из очереди/аналитики. Изменения не закоммичены и не опубликованы.
+Focused service/controller/workflow PASS16; operations service PASS8;
+schema PASS2, client PASS1, navigation PASS95 до последней нормализации legacy
+agreement URL. API build/types, Admin/E2E types PASS на соответствующих входах.
+После добавления локализованных order labels frontend повторно не проверен.
+
+`npm run db:test -- exec -- node node_modules/@playwright/test/cli.js test --config apps/e2e/playwright.operator-orders-api.config.ts`:
+1. FAIL startup: импорт новых схем оказался ниже регистрации OpenAPI;
+   импорт перенесён наверх, API пересобран, require core-openapi PASS.
+2. FAIL fixture: несколько ACTIVE Cart одной клиники; fixture исправлена на CHECKED_OUT.
+3. FAIL fixture: SupplierOrderItem_gift_check (SQLSTATE23514), обычная позиция
+   не связана с CartItem. HTTP assertions ещё не выполнены. Лимит §7.1 исчерпан,
+   дальнейшие запуски остановлены. Cleanup fixture завершён без отдельной ошибки.
+Следующий точный шаг: создать CartItem для обычной тестовой позиции, передать
+cartItemId, затем возобновить обязательную API-проверку после решения владельца
+о продолжении. Не ослаблять ограничение БД или assertions.
+
+Изолированная Next build/types компиляция PASS49 routes, но wrapper завершился
+FAIL на восстановлении next-env: guard учитывает routes.d.ts, но не root-params.d.ts.
+apps/web/next-env.d.ts уже имел чужой diff до запуска; после сборки содержит
+ссылки на .tmp/operator-orders/next/types. Исходный текст не сохранён wrapper,
+не восстанавливать вслепую из HEAD. Это незакрытая cleanup-проблема.
+Browser/screenshot/computed-style acceptance, финальные core-contract/runtime-split,
+новая legacy navigation regression и финальный build после локализации не выполнены.
+`git diff --check` PASS (только предупреждения CRLF). Чужие source diff не включались
+в staging. Собственных работающих тестовых процессов после остановки нет.
+
+### R7.7.5 — результат 16.10.2026: SCOPED PASS
+
+Владелец разрешил продолжить после зафиксированного лимита попыток. Создан
+CartItem и связан с обычной позицией заказа; DB constraints не изменялись.
+Реальный API gate после возобновления PASS1/1: 31 заказ/две страницы, поиск
+номера вне первой страницы, фильтры участников/БИН/дат/статусов, точные minor
+units, 401/403/400/404, tenant/header spoof denial, скрытый черновик расхождения,
+связанные документы/support и запрет CONFIRM_TRANSFER/RECEIVE_SHIPMENT без
+изменения заказа/полученного количества. Рабочая БД не использовалась.
+
+Реестр и карточка находятся в /admin?section=orders (&orderId=UUID).
+Статусы, фильтры и paging сохраняются в URL; аналитика, очередь и support ведут
+к одной карточке. Документы показывают архивные версии, подписи и исходный файл;
+получение, неопределённая комплектность и незавершённое документальное
+урегулирование не подменяют друг друга. Договорный допуск сохранён в organizations.
+Read-only пакет готов; общая R7.6 и полная документальная часть R7.7.5 не закрыты.
+
+Проверки на исходном HEAD705d58c + собственный diff (чужой WIP сохранён):
+- `npm run db:test -- exec -- node node_modules/@playwright/test/cli.js test --config apps/e2e/playwright.operator-orders-api.config.ts` — PASS1.
+- `node .tmp/operator-orders/build-web.mjs` — PASS49 routes/types после локализации
+  и повторно после исправления focus. API/schemas/client builds и focused unit
+  PASS предыдущего checkpoint переиспользованы: соответствующий код не менялся.
+- `npm exec --workspace @marketplace/schemas -- vitest run src/operator-order-navigation.test.ts src/admin-query.test.ts src/product-navigation.test.ts` — PASS95, включая legacy agreement routing.
+- `npm run db:test -- exec -- node scripts/verify-pilot-backend.mjs --contract-only` — PASS368 operations/257 schemas/69 verified core operations.
+- `npm run db:test -- exec -- node scripts/verify-runtime-split.mjs` — PASS api/worker/all + entrypoint guards.
+- `npm run typecheck --workspace @marketplace/e2e` — PASS после добавления real-browser и навигационных сценариев; Next build проверил frontend types.
+- Scoped ESLint изменённых Admin/API/E2E файлов — PASS; финальный lint новых/исправленных тестов и document UI — PASS.
+- `NEXT_ADAPTER_PATH=<root>/.tmp/operator-orders/next-adapter.mjs` + Playwright
+  `--config apps/e2e/playwright.operator-orders.config.ts`: основной flow1440/390
+  и recovery PASS3; отдельно analytics/queue PASS1; admission PASS1.
+  Browser attempt1 FAIL2 на возврате фокуса после document Escape; сохранён
+  opener и восстановлен фокус через onClosed, build повторён, attempt2 PASS3.
+  Дополнительный admission test attempt1 FAIL: EmptyState использует strong,
+  а не heading; исправлен locator без изменения продукта, attempt2 PASS1.
+- `npm run db:test -- exec -- node node_modules/@playwright/test/cli.js test --config apps/e2e/playwright.operator-orders-real.config.ts` с тем же adapter — PASS1: реальный JWT, API/DB, карточка и документ без API mocks.
+- `.tmp/operator-orders/admin-navigation.config.ts --grep 'support list context|queue target changes|notification opens|invalid links'` — PASS4 после адаптации существующего generic queue теста к overview/CATALOG_REVIEW.
+  Предшествующая ошибочная команда выбрала live admin-messages config и была
+  отвергнута DB guard до запуска; ограничения не обходились, использован config
+  для фактических mock-only admin-query тестов на isolated built UI.
+
+Screenshots order-detail/order-registry1440/390 находятся в
+output/playwright/operator-orders; все четыре просмотрены, clipping/overflow
+не выявлены; computed minHeight44px/radius8px/Manrope PASS. Повтор двух сценариев
+потребовался для восстановления screenshot artifacts, очищенных последующим
+узким запуском Playwright; следующие узкие запуски используют отдельный output.
+
+Cleanup wrapper исправлен: guard учитывает оба generated imports и сохраняет
+before-файл. `node node_modules/next/dist/bin/next typegen apps/web` PASS:
+обычная конфигурация вернула next-env к .next/types без ссылок на isolated build.
+Этот generated файл не включается в commit. Отдельные чужие изменения в
+commerce-analytics.spec.ts сохраняются; публикуется только собственная замена
+проверки перехода в новую карточку. Общий E2E/release gate не запускался:
+задача ограничена операторским чтением и не является релизной сертификацией.
+
+Финальный review выявил зависимость новых экранов от чужого незавершённого
+subpath export UI money. Импорт заменён на существующий публичный barrel
+@marketplace/ui; финальная isolated build/types49 routes и scoped lint PASS.
+Изменение экспорта packages/ui не входит в этот пакет. Семантика formatMoney
+и проверенные browser-сценарии не изменились. Финальный diff hygiene PASS.

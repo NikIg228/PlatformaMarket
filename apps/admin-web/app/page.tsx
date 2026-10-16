@@ -22,7 +22,8 @@ import { useAdminQuery } from "./use-admin-query";
 import styles from "./page.module.css";
 import {
   IdentitySettings,
-  AgreementOperations,
+  OperatorOrganizationAdmission,
+  OperatorOrders,
   AuditOperations,
   CatalogFoundation,
   ManualProductReview,
@@ -59,7 +60,7 @@ const navigation: Array<{ id: SectionId; label: string; icon: ReactNode }> = [
   { id: "access", label: "Пользователи и права", icon: <PeopleTeam24Regular /> },
   { id: "catalog", label: "Каталог", icon: <Cube24Regular /> },
   { id: "imports", label: "Загрузка товаров", icon: <Database24Regular /> },
-  { id: "orders", label: "Заказы и договоры", icon: <Cart24Regular /> },
+  { id: "orders", label: "Заказы", icon: <Cart24Regular /> },
   { id: "support", label: "Обращения и споры", icon: <PeopleTeam24Regular /> },
   { id: "security", label: frontendFeatures.trust ? "Контроль и доверие" : "Контроль и аудит", icon: <ShieldLock24Regular /> },
   { id: "settings", label: "Настройки", icon: <Settings24Regular /> },
@@ -89,8 +90,8 @@ const sectionMeta: Record<SectionId, { title: string; description: string }> = {
     description: "Как поставщики передают товары, цены и остатки.",
   },
   orders: {
-    title: "Заказы и договоры",
-    description: "Исполнение заказов поставщиками, договоры и подписи ЭЦП.",
+    title: "Заказы",
+    description: "Поиск заказов, оплата, партии, документы и история исполнения.",
   },
   security: {
     title: frontendFeatures.trust ? "Контроль и доверие" : "Контроль и аудит",
@@ -106,7 +107,7 @@ const sectionMeta: Record<SectionId, { title: string; description: string }> = {
 
 const modules: Array<{ id: SectionId; title: string; description: string; icon: ReactNode }> = [
   { id: "support", title: "Обращения", description: "Вопросы участников и переписка", icon: <PeopleTeam24Regular /> },
-  { id: "orders", title: "Заказы", description: "Исполнение, договоры и исключения", icon: <Cart24Regular /> },
+  { id: "orders", title: "Заказы", description: "Реестр, оплата и исполнение", icon: <Cart24Regular /> },
   { id: "organizations", title: "Организации", description: "Юридические профили и участники", icon: <BuildingShop24Regular /> },
   { id: "access", title: "Доступ", description: "Пользователи и права", icon: <ShieldLock24Regular /> },
   { id: "catalog", title: "Каталог", description: "Карточки и предложения", icon: <Cube24Regular /> },
@@ -129,7 +130,7 @@ export default function OperationsWorkspace() {
           <div className={styles.statusTitle}>Рабочая очередь</div>
           <div className={styles.statusText}>Обращения участников, заказы и задачи площадки.</div>
         </div>
-        <DmButton className={styles.buttonOutline} appearance="outline" onClick={() => navigate("orders")}>Открыть очередь</DmButton>
+        <DmButton className={styles.buttonOutline} appearance="outline" onClick={() => navigate("orders")}>Открыть заказы</DmButton>
       </section>
 
       <div className={styles.grid}>
@@ -160,11 +161,11 @@ export default function OperationsWorkspace() {
     analytics: <OperatorCommerceAnalytics />,
     support: <SupportOperations />,
     overview,
-    organizations: <OperatorOrganizations />,
+    organizations: <><OperatorOrganizations /><OperatorOrganizationAdmission /></>,
     access: <><SupplierControls /><PlatformAssurance /></>,
     catalog: <><ManualProductReview />{frontendFeatures.promotions ? <PromotionModeration /> : null}<ProductCorrectionQueue /><CatalogQuality /><CatalogFoundation /><FoundationManagement catalogOnly /></>,
     imports: <><CatalogImportReviewQueue /><SupplierOperations /><IntegrationOperations /><ConnectorReadinessRegistry /></>,
-    orders: <><OperationQueue /><AgreementOperations /></>,
+    orders: <OperatorOrders />,
     security: <>{frontendFeatures.trust && <TrustOperations />}<AuditOperations /></>,
     settings: <><PlatformSettings onNavigate={navigate} /><IdentitySettings /></>,
   };

@@ -44,7 +44,8 @@ test("CORE07: supplier confirmation and three-role analytics at desktop/mobile",
       await page.screenshot({ path: testInfo.outputPath(`analytics-${role}-${width}.png`), fullPage: true });
       await region.getByRole("link", { name: order.orderNumber, exact: true }).first().click();
       if (role === "admin") {
-        await expect(page.getByRole("region", { name: "Объект из очереди", exact: true }).getByRole("heading", { name: `Заказ ${order.orderNumber}`, exact: true })).toBeVisible();
+        await expect(page.getByRole("heading", { name: `Заказ ${order.orderNumber}`, exact: true })).toBeVisible();
+        await expect(page).toHaveURL(new RegExp(`orderId=${order.id}`));
         await page.goto("/admin?section=analytics");
         await region.getByLabel("Набор данных", { exact: true }).selectOption("TEST");
         await expect(region.getByRole("link", { name: order.orderNumber, exact: true }).first()).toBeVisible();

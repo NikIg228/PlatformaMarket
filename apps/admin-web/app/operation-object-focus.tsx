@@ -12,12 +12,12 @@ export function OperationObjectFocus() {
   const api = useMemo(() => new MarketplaceApiClient(process.env.NEXT_PUBLIC_API_URL ?? "/api", adminApiContext()), []);
   const { state, write } = useAdminQuery();
   const { queueType, object: id } = state;
-  const target = queueType && id ? `${queueType}:${id}` : "";
+  const target = queueType && id && !(state.section === "orders" && queueType === "SUPPLIER_CONFIRMATION") ? `${queueType}:${id}` : "";
   const [result, setResult] = useState<{ target: string; object?: Awaited<ReturnType<typeof api.operationObject>>; error?: string }>();
   const [revision, setRevision] = useState(0);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    if (!queueType || !id) { setResult(undefined); return; }
+    if (!queueType || !id || !target) { setResult(undefined); return; }
     let active = true;
     setResult(undefined);
     void api.operationObject(queueType, id).then(object => {

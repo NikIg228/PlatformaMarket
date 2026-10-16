@@ -411,9 +411,9 @@ export class OperationsService {
     const assignments = await this.prisma.operationAssignment.findMany({ where: { operatorOrganizationId: context.organizationId, OR: sections.map(section => ({ queueType: section.type, entityId: { in: section.items.map(item => item.id) } })) }, include: { assignee: { select: { displayName: true } } } });
     const assignmentByObject = new Map(assignments.map(item => [`${item.queueType}:${item.entityId}`, assignmentView(item)]));
     const reasons: Record<string, string> = { CATALOG_REVIEW: "Карточка ожидает модерации", COMPLIANCE_REVIEW: "Нужна ручная проверка документов и допуска", INTEGRATION_RECONCILIATION: "Обнаружено расхождение учётных данных", IMPORT_ATTENTION: "Загрузка требует обработки или проверки ошибок", AGREEMENT_SIGNATURE: "Договор ожидает подписи", SUPPLIER_CONFIRMATION: "Заказ ожидает подтверждения поставщика", STALE_INVENTORY: "Остаток требует подтверждения актуальности" };
-    const targets: Record<string, string> = { CATALOG_REVIEW: "catalog", COMPLIANCE_REVIEW: "organizations", INTEGRATION_RECONCILIATION: "imports", IMPORT_ATTENTION: "imports", AGREEMENT_SIGNATURE: "orders", SUPPLIER_CONFIRMATION: "orders", STALE_INVENTORY: "catalog" };
+    const targets: Record<string, string> = { CATALOG_REVIEW: "catalog", COMPLIANCE_REVIEW: "organizations", INTEGRATION_RECONCILIATION: "imports", IMPORT_ATTENTION: "imports", AGREEMENT_SIGNATURE: "organizations", SUPPLIER_CONFIRMATION: "orders", STALE_INVENTORY: "catalog" };
     Object.assign(reasons, { ORGANIZATION_REVIEW: "Поставщик ожидает проверки допуска", PROMOTION_REVIEW: "Условия акции ожидают модерации" });
-    Object.assign(targets, { ORGANIZATION_REVIEW: "orders", PROMOTION_REVIEW: "catalog" });
+    Object.assign(targets, { ORGANIZATION_REVIEW: "organizations", PROMOTION_REVIEW: "catalog" });
     const visibleSections = sections.map(section => ({ ...section, count: Math.min(50, section.items.length), hasMore: section.items.length > 50, items: section.items.slice(0, 50).map(item => ({ ...item, reason: reasons[section.type], href: `/admin?section=${targets[section.type]}&queueType=${section.type}&object=${item.id}`, assignment: assignmentByObject.get(`${section.type}:${item.id}`) ?? null })) }));
     return {
       generatedAt: now.toISOString(),

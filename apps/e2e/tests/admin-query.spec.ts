@@ -14,17 +14,19 @@ async function fixture(page: Page) {
     state.reads.push(path + url.search);
     let json: unknown;
     if (path === "/organizations") json = [{ id: id(1), capabilities: [{ capability: "MARKETPLACE_OPERATOR" }] }];
+    else if (path === "/operations/orders") json = { items: [], total: 0, offset: 0, limit: 25 };
+    else if (path === "/operations/dashboard") json = { observedAt: new Date().toISOString(), scope: "PLATFORM_CURRENT_ALL_STATUSES", organizations: { status: "AVAILABLE", value: 1 }, masterProducts: { status: "AVAILABLE", value: 1 }, effectivePermissions: { status: "AVAILABLE", value: 1 } };
     else if (path === "/operations/work-queue/assignees") json = [];
     else if (path === "/access-control/permissions") json = ["support.ticket.view", "support.ticket.create", "support.ticket.manage"];
     else if (path === "/support/tickets") json = Number(url.searchParams.get("offset")) ? tickets.slice(0, 2) : tickets;
     else if (path.startsWith("/support/tickets/") && path.endsWith("/history")) json = [];
     else if (path.startsWith("/support/tickets/")) json = tickets.find(ticket => path.endsWith(ticket.id));
-    else if (path === "/operations/work-queue") json = { generatedAt: new Date().toISOString(), operatorOrganizationId: id(1), totalOpenItems: 2, sections: [{ type: "SUPPLIER_CONFIRMATION", priority: "NORMAL", count: 2, hasMore: !Number(url.searchParams.get("offset")), items: [100, 101].map(n => ({ id: id(n), orderNumber: `Заказ ${n}`, reason: "Ожидает подтверждения", href: `/admin?section=orders&queueType=SUPPLIER_CONFIRMATION&object=${id(n)}`, assignment: null })) }] };
-    else if (path.startsWith("/operations/work-queue/SUPPLIER_CONFIRMATION/")) {
+    else if (path === "/operations/work-queue") json = { generatedAt: new Date().toISOString(), operatorOrganizationId: id(1), totalOpenItems: 2, sections: [{ type: "CATALOG_REVIEW", priority: "NORMAL", count: 2, hasMore: !Number(url.searchParams.get("offset")), items: [100, 101].map(n => ({ id: id(n), orderNumber: `Заказ ${n}`, reason: "Ожидает подтверждения", href: `/admin?section=overview&queueType=CATALOG_REVIEW&object=${id(n)}`, assignment: null })) }] };
+    else if (path.startsWith("/operations/work-queue/CATALOG_REVIEW/")) {
       const target = path.split("/").at(-1)!;
       if (target === state.holdObject) { state.objectHeld = true; await new Promise<void>(resolve => { state.releaseObject = resolve; }); }
       if (state.objectStatus !== 200) return route.fulfill({ status: state.objectStatus, json: { code: state.objectStatus === 403 ? "FORBIDDEN" : "NOT_FOUND", message: state.objectStatus === 403 ? "Нет доступа к объекту" : "Объект не найден" } });
-      json = { id: target, queueType: "SUPPLIER_CONFIRMATION", title: `Детали ${target === id(100) ? "A" : "B"}`, fields: [{ label: "Статус", value: "CONFIRMED" }] };
+      json = { id: target, queueType: "CATALOG_REVIEW", title: `Детали ${target === id(100) ? "A" : "B"}`, fields: [{ label: "Статус", value: "CONFIRMED" }] };
     } else if (path === "/supplier-terms/operator/acceptances") json = { items: [] };
     else if (path.startsWith("/notifications/") && path.endsWith("/read")) {
       if (state.holdNotification) { state.notificationHeld = true; await new Promise<void>(resolve => { state.releaseNotification = resolve; }); }
@@ -73,7 +75,7 @@ test("support list context survives reload, ticket history and section links", a
   await page.goBack(); await expect(page.getByRole("dialog")).toBeHidden(); await expect(page).toHaveURL(listUrl);
   await page.goForward(); await expect(page.getByRole("dialog", { name: /NAV-0/ })).toBeVisible();
   await page.keyboard.press("Escape"); await expect(opener).toBeFocused(); await expect(page).toHaveURL(listUrl);
-  const orders = page.getByRole("link", { name: "Заказы и договоры", exact: true });
+  const orders = page.getByRole("link", { name: "Заказы", exact: true });
   expect(new URL(await orders.getAttribute("href") ?? "", page.url()).searchParams.get("supportQ")).toBe("Номер #42\\x");
   await orders.click(); await expect(page).toHaveURL(/section=orders/);
   await page.goBack(); await expect(page.getByLabel("Поиск обращения")).toHaveValue("Номер #42\\x");
@@ -87,7 +89,7 @@ test("support list context survives reload, ticket history and section links", a
 
 test("queue target changes discard late replies, preserve list context and recover 403/404", async ({ page }, info) => {
   const state = await fixture(page); state.holdObject = id(100);
-  await page.goto("/admin?section=orders&queueKind=SUPPLIER_CONFIRMATION&queueOffset=50");
+  await page.goto("/admin?section=overview&queueKind=CATALOG_REVIEW&queueOffset=50");
   const links = page.getByRole("link", { name: "Открыть объект", exact: true });
   await links.first().click(); await expect.poll(() => state.objectHeld).toBe(true);
   await expect(page.getByRole("heading", { name: "Объект из очереди", exact: true })).toBeFocused();
@@ -95,7 +97,7 @@ test("queue target changes discard late replies, preserve list context and recov
   state.holdObject = ""; state.releaseObject();
   await expect(page.getByRole("heading", { name: "Детали A" })).toHaveCount(0);
   await page.reload(); await expect(page.getByRole("heading", { name: "Детали B" })).toBeVisible();
-  await expect(page.getByLabel("Раздел очереди")).toHaveValue("SUPPLIER_CONFIRMATION");
+  await expect(page.getByLabel("Раздел очереди")).toHaveValue("CATALOG_REVIEW");
   expect(new URL(page.url()).searchParams.get("queueOffset")).toBe("50");
   for (const status of [403, 404]) {
     state.objectStatus = status; await page.reload();
@@ -123,7 +125,7 @@ test("queue target changes discard late replies, preserve list context and recov
 
 test("notification opens one history entry and failed read preserves destination", async ({ page }) => {
   const state = await fixture(page);
-  await page.goto("/admin?section=orders&queueKind=SUPPLIER_CONFIRMATION&queueOffset=50"); const previous = page.url();
+  await page.goto("/admin?section=overview&queueKind=CATALOG_REVIEW&queueOffset=50"); const previous = page.url();
   await page.getByRole("button", { name: /Уведомления поддержки:/ }).click();
   state.failNotification = true;
   await page.getByRole("dialog", { name: "Уведомления поддержки" }).getByRole("button", { name: "Открыть обращение" }).click();
@@ -170,7 +172,7 @@ test("conversation history keeps drafts and list filters while late A cannot rep
 
 test("invalid links show recovery and never request an invalid target", async ({ page }) => {
   const state = await fixture(page);
-  await page.goto("/admin?section=orders&queueType=SUPPLIER_CONFIRMATION&object=invalid");
+  await page.goto("/admin?section=overview&queueType=CATALOG_REVIEW&object=invalid");
   await expect(page.getByText("В ссылке указаны недопустимые параметры. Откройте раздел заново.")).toBeVisible();
   expect(state.reads.some(url => url.startsWith("/operations/work-queue/"))).toBe(false);
   await page.getByRole("link", { name: "Обращения и споры", exact: true }).click();

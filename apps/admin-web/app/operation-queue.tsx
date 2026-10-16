@@ -40,7 +40,7 @@ export function OperationQueue() {
   const objectHref = (href: string) => {
     const url = new URL(href, window.location.origin);
     const destination = parseAdminQuery(url.search);
-    return destination ? window.location.pathname + serializeAdminQuery({ ...adminSectionQuery(state, destination.section), queueType: destination.queueType, object: destination.object }) : href;
+    return destination ? window.location.pathname + serializeAdminQuery({ ...adminSectionQuery(state, destination.section), queueType: destination.queueType, object: destination.object, orderId: destination.orderId }) : href;
   };
   return <section className={styles.panel} aria-label="Операционная очередь">
     <div className={styles.header}><div><h2 className={styles.title}>Операционная очередь</h2><p className={styles.subtitle}>Причина задачи, ответственный, срок и история решений.</p></div><div className={styles.total}><strong>{data?.totalOpenItems ?? "—"}</strong><span>задач в выборке</span></div></div>

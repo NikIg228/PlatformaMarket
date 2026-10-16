@@ -7,7 +7,7 @@ import { DmButton, DmCheckbox, DmDialog, DmField, DmInput, DmSelect, DmTextarea,
 import { ticketStatuses } from "./support-operations";
 import { localDate } from "./operation-assignment";
 
-export function SupportTicketPanel({ id, api, assignees, canManage, canWrite, onClose, onChanged, onConversation }: { id: string; api: MarketplaceApiClient; assignees: { id: string; displayName: string }[]; canManage: boolean; canWrite: boolean; onClose: () => void; onChanged: () => Promise<void>; onConversation: (id: string) => void }) {
+export function SupportTicketPanel({ id, api, assignees, canManage, canWrite, onClose, onChanged, onConversation, onOrder }: { id: string; api: MarketplaceApiClient; assignees: { id: string; displayName: string }[]; canManage: boolean; canWrite: boolean; onClose: () => void; onChanged: () => Promise<void>; onConversation: (id: string) => void; onOrder?: (id: string) => void }) {
   const [ticket, setTicket] = useState<SupportTicketDetail | null>(null);
   const [history, setHistory] = useState<OperationHistory>([]);
   const [error, setError] = useState("");
@@ -15,6 +15,7 @@ export function SupportTicketPanel({ id, api, assignees, canManage, canWrite, on
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(true);
   const destination = useRef<string | undefined>(undefined);
+  const orderDestination = useRef<string | undefined>(undefined);
   const [status, setStatus] = useState("OPEN");
   const [priority, setPriority] = useState("NORMAL");
   const [assigneeId, setAssigneeId] = useState("");
@@ -35,10 +36,11 @@ export function SupportTicketPanel({ id, api, assignees, canManage, canWrite, on
   const key = (action: string, input: unknown) => { const json = JSON.stringify(input); let current = pending.current.get(action); if (!current || current.json !== json) { current = { json, key: crypto.randomUUID() }; pending.current.set(action, current); } return current.key; };
   const run = async (action: () => Promise<void>, refreshAfter = true) => { if (lock.current) return; lock.current = true; setBusy(true); setError(""); setFeedback(""); try { await action(); if (refreshAfter) { await load(); await onChanged(); } } catch (cause) { setError(errorMessage(cause)); } finally { lock.current = false; setBusy(false); } };
   const needsDecision = Boolean(ticket?.links.some(link => link.entityType === "BusinessConversation") && !["RESOLVED", "CLOSED"].includes(ticket.status) && ["RESOLVED", "CLOSED"].includes(status));
-  return <DmDialog open={open} title={ticket ? `${ticket.number} · ${ticket.subject}` : "Обращение"} onOpenChange={value => { if (!value && !busy) setOpen(false); }} onClosed={() => { if (destination.current) onConversation(destination.current); else onClose(); }} actions={<DmButton disabled={busy} onClick={() => setOpen(false)}>Закрыть</DmButton>}>
+  return <DmDialog open={open} title={ticket ? `${ticket.number} · ${ticket.subject}` : "Обращение"} onOpenChange={value => { if (!value && !busy) setOpen(false); }} onClosed={() => { if (orderDestination.current && onOrder) onOrder(orderDestination.current); else if (destination.current) onConversation(destination.current); else onClose(); }} actions={<DmButton disabled={busy} onClick={() => setOpen(false)}>Закрыть</DmButton>}>
     {error ? <ActionFeedback tone="error" description={`${error} Ввод сохранён.`} action={<DmButton disabled={busy} onClick={() => void load().catch(cause => setError(errorMessage(cause)))}>Повторить загрузку</DmButton>} /> : null}{feedback ? <ActionFeedback tone="success" description={feedback} /> : null}
     {!ticket ? <LoadingState label="Загружаем обращение" /> : <>
       <p>{ticket.description}</p>{ticket.links.filter(link => link.entityType === "BusinessConversation").map(link => <DmButton key={link.id} disabled={busy} onClick={() => { destination.current = link.entityId; setOpen(false); }}>Открыть связанный диалог</DmButton>)}
+      {onOrder ? ticket.links.filter(link => link.entityType === "SupplierOrder").map(link => <DmButton key={link.id} disabled={busy} onClick={() => { orderDestination.current = link.entityId; setOpen(false); }}>Открыть связанный заказ</DmButton>) : null}
       {canManage ? <form className="mp-stack" onSubmit={event => { event.preventDefault(); void run(async () => { const input = { expectedVersion: ticket.version, status: status as UpdateSupportTicketInput["status"], priority: priority as UpdateSupportTicketInput["priority"], assigneeId: assigneeId || null, slaDueAt: dueAt ? new Date(dueAt).toISOString() : null, reason: reason.trim(), ...(needsDecision ? { decision: decision.trim() } : {}) }; await api.updateSupportTicket(id, { ...input, idempotencyKey: key("update", input) }); formDirty.current = false; setReason(""); setDecision(""); setFeedback("Изменение обращения сохранено."); }); }}>
         <fieldset disabled={busy} onChange={() => { formDirty.current = true; }} style={{ border: 0, padding: 0 }}><DmField label="Статус"><DmSelect value={status} onChange={event => setStatus(event.target.value)}>{Object.entries(ticketStatuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</DmSelect></DmField>
           <DmField label="Приоритет"><DmSelect value={priority} onChange={event => setPriority(event.target.value)}><option value="LOW">Низкий</option><option value="NORMAL">Обычный</option><option value="HIGH">Высокий</option><option value="URGENT">Срочный</option></DmSelect></DmField>

@@ -94,11 +94,11 @@
 | Общая оболочка | `AppShell` из `packages/ui`, `page.module.css`, `useAdminAccess`, `OperatorNotifications`, `OperationObjectFocus` | Общий каркас и маршрутизация; ADM-00/01/02 |
 | `section=analytics` | `OperatorCommerceAnalytics`, общий `CommerceAnalytics` | Аналитика; ADM-03 |
 | `section=overview` | Быстрые переходы, `LiveMetrics`, `OperationQueue` | Рабочий стол; ADM-02 |
-| `section=organizations` | `ResourceLists`, `OrganizationQuickCreate`, `FoundationManagement` | Организации; справочники в каталог, сотрудники в доступ; ADM-04/05/06 |
+| `section=organizations` | `OperatorOrganizations`, `OrganizationQuickCreate`, `OperatorOrganizationAdmission` | Реестр/карточка организаций и договорный допуск поставщиков; ADM-04 |
 | `section=access` | `SupplierControls`, `PlatformAssurance` | Цены/партии в контекст поставщика; технические операции в контроль; ADM-05/07/10 |
 | `section=catalog` | `ManualProductReview`, `PromotionModeration`, `ProductCorrectionQueue`, `CatalogQuality`, `CatalogFoundation` | Каталог с самостоятельными вкладками; ADM-06 |
 | `section=imports` | `CatalogImportReviewQueue`, `SupplierOperations`, `IntegrationOperations`, `ConnectorReadinessRegistry` | Импорты и интеграции; ADM-07 |
-| `section=orders` | `OperationQueue`, `AgreementOperations` → `SupplierAdmissionOperations` | Заказы отдельно от допуска и договоров; ADM-08/04 |
+| `section=orders` | `OperatorOrders`, `OperatorOrderDetail`, `OperatorOrderDocuments` | Read-only реестр/карточка; очередь в overview, договорный допуск в organizations; ADM-08 |
 | `section=support` | `SupportOperations`, `SupportTicketPanel`, общие Messages, уведомления | Обращения и споры; ADM-09 |
 | `section=security` | `TrustOperations`, `AuditOperations` | Контроль с вкладками; ADM-10 |
 | `section=settings` | `PlatformSettings`, `IdentitySettings` | Настройки площадки, доступ сотрудников и личный профиль; ADM-11/05 |
@@ -320,6 +320,15 @@ tenant denial и восстановление проверены; UI показ�
 каждого статуса. Рабочую БД не использовать для тестовых повторов.
 
 ## ADM-08 Заказы
+
+16.10.2026: реестр и read-only карточка реализованы, текущий пакет SCOPED PASS
+в [журнале реализации](admin-implementation-log.md#r775--результат-16102026-scoped-pass).
+API `GET /operations/orders` поддерживает поиск/период/статусы/пагинацию;
+`GET /operations/orders/:id` соединяет существующий workflow, поданные расхождения
+и связанные обращения. Требуются platform operator authority и `order.confirm`;
+документы и поддержка проверяют отдельные разрешения. Новых write-команд нет.
+Полная готовность R7.6, проверенная подпись НУЦ и комплектность не объявляются:
+карточка отдельно показывает факты получения, архивные подписи/версии и пробелы.
 
 **Цель:** оператор может найти заказ и объяснить его состояние по фактам,
 не выдавая общую очередь исключений за управление заказами.
