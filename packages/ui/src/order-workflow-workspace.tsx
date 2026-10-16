@@ -1,5 +1,6 @@
 "use client";
 import { OrderDiscrepancyPanel } from "./order-discrepancy-panel";
+import { OrderShipmentReceipts } from "./order-shipment-receipt";
 import type { OrderDiscrepancyApi } from "./order-discrepancy-resource";
 import { DmFileInput, DmCheckbox, DmTabList } from "./controls";
 import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
@@ -10,7 +11,7 @@ import { OrderInvoicePanel, OrderInvoiceHistory, useOrderInvoices, type OrderInv
 import { OrderSupplierContacts } from "./order-supplier-contacts";
 import { orderOverview, type OrderDetailTab } from "./order-presentation";
 import { documentUploadFileError } from "./document-upload-model";
-import { DmButton, DmField, DmInput, DmFeedback, LoadingState, Section, formatDate, formatMoney, formatStatus, errorMessage as describeError } from "./index";
+import { DmButton, DmField, DmInput, DmFeedback, LoadingState, Section, formatDate, formatMoney, errorMessage as describeError } from "./index";
 import { usePermissions } from "./permissions";
 import { WorkflowCommandTracker, type WorkflowAction as Action } from "./order-workflow-command";
 import { moneyInputValue, parseMoneyInput } from "./money";
@@ -164,8 +165,8 @@ function OrderWorkflowSession({ hideHeading = false, orderId, organizationId, ap
     {buyer && ["DELIVERED", "CANCELLED"].includes(data.status) ? <Section title="Повторная закупка"><p>Создайте новую корзину по составу заказа. Перед оформлением проверьте текущие цены, доступность и условия; прежняя скидка не гарантируется.</p>{reordered ? <a href={cartHref}>Перейти в корзину и проверить текущие условия</a> : <DmButton disabled={busy || !canAct("REORDER")} onClick={() => void perform({ action: "REORDER" })}>Создать корзину для повторной закупки</DmButton>}</Section> : null}
     <div {...panel("shipments")}>
     {renderFulfillment?.(data, refresh)}
-    {(buyer || supplier) && api.getOrderDiscrepancies && api.executeOrderDiscrepancy && api.uploadDiscrepancyAttachment && api.downloadDiscrepancyAttachment ? <OrderDiscrepancyPanel api={api as OrderDiscrepancyApi} orderId={orderId} orderVersion={data.version} events={data.events} /> : null}
-    {buyer ? <Section title="Поставки и получение">{data.order.shipments?.length ? data.order.shipments.map(shipment => <article key={shipment.id}><h3>{shipment.shipmentNumber}</h3><p>{formatStatus(shipment.status)} · {shipment.carrierName ?? "Перевозчик не указан"} · Трек: {shipment.trackingNumber ?? "ещё не присвоен"}</p>{["DISPATCHED", "IN_TRANSIT", "PARTIALLY_DELIVERED"].includes(shipment.status) ? <ReceiptForm shipment={shipment} busy={busy || !canAct("RECEIVE_SHIPMENT")} onReceive={items => perform({ action: "RECEIVE_SHIPMENT", shipmentId: shipment.id, items })} /> : null}</article>) : <p>Поставщик ещё не создал поставку.</p>}</Section> : null}
+    {(buyer || supplier) && api.getOrderDiscrepancies && api.executeOrderDiscrepancy && api.uploadDiscrepancyAttachment && api.downloadDiscrepancyAttachment ? <OrderDiscrepancyPanel api={api as OrderDiscrepancyApi} orderId={orderId} orderVersion={data.version} events={data.events} onChanged={refresh} /> : null}
+    {buyer ? <OrderShipmentReceipts shipments={data.order.shipments ?? []} busy={busy || !canAct("RECEIVE_SHIPMENT")} onReceive={(shipmentId, items) => perform({ action: "RECEIVE_SHIPMENT", shipmentId, items })} /> : null}
     </div><div {...panel("history")}>
     {buyer && unpaid && !data.claims.length && ["AWAITING_CONFIRMATION", "CONFIRMED", "PARTIALLY_CONFIRMED", "AWAITING_PAYMENT"].includes(data.status) ? <Section title="Отмена до оплаты"><DmField label="Причина отмены"><DmInput value={comment} onChange={(_, d) => setComment(d.value)} /></DmField><DmCheckbox checked={noTransfer} onChange={e => setNoTransfer(e.target.checked)} label="Перевод по этому заказу не выполнялся" /><DmButton disabled={busy || !canAct("CANCEL") || !noTransfer || comment.trim().length < 3} onClick={() => void perform({ action: "CANCEL", reason: comment, transferNotMade: true })}>Отменить заказ</DmButton></Section> : null}
     <Section title="История действий">{data.events.length ? <ol>{data.events.map(event => <li key={event.id}>{formatDate(event.createdAt, true)} — {labels[event.action] ?? "Состояние заказа обновлено"}{typeof event.details.comment === "string" && event.details.comment ? `: ${event.details.comment}` : ""}{typeof event.details.reason === "string" ? `: ${event.details.reason}` : ""}</li>)}</ol> : <p>Действий по оплате пока нет.</p>}</Section>
@@ -173,9 +174,4 @@ function OrderWorkflowSession({ hideHeading = false, orderId, organizationId, ap
       <aside className="dm-order-sidebar"><OrderSupplierContacts contacts={data.supplierContacts} /><div className="dm-order-card dm-order-payment-summary"><div className="dm-order-card-heading"><h2>Оплата</h2><span className="dm-order-payment-label" data-tone={overview.payment.tone}>{overview.payment.label}</span></div><PaymentSummaryPanel data={data} compact /></div><OrderDetailDocuments data={data} download={download} /></aside>
     </div>
   </div>;
-}
-
-function ReceiptForm({ shipment, busy, onReceive }: { shipment: NonNullable<OrderWorkflowResponse["order"]["shipments"]>[number]; busy: boolean; onReceive: (items: { shipmentItemId: string; deliveredQuantity: string }[]) => Promise<void> }) {
-  const [quantities, setQuantities] = useState<Record<string, string>>({});
-  return <div><p>Укажите суммарное количество уже полученных упаковок по каждой позиции. Неполученные позиции оставьте без изменений.</p>{shipment.items.map((item, index) => <DmField key={item.id} label={`Позиция ${index + 1}: отправлено ${item.quantity}, ранее получено ${item.deliveredQuantity}`}><DmInput inputMode="decimal" value={quantities[item.id] ?? item.deliveredQuantity} onChange={(_, d) => setQuantities(current => ({ ...current, [item.id]: d.value.replace(",", ".") }))} /></DmField>)}<DmButton disabled={busy} onClick={() => void onReceive(shipment.items.map(item => ({ shipmentItemId: item.id, deliveredQuantity: quantities[item.id] ?? item.deliveredQuantity })))}>Подтвердить фактическое получение</DmButton></div>;
 }

@@ -1,4 +1,5 @@
 import { verifyOrderDiscrepancies } from "./verify-order-discrepancies.mjs";
+import { verifyOrderResupply } from "./verify-order-resupply.mjs";
 import { verifyShipmentWaybills } from "./verify-shipment-waybills.mjs";
 import path from "node:path";
 import { randomUUID, createHash } from "node:crypto";
@@ -7,8 +8,8 @@ import { calculateVatLine } from "@marketplace/schemas";
 import { completeFixtureOrganization } from "./organization-profile-fixture.mjs";
 import { verifyOrderInvoiceUpgrade } from "./verify-order-invoice-upgrade.mjs";
 
-export async function verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId, offers, storageRoot, waybills = false, discrepancies = false }) {
-  if (!discrepancies) await verifyOrderInvoiceUpgrade(prisma, assert);
+export async function verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId, offers, storageRoot, waybills = false, discrepancies = false, resupply = false }) {
+  if (!discrepancies && !resupply) await verifyOrderInvoiceUpgrade(prisma, assert);
   const [buyer, person, outsider, supplier2] = await Promise.all([21, 22, 23, 24].map(index => createBuyer(index)));
   const identity = { userId: person.userId, organizationId: supplierId }, orderIds = [];
   let secondOffer, warehouse, primaryError; const trigger = `invoice_reject_${process.pid}`;
@@ -60,7 +61,8 @@ export async function verifyOrderInvoices({ prisma, createBuyer, createCartWithI
     };
     const order = await makeOrder(identity, originalOffer, originalWarehouse.id, supplierRequisites, 1);
     const otherOrder = await makeOrder(supplier2, secondOffer, warehouse.id, secondRequisites, 2);
-    if (discrepancies) { await verifyOrderDiscrepancies({ prisma, call, request, assert, identity, buyer, outsider, order, otherOrder }); } else {
+    if (resupply) { await verifyOrderResupply({ prisma, call, request, assert, identity, buyer, outsider, otherSupplier: supplier2, order, otherOrder, storageRoot }); }
+    else if (discrepancies) { await verifyOrderDiscrepancies({ prisma, call, request, assert, identity, buyer, outsider, order, otherOrder }); } else {
     const endpoint = id => `/supplier-orders/${id}/invoices`, prepare = (id, expectedVersion = 1, key = randomUUID(), who = identity) => call(endpoint(id) + "/prepare", { expectedVersion, idempotencyKey: key }, 201, who);
     await call(endpoint(order.id) + "/prepare", { expectedVersion: 1, idempotencyKey: randomUUID() }, 409);
     assert(await prisma.orderInvoicePreparation.count({ where: { supplierOrderId: order.id } }) === 0, "Incomplete requisites reserved an invoice");

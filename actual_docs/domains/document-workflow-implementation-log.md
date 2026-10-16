@@ -1,8 +1,97 @@
 # Документооборот — выполненные этапы и технические решения
 
-Обновлено 15.10.2026. Журнал реализации полного документального процесса сделки.
+Обновлено 16.10.2026. Журнал реализации полного документального процесса сделки.
 Требования — [Workflow документооборота](MARKET_DOCUMENT_WORKFLOW.md), единственный
 checklist — [R7.6 основного roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#document-workflow).
+
+## 16.10 — R7.6.5.1–3: операционный довоз — SCOPED PASS
+
+База `main@3aa1c0b` + локальный scope довоза; Admin опубликован отдельно.
+Сценарий: по согласованной недостаче 10/8 поставщик регистрирует отправку 2,
+клиника подтверждает получение связанной допоставки. Исходные 10/8, накладная,
+сумма продажи и оплаченный резерв сохраняются; дополнительные 2 списываются
+отдельно. AGREED не означает RESOLVED, документальный комплект остаётся INCOMPLETE.
+Schema/API/Prisma и UI обеих сторон прошли scoped приёмку операционного довоза.
+Полный R7.6.5 не принят: формы/подписи/возвраты и другие исключения остаются открыты.
+
+План приёмки: focused service tests, migration upgrade и изолированный PostgreSQL
+10/8/2 с tenant/role/stale/stock/rollback/concurrent replay; types/build/lint,
+целевой browser desktop1440/mobile390, keyboard/recovery и screenshot/computed styles.
+Новые общие UI-параметры не вводились: shared adapters, Manrope14, controls44/8,
+market-components-v1/platforma-semantic-light-v1. Полная приёмка R7.6.5 открыта.
+
+Подтверждено 16.10: API build в штатном запуске dev; focused Vitest
+order-resupply7 + order-workflow10 + order-fulfillment-state4 = 21 PASS;
+supplier typecheck и E2E TypeScript PASS; scoped ESLint PASS.
+Изолированный unified production build (49 routes) PASS, повтор после правки
+validation формы также PASS. Scoped lint изменённой формы повторно PASS.
+Browser: attempt1 не нашёл tests из-за относительного testDir во временном config;
+attempt2 — 4 PASS/2 FAIL: native required validation скрывала русскую inline ошибку.
+Форма получила noValidate с сохранением собственной проверки tracking/acknowledged.
+Attempt3 — только два affected resupply сценария, 2/2 PASS; четыре неизменённых
+сценария переиспользованы. Команда `npm exec -- playwright test --config
+.tmp/resupply-flow/ui.config.ts --workers=1 --grep 'agreed resupply'`.
+Проверены dispatch unknown-result/retry с тем же payload, замороженные8,
+переход/фокус к допоставке, получение2 и документальная неполнота на mock API.
+Логи browser-attempt2/3.log; четыре screenshots confirm/received1440/390
+из `.tmp/resupply-flow/ui-results` просмотрены, computed44/8/Manrope и overflow PASS.
+Browser mocks не заменяют незавершённую PostgreSQL-проверку.
+
+PostgreSQL попытки сохранены, лимит не сбрасывается:
+
+1. `.tmp/resupply-flow/run-pg.mjs`: прежний запуск без итогового receipt — INCOMPLETE,
+   лог сохранён как `postgres-attempt1-incomplete.log`.
+2. Тот же изолированный loader: миграции/seed PASS, тестовый API не готов за60с;
+   `postgres.log` — FAIL до бизнес-проверки.
+3. `npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs --resupply-only`:
+   штатная свежая сборка API/Prisma, DB `dentmarket_audit_20260914`; запуск API и
+   additive upgrade прошли, fixture накладной отклонён `Document_file_metadata_check`.
+   В `scripts/lib/verify-order-resupply.mjs` у synthetic document задан checksum,
+   но отсутствует storageKey. Лог `postgres-attempt3.log`, итог FAIL/BLOCKED.
+
+После отдельного разрешения владельца выполнен новый цикл с изменённым планом:
+synthetic PDF создан через PDFKit в изолированном storageRoot; storageKey,
+fileName/contentType/byteSize и SHA256 соответствуют реальному файлу. Добавлена
+проверка сохранности его checksum после довоза; ограничения БД не менялись.
+
+- `postgres-authorized-1.log`: документ создан, но cleanup нарушал FK, удаляя
+  shipment раньше заявления, и скрывал исходный assertion. Порядок cleanup исправлен,
+  исходная ошибка теперь сохраняется отдельно. Остатки именно этого запуска
+  b04_1792133351164_16668 удалены из audit DB с проверкой identity и штатной cleanup
+  функцией; итог cleanup PASS, рабочая marketplace не затронута.
+- `postgres-authorized-2.log`: cross-order assertion использовал покупателя и
+  ожидал404, но role denial закономерно вернул403. Fixture исправлена: отдельно
+  проверяются чужой supplier tenant и законный supplier другого заказа с чужим claim.
+- `postgres-authorized-3.log`: tenant/role/invalid/stale/insufficient-stock checks
+  прошли; ожидание409 для «только просроченная партия» получило201. Базовая функция
+  createFixtureCatalog создаёт пригодный ACTIVE lot со сроком2035-12-31, который
+  resupply fixture не исключила. Отказ без пригодного lot этим запуском не проверен;
+  это дефект состава fixture, не доказательство списания просроченного товара.
+
+Этот цикл исчерпал три попытки и был остановлен. После следующего явного
+разрешения владельца базовые lots только собственного тестового balance помечены
+BLOCKED, добавлено явное предусловие «нет пригодных lots», затем отдельный пригодный
+lot для happy path. Новый запуск1 PASS: `postgres-lots-1.log`, exit0, cleanup без ошибок.
+Команда `npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs --resupply-only`.
+Доказаны upgrade, 10/8/2, tenant/party/foreign-claim, invalid/stale, недостаточный
+остаток/просроченная партия, rollback outbox, concurrent replay, точное отдельное
+списание2 с lot trace, запрет поздних10/overreceipt/приёмки поставщиком/нового счёта,
+DELIVERED товара при AGREED/INCOMPLETE документов и неизменность original PDF.
+
+Завершающие gates на неизменном runtime: `npm run db:test -- exec -- node
+scripts/verify-pilot-backend.mjs --contract-only` PASS (363 operations/69 verified,
+251 schemas); `node scripts/verify-runtime-split.mjs` PASS. Использована штатная
+свежая API build из dev, повторная генерация DLL не нужна. Fixture lint и diff hygiene
+PASS. Source schema3/client2/supplier-planning7 и Prisma validate PASS переиспользованы
+с неизменными входами из предыдущих запусков задачи. Сборка/UI также переиспользованы.
+НУЦ/deploy и полный release/E2E не выполнялись: вне выбранного операционного пакета.
+История неудачных попыток выше сохранена; они не объявлены успешными задним числом.
+
+Отдельное разрешение владельца16.10: применены к локальной `marketplace` миграции
+20261015090000_order_invoice_preparation, 20261015170000_order_discrepancies,
+20261016010000_order_resupply. `npm run dev` запущен из canonical root в go_live;
+health/API, homepage и непустой catalog-search HTTP200. Это проверка запуска,
+не функциональная приёмка довоза; рабочие данные не reseed.
 
 ## 15.10 — R7.6.5.1: проект контракта исключений — PROPOSED
 

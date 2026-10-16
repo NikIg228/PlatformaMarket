@@ -3,7 +3,7 @@ import type { ShipmentOrder } from "./shipment-panel";
 export function shipmentPlanning(order: ShipmentOrder, selectedWarehouseId: string) {
   const planned = new Map<string, number>();
   for (const shipment of order.shipments ?? []) {
-    if (["CANCELLED", "RETURNED"].includes(shipment.status)) continue;
+    if (shipment.resupplyDiscrepancyId || ["CANCELLED", "RETURNED"].includes(shipment.status)) continue;
     for (const line of shipment.items) planned.set(line.supplierOrderItemId,
       (planned.get(line.supplierOrderItemId) ?? 0) + Number(line.quantity));
   }

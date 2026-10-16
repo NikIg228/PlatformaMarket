@@ -470,6 +470,8 @@ export const shipmentItemResponseSchema = z
     supplierOrderItemId: z.uuid(),
     quantity: decimalStringSchema,
     deliveredQuantity: decimalStringSchema,
+    resupplyQuantity: decimalStringSchema.optional(),
+    resupplyReservationId: z.uuid().nullable().optional(),
   })
   .passthrough();
 
@@ -479,6 +481,8 @@ export const shipmentResponseSchema = z
     supplierOrderId: z.uuid(),
     warehouseId: z.uuid(),
     shipmentNumber: z.string(),
+    resupplyDiscrepancyId: z.uuid().nullable().optional(),
+    resupplySourceShipmentId: z.uuid().nullable().optional(),
     method: z.string(),
     status: shipmentStatusSchema,
     trackingNumber: z.string().nullable(),

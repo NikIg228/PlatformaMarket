@@ -4,9 +4,10 @@ import type { DiscrepancyStatement, OrderDiscrepancyCommand, OrderDiscrepancyRes
 import { DmButton, DmDialog, DmDropdown, DmFeedback, DmField, DmFormSections, DmTable, DmTextarea, LoadingState, Section, errorMessage, formatDate } from "./index";
 import { DiscrepancyForm, discrepancyKinds, discrepancyResolutions } from "./order-discrepancy-form";
 import { useOrderDiscrepancies, type OrderDiscrepancyApi } from "./order-discrepancy-resource";
+import { OrderResupplyPanel, discrepancyExecutionLabel } from "./order-resupply-panel";
 const statusLabels: Record<OrderDiscrepancyView["status"], string> = { DRAFT: "Черновик клиники", SUBMITTED: "Ожидает ответа поставщика", RESOLUTION_PROPOSED: "Ожидает решения клиники", REJECTED: "Отклонено — расхождение не урегулировано", AGREED: "Решение согласовано — требуется исполнение" };
-const eventLabels: Record<string, string> = { CREATE: "Создан черновик", SAVE: "Сохранён черновик", SUBMIT: "Клиника отправила заявление", RESPOND: "Поставщик ответил", DECIDE: "Клиника рассмотрела предложение" };
-export function OrderDiscrepancyPanel({ api, orderId, orderVersion, events }: { api: OrderDiscrepancyApi; orderId: string; orderVersion: number; events: OrderWorkflowResponse["events"] }) {
+const eventLabels: Record<string, string> = { CREATE: "Создан черновик", SAVE: "Сохранён черновик", SUBMIT: "Клиника отправила заявление", RESPOND: "Поставщик ответил", DECIDE: "Клиника рассмотрела предложение", DISPATCH_RESUPPLY: "Поставщик отправил допоставку" };
+export function OrderDiscrepancyPanel({ api, orderId, orderVersion, events, onChanged }: { api: OrderDiscrepancyApi; orderId: string; orderVersion: number; events: OrderWorkflowResponse["events"]; onChanged?: () => Promise<void> }) {
   const resource = useOrderDiscrepancies(api, orderId, orderVersion), { data } = resource;
   const [selectedId, setSelectedId] = useState<string | null>(null), [newShipment, setNewShipment] = useState<string | null>(null);
   const [previousId, setPreviousId] = useState<string | null>(null), [editing, setEditing] = useState(false);
@@ -14,9 +15,10 @@ export function OrderDiscrepancyPanel({ api, orderId, orderVersion, events }: { 
   const content = useRef<HTMLDivElement>(null);
   useEffect(() => { if ((selectedId || newShipment) && !resource.busy) { content.current?.focus({ preventScroll: true }); content.current?.parentElement?.scrollTo({ top: 0 }); } }, [selectedId, newShipment, resource.busy, resource.error, data?.discrepancies.find(row => row.id === selectedId)?.version]);
   const trigger = useRef<HTMLButtonElement | null>(null);
+  const shipmentFocus = useRef<string | null>(null);
   const selected = data?.discrepancies.find(row => row.id === selectedId), shipment = data?.shipments.find(row => row.id === (newShipment ?? selected?.shipmentId));
   const open = Boolean(selectedId || newShipment), disabled = resource.busy || resource.uncertain || resource.conflict || !data?.canWrite;
-  const completed = (result: OrderDiscrepancyResult | null) => { if (result) { setSelectedId(result.discrepancyId); setNewShipment(null); setEditing(false); setPreviousId(null); } };
+  const completed = async (result: OrderDiscrepancyResult | null) => { if (result) { setSelectedId(result.discrepancyId); setNewShipment(null); setEditing(false); setPreviousId(null); await onChanged?.(); } };
   const command = (input: OrderDiscrepancyCommand) => resource.run(input).then(completed);
   const base = () => ({ expectedOrderVersion: data!.orderVersion, expectedShipmentVersion: shipment!.version, idempotencyKey: crypto.randomUUID() });
   const existing = () => ({ ...base(), discrepancyId: selected!.id, expectedExceptionVersion: editing && editingVersion !== null ? editingVersion : selected!.version });
@@ -46,14 +48,17 @@ export function OrderDiscrepancyPanel({ api, orderId, orderVersion, events }: { 
     {!data && resource.error ? <DmButton onClick={() => void resource.reload()}>Повторить загрузку расхождений</DmButton> : null}
     {data ? <DmFormSections><p>Заявление и согласование решения сохраняются отдельно от получения товара, оплаты и подписания документов.</p>
       {data.party === "BUYER" ? <div>{data.shipments.filter(row => row.eligible).map(row => <p key={row.id}><DmButton disabled={disabled} onClick={event => { trigger.current = event.currentTarget; setSelectedId(null); setNewShipment(row.id); setPreviousId(null); setEditing(true); }}>{`Сообщить о расхождении · ${row.number}`}</DmButton></p>)}</div> : null}
-      {!data.discrepancies.length ? <p>Заявлений о расхождениях пока нет.</p> : data.discrepancies.map(row => <article key={row.id}><h3>{discrepancyKinds[row.statement.kind]} · {row.source.shipmentNumber}</h3><p>{statusLabels[row.status]}</p><p>{row.statement.reason}</p><DmButton onClick={event => { trigger.current = event.currentTarget; setSelectedId(row.id); setNewShipment(null); setEditing(false); }}>{`Открыть заявление · ${row.source.shipmentNumber} · редакция ${row.version}`}</DmButton></article>)}
+      {!data.discrepancies.length ? <p>Заявлений о расхождениях пока нет.</p> : data.discrepancies.map(row => <article key={row.id}><h3>{discrepancyKinds[row.statement.kind]} · {row.source.shipmentNumber}</h3><p>{discrepancyExecutionLabel(row, statusLabels[row.status])}</p><p>{row.statement.reason}</p><DmButton onClick={event => { trigger.current = event.currentTarget; setSelectedId(row.id); setNewShipment(null); setEditing(false); }}>{`Открыть заявление · ${row.source.shipmentNumber} · редакция ${row.version}`}</DmButton></article>)}
       <DmButton disabled={resource.loading} onClick={() => void resource.reload()}>Обновить список расхождений</DmButton>
     </DmFormSections> : null}
     <DmDialog open={open} mobileFullscreen title={newShipment ? "Новое заявление о расхождении" : "Заявление о расхождении"}
-      onOpenChange={next => { if (!next && !resource.busy && !resource.uncertain) { setSelectedId(null); setNewShipment(null); setEditing(false); } }} onClosed={() => trigger.current?.focus()}>
+      onOpenChange={next => { if (!next && !resource.busy && !resource.uncertain) { setSelectedId(null); setNewShipment(null); setEditing(false); } }} onClosed={() => {
+        if (shipmentFocus.current) { const target = document.getElementById(`shipment-${shipmentFocus.current}`); shipmentFocus.current = null; target?.scrollIntoView({ block: "center" }); target?.focus(); }
+        else trigger.current?.focus();
+      }}>
       <div ref={content} tabIndex={-1}><DmFormSections>{feedback}
         {shipment && data ? <>
-          {selected ? <div><p>{statusLabels[selected.status]} · {selected.source.shipmentNumber} · редакция {selected.version}</p>
+          {selected ? <div><p>{discrepancyExecutionLabel(selected, statusLabels[selected.status])} · {selected.source.shipmentNumber} · редакция {selected.version}</p>
             <p>{selected.source.documentId ? `Исходная накладная: версия ${selected.source.documentVersion}. Контрольная сумма: ${selected.source.documentChecksum ?? "не указана"}` : "Исходная выпущенная накладная отсутствует."}</p>
             {selected.previousDiscrepancyId ? <p>Новая редакция после отклонения. Предыдущее заявление сохранено в списке.</p> : null}
             <DiscrepancyComparison claim={selected} />
@@ -75,6 +80,9 @@ export function OrderDiscrepancyPanel({ api, orderId, orderVersion, events }: { 
           {selected?.status === "RESOLUTION_PROPOSED" && data.party === "BUYER" ? <DiscrepancyReply key={selected.id} initial={selected.resolution ?? selected.statement.requestedResolution} disabled={disabled}
             onReply={(reason, _resolution, decision) => command({ ...existing(), action: "DECIDE", accepted: decision === "AGREE", reason })} /> : null}
           {selected?.status === "REJECTED" && data.party === "BUYER" ? <><p>Отклонение не подтверждает полное получение товара. Можно подать новую связанную редакцию или обратиться в поддержку.</p><DmButton disabled={disabled} onClick={() => { setPreviousId(selected.id); setNewShipment(selected.shipmentId); setSelectedId(null); setEditing(true); }}>Создать связанную редакцию</DmButton></> : null}
+          {selected?.resupply ? <OrderResupplyPanel key={selected.id} claim={selected} supplier={data.party === "SUPPLIER"} disabled={disabled} events={events}
+            onDispatch={details => command({ ...existing(), action: "DISPATCH_RESUPPLY", ...details })}
+            onShipment={id => { shipmentFocus.current = id; setSelectedId(null); setNewShipment(null); }} /> : null}
           {selected ? <div><h3>История заявления</h3><ol>{selected.events.map(event => {
             const details = event.details && typeof event.details === "object" ? event.details as Record<string, unknown> : {};
             return <li key={event.id}><p>{formatDate(event.createdAt, true)} — {eventLabels[event.action] ?? event.action} · редакция {event.version}</p>

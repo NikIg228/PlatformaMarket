@@ -1,5 +1,17 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+16.10 — **R7.6.5 операционный довоз: SCOPED PASS.**
+На main/3aa1c0b + локальный scope: API unit21, supplier/E2E types, scoped lint и
+изолированный unified build PASS. Browser4 неизменённых +2 affected PASS после
+исправления inline validation; mock API, screenshots/computed styles1440/390.
+После отдельно разрешённого исправления lot fixture PostgreSQL/API10/8/2 PASS:
+tenant/party/stale/stock/rollback/concurrent replay, отдельное списание2, оригинал
+и PDF сохранены, товар DELIVERED при документальных AGREED/INCOMPLETE. Core contract
+363 operations/69 verified/251 schemas и runtime split PASS.
+[Журнал с командами и историей попыток](../domains/document-workflow-implementation-log.md).
+Полный R7.6.5, НУЦ/формы/подписи/возвраты остаются открытыми.
+Отдельно разрешённые миграции marketplace и запуск dev PASS не закрывают R7.6.5.
+
 15.10 — **R7.6.2 GENERATED-счёт: SCOPED PASS; CI SKIPPED.**
 Подготовка → PDF preview → подтверждение поставщиком → текущий счёт/история
 клиники реализованы. Isolated PostgreSQL (включая dependent suites), migration

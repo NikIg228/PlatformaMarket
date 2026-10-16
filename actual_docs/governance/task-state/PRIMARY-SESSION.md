@@ -6,6 +6,34 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 16.10 — R7.6.5 операционный довоз: SCOPED PASS
+
+Последний запрос: завершить целевые проверки довоза после сверки roadmap.
+База main/3aa1c0b; несвязанный Admin/catalog/CI/docs WIP сохраняется.
+PostgreSQL gate: прежний незавершённый запуск,
+повтор с timeout запуска API60с, третий запуск на штатной сборке — ошибка
+fixture `Document_file_metadata_check` (checksum без storageKey).
+После разрешения владельца исправлены PDF/storage metadata, cleanup и cross-order
+fixture. Новый цикл также исчерпал3 попытки: последняя выявила базовый пригодный lot
+в сценарии «только просроченный» (ожидался409, получен201). Нужна явная блокировка
+базовых lots своего balance и проверка предусловия; новый запуск требует решения
+владельца. Остатки собственного interrupted fixture очищены, cleanup PASS.
+После следующего разрешения исправлено предусловие lot: собственные базовые партии
+BLOCKED, явная проверка отсутствия пригодных, затем один пригодный lot.
+`postgres-lots-1.log` PASS/exit0, cleanup PASS: полный выбранный10/8/2, rollback,
+concurrent replay, отдельное списание и неизменные оригиналы. Core contract и runtime
+split PASS. Browser4+2, types/build/lint PASS; inputs неизменны, повтор не нужен.
+Пакет принят локально в выбранной границе, полный R7.6.5 не закрыт.
+Подробный scope, результаты, команды и следующий шаг:
+[журнал довоза](../../domains/document-workflow-implementation-log.md).
+Неудачные попытки сохранены как история; итоговый PASS относится к исправленной fixture.
+
+Локальный dev поднят по отдельному поручению: три миграции применены к marketplace,
+schema/API build PASS, homepage/catalog/health200. LauncherPID1352, API4012PID10032,
+web3000PID14800, `.tmp/dev-start-20261016/`; dev оставлен работать.
+Проверки довоза используют только disposable dentmarket_audit_20260914 и
+отдельный Next output `.tmp/resupply-flow/next`, временный preview3103.
+
 ### 15.10 — R7.6.5.2: заявление, ответ сторон и история — SCOPED PASS
 
 Владелец согласовал операционные правила §8.1 DWF и поручил реализацию после

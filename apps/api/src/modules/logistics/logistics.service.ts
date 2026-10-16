@@ -201,7 +201,7 @@ export class LogisticsService {
       const item = orderItems.get(itemId);
       if (!item || item.warehouseId !== input.warehouseId) throw new BadRequestException("Shipment item does not belong to this order and warehouse");
       const alreadyPlanned = order.shipments
-        .filter(({ status }) => !["CANCELLED", "RETURNED"].includes(status))
+        .filter(({ status, resupplyDiscrepancyId }) => !resupplyDiscrepancyId && !["CANCELLED", "RETURNED"].includes(status))
         .flatMap(({ items }) => items)
         .filter(({ supplierOrderItemId }) => supplierOrderItemId === itemId)
         .reduce((sum, line) => sum.plus(line.quantity), new Prisma.Decimal(0));
@@ -217,7 +217,7 @@ export class LogisticsService {
       await assertShipmentLotsUsable(tx, current.supplierOrganizationId, current.items.filter(item => requested.has(item.id)));
       for (const [itemId, quantity] of requested) {
         const item = current.items.find(item => item.id === itemId);
-        const planned = current.shipments.filter(shipment => !["CANCELLED", "RETURNED"].includes(shipment.status)).flatMap(shipment => shipment.items).filter(line => line.supplierOrderItemId === itemId).reduce((sum, line) => sum.plus(line.quantity), new Prisma.Decimal(0));
+        const planned = current.shipments.filter(shipment => !shipment.resupplyDiscrepancyId && !["CANCELLED", "RETURNED"].includes(shipment.status)).flatMap(shipment => shipment.items).filter(line => line.supplierOrderItemId === itemId).reduce((sum, line) => sum.plus(line.quantity), new Prisma.Decimal(0));
         if (!item || planned.plus(quantity).gt(item.acceptedQuantity)) throw new ConflictException("Shipment quantity exceeds accepted quantity");
       }
       const shipment = await tx.shipment.create({
@@ -270,6 +270,9 @@ export class LogisticsService {
     return this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "SupplierOrder" WHERE id = ${shipment.supplierOrderId}::uuid FOR UPDATE`;
       const currentOrder = await tx.supplierOrder.findUniqueOrThrow({ where: { id: shipment.supplierOrderId } });
+      const currentShipment = await tx.shipment.findUniqueOrThrow({ where: { id: shipmentId }, include: { items: true } });
+      if (currentShipment.items.some(item => item.resupplyQuantity.gt(0))) throw new ConflictException("Исходная отгрузка сохранена с недостачей; используйте связанную допоставку.");
+      if (currentShipment.resupplyDiscrepancyId && input.status !== "IN_TRANSIT") throw new ConflictException("Для допоставки доступна передача в пути; получение подтверждает клиника.");
       if (currentOrder.paymentStatus !== "PAID" || ["CANCELLED", "REJECTED", "DELIVERED", "RETURN_DISPUTE"].includes(currentOrder.status)) throw new ConflictException("Order can no longer be shipped");
       if (["PLANNED", "PACKING", "READY", "DISPATCHED"].includes(input.status)) {
         const items = await tx.supplierOrderItem.findMany({ where: { supplierOrderId: shipment.supplierOrderId,
@@ -316,6 +319,7 @@ export class LogisticsService {
     return this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "SupplierOrder" WHERE id = ${step.shipment.supplierOrderId}::uuid FOR UPDATE`;
       const current = await tx.fulfillmentStep.findUniqueOrThrow({ where: { id: stepId }, include: { shipment: { include: { items: true, supplierOrder: true, fulfillmentSteps: true } } } });
+      if (current.shipment.items.some(item => item.resupplyQuantity.gt(0))) throw new ConflictException("Этап исходной отгрузки закрыт с недостачей; используйте допоставку.");
       if (current.status !== step.status || !canTransitionFulfillment(current.status, input.status)) throw new ConflictException("Fulfillment step changed; refresh the order");
       if (current.shipment.supplierOrder.paymentStatus !== "PAID" || ["CANCELLED", "REJECTED", "RETURN_DISPUTE"].includes(current.shipment.supplierOrder.status) || ["CANCELLED", "RETURNED"].includes(current.shipment.status)) throw new ConflictException("Fulfillment is no longer available");
       if (["DELIVERY", "PICKUP"].includes(current.type) && input.status === "COMPLETED") throw new ConflictException("Получение товара подтверждает клиника");

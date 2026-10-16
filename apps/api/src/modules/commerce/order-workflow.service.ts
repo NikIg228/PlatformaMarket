@@ -227,6 +227,7 @@ export class OrderWorkflowService {
     if (order.paymentStatus !== "PAID" || ["CANCELLED", "REJECTED", "RETURN_DISPUTE"].includes(order.status)) throw new ConflictException("Получение сейчас недоступно");
     const shipment = await tx.shipment.findFirst({ where: { id: input.shipmentId, supplierOrderId: order.id }, include: { items: true, fulfillmentSteps: true } });
     if (!shipment || !["DISPATCHED", "IN_TRANSIT", "PARTIALLY_DELIVERED"].includes(shipment.status)) throw new ConflictException("Подтвердить можно только отправленную поставку");
+    if (shipment.items.some(item => item.resupplyQuantity?.gt(0))) throw new ConflictException("Недостача передана в допоставку. Подтвердите получение в новой отгрузке; исходная приёмка сохранена.");
     if (new Set(input.items.map(item => item.shipmentItemId)).size !== input.items.length) throw new ConflictException("Позиции получения не должны повторяться");
     for (const received of input.items) {
       const item = shipment.items.find(item => item.id === received.shipmentItemId);

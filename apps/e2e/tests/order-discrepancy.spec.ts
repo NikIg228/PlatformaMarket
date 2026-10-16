@@ -29,13 +29,17 @@ async function fixture(page: Page, buyer: boolean, state = stateFixture()) {
     let row: OrderDiscrepancyView;
     if (command.action === "CREATE") {
       row = { id: id(180 + state.rows.length), shipmentId, version: 1, status: "DRAFT", previousDiscrepancyId: command.previousDiscrepancyId,
-        statement: command.statement, source, resolution: null, createdAt: date, updatedAt: date, attachments: [], events: [] }; state.rows.push(row);
+        statement: command.statement, source, resolution: null, resupply: null, createdAt: date, updatedAt: date, attachments: [], events: [] }; state.rows.push(row);
     } else {
       row = state.rows.find(r => r.id === command.discrepancyId)!; row.version++;
       if (command.action === "SAVE") row.statement = command.statement;
       if (command.action === "SUBMIT") row.status = "SUBMITTED";
       if (command.action === "RESPOND") { row.status = command.decision === "AGREE" ? "AGREED" : command.decision === "REJECT" ? "REJECTED" : "RESOLUTION_PROPOSED"; row.resolution = command.resolution; }
       if (command.action === "DECIDE") row.status = command.accepted ? "AGREED" : "REJECTED";
+      if (command.action === "DISPATCH_RESUPPLY" && row.resupply) {
+        row.resupply.canDispatch = false; row.resupply.shipment = { id: id(260), number: "RESUPPLY-2", status: "DISPATCHED", dispatchedAt: date,
+          deliveredAt: null, carrierName: command.carrierName, trackingNumber: command.trackingNumber };
+      }
     }
     row.events.push({ id: id(200 + state.requests.length), version: row.version, action: command.action, actorId: id(91), organizationId, createdAt: date, details: command });
     return route.fulfill({ status: 201, json: { orderId, discrepancyId: row.id, version: row.version, status: row.status, eventId: row.events.at(-1)!.id } });
@@ -105,4 +109,60 @@ test("write denial preserves input and server capabilities disable controls", as
   await expect(dialog(page).getByText("Недостаточно прав для действия", { exact: true })).toBeVisible();
   await page.keyboard.press("Escape"); state.allowed = false; await page.getByRole("button", { name: "Обновить список расхождений" }).click();
   await expect(page.getByRole("button", { name: "Сообщить о расхождении · PART-1", exact: true })).toBeDisabled();
+});
+
+for (const width of [1440, 390]) test(`agreed resupply dispatch recovery and buyer receipt ${width}`, async ({ page }, info) => {
+  const state = stateFixture();
+  const claim: OrderDiscrepancyView = { id: id(180), shipmentId, version: 3, status: "AGREED", previousDiscrepancyId: null,
+    statement: { kind: "SHORTAGE", reason: "Получено восемь из десяти", requestedResolution: "RESUPPLY", attachmentIds: [], lines: [{ shipmentItemId: itemId, actualQuantity: "8", damagedQuantity: "0" }] },
+    source: { ...source, lines: lines.map(line => ({ ...line, recordedReceivedQuantity: "8" })) }, resolution: "RESUPPLY", createdAt: date, updatedAt: date, attachments: [], events: [],
+    resupply: { canDispatch: true, issues: [], documentStatus: "INCOMPLETE", warehouseName: "Основной склад", recipientName: "Тестовая клиника", method: "CARRIER", shipment: null,
+      lines: [{ shipmentItemId: itemId, orderItemId: invoice.lines[0].id, name: invoice.lines[0].name, uom: "шт.", originalReceivedQuantity: "8", quantity: "2", deliveredQuantity: "0" }] } };
+  state.rows.push(claim); let received = false;
+  const workflow = async (buyer: boolean) => page.route(`**/api/supplier-orders/${orderId}/workflow`, route => {
+    const extra = claim.resupply!.shipment;
+    if (route.request().method() === "POST") {
+      const input = route.request().postDataJSON(); expect(input.action).toBe("RECEIVE_SHIPMENT"); expect(input.shipmentId).toBe(id(260));
+      expect(input.items).toEqual([{ shipmentItemId: id(261), deliveredQuantity: "2" }]); received = true;
+      extra!.status = "DELIVERED"; extra!.deliveredAt = date; claim.resupply!.lines[0].deliveredQuantity = "2";
+      return route.fulfill({ status: 201, json: { orderId, version: 2, status: "DELIVERED", paymentStatus: "PAID", eventId: id(262) } });
+    }
+    const status = received ? "DELIVERED" : "PARTIALLY_FULFILLED";
+    return route.fulfill({ json: { orderId, version: received ? 2 : 1, status, paymentStatus: "PAID", invoiceDocumentId: null, claims: [], reductions: [], returns: [],
+      events: received ? [{ id: id(262), action: "RECEIVE_SHIPMENT", actorId: id(91), organizationId, createdAt: date, details: { shipmentId: id(260) } }] : [],
+      order: { id: orderId, orderNumber: "DISCREPANCY-TEST", version: 1, supplierOrganizationId: buyer ? id(104) : organizationId, buyerOrganizationId: buyer ? organizationId : id(104), status, paymentStatus: "PAID", currency: "KZT", subtotalAmountMinor: "58000", createdAt: date,
+        shipments: [{ id: shipmentId, shipmentNumber: "PART-1", version: 1, status: "PARTIALLY_DELIVERED", method: "CARRIER", items: [{ id: itemId, supplierOrderItemId: invoice.lines[0].id, quantity: "10", deliveredQuantity: "8", resupplyQuantity: extra ? "2" : "0" }] },
+          ...(extra ? [{ id: extra.id, shipmentNumber: extra.number, version: 1, status: extra.status, method: "CARRIER", resupplyDiscrepancyId: claim.id, resupplySourceShipmentId: shipmentId,
+            carrierName: extra.carrierName, trackingNumber: extra.trackingNumber, items: [{ id: id(261), supplierOrderItemId: invoice.lines[0].id, quantity: "2", deliveredQuantity: received ? "2" : "0", resupplyQuantity: "0" }] }] : [])],
+        items: [{ ...invoice.lines[0], quantity: "10", acceptedQuantity: "10", unitPriceMinor: "5800", totalPriceMinor: "58000", currency: "KZT", offerSnapshot: { pricing: { tax: invoice.lines[0].tax } }, offer: { productVariant: { product: { canonicalName: invoice.lines[0].name } } } }] } } });
+  });
+  await fixture(page, false, state); await workflow(false);
+  await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 }); await visit(page, false);
+  await page.getByRole("button", { name: /Открыть заявление/ }).click();
+  const send = dialog(page).getByRole("button", { name: "Подтвердить отправку допоставки", exact: true });
+  await send.click(); await expect(dialog(page).getByText("Укажите новый трек-номер", { exact: true })).toBeVisible();
+  await dialog(page).getByRole("textbox", { name: "Перевозчик допоставки", exact: true }).fill("Новый перевозчик");
+  await dialog(page).getByRole("textbox", { name: "Трек-номер допоставки", exact: true }).fill("RESUPPLY-TRACK");
+  await dialog(page).getByRole("checkbox", { name: /Недостающий товар отправлен/ }).check();
+  await send.scrollIntoViewIfNeeded();
+  expect(await send.evaluate(element => { const s = getComputedStyle(element); return { height: s.height, radius: s.borderRadius, font: s.fontFamily }; })).toMatchObject({ height: "44px", radius: "8px", font: expect.stringContaining("Manrope") });
+  await page.screenshot({ path: info.outputPath(`resupply-confirm-${width}.png`), animations: "disabled" });
+  state.failure = 503; await send.focus(); await page.keyboard.press("Enter");
+  await expect(dialog(page).getByRole("textbox", { name: "Трек-номер допоставки", exact: true })).toHaveValue("RESUPPLY-TRACK");
+  state.failure = 0; await dialog(page).getByRole("button", { name: "Повторить действие", exact: true }).click();
+  await expect(dialog(page)).toContainText("Допоставка RESUPPLY-2"); expect(state.requests[0]).toEqual(state.requests[1]);
+  await expect(dialog(page).getByText("Документы не закрыты", { exact: true })).toBeVisible();
+  await fixture(page, true, state); await workflow(true); await visit(page);
+  await expect(page.locator(`#shipment-${shipmentId}`)).toContainText("принято 8, в допоставке 2");
+  await expect(page.locator(`#shipment-${shipmentId}`).getByRole("button", { name: "Подтвердить фактическое получение" })).toHaveCount(0);
+  await page.getByRole("button", { name: /Открыть заявление/ }).click();
+  await dialog(page).getByRole("button", { name: "Перейти к допоставке", exact: true }).click();
+  const replacement = page.locator(`#shipment-${id(260)}`);
+  await expect(replacement).toBeFocused();
+  await replacement.getByRole("textbox").fill("2"); await replacement.getByRole("button", { name: "Подтвердить фактическое получение", exact: true }).click();
+  await expect(replacement).toContainText("Получено по допоставке: 2");
+  await page.getByRole("button", { name: /Открыть заявление/ }).click();
+  await expect(dialog(page)).toContainText("Допоставка получена — документы не закрыты");
+  await expect(dialog(page)).toContainText("клиника подтвердила фактическое получение");
+  await noOverflow(page); await page.screenshot({ path: info.outputPath(`resupply-received-${width}.png`), animations: "disabled" });
 });

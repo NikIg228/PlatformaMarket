@@ -29,6 +29,8 @@ export const orderDiscrepancyCommandSchema = z.discriminatedUnion("action", [
   existing.extend({ action: z.literal("RESPOND"), decision: z.enum(["AGREE", "REJECT", "COUNTER"]),
     resolution: discrepancyResolutionSchema, reason: z.string().trim().min(3).max(3000) }).strict(),
   existing.extend({ action: z.literal("DECIDE"), accepted: z.boolean(), reason: z.string().trim().min(3).max(3000) }).strict(),
+  existing.extend({ action: z.literal("DISPATCH_RESUPPLY"), acknowledged: z.literal(true),
+    carrierName: z.string().trim().min(1).max(200).nullable(), trackingNumber: z.string().trim().min(1).max(160).nullable() }).strict(),
 ]);
 export const orderDiscrepancyResultSchema = z.object({ orderId: z.uuid(), discrepancyId: z.uuid(), version: z.number().int().positive(),
   status: z.enum(["DRAFT", "SUBMITTED", "RESOLUTION_PROPOSED", "REJECTED", "AGREED"]), eventId: z.uuid() }).strict();
@@ -38,11 +40,20 @@ export const discrepancySourceSchema = z.object({ orderVersion: z.number().int()
   shipmentNumber: z.string(), documentId: z.uuid().nullable(), documentVersion: z.number().int().positive().nullable(), documentChecksum: z.string().nullable(),
   documentSnapshot: z.unknown(), lines: z.array(sourceLine), sourceReceiptEventId: z.uuid().nullable() }).strict();
 const attachment = z.object({ id: z.uuid(), name: z.string(), mimeType: z.string(), sizeBytes: z.number().int().positive() }).strict();
+export const discrepancyResupplySchema = z.object({
+  canDispatch: z.boolean(), issues: z.array(z.string()), documentStatus: z.literal("INCOMPLETE"),
+  warehouseName: z.string(), recipientName: z.string(), method: z.string(),
+  lines: z.array(z.object({ shipmentItemId: z.uuid(), orderItemId: z.uuid(), name: z.string(), uom: z.string(),
+    originalReceivedQuantity: quantity, quantity, deliveredQuantity: quantity }).strict()),
+  shipment: z.object({ id: z.uuid(), number: z.string(), status: z.string(), dispatchedAt: z.string().nullable(),
+    deliveredAt: z.string().nullable(), carrierName: z.string().nullable(), trackingNumber: z.string().nullable() }).strict().nullable(),
+}).strict();
 export const orderDiscrepancyViewSchema = z.object({
   id: z.uuid(), shipmentId: z.uuid(), version: z.number().int().positive(), status: orderDiscrepancyResultSchema.shape.status,
   previousDiscrepancyId: z.uuid().nullable(), statement: discrepancyStatementSchema, source: discrepancySourceSchema,
   resolution: discrepancyResolutionSchema.nullable(), createdAt: z.string(), updatedAt: z.string(),
   attachments: z.array(attachment),
+  resupply: discrepancyResupplySchema.nullable(),
   events: z.array(z.object({ id: z.uuid(), version: z.number().int().positive(), action: z.string(), actorId: z.uuid(),
     organizationId: z.uuid(), createdAt: z.string(), details: z.unknown() }).strict()),
 }).strict();
@@ -61,3 +72,4 @@ export type OrderDiscrepancyCommand = z.infer<typeof orderDiscrepancyCommandSche
 export type OrderDiscrepancyResult = z.infer<typeof orderDiscrepancyResultSchema>;
 export type OrderDiscrepanciesResponse = z.infer<typeof orderDiscrepanciesResponseSchema>;
 export type OrderDiscrepancyView = z.infer<typeof orderDiscrepancyViewSchema>;
+export type DiscrepancyResupply = z.infer<typeof discrepancyResupplySchema>;

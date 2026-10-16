@@ -586,6 +586,7 @@ export class DocumentsService {
     if (order.paymentStatus !== "PAID") throw new ConflictException("Order documents require confirmed payment");
     const shipment = order.shipments[0];
     if (!shipment) throw new BadRequestException("Shipment does not belong to this supplier order");
+    if (shipment.resupplyDiscrepancyId) throw new ConflictException("Допоставка исполняет исходный заказ без нового счёта. Документальное урегулирование расхождения ещё не завершено.");
     if (await this.prisma.document.findFirst({ where: { shipmentId: shipment.id, kind: "WAYBILL", externalId: { startsWith: WAYBILL_PREVIEW } } })) {
       throw new ConflictException("Для партии подготовлен предпросмотр накладной. Подписание и выпуск будут доступны после подключения ЭЦП");
     }

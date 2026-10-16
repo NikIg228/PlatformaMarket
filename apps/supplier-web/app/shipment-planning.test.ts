@@ -7,6 +7,11 @@ const order = (a: number, b: number, status = "PLANNED") => ({ items: [
 ], shipments: [{ status, items: [{ supplierOrderItemId: "a", quantity: String(a) }, { supplierOrderItemId: "b", quantity: String(b) }] }] }) as ShipmentOrder;
 
 describe("shipment warehouse planning", () => {
+  it("keeps replacement goods outside the sale allocation cap", () => {
+    const input = order(2, 1);
+    input.shipments!.push({ status: "DISPATCHED", resupplyDiscrepancyId: "claim", items: [{ supplierOrderItemId: "a", quantity: "2" }] } as never);
+    expect(shipmentPlanning(input, "A").remainingItems[0].quantity).toBe(3);
+  });
   it("selects the next warehouse after the first is completely planned", () => {
     const result = shipmentPlanning(order(5, 0), "A");
     expect(result.warehouseId).toBe("B");

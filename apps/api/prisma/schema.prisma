@@ -2317,6 +2317,7 @@ model InventoryReservation {
   productVariant         ProductVariant             @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
   supplierOrderItem      SupplierOrderItem?         @relation(fields: [supplierOrderItemId], references: [id], onDelete: SetNull)
   externalReservation    ExternalReservation?
+  resupplyShipmentItem   ShipmentItem? @relation("ResupplyInventory")
   createdAt              DateTime                   @default(now())
   updatedAt              DateTime                   @updatedAt
 
@@ -2511,6 +2512,7 @@ model OrderDiscrepancy {
   previous              OrderDiscrepancy? @relation("DiscrepancyRevision", fields: [previousDiscrepancyId], references: [id], onDelete: Restrict)
   revisions             OrderDiscrepancy[] @relation("DiscrepancyRevision")
   events                OrderDiscrepancyEvent[]
+  resupplyShipment      Shipment? @relation("DiscrepancyResupply")
   @@index([supplierOrderId, createdAt])
   @@index([shipmentId, status])
 }
@@ -3051,6 +3053,11 @@ model Shipment {
   deliveredAt         DateTime?
   failureReason       String?
   version             Int               @default(1)
+  resupplyDiscrepancyId String?           @unique @db.Uuid
+  resupplySourceShipmentId String?        @unique @db.Uuid
+  resupplyDiscrepancy  OrderDiscrepancy?  @relation("DiscrepancyResupply", fields: [resupplyDiscrepancyId], references: [id], onDelete: Restrict)
+  resupplySource      Shipment?          @relation("ShipmentResupply", fields: [resupplySourceShipmentId], references: [id], onDelete: Restrict)
+  resupplyShipment    Shipment?          @relation("ShipmentResupply")
   supplierOrder       SupplierOrder     @relation(fields: [supplierOrderId], references: [id], onDelete: Restrict)
   warehouse           Warehouse         @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
   items               ShipmentItem[]
@@ -3071,6 +3078,9 @@ model ShipmentItem {
   supplierOrderItemId String            @db.Uuid
   quantity            Decimal           @db.Decimal(18, 6)
   deliveredQuantity   Decimal           @default(0) @db.Decimal(18, 6)
+  resupplyQuantity    Decimal           @default(0) @db.Decimal(18, 6)
+  resupplyReservationId String?         @unique @db.Uuid
+  resupplyReservation InventoryReservation? @relation("ResupplyInventory", fields: [resupplyReservationId], references: [id], onDelete: Restrict)
   shipment            Shipment          @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
   supplierOrderItem   SupplierOrderItem @relation(fields: [supplierOrderItemId], references: [id], onDelete: Restrict)
   createdAt           DateTime          @default(now())

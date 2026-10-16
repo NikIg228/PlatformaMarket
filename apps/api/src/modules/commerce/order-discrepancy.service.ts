@@ -9,8 +9,12 @@ import { ObjectStorageService } from "../../platform/storage/object-storage.serv
 import { AccessControlService } from "../access-control/access-control.service";
 import type { SupplierActorContext } from "../suppliers/supplier-access.service";
 import { discrepancyEligibleStatuses, discrepancyTransition, validateDiscrepancyStatement } from "./order-discrepancy.rules";
+import { resupplyInclude, resupplyView } from "./order-resupply.rules";
+import { dispatchResupply } from "./order-resupply";
 
-const shipmentInclude = { items: { orderBy: { id: "asc" as const }, include: { supplierOrderItem: { include: { offer: { include: { packaging: true } }, productVariant: { include: { product: true, saleUnit: true } } } } } } } satisfies Prisma.ShipmentInclude;
+const shipmentInclude = { ...resupplyInclude, items: { orderBy: { id: "asc" as const }, include: { supplierOrderItem: { include: {
+  reservation: { include: { externalReservation: true } }, offer: { include: { packaging: true } }, productVariant: { include: { product: true, saleUnit: true } },
+} } } } } satisfies Prisma.ShipmentInclude;
 type Shipment = Prisma.ShipmentGetPayload<{ include: typeof shipmentInclude }>;
 const json = (value: unknown) => value as Prisma.InputJsonValue;
 const conflict = (message: string) => new ConflictException({ code: "ORDER_DISCREPANCY_CONFLICT", message });
@@ -58,6 +62,7 @@ export class OrderDiscrepancyService {
         return { id: claim.id, shipmentId: claim.shipmentId, version: claim.version, status: claim.status,
           previousDiscrepancyId: claim.previousDiscrepancyId, statement, source: claim.source, resolution: claim.resolution,
           createdAt: claim.createdAt.toISOString(), updatedAt: claim.updatedAt.toISOString(), attachments: assets.map(attachmentView),
+          resupply: resupplyView(order, claim, shipments.find(shipment => shipment.id === claim.shipmentId)!),
           events: claim.events.filter(event => party === "BUYER" || !["CREATE", "SAVE"].includes(event.action)).map(event => ({
             id: event.id, version: event.version, action: event.action, actorId: event.actorId, organizationId: event.organizationId,
             createdAt: event.createdAt.toISOString(), details: event.details })) };
@@ -78,7 +83,7 @@ export class OrderDiscrepancyService {
 
   async execute(orderId: string, input: OrderDiscrepancyCommand, context: SupplierActorContext): Promise<OrderDiscrepancyResult> {
     const { party } = await this.visible(orderId, context, true);
-    if ((input.action === "RESPOND") !== (party === "SUPPLIER")) throw new ForbiddenException("Действие недоступно этой стороне заказа");
+    if (["RESPOND", "DISPATCH_RESUPPLY"].includes(input.action) !== (party === "SUPPLIER")) throw new ForbiddenException("Действие недоступно этой стороне заказа");
     const requestHash = createHash("sha256").update(JSON.stringify(input)).digest("hex");
     return this.prisma.$transaction(async tx => {
       await tx.$queryRaw`SELECT id FROM "SupplierOrder" WHERE id = ${orderId}::uuid FOR UPDATE`;
@@ -121,12 +126,13 @@ export class OrderDiscrepancyService {
         if (source.documentId && !await tx.document.findFirst({ where: { ...this.documents(orderId, shipment.id, order.buyerOrganizationId), id: source.documentId, version: source.documentVersion!, checksumSha256: source.documentChecksum } }))
           throw conflict("Исходная накладная изменилась. Создайте новый черновик");
       }
-      const transition = input.action === "CREATE" ? { status: "DRAFT" as const } : discrepancyTransition(current!.status, statement, input);
+      const resupply = input.action === "DISPATCH_RESUPPLY" ? await dispatchResupply(tx, order, current!, shipment, input, context) : null;
+      const transition = input.action === "CREATE" ? { status: "DRAFT" as const } : resupply ? { status: "AGREED" as const } : discrepancyTransition(current!.status, statement, input);
       const claim = input.action === "CREATE" ? await tx.orderDiscrepancy.create({ data: { supplierOrderId: orderId, shipmentId: shipment.id,
         previousDiscrepancyId: input.previousDiscrepancyId, statement: json(statement), source: json(source) } })
         : await tx.orderDiscrepancy.update({ where: { id: current!.id }, data: { statement: json(statement), ...transition, version: { increment: 1 } } });
       const result: OrderDiscrepancyResult = { orderId, discrepancyId: claim.id, version: claim.version, status: transition.status, eventId: randomUUID() };
-      const details = input.action === "SUBMIT" ? { statement, source } : input.action === "RESPOND" ? { decision: input.decision, reason: input.reason, resolution: input.resolution } : input.action === "DECIDE" ? { accepted: input.accepted, reason: input.reason } : { statement };
+      const details = resupply ?? (input.action === "SUBMIT" ? { statement, source } : input.action === "RESPOND" ? { decision: input.decision, reason: input.reason, resolution: input.resolution } : input.action === "DECIDE" ? { accepted: input.accepted, reason: input.reason } : { statement });
       await tx.orderDiscrepancyEvent.create({ data: { id: result.eventId, supplierOrderId: orderId, discrepancyId: claim.id, ...context,
         version: claim.version, action: input.action, idempotencyKey: input.idempotencyKey, requestHash, details: json(details), result: json(result) } });
       await tx.auditLog.create({ data: { ...context, action: `order.discrepancy.${input.action.toLowerCase()}`, entityType: "OrderDiscrepancy", entityId: claim.id, after: json(result) } });

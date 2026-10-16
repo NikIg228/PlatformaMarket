@@ -405,5 +405,8 @@ silent refresh/filter/paging, delayed selection/drafts) PASS7; Admin navigation 
 На desktop screenshot очереди видны растянутые кнопки строки; CSS очереди этим
 пакетом не менялся, отдельный visual defect не закрыт текущей приёмкой object card.
 
-Публикация и CI текущего пакета пока PENDING. R7.7.3.2 и полная .3.3 не реализованы;
+Пакет опубликован в `3aa1c0bcd4bfecb6da77cd9f650450866e793d03`:
+[CI38801740584](https://github.com/NikIg228/PlatformaMarket/actions/runs/38801740584)
+и [Security38801739921](https://github.com/NikIg228/PlatformaMarket/actions/runs/38801739921) SUCCESS.
+R7.7.3.2 и полная .3.3 не реализованы;
 read-only реестр не означает приёмку всего Admin.

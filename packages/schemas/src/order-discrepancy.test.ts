@@ -15,4 +15,11 @@ describe("order discrepancy wire contract", () => {
     for (const invalid of [{ ...command, expectedExceptionVersion: undefined }, { ...command, actorId: id }, { ...command, action: "RESOLVED" }])
       expect(orderDiscrepancyCommandSchema.safeParse(invalid).success).toBe(false);
   });
+  it("requires explicit dispatch acknowledgement and never accepts client quantities or price", () => {
+    const command = { action: "DISPATCH_RESUPPLY", discrepancyId: id, expectedOrderVersion: 4, expectedShipmentVersion: 2,
+      expectedExceptionVersion: 3, idempotencyKey: "resupply-dispatch", acknowledged: true, carrierName: "Перевозчик", trackingNumber: "R-2" };
+    expect(orderDiscrepancyCommandSchema.safeParse(command).success).toBe(true);
+    for (const extra of [{ acknowledged: false }, { quantity: "2" }, { amountMinor: "100" }, { shipmentId: id }, { expectedExceptionVersion: 0 }])
+      expect(orderDiscrepancyCommandSchema.safeParse({ ...command, ...extra }).success).toBe(false);
+  });
 });

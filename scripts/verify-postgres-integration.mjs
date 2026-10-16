@@ -600,7 +600,8 @@ try {
   const requisitesOnly = process.argv.includes("--requisites-only");
   const waybillOnly = process.argv.includes("--waybill-only");
   const discrepanciesOnly = process.argv.includes("--discrepancy-only");
-  const invoiceOnly = process.argv.includes("--invoice-only") || waybillOnly || discrepanciesOnly;
+  const resupplyOnly = process.argv.includes("--resupply-only");
+  const invoiceOnly = process.argv.includes("--invoice-only") || waybillOnly || discrepanciesOnly || resupplyOnly;
   const vatOnly = process.argv.includes("--vat-only");
   if (!commercialOnly && !requisitesOnly && !vatOnly && !invoiceOnly) {
     await verifyManualPaymentUpgrade(prisma, assert);
@@ -629,8 +630,8 @@ try {
   await waitUntilReady();
 
   if (invoiceOnly) {
-    await verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer], storageRoot, waybills: !invoiceOnly || waybillOnly, discrepancies: discrepanciesOnly });
-    console.log(discrepanciesOnly ? "Focused PostgreSQL discrepancy verification PASS" : "Focused PostgreSQL invoice verification PASS");
+    await verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer], storageRoot, waybills: !invoiceOnly || waybillOnly, discrepancies: discrepanciesOnly, resupply: resupplyOnly });
+    console.log(resupplyOnly ? "Focused PostgreSQL resupply verification PASS" : discrepanciesOnly ? "Focused PostgreSQL discrepancy verification PASS" : "Focused PostgreSQL invoice verification PASS");
   } else if (vatOnly) {
     await verifySupplierVat({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer] });
     console.log("Focused PostgreSQL VAT verification PASS");
@@ -920,6 +921,8 @@ try {
     );
 
   await verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer], storageRoot, waybills: !invoiceOnly || waybillOnly, discrepancies: discrepanciesOnly });
+  await verifyOrderInvoices({ prisma, createBuyer: index => createBuyer(index + 4), createCartWithItem, request, runId: `${runId}-resupply`, assert,
+    supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer], storageRoot, resupply: true });
   await verifySupplierVat({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer] });
   console.log(
     JSON.stringify(

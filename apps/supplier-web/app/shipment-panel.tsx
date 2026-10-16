@@ -22,6 +22,8 @@ import styles from "./shipment-panel.module.css";
 export type ShipmentRecord = {
   id: string;
   shipmentNumber: string;
+  resupplyDiscrepancyId?: string | null;
+  resupplySourceShipmentId?: string | null;
   status: string;
   version: number;
   method: string;
@@ -34,6 +36,7 @@ export type ShipmentRecord = {
     supplierOrderItemId: string;
     quantity: string;
     deliveredQuantity: string;
+    resupplyQuantity?: string;
   }>;
 };
 
@@ -161,15 +164,18 @@ export function ShipmentPanel({
       {shipments.length ? (
         <div className={styles.list}>
           {shipments.map((shipment) => {
-            const action = nextStatus[shipment.status];
+            const action = shipment.items.some(item => Number(item.resupplyQuantity ?? 0) > 0) ? undefined : nextStatus[shipment.status];
             const needsTracking = action?.status === "DISPATCHED" && shipment.method === "CARRIER";
             return (
-              <article className={styles.shipment} key={shipment.id}>
+              <article className={styles.shipment} key={shipment.id} id={`shipment-${shipment.id}`} tabIndex={-1}>
                 <div className={styles.shipmentMain}>
                   <div><strong>{shipment.shipmentNumber}</strong><p>{shipment.warehouse?.name ?? "Склад"} · обновлено {formatDate(shipment.updatedAt, true)}</p></div>
                   <StatusTag tone={tone(shipment.status)}>{formatStatus(shipment.status)}</StatusTag>
                 </div>
                 <p>{shipment.carrierName || "Перевозчик не указан"}{shipment.trackingNumber ? ` · трек ${shipment.trackingNumber}` : ""}</p>
+                {shipment.resupplyDiscrepancyId ? <p>Допоставка по расхождению, без нового счёта. Исходная партия: {shipments.find(row => row.id === shipment.resupplySourceShipmentId)?.shipmentNumber ?? "связана с заявлением"}. Документы не закрыты.</p> : null}
+                {shipment.items.some(item => Number(item.resupplyQuantity ?? 0) > 0) ? <p>Исходная приёмка сохранена с недостачей. Недостающий товар передан в допоставку.</p> : null}
+                {shipment.resupplyDiscrepancyId ? shipment.items.map(item => <p key={item.id}>Допоставка: {item.quantity}, принято клиникой: {item.deliveredQuantity}.</p>) : null}
                 {needsTracking ? (
                   <Field label={`Трек-номер: ${shipment.shipmentNumber}`}>
                     <Input value={trackingByShipment[shipment.id] ?? shipment.trackingNumber ?? ""} onChange={(_, data) => setTrackingByShipment((value) => ({ ...value, [shipment.id]: data.value }))} />
@@ -180,7 +186,7 @@ export function ShipmentPanel({
                     {busy === `transition:${shipment.id}` ? "Сохраняем…" : action.label}
                   </Button>
                 ) : null}
-                <PermissionFields required={["document.issue"]}><ShipmentWaybillPanel key={shipment.id} api={api} orderId={order.id} shipmentId={shipment.id} shipmentVersion={shipment.version} busy={busy !== null} /></PermissionFields>
+                {!shipment.resupplyDiscrepancyId ? <PermissionFields required={["document.issue"]}><ShipmentWaybillPanel key={shipment.id} api={api} orderId={order.id} shipmentId={shipment.id} shipmentVersion={shipment.version} busy={busy !== null} /></PermissionFields> : null}
               </article>
             );
           })}
