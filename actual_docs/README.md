@@ -13,6 +13,7 @@
 | Что за проект, для кого, какие правила и интеграции | [PROJECT_OVERVIEW](PROJECT_OVERVIEW.md) |
 | Как устроено отдельное звено продукта и какие решения по нему открыты | [Документы направлений](domains/README.md): доставка, оплата, комиссия, каталог и другие области |
 | Где находимся и что осталось до production | [Main Roadmap to Production](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md) |
+| Какие бизнес-вопросы решаем сами, а какие — с партнёрами | [68 вопросов по бизнес-логике](governance/BUSINESS-LOGIC-QUESTIONS-2026-10-16.md); материал для обсуждения, не второй backlog |
 | Полный документальный процесс и его приёмка | [Workflow документооборота](domains/MARKET_DOCUMENT_WORKFLOW.md), исполнение R7.6 |
 | Переработка всех разделов Admin, API и операторских прав | [Admin roadmap](applications/admin-roadmap.md), исполнение R7.7 |
 | Как выполнять задачу и выбирать проверки | [AGENTS](../AGENTS.md), [Workflow](governance/DEVELOPMENT_WORKFLOW.md) |

@@ -55,6 +55,7 @@
 | [architecture/adr/017-temporary-local-full-access.md](architecture/adr/017-temporary-local-full-access.md) | REFERENCE | Принятое решение; реализация проверяется отдельно |
 | [architecture/er.mmd](architecture/er.mmd) | REFERENCE | Профильная справка |
 | [governance/DEVELOPMENT_WORKFLOW.md](governance/DEVELOPMENT_WORKFLOW.md) | CURRENT | Рабочий источник по назначению |
+| [governance/BUSINESS-LOGIC-QUESTIONS-2026-10-16.md](governance/BUSINESS-LOGIC-QUESTIONS-2026-10-16.md) | REFERENCE | 68 вопросов: решения владельца с Codex и решения с партнёрами; не реестр исполнения |
 | [governance/PROJECT_ACCEPTANCE_MATRIX.md](governance/PROJECT_ACCEPTANCE_MATRIX.md) | CURRENT | Рабочий источник по назначению |
 | [governance/SESSION_ROLLOVER.md](governance/SESSION_ROLLOVER.md) | EXECUTION | Читать только для выбранного scope/владения |
 | [governance/task-state/DOCS-REFRESH-2026-10-06.md](governance/task-state/DOCS-REFRESH-2026-10-06.md) | EXECUTION | Читать только для выбранного scope/владения |
