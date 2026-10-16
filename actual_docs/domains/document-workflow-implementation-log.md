@@ -87,6 +87,16 @@ PASS. Source schema3/client2/supplier-planning7 и Prisma validate PASS пере
 НУЦ/deploy и полный release/E2E не выполнялись: вне выбранного операционного пакета.
 История неудачных попыток выше сохранена; они не объявлены успешными задним числом.
 
+Пакет опубликован в `a75a3e8`. В [CI38864735535](https://github.com/NikIg228/PlatformaMarket/actions/runs/38864735535)
+сам довоз PASS, но следующий VAT/cart сценарий обнаружил оставленный BLOCKED lot
+общей fixture. Исправлена тестовая изоляция: исходные статусы базовых lots и поля
+balance восстанавливаются после проверки; добавлены assertions восстановления.
+Из-за доказанного влияния на соседние сценарии выполнен весь PostgreSQL runner:
+`npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs` — PASS,
+exit0, `.tmp/resupply-flow/postgres-composition-2.log`. Runtime не менялся; прежние
+UI/build/type evidence применимы. Scoped fixture lint/diff hygiene PASS.
+CI первого коммита остаётся FAIL; итог исправленного коммита проверяется отдельно.
+
 Отдельное разрешение владельца16.10: применены к локальной `marketplace` миграции
 20261015090000_order_invoice_preparation, 20261015170000_order_discrepancies,
 20261016010000_order_resupply. `npm run dev` запущен из canonical root в go_live;

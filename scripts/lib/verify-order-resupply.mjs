@@ -21,13 +21,16 @@ export async function verifyOrderResupply({ prisma, call, request, assert, ident
 
   const endpoint = `/supplier-orders/${order.id}/discrepancies`, workflow = `/supplier-orders/${order.id}/workflow`;
   const trigger = `resupply_reject_${process.pid}`;
-  let originalReservation, sourceDocument, stockBalanceId, primaryError; const lotIds = [];
+  let originalReservation, sourceDocument, stockBalanceId, originalBalance, primaryError;
+  const lotIds = [], originalLots = [];
   try {
     const role = await prisma.role.findFirstOrThrow({ where: { organizationId: buyer.organizationId } });
     await prisma.rolePermission.create({ data: { roleId: role.id, permissionId: (await prisma.permission.findUniqueOrThrow({ where: { code: "order.approve" } })).id } });
     const item = await prisma.supplierOrderItem.findFirstOrThrow({ where: { supplierOrderId: order.id } });
     const balance = await prisma.inventoryBalance.findFirstOrThrow({ where: { offerId: item.offerId, warehouseId: item.warehouseId } });
     stockBalanceId = balance.id;
+    originalBalance = balance;
+    originalLots.push(...await prisma.inventoryLot.findMany({ where: { inventoryBalanceId: balance.id }, select: { id: true, status: true } }));
     await prisma.inventoryLot.updateMany({ where: { inventoryBalanceId: balance.id }, data: { status: "BLOCKED" } });
     await prisma.inventoryBalance.update({ where: { id: balance.id }, data: { quantityOnHand: "90", quantityAvailable: "82", quantityReserved: "5", safetyStock: "3", freshnessStatus: "FRESH", freshnessExpiresAt: new Date(Date.now() + 3600000) } });
     await prisma.supplierOrderItem.update({ where: { id: item.id }, data: { quantity: "10", acceptedQuantity: "10", totalPriceMinor: "58000" } });
@@ -149,6 +152,16 @@ export async function verifyOrderResupply({ prisma, call, request, assert, ident
     await prisma.shipment.deleteMany({ where: { supplierOrderId: order.id } });
     await prisma.inventoryReservation.deleteMany({ where: { OR: [{ referenceType: "ORDER_RESUPPLY", referenceId: { in: ids } }, ...(originalReservation ? [{ id: originalReservation.id }] : [])] } });
     await prisma.inventoryLot.deleteMany({ where: { id: { in: lotIds } } });
+    for (const lot of originalLots) await prisma.inventoryLot.update({ where: { id: lot.id }, data: { status: lot.status } });
+    if (originalBalance) {
+      const { quantityOnHand, quantityAvailable, quantityReserved, safetyStock, freshnessStatus, freshnessExpiresAt, availabilityStatus, version } = originalBalance;
+      await prisma.inventoryBalance.update({ where: { id: originalBalance.id }, data: {
+        quantityOnHand, quantityAvailable, quantityReserved, safetyStock, freshnessStatus, freshnessExpiresAt, availabilityStatus, version,
+      } });
+      const restored = await prisma.inventoryBalance.findUniqueOrThrow({ where: { id: originalBalance.id } });
+      assert(restored.quantityAvailable.eq(originalBalance.quantityAvailable) && restored.quantityOnHand.eq(originalBalance.quantityOnHand), "Resupply fixture polluted shared stock");
+      assert(await prisma.inventoryLot.count({ where: { OR: originalLots.map(lot => ({ id: lot.id, status: lot.status })) } }) === originalLots.length, "Resupply fixture polluted shared lots");
+    }
     await prisma.commerceMetricEvent.deleteMany({ where: { supplierOrderId: order.id } });
     await prisma.outboxEvent.deleteMany({ where: { aggregateId: { in: ids } } });
     if (stockBalanceId) await prisma.outboxEvent.deleteMany({ where: { aggregateId: stockBalanceId } });
