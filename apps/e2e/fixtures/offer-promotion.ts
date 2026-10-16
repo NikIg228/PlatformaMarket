@@ -3,7 +3,7 @@ import { createHash, createHmac, randomUUID } from "node:crypto";
 import { e2eJwtSecret } from "./workspace-session";
 import { completeFixtureOrganization } from "../../../scripts/lib/organization-profile-fixture.mjs";
 
-export async function offerPromotionFixture() {
+export async function offerPromotionFixture(options: { operatorOrderRead?: boolean } = {}) {
   const target = new URL(process.env.DATABASE_URL!);
   if (!process.env.CI && target.pathname !== "/dentmarket_audit_20260914") throw new Error("Only the isolated audit DB is allowed");
   const db = new PrismaClient();
@@ -25,7 +25,7 @@ export async function offerPromotionFixture() {
   };
   const supplier = await actor("SUPPLIER", ["organization.view", "catalog.product.view", "promotion.view", "promotion.manage", "order.confirm", "inventory.view"], 1);
   const buyer = await actor("BUYER", ["organization.view", "catalog.product.view", "order.create", "order.approve", "document.view"], 2);
-  const operator = await actor("MARKETPLACE_OPERATOR", ["organization.view", "catalog.product.view", "promotion.view", "promotion.manage", "promotion.placement.manage"], 3);
+  const operator = await actor("MARKETPLACE_OPERATOR", ["organization.view", "catalog.product.view", "promotion.view", "promotion.manage", "promotion.placement.manage", ...(options.operatorOrderRead ? ["order.confirm"] : [])], 3);
   const template = await db.documentTemplate.findUniqueOrThrow({ where: { code_version: { code: "MARKETPLACE_SUPPLIER_AGREEMENT_RU", version: 1 } } });
   const doc = await db.document.create({ data: { ownerOrganizationId: supplier.organizationId, templateId: template.id, kind: "MARKETPLACE_SUPPLIER_AGREEMENT", format: "PDF", source: "GENERATED", status: "SIGNED", title: "Synthetic only", documentNumber: key, immutableAt: new Date(), metadata: { notLegallyBinding: true } } });
   await db.marketplaceAgreement.create({ data: { agreementNumber: key, supplierOrganizationId: supplier.organizationId, operatorOrganizationId: operator.organizationId, documentId: doc.id, templateId: template.id, templateVersion: 1, status: "ACTIVE", startsAt: new Date(Date.now() - 60000), endsAt: new Date(Date.now() + 86400000), autoRenew: false } });

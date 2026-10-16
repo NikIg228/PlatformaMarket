@@ -557,3 +557,17 @@ resupply documents, tenant/party denial, replay/concurrency и rollback.
 Первая локальная попытка после исправления успешна. Runtime-код не менялся;
 повторные UI build/browser проверки не требуются. Результат нового CI проверяется
 после push; исходный failed run остаётся историческим FAIL.
+
+CI487a2c8: исходные npm test и PostgreSQL ошибки устранены; types, build,
+оба container jobs, PostgreSQL job и Security PASS. Общий browser gate120/121:
+commerce-analytics ожидал карточку заказа, но его promotion fixture не выдавал
+оператору order.confirm, обязательное для read-only operator-orders API.
+Точечное продолжение: добавить opt-in operatorOrderRead только этому сценарию;
+не ослаблять API guards и не расширять права остальных promotion fixtures.
+Целевой real API/browser commerce-analytics PASS1 (desktop/mobile, три роли,
+переход аналитика→заказ→аналитика, error/retry/empty); E2E tsc и scoped lint PASS.
+Запуск: `npm run db:test -- exec -- node node_modules/@playwright/test/cli.js test
+--config .tmp/operator-orders/analytics.config.ts`, reused isolated web build,
+API4113/web3103, disposable DB. Локально сохранён чужой относительный API URL
+в тесте; в коммит входит только opt-in fixture, исходный CI URL4012 сохранён.
+Повторный общий CI запускается после push; предыдущий browser FAIL не скрывается.

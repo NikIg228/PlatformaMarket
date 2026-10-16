@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { offerPromotionFixture } from "../fixtures/offer-promotion";
 
 test("CORE07: supplier confirmation and three-role analytics at desktop/mobile", async ({ page, request }, testInfo) => {
-  const fixture = await offerPromotionFixture();
+  const fixture = await offerPromotionFixture({ operatorOrderRead: true });
   const { db, supplier, buyer, operator, main } = fixture;
   await db.organization.updateMany({ where: { id: { in: [buyer.organizationId, supplier.organizationId] } }, data: { commerceDataset: "TEST" } });
   await page.addInitScript(({ supplier, buyer, operator }) => {
