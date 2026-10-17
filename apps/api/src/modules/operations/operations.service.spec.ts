@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { OperationsService } from "./operations.service";
+import { ForbiddenException } from "@nestjs/common";
 
 
 function prismaFixture() {
   const fixture = {
+    $queryRaw: vi.fn().mockResolvedValue([]),
     organizationCapability: { findUnique: vi.fn() },
     operationAssignment: { findMany: vi.fn().mockResolvedValue([]) },
     supplierTermsAcceptance: { findMany: vi.fn().mockResolvedValue([]) },
@@ -34,6 +36,9 @@ function prismaFixture() {
     ),
   });
 }
+function serviceFor(prisma: ReturnType<typeof prismaFixture>) {
+  return new OperationsService(prisma as never, { assertPlatformOperator: vi.fn().mockResolvedValue(undefined) } as never, { hasAll: vi.fn().mockResolvedValue(true) } as never);
+}
 
 describe("OperationsService", () => {
   it("lists only dead-letter metadata for an authorized operator", async () => {
@@ -58,8 +63,8 @@ describe("OperationsService", () => {
       },
     ]);
     prisma.outboxEvent.count.mockResolvedValue(1);
-    const result = await new OperationsService(prisma as never).listDeadLetters(
-      { limit: 50 },
+    const result = await serviceFor(prisma).listDeadLetters(
+      { limit: 50, offset: 0 },
       { actorId: "user", organizationId: "operator" },
     );
     expect(result.total).toBe(1);
@@ -68,6 +73,7 @@ describe("OperationsService", () => {
       eventType: "order.created",
     });
     expect(result.items[0]).not.toHaveProperty("payload");
+    expect(result.items[0].lastError).not.toContain("handler failed");
   });
 
   it("replays a dead-letter event atomically with a fresh retry budget and audit record", async () => {
@@ -91,9 +97,7 @@ describe("OperationsService", () => {
     });
     prisma.outboxEvent.updateMany.mockResolvedValue({ count: 1 });
     const eventId = "00000000-0000-4000-8000-000000000101";
-    const result = await new OperationsService(
-      prisma as never,
-    ).replayDeadLetter(
+    const result = await serviceFor(prisma).replayDeadLetter(
       eventId,
       {
         idempotencyKey: "replay-key-1",
@@ -139,7 +143,7 @@ describe("OperationsService", () => {
       lastError: "handler failed",
     });
     prisma.outboxEvent.updateMany.mockResolvedValue({ count: 1 });
-    const service = new OperationsService(prisma as never);
+    const service = serviceFor(prisma);
     const first = await service.replayDeadLetter(
       "00000000-0000-4000-8000-000000000101",
       {
@@ -187,7 +191,7 @@ describe("OperationsService", () => {
       status: "PUBLISHED",
     });
     await expect(
-      new OperationsService(prisma as never).replayDeadLetter(
+      serviceFor(prisma).replayDeadLetter(
         "00000000-0000-4000-8000-000000000101",
         {
           idempotencyKey: "replay-key-2",
@@ -197,5 +201,27 @@ describe("OperationsService", () => {
       ),
     ).rejects.toThrow("Only DEAD_LETTER");
     expect(prisma.outboxEvent.updateMany).not.toHaveBeenCalled();
+  });
+  it("requires active platform authority and the operation permission before reads/replay", async () => {
+    for (const denyAuthority of [true, false]) {
+      const prisma = prismaFixture(), authority = { assertPlatformOperator: vi.fn(async () => { if (denyAuthority) throw new ForbiddenException(); }) }, access = { hasAll: vi.fn().mockResolvedValue(false) };
+      const service = new OperationsService(prisma as never, authority as never, access as never);
+      await expect(service.listDeadLetters({ limit: 25, offset: 0 }, { actorId: "a", organizationId: "o" })).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.replayDeadLetter("id", { reason: "Verified reason", idempotencyKey: "repeat-key" }, { actorId: "a", organizationId: "o" })).rejects.toBeInstanceOf(ForbiddenException);
+      expect(prisma.outboxEvent.findMany).not.toHaveBeenCalled(); expect(prisma.idempotencyRecord.findUnique).not.toHaveBeenCalled();
+    }
+  });
+  it("binds replay to the original actor and the reviewed failure", async () => {
+    const prisma = prismaFixture(), service = serviceFor(prisma), date = new Date("2026-10-17T00:00:00Z");
+    prisma.outboxEvent.findUnique.mockResolvedValue({ id: "event", status: "DEAD_LETTER", attempts: 10, availableAt: date });
+    const input = { idempotencyKey: "same-key", reason: "Verified event handler", expectedAttempts: 10, expectedAvailableAt: date.toISOString() };
+    await expect(service.replayDeadLetter("event", { ...input, expectedAttempts: 9 }, { actorId: "a", organizationId: "o" })).rejects.toThrow("Failure state changed");
+    expect(prisma.outboxEvent.updateMany).not.toHaveBeenCalled();
+    prisma.outboxEvent.updateMany.mockResolvedValue({ count: 1 });
+    const result = await service.replayDeadLetter("event", input, { actorId: "a", organizationId: "o" });
+    const requestHash = prisma.idempotencyRecord.create.mock.calls.at(-1)![0].data.requestHash;
+    prisma.idempotencyRecord.findUnique.mockResolvedValue({ requestHash, responseCode: 200, responseBody: result });
+    await expect(service.replayDeadLetter("event", input, { actorId: "other", organizationId: "o" })).rejects.toThrow("already used");
+    await expect(service.replayDeadLetter("event", input, { actorId: "a", organizationId: "other" })).rejects.toThrow("already used");
   });
 });

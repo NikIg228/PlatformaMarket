@@ -87,6 +87,7 @@ export class OperationsController {
   }
 
   @Get("outbox/dead-letter")
+  @Header("Cache-Control", "no-store")
   @ApiCoreQuery("OutboxDeadLetterQuery")
   @ApiCoreResponse("OutboxDeadLetterListResponse")
   @RequirePermissions("operations.outbox.view")
@@ -106,7 +107,7 @@ export class OperationsController {
   @Post("outbox/dead-letter/:eventId/replay")
   @ApiUuidParam("eventId", "Dead-letter outbox event identifier")
   @ApiCoreBody("OutboxReplayRequest")
-  @ApiCoreResponse("OutboxReplayResponse", 200)
+  @ApiCoreResponse("OutboxReplayResponse", 201)
   @RequirePermissions("operations.outbox.replay")
   replayDeadLetter(
     @Param("eventId") eventId: string,

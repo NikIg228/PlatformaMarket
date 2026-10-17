@@ -190,10 +190,12 @@ function assertOpenApiContract(openApi) {
     [
       "/api/operations/outbox/dead-letter/{eventId}/replay",
       "post",
-      "200",
+      "201",
       "OutboxReplayResponse",
       "OutboxReplayRequest",
     ],
+    ["/api/operations/audit", "get", "200", "OperatorAuditPage"],
+    ["/api/operations/technical", "get", "200", "OperatorTechnical"],
   ];
   for (const [
     pathName,

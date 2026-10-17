@@ -131,6 +131,8 @@ export class MarketplaceApiClient {
   readNotification(id: string) { return this.post<import("@marketplace/schemas").InternalNotification>(`/notifications/${encodeURIComponent(id)}/read`, {}); }
   operationObject(type: import("@marketplace/schemas").OperationQueueType, id: string) { return this.get<import("@marketplace/schemas").OperationObject>(`/operations/work-queue/${type}/${encodeURIComponent(id)}`); }
   operatorDocumentException(id: string, signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorDocumentException>(`/operations/document-exceptions/${encodeURIComponent(id)}`, { signal }); }
+  operatorAudit(input: import("@marketplace/schemas").OperatorAuditQuery, signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorAuditPage>(this.withQuery("/operations/audit", input), { signal }); }
+  operatorTechnical(signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorTechnical>("/operations/technical", { signal }); }
   publishOperatorExceptionRecommendation(id: string, input: import("@marketplace/schemas").OperatorExceptionReview) { return this.post<import("@marketplace/schemas").OperatorExceptionReviewResult>(`/operations/document-exceptions/${encodeURIComponent(id)}/recommendation`, input); }
   supportTickets(status?: string, offset = 0, options: { q?: string; sort?: "queue" | "recent" } = {}) { const query = new URLSearchParams({ offset: String(offset) }); if (status) query.set("status", status); if (options.q) query.set("q", options.q); if (options.sort) query.set("sort", options.sort); return this.get<import("@marketplace/schemas").SupportTicketSummary[]>(`/support/tickets?${query}`); }
   supportTicket(id: string, beforeMessageId?: string) { return this.get<import("@marketplace/schemas").SupportTicketDetail>(`/support/tickets/${encodeURIComponent(id)}${beforeMessageId ? `?beforeMessageId=${encodeURIComponent(beforeMessageId)}` : ""}`); }
@@ -789,9 +791,10 @@ export class MarketplaceApiClient {
     );
   }
 
-  listOutboxDeadLetters(input: OutboxDeadLetterQueryInput = {}) {
+  listOutboxDeadLetters(input: OutboxDeadLetterQueryInput = {}, signal?: AbortSignal) {
     return this.get<OutboxDeadLetterListResponse>(
       this.withQuery("/operations/outbox/dead-letter", input),
+      { signal },
     );
   }
 

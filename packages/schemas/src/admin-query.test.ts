@@ -3,6 +3,12 @@ import { adminSectionQuery, defaultAdminQuery, parseAdminQuery, serializeAdminQu
 import { adminReturnPath } from "./product-navigation";
 const id = "00000000-0000-4000-8000-000000000001";
 describe("Admin read query state", () => {
+  it("retains audit filters through object navigation and technical paging", () => {
+    const state = { ...defaultAdminQuery, section: "security" as const, controlView: "technical" as const, auditOrganization: id, auditActor: id, auditEntityType: "SupplierOrder", auditEntityId: id, auditAction: "confirmed", auditFrom: "2026-10-17", auditTo: "2026-10-18", auditOffset: 25, outboxEventId: id, outboxEventType: "order.confirmed", outboxOffset: 50 };
+    expect(parseAdminQuery(serializeAdminQuery(state))).toEqual(state);
+    expect(parseAdminQuery(serializeAdminQuery({ ...adminSectionQuery(state, "orders"), orderId: id }))).toMatchObject({ auditActor: id, auditOffset: 25, outboxOffset: 50, orderId: id });
+  });
+  it.each(["auditActor=bad", "auditOrganization=bad", "auditOffset=1", "outboxOffset=1000025", "outboxEventId=bad", "auditFrom=2026-02-30", "auditFrom=2026-10-18&auditTo=2026-10-17", "controlView=write", "outboxEventType=" + "x".repeat(121)])("rejects unsafe audit navigation %s", query => expect(parseAdminQuery(`?section=security&${query}`)).toBeUndefined());
   it("roundtrips organization filters, detail and retained maximum Unicode search context", () => {
     const state = { ...defaultAdminQuery, section: "organizations" as const, orgId: id, orgQ: "界".repeat(200), orgStatus: "ARCHIVED" as const, orgCapability: "MARKETPLACE_OPERATOR" as const, orgOffset: 1000000,
       supportQ: "界".repeat(200), supportStatus: "WAITING_CUSTOMER" as const, supportSort: "recent" as const, supportMode: "conversations" as const, conversationFilter: "UNREAD" as const, conversationOffset: 99990,

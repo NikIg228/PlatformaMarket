@@ -882,3 +882,143 @@ controls44/radius8,1440/390, keyboard/focus и отсутствие horizontal o
 после теста остановлен. Full release/E2E и deploy не входили в эту задачу.
 R7.7.6 закрыт локально по согласованным .1–.3; R7.7.7 не начат.
 Публикация и CI проверяются отдельно после scoped commit.
+
+### 17.10 — R7.7.7.1: аудит и технический контроль (IN PROGRESS)
+
+Поручение «далее» после R7.7.6.3. База main/6dab8d3; CI39022152189 и
+Security39022152185 SUCCESS, remote SHA подтверждён. Чужие catalog/CI/config/
+governance изменения сохранены, staged пуст. Каноническая папка неизменна.
+Scope: отдельный platform-authorized журнал с redaction, фильтрами по периоду,
+участнику, объекту и действию, paging, безопасным diff и ссылками; техническое
+чтение фактического состояния поиска/очередей и конкретный dead-letter replay.
+Tenant `/audit` не расширяется. Trust и аналитика R7.7.7.2/.3 не входят.
+Вопрос о включении массовых search/notification команд задан отдельно; независимый
+журнал и конкретный replay разрешены текущим пунктом. Рабочие данные не меняются.
+
+План/риск: schema/OpenAPI/client → read projection с platform authority и audit.view
+до чтения, разрешённые поля вместо raw snapshots/секретов → focused tests →
+контекстный replay и техническая проекция → focused tests до UI → UI и evidence.
+Переиспользовать AuditLog, OutboxEvent и существующую replay-команду; не вводить
+новую инфраструктуру и не ослаблять tenant/permission. Риски: утечка cross-tenant
+данных, неправильный diff, потеря фильтров, поздний ответ, дублирующий replay и
+ложное подтверждение работы worker. UI должен различать факт постановки в очередь
+и фактическую обработку, неизвестный источник и нулевое значение.
+
+Gates: focused schema/client/service tests; реальные HTTP role/tenant/filter/paging/
+redaction и PostgreSQL replay/race/rollback; affected types/build, core-contract,
+runtime-split и PostgreSQL по изменённой границе; targeted browser1440/390,
+keyboard/confirm/recovery/deep-link, screenshots/computed styles; lint/diff hygiene.
+Только disposable dentmarket_audit_20260914/API4113; dev3000/API4012 сохраняется.
+Не reinstall, не создавать source copies/worktrees/агентов. Лимит3 попытки на gate.
+DoD: выбранный scope и все применимые gates PASS, docs, scoped commit/push/CI;
+следующие подпункты не запускать автоматически. Рабочие migration/deploy вне scope.
+
+UI passport R7.7.7.1 (до реализации): решение владельца — «Да, журнал и повтор
+конкретного события»; массовые команды остаются отдельным scope. Аналог:
+apps/admin-web/app/operator-organizations.tsx и operator-orders.module.css:
+filters/card/section через DmSurface, DmField/Input/Button, shared dialog/tab/table.
+Manrope14/body, controls44/radius8, card12/dialog16, gaps16/24 из JSON; семантика
+из semantic-light.json, без local overrides. Журнал и технический контроль —
+отдельные вкладки, Trust сохраняется. Фильтры/страницы в URL, diff без raw JSON,
+точечный replay с причиной и подтверждением, повтор неизвестного результата с
+тем же ключом. Baseline1440/390: .tmp/operator-control/before-*.png (скрипт baseline.mjs),
+нет горизонтального overflow. API HTTP attempt1 FAIL: ошибочное ожидание401 для
+x-user-id (middleware заменяет actor по JWT); исправлен тест на отказ impersonation
+и чужой organization. Attempt2 PASS1/1; production auth не менялся.
+
+### 17.10 — R7.7.7.1: LOCAL_PASS, публикация/CI отдельно
+
+Реализованы GET /operations/audit и GET /operations/technical с активной
+platform authority и отдельными правами. Обычный GET /audit сохранён tenant-scoped.
+Журнал: Kazakhstan UTC+5 inclusive date bounds, организация/сотрудник/объект/действие,
+stable order createdAt+id, offset/limit и согласованный count в RepeatableRead;
+имена без контактов, типизированный allowlist diff, без raw JSON/секретов/ошибок.
+Переходы выдаются по правам на объект. UI сохраняет фильтры/страницы в URL,
+обрабатывает loading/empty/error/403/late response и показывает diff в shared dialog.
+Технические источники независимо AVAILABLE/UNAVAILABLE/FORBIDDEN; неизвестное
+значение не заменяется нулём, health текущего API не выдаётся за health worker.
+
+Владелец разрешил только журнал и конкретный replay. Существующие массовые
+search/notification команды не изменялись. Replay требует active operator +
+operations.outbox.replay, выбранный event и причину10–500. Дополнительная пара
+expectedAvailableAt/expectedAttempts защищает подтверждённую редакцию сбоя;
+legacy callers без пары совместимы. Key привязан к actor/org/event/reason/preconditions,
+существующий глобальный scope сохранён; старый key с другим hash получает409.
+ReadCommitted + row lock + CAS, idempotency/audit/update атомарны. Payload неизменен,
+успех означает PENDING с attempts0. Причина сохраняется в audit, в общей проекции
+свободный текст скрыт. HTTP201 отражён в OpenAPI и проверяющем скрипте (раньше
+описание ошибочно ожидало200 при фактическом Nest POST201).
+
+UI: подтверждение конкретного события, причина; неизвестный результат сохраняет
+тот же запрос и ключ в sessionStorage текущей сессии, включая reload/возврат;
+409 требует загрузки состояния и явного принятия перед новым ключом. Ошибка
+обновления списка после успеха не вызывает повтор отправки. Escape/возврат фокуса,
+мобильный reflow и computed styles проверены. UI использует shared primitives,
+новых CSS/token overrides нет. Trust ниже сохранён, R7.7.7.2/.3 вне scope.
+
+Проверки на main/6dab8d3 + собственный diff R7.7.7.1; lockfile/dependencies и
+Prisma schema/migrations в этой задаче не менялись. Логи/PNG/manifest:
+`.tmp/operator-control/`. Рабочие данные в тестах не использовались.
+
+- Focused API: operator-audit.service8 + operator-technical.service4 +
+  operations.service6 PASS; API runtime build `npx nest build` PASS;
+  `npm run typecheck --workspace @marketplace/api` PASS. Первичная ошибка типов
+  теста (shadowed typeof binding) исправлена до итоговой проверки.
+- `npm run test --workspace @marketplace/schemas -- --run src/admin-query.test.ts
+  src/operator-audit.test.ts`:46 PASS, schemas build PASS. API-client build и
+  targeted operator-audit.test.ts:2 PASS. Первичный client build выявил tuple[]
+  mock fetch; исправлен тип vi.fn<typeof fetch>, повтор build/test PASS.
+- `npm run db:test -- exec -- npm run test --workspace @marketplace/api -- --run
+  src/modules/operations/operator-control.postgres.spec.ts`:1 PASS, реальная
+  atomic rollback/concurrent same-key/different-key, неизменность payload и
+  стабильная пагинация. Первый FAIL — сравнение JSON.stringify с порядком jsonb,
+  исправлено на deepEqual; повтор PASS, postgres-focused-2.log.
+- `npm run db:test -- exec -- npx playwright test --config
+  apps/e2e/playwright.operator-control-api.config.ts`:1 PASS; JWT401, outsider403,
+  spoofed actor не повышает права, чужая org401, invalid400, redaction, date/filter/
+  paging, revoke, stale409 и четыре concurrent201/один audit. http.log FAIL
+  ошибочного ожидания для x-user-id сохранён, http-2.log PASS.
+- `npx playwright test --config apps/e2e/playwright.operator-control.config.ts`:
+  первый запуск6 PASS/1 FAIL (Escape после disabled request терял focus).
+  Исправлено восстановление фокуса, `--grep 'replay|conflict'`:4 PASS;
+  отдельный новый `--grep 'invalid filters'`:1 PASS. Итого8 сценариев, исходные
+  audit/late-response PASS переиспользованы без изменения соответствующих inputs.
+  Невалидный/слишком длинный URL не приводит к потере draft или падению формы.
+- Admin typecheck PASS после schemas build (первый запуск читал старый dist).
+  `npx tsc -p apps/e2e/tsconfig.json --noEmit` PASS. Scoped eslint PASS, включая
+  final изменённые формы и contract verifier; `git diff --check` PASS.
+- `node .tmp/operator-control/build-web.mjs`: финальная isolated production
+  Next/TypeScript build PASS (pilot, 49 pages). Канонический исходник, отдельный
+  distDir, сохранение исходного next-env; не создавалось другое source tree.
+  Повтор после последнего исправления invalid-filter recovery, предыдущий build
+  не выдавался за проверку изменённых inputs. Stable dev process не затронут.
+- `node scripts/verify-runtime-split.mjs`: PASS api/worker/all и guards, на
+  актуальном API dist (runtime-split.log).
+- PostgreSQL gate: первый `npm run verify:postgres` остановился до тестов на
+  Windows Prisma DLL EPERM (загружен существующим dev). Второй запуск node wrapper
+  отклонён из-за отсутствующего npm_execpath. Третий, штатный
+  `npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs` PASS
+  на dentmarket_audit_20260914; postgres-gate-3.log. Переиспользованы актуальные
+  schemas/API dist и неизменённый Prisma client; чужие процессы не останавливались.
+- `npm run db:test -- exec -- node scripts/verify-pilot-backend.mjs --contract-only`:
+  первый FAIL на старом ожидании HTTP200 replay. Verifier приведён к реальному201,
+  добавлены оба новых GET contracts; повтор PASS (372 operations, 71 core checks,
+  response/error validation). Исходный core-contract.log сохранён.
+- Визуальная проверка после окончания анимации: audit/diff/technical/replay1440/390
+  PNG в .tmp/operator-control; Manrope14, controls44/radius8, dialog16/opacity1,
+  нет horizontal overflow. Первый быстрый browser screenshot попал в анимацию;
+  отдельный read-only visual.mjs дал устойчивые PNG; оба mobile dialog и desktop
+  экраны просмотрены. Никаких POST к dev API.
+
+Ограничение live preview: read-only assertLocalSchema обнаружил pending migration
+`20261017100000_document_exception_queue` предыдущего R7.7.6.3 в рабочей dev-БД.
+Перезапуск остановлен ДО остановки старого launcher/API; они продолжают работать
+на прежнем API. Миграция, изменение рабочих данных и deploy не разрешены этим
+подпунктом и не выполнялись. Это не отказ тестового gate: новая функция проверена
+на disposable API/DB и в browser fixtures; live dev readiness НЕ заявляется.
+
+Применены прочитанные development-toolkit execution/backend/security-reliability/
+verification и project profile, DESIGN_SYSTEM/component-contract/semantic-light,
+Workflow: минимальный контракт → атомарная реализация → UI → риск-ориентированная
+проверка. Агентов/межчатовой координации не было. Чужие catalog/CI/config/governance
+WIP сохранены и не включаются в commit. R7.7.7 целиком не закрыт.

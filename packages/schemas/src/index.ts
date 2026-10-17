@@ -1379,6 +1379,8 @@ export const reconciliationQuerySchema = z.object({
 });
 
 export * from "./operator-document-exception";
+export * from "./operator-audit";
+export * from "./operator-technical";
 
 export const resolveReconciliationSchema = z.object({
   resolution: z.string().trim().min(3).max(2_000),

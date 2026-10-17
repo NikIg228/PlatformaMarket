@@ -13,6 +13,8 @@ import type {
   OutboxReplayResponse,
 } from "@marketplace/schemas";
 import { PrismaService } from "../../platform/prisma/prisma.service";
+import { PlatformAuthorityPolicy } from "../access-control/platform-authority.policy";
+import { AccessControlService } from "../access-control/access-control.service";
 
 type OperationsContext = { actorId: string; organizationId: string };
 const OUTBOX_REPLAY_SCOPE = "outbox.dead-letter.replay";
@@ -35,40 +37,33 @@ const deadLetterSelect = {
 
 @Injectable()
 export class OperationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly authority: PlatformAuthorityPolicy, private readonly access: AccessControlService) {}
 
-  private async assertOperator(organizationId: string) {
-    const capability = await this.prisma.organizationCapability.findUnique({
-      where: {
-        organizationId_capability: {
-          organizationId,
-          capability: "MARKETPLACE_OPERATOR",
-        },
-      },
-      select: { organizationId: true },
-    });
-    if (!capability)
-      throw new ForbiddenException("Marketplace operator access is required");
+  private async assertOperator(context: OperationsContext, permission: string) {
+    await this.authority.assertPlatformOperator(context);
+    if (!await this.access.hasAll(context.actorId, context.organizationId, [permission])) throw new ForbiddenException("Insufficient permissions");
   }
 
   async listDeadLetters(
     query: OutboxDeadLetterQuery,
     context: OperationsContext,
   ): Promise<OutboxDeadLetterListResponse> {
-    await this.assertOperator(context.organizationId);
+    await this.assertOperator(context, "operations.outbox.view");
     const where = {
       status: "DEAD_LETTER" as const,
       eventType: query.eventType,
+      id: query.eventId,
     };
-    const [events, total] = await Promise.all([
-      this.prisma.outboxEvent.findMany({
+    const [events, total] = await this.prisma.$transaction(tx => Promise.all([
+      tx.outboxEvent.findMany({
         where,
         select: deadLetterSelect,
         orderBy: [{ createdAt: "asc" }, { id: "asc" }],
         take: query.limit,
+        skip: query.offset,
       }),
-      this.prisma.outboxEvent.count({ where }),
-    ]);
+      tx.outboxEvent.count({ where }),
+    ]), { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
     return {
       items: events.map((event) => ({
         id: event.id,
@@ -81,18 +76,19 @@ export class OperationsService {
         availableAt: event.availableAt.toISOString(),
         lockedAt: event.lockedAt?.toISOString() ?? null,
         publishedAt: event.publishedAt?.toISOString() ?? null,
-        lastError: event.lastError,
+        lastError: event.lastError ? "Ошибка обработчика. Технические подробности скрыты." : null,
         createdAt: event.createdAt.toISOString(),
       })),
       total,
+      offset: query.offset,
       limit: query.limit,
       generatedAt: new Date().toISOString(),
     };
   }
 
-  private replayRequestHash(eventId: string, reason: string) {
+  private replayRequestHash(eventId: string, input: OutboxReplayInput, context: OperationsContext) {
     return createHash("sha256")
-      .update(JSON.stringify({ eventId, reason }))
+      .update(JSON.stringify({ eventId, reason: input.reason, ...context, expectedAvailableAt: input.expectedAvailableAt, expectedAttempts: input.expectedAttempts }))
       .digest("hex");
   }
 
@@ -127,8 +123,8 @@ export class OperationsService {
     input: OutboxReplayInput,
     context: OperationsContext,
   ): Promise<OutboxReplayResponse> {
-    await this.assertOperator(context.organizationId);
-    const requestHash = this.replayRequestHash(eventId, input.reason);
+    await this.assertOperator(context, "operations.outbox.replay");
+    const requestHash = this.replayRequestHash(eventId, input, context);
     const existing = await this.prisma.idempotencyRecord.findUnique({
       where: {
         scope_key: { scope: OUTBOX_REPLAY_SCOPE, key: input.idempotencyKey },
@@ -148,6 +144,8 @@ export class OperationsService {
               expiresAt: new Date(replayedAt.getTime() + IDEMPOTENCY_TTL_MS),
             },
           });
+          // Serialize distinct replay keys for the same event against worker state changes.
+          await tx.$queryRaw`SELECT id FROM "OutboxEvent" WHERE id = ${eventId}::uuid FOR UPDATE`;
           const event = await tx.outboxEvent.findUnique({
             where: { id: eventId },
             select: deadLetterSelect,
@@ -157,6 +155,9 @@ export class OperationsService {
             throw new ConflictException(
               "Only DEAD_LETTER outbox events can be replayed",
             );
+          }
+          if (input.expectedAvailableAt !== undefined && (event.availableAt.toISOString() !== input.expectedAvailableAt || event.attempts !== input.expectedAttempts)) {
+            throw new ConflictException("Failure state changed. Refresh and review the event before replay.");
           }
           const updated = await tx.outboxEvent.updateMany({
             where: { id: eventId, status: "DEAD_LETTER" },
@@ -185,7 +186,7 @@ export class OperationsService {
               before: {
                 status: event.status,
                 attempts: event.attempts,
-                lastError: event.lastError,
+                hadError: Boolean(event.lastError),
               } as Prisma.InputJsonValue,
               after: {
                 status: "PENDING",
@@ -212,7 +213,7 @@ export class OperationsService {
           });
           return response;
         },
-        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+        { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
       );
     } catch (error) {
       if (!this.isUniqueViolation(error)) throw error;

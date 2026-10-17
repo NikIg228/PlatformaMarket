@@ -5,6 +5,9 @@ export const adminQueueTypes = ["ORGANIZATION_REVIEW", "PROMOTION_REVIEW", "CATA
 export type AdminSection = typeof adminSections[number];
 export type AdminQueueType = typeof adminQueueTypes[number];
 export type AdminQuery = {
+  controlView: "audit" | "technical";
+  auditOrganization: string; auditActor: string; auditEntityType: string; auditEntityId: string; auditAction: string; auditFrom: string; auditTo: string; auditOffset: number;
+  outboxEventType: string; outboxEventId: string; outboxOffset: number;
   section: AdminSection;
   queueType?: AdminQueueType;
   object?: string;
@@ -39,7 +42,7 @@ export type AdminQuery = {
   orderTo: string;
   orderOffset: number;
 };
-export const defaultAdminQuery: AdminQuery = { section: "overview", supportMode: "tickets", supportStatus: "", supportQ: "", supportSort: "queue", supportOffset: 0, conversationFilter: "ALL", conversationOffset: 0, queueKind: "ALL", queueQ: "", queuePriority: "", queueAssignment: "ALL", queueDue: "ALL", queueSort: "queue", queueOffset: 0, orgQ: "", orgStatus: "", orgCapability: "", orgOffset: 0, orderQ: "", orderBuyer: "", orderSupplier: "", orderStatus: "", orderPaymentStatus: "", orderFrom: "", orderTo: "", orderOffset: 0 };
+export const defaultAdminQuery: AdminQuery = { controlView: "audit", auditOrganization: "", auditActor: "", auditEntityType: "", auditEntityId: "", auditAction: "", auditFrom: "", auditTo: "", auditOffset: 0, outboxEventType: "", outboxEventId: "", outboxOffset: 0, section: "overview", supportMode: "tickets", supportStatus: "", supportQ: "", supportSort: "queue", supportOffset: 0, conversationFilter: "ALL", conversationOffset: 0, queueKind: "ALL", queueQ: "", queuePriority: "", queueAssignment: "ALL", queueDue: "ALL", queueSort: "queue", queueOffset: 0, orgQ: "", orgStatus: "", orgCapability: "", orgOffset: 0, orderQ: "", orderBuyer: "", orderSupplier: "", orderStatus: "", orderPaymentStatus: "", orderFrom: "", orderTo: "", orderOffset: 0 };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const unsafe = /[\\#\u0000-\u001f\u007f]/;
 
@@ -49,7 +52,12 @@ export function parseAdminQuery(search: string): AdminQuery | undefined {
   const result = { ...defaultAdminQuery };
   for (const [key, value] of params) {
     if (params.getAll(key).length !== 1 || (!["supportQ", "orgQ", "orderQ", "orderBuyer", "orderSupplier", "queueQ"].includes(key) && unsafe.test(value))) return;
-    if (key === "section" && adminSections.includes(value as AdminSection)) result.section = value as AdminSection;
+    if (key === "controlView" && ["audit", "technical"].includes(value)) result.controlView = value as AdminQuery["controlView"];
+    else if ((key === "auditOrganization" || key === "auditActor" || key === "outboxEventId") && uuid.test(value)) result[key] = value;
+    else if ((key === "auditEntityType" || key === "auditEntityId" || key === "auditAction" || key === "outboxEventType") && value.length <= (key === "outboxEventType" ? 120 : 160) && !unsafe.test(value)) result[key] = value.trim();
+    else if ((key === "auditFrom" || key === "auditTo") && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value) result[key] = value;
+    else if ((key === "auditOffset" || key === "outboxOffset") && /^(0|[1-9]\d{0,6})$/.test(value) && Number(value) <= 1000000 && Number(value) % 25 === 0) result[key] = Number(value);
+    else if (key === "section" && adminSections.includes(value as AdminSection)) result.section = value as AdminSection;
     else if ((key === "queueType" || key === "queueKind") && adminQueueTypes.includes(value as AdminQueueType)) result[key] = value as AdminQueueType;
     else if (key === "queueKind" && value === "ALL") result.queueKind = value;
     else if (key === "queueQ" && value.length <= 200 && !/[\u0000-\u001f\u007f]/.test(value)) result.queueQ = value.trim();
@@ -83,6 +91,7 @@ export function parseAdminQuery(search: string): AdminQuery | undefined {
   if (result.orgId && result.section !== "organizations") return;
   if (result.orderId && result.section !== "orders") return;
   if (result.orderFrom && result.orderTo && result.orderFrom > result.orderTo) return;
+  if (result.auditFrom && result.auditTo && result.auditFrom > result.auditTo) return;
   if (result.section === "orders" && result.queueType === "SUPPLIER_CONFIRMATION") {
     if (result.orderId && result.orderId !== result.object) return;
     result.orderId = result.object;

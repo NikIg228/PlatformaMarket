@@ -22,7 +22,7 @@ export const AgreementOperations = dynamic(
   { loading },
 );
 export const AuditOperations = dynamic(
-  () => import("./audit-operations").then((module) => module.AuditOperations),
+  () => import("./operator-control").then((module) => module.OperatorControl),
   { loading },
 );
 export const CatalogFoundation = dynamic(
