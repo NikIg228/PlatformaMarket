@@ -5,7 +5,7 @@ import { PermissionsGuard } from "../access-control/permissions.guard";
 import { RequirePermissions } from "../access-control/require-permissions.decorator";
 import { IntegrationJobsService } from "./integration-jobs.service";
 import { IntegrationsService } from "./integrations.service";
-import { updateIntegrationTaxSchema } from "@marketplace/schemas";
+import { updateIntegrationTaxSchema, resolvedReconciliationSchema } from "@marketplace/schemas";
 import { ApiCoreBody, ApiCoreErrors, ApiCoreProtected, ApiCoreResponse, ApiUuidParam } from "../../platform/openapi/core-openapi";
 
 @ApiTags("integrations")
@@ -134,9 +134,11 @@ export class IntegrationsController {
 
   @Post(":connectionId/reconciliation/:entryId/resolve")
   @RequirePermissions("integration.reconcile")
-  resolveReconciliation(@Param("supplierOrganizationId") supplierOrganizationId: string, @Param("connectionId") connectionId: string, @Param("entryId") entryId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
+  @ApiCoreProtected() @ApiCoreErrors() @ApiCoreBody("ResolveReconciliation") @ApiCoreResponse("ResolvedReconciliation")
+  async resolveReconciliation(@Param("supplierOrganizationId") supplierOrganizationId: string, @Param("connectionId") connectionId: string, @Param("entryId") entryId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) {
     const parsed = resolveReconciliationSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
-    return this.integrations.resolveReconciliation(supplierOrganizationId, connectionId, entryId, parsed.data, this.context(actorId, organizationId));
+    const result = await this.integrations.resolveReconciliation(supplierOrganizationId, connectionId, entryId, parsed.data, this.context(actorId, organizationId));
+    return resolvedReconciliationSchema.parse({ ...result, resolvedAt: result.resolvedAt?.toISOString() });
   }
 }

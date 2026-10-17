@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { operationWorkQueueQuerySchema, operationWorkQueueSchema } from "./operations-workflow";
+import { operationObjectSchema, operationWorkQueueQuerySchema, operationWorkQueueSchema } from "./operations-workflow";
 
 describe("global operation queue contract", () => {
+  it("bounds actionable context and rejects injected credentials", () => {
+    const id = "00000000-0000-4000-8000-000000000001";
+    const context = { kind: "IMPORT", supplierOrganizationId: id, status: "MAPPED", updatedAt: "2026-10-17T00:00:00.000Z", canProcess: true, canRollback: false };
+    const object = { id, queueType: "IMPORT_ATTENTION", title: "import.csv", fields: [], context };
+    expect(operationObjectSchema.safeParse(object).success).toBe(true);
+    expect(operationObjectSchema.safeParse({ ...object, context: { ...context, credentials: "secret" } }).success).toBe(false);
+    expect(operationObjectSchema.safeParse({ ...object, context: { ...context, supplierOrganizationId: "spoof" } }).success).toBe(false);
+  });
   it("uses bounded global pages and explicit filtering defaults", () => {
     expect(operationWorkQueueQuerySchema.parse({})).toEqual({ q: "", kind: "ALL", assignment: "ALL", due: "ALL", sort: "queue", offset: 0, limit: 50 });
     expect(operationWorkQueueQuerySchema.parse({ q: "  Поставка  ", kind: "SUPPLIER_CONFIRMATION", priority: "CRITICAL", assignment: "MINE", due: "OVERDUE", sort: "oldest", offset: "50", limit: "25" })).toMatchObject({ q: "Поставка", offset: 50, limit: 25, assignment: "MINE" });

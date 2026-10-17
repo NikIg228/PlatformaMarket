@@ -319,10 +319,22 @@ export class IntegrationsService {
 
   async resolveReconciliation(supplierOrganizationId: string, connectionId: string, entryId: string, input: ResolveReconciliationInput, context: SupplierActorContext) {
     await this.requireConnection(supplierOrganizationId, connectionId, context);
-    const entry = await this.prisma.integrationReconciliationEntry.findFirst({ where: { id: entryId, connectionId } });
-    if (!entry) throw new NotFoundException("Reconciliation entry not found");
     return this.prisma.$transaction(async (tx) => {
-      const resolved = await tx.integrationReconciliationEntry.update({ where: { id: entryId }, data: { status: "RESOLVED", resolution: input.resolution, resolvedAt: new Date(), resolvedById: context.actorId } });
+      const entry = await tx.integrationReconciliationEntry.findFirst({ where: { id: entryId, connectionId } });
+      if (!entry) throw new NotFoundException("Reconciliation entry not found");
+      const replay = (current: typeof entry) => {
+        if (current.status === "RESOLVED" && current.resolution === input.resolution && current.resolvedById === context.actorId) return current;
+        throw new ConflictException("Reconciliation entry changed; reload before saving a decision");
+      };
+      if (entry.status === "RESOLVED") return replay(entry);
+      if (entry.status === "MATCHED" || input.expectedUpdatedAt && entry.updatedAt.toISOString() !== input.expectedUpdatedAt) throw new ConflictException("Reconciliation entry changed; reload before saving a decision");
+      const claimed = await tx.integrationReconciliationEntry.updateMany({ where: { id: entryId, connectionId, status: entry.status, updatedAt: entry.updatedAt }, data: { status: "RESOLVED", resolution: input.resolution, resolvedAt: new Date(), resolvedById: context.actorId } });
+      if (claimed.count !== 1) {
+        const current = await tx.integrationReconciliationEntry.findFirst({ where: { id: entryId, connectionId } });
+        if (!current) throw new NotFoundException("Reconciliation entry not found");
+        return replay(current);
+      }
+      const resolved = await tx.integrationReconciliationEntry.findUniqueOrThrow({ where: { id: entryId } });
       await tx.auditLog.create({ data: { ...context, action: "integration.reconciliation.resolved", entityType: "IntegrationReconciliationEntry", entityId: entryId, before: entry, after: resolved } });
       return resolved;
     });

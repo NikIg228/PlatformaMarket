@@ -690,3 +690,105 @@ log .tmp/operator-queue/postgres-attempt2.log; включая resupply10/8/2, п
 сохранён выше. Scoped ESLint fixture и финальный `git diff --check` PASS.
 Статус: R7.7.6.1 LOCAL_PASS. Git/CI проверяются при публикации; последующие этапы
 .2/.3 не начаты. Чужие dirty changes сохранены; рабочая БД не изменялась.
+
+### 17.10 — R7.7.6.2: контекст импорта и support (IN PROGRESS)
+
+Запрос владельца «окей, приступаем» относится к R7.7.6.2. База main/f7f744b,
+каноническая папка; несвязанные catalog/CI/docs изменения сохраняются.
+Scope: очередь открывает конкретный импорт/расхождение и разрешённые действия;
+без секретов, смены налоговых условий поставщика или принудительного FAILED→MAPPED.
+Support: сохранить существующие server filters, notification recovery, polling,
+защищённые вложения и drafts/MA-01–05, добавить недостающее evidence.
+План: typed safe object context → focused API tests → контекстные shared UI
+controls и recovery → целевые реальные API/browser проверки. Риски: неверный
+supplier/object, повтор команды, stale/concurrent result, потеря ввода/прав.
+Gates: schema/client/API focused tests/types/build; изолированный PostgreSQL
+для изменяемой семантики replay; core-contract/runtime при изменении API;
+admin types и unified build, целевые browser1440/390/keyboard/recovery,
+screenshots/computed styles, scoped lint и diff hygiene. Не запускать .3.
+UI-паспорт: аналог operation-object-focus.tsx и support-ticket-panel.tsx;
+DmSurface/Button/Field/Textarea, ActionFeedback/LoadingState из packages/ui.
+market-components-v1/platforma-semantic-light-v1: Manrope14, control44/radius8,
+card12, spacing12/16/24; RU,1440×1000 и390×844. Без новых shared variants.
+Baseline текущего экрана проверить до UI-кода; секреты/raw payload не выводить.
+
+Серверная часть: OperationObject содержит optional typed context для IMPORT и
+RECONCILIATION с точными supplier/connection IDs, версией и permission/status
+доступностью команд; payload/credentials не читаются в проекцию. Для сверки
+добавлен optional expectedUpdatedAt (старые callers сохраняют совместимость).
+Terminal decision сохраняется CAS в транзакции; одинаковый повтор того же
+actor возвращает результат без второго audit, изменённый/чужой повтор —409.
+MATCHED не закрывается повторно. HTTP response ограничен id/status/resolution/
+resolvedAt. OpenAPI и typed client обновлены. Импортный lifecycle не менялся.
+
+Выполнено:
+- API focused: operation-object-context12 и integration-reconciliation3 PASS;
+  неизменённый operation-workflow5 PASS. `npm run typecheck --workspace apps/api` PASS.
+- schema targeted17 и client targeted5 (включая support/notification contracts) PASS.
+- `npm run build --workspace packages/schemas`, packages/api-client и apps/api PASS.
+- `npm run db:test -- exec -- node .tmp/operator-imports/verify-reconciliation.mjs`
+  PASS: реальная disposable PostgreSQL, tenant denial,5 concurrent identical requests,
+  single audit, changed replay409, rollback при audit failure. Fixture cleanup PASS.
+- `npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs` PASS,
+  попытка1, .tmp/operator-imports/postgres.log. Рабочая БД не изменялась.
+- `node scripts/verify-runtime-split.mjs` PASS; scoped ESLint PASS; diff hygiene PASS.
+- `npm run db:test -- exec -- node scripts/verify-pilot-backend.mjs --contract-only`
+  PASS, .tmp/operator-imports/core-contract.log; новый OpenAPI context/resolve contract.
+
+Блокер UI baseline: автоматическая проверка разрешений отклонила запуск Next
+preview3103 (`blocked by policy`, без подробной причины). Не обходили отказ.
+Действующих dev3000/API4012 и preview3103/API4113 на момент проверки нет.
+Старый admin-import-review-final.png просмотрен, но не принят за актуальный
+baseline: это прежний дизайн. UI-код не менялся. Необходимы доступный preview,
+текущий screenshot/computed styles, контекстные действия/recovery UI и browser
+приёмка imports/support/notifications/MA-01–05. R7.7.6.2 НЕ ACCEPTED;
+без commit/push и без перехода к .3. Промежуточные изменения сохранены.
+
+Продолжение по поручению владельца: после повторного отказа preview3103 владелец
+явно попросил поднять dev как preview. Штатный `npm run dev` разрешён и запущен:
+canonical root, go_live, frontend3000/API4012, health и homepage200. Миграции/seed
+не выполнялись. Dev оставлен для владельца; browser fixtures перехватывают API.
+Baseline: .tmp/operator-imports/before-1440.png и before-390.png просмотрены;
+computed controls44/radius8/Manrope14 соответствуют контракту. Добавляется
+контекстный UI с подтверждением отката, неизменным повтором команды после
+неопределённого ответа, refresh без потери причины и безопасными номерами строк.
+Нерелевантные supplier/setup формы скрыты, пока открыт конкретный объект очереди.
+
+Итог 17.10: R7.7.6.2 LOCAL_PASS. Прежний блокер preview снят штатным dev по
+явному поручению владельца. Контекст содержит название поставщика/подключения,
+бизнес-идентификатор расхождения, состояние и разрешения; credentials/raw payload
+не выдаются. Process только MAPPED, rollback только завершённых импортов с
+серверной проверкой. FAILED не переводится принудительно в обработку. Resolve
+использует expectedUpdatedAt, atomic compare-and-set и идемпотентный replay.
+UI сохраняет команду после неопределённого ответа, не отправляет новое действие
+после успешной записи с ошибкой refresh, сохраняет причину и возвращает focus.
+
+Дополнительная приёмка:
+- `npm run db:test -- exec --workspace apps/e2e -- playwright test --config
+  playwright.operator-imports-api.config.ts` PASS1, повтор после последней правки
+  безопасной проекции также PASS1. HTTP:401/403 tenant/role,400/409, конкурентный
+  rollback/resolve, single audit/outbox и read-only permissions. Только disposable DB.
+- `playwright.operator-imports.config.ts`: imports/reconciliation7 PASS,
+  support/notifications9 PASS; MA-05 clinic/supplier deep-link/reload2 PASS.
+  Итого18 уникальных UI-сценариев. Первый imports run5 FAIL/1 PASS: исправлены
+  реальная потеря focus при Escape и неверный locator toast; следующий6 PASS,
+  после добавления stale navigation и финальных текстов7 PASS. Support первый
+  run6 PASS/3 FAIL из-за неполной session fixture; fixture исправлена, retry3 PASS.
+  Проверяемые продуктовые assertions сохранены.
+- Support unit/PostgreSQL28 PASS, включая MA-03: OPEN→IN_PROGRESS сохраняет
+  первоначальный firstResponseAt. Attachments PostgreSQL2 PASS: приватность,
+  конкурентность и rollback. MA-01–05 и существующие drafts/polling сохранены.
+- Admin/E2E typecheck PASS; scoped ESLint PASS (последние3 TS повторно PASS).
+  Unified webpack build через `.tmp/operator-imports/build-web.mjs` PASS,
+  `.tmp/operator-imports/build-web.log`. API nest build после финальной проекции PASS.
+  Предыдущие schema/client, core-contract/runtime/PostgreSQL PASS переиспользованы:
+  соответствующие mutation/infra inputs после них не менялись.
+- Screenshots1440/390 и computed styles проверены: controls44, radius8,
+  Manrope14; shared adapters, keyboard/focus, no horizontal overflow. Evidence:
+  `.tmp/operator-imports/browser-final/`, `form-1440.png`, `confirm-390.png`.
+  Dev обновлён штатным запуском для актуальной API-проекции, без migration/seed.
+
+Scope review: только собственные imports/context/contracts/tests и эти два
+документа. Чужие catalog/CI/config/governance WIP сохранены вне staging.
+Полный release/E2E не запускался: задача ограничена imports/support; применимые
+доменные gates выше выполнены. R7.7.6.3 и deploy не выполнялись.

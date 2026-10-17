@@ -44,6 +44,11 @@ it.skipIf(!process.env.POSTGRES_TEST_DATABASE_URL)("support PostgreSQL: tenant, 
     await Promise.all([service.addMessage(ticket.id, reopen, customer), service.addMessage(ticket.id, reopen, customer)]);
     expect(await db.supportTicket.findUnique({ where: { id: ticket.id } })).toEqual(expect.objectContaining({ status: "IN_PROGRESS", closedAt: null, resolvedAt: null }));
     expect(await db.auditLog.count({ where: { entityId: ticket.id, action: "support.ticket.reopened" } })).toBe(1);
+    // MA-03: a prior first response must not prevent an operator from taking a reopened OPEN ticket into work.
+    const priorResponse = new Date("2026-10-01T00:00:00.000Z");
+    await db.supportTicket.update({ where: { id: ticket.id }, data: { status: "OPEN", firstResponseAt: priorResponse } });
+    await service.addMessage(ticket.id, { ...reply, idempotencyKey: randomUUID(), body: "Operator resumes investigation" }, operator);
+    expect(await db.supportTicket.findUnique({ where: { id: ticket.id } })).toEqual(expect.objectContaining({ status: "IN_PROGRESS", firstResponseAt: priorResponse }));
     const before = await db.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } });
     const rollback = new Proxy(db, { get(source, property) {
       if (property === "$transaction") return (callback: (tx: Prisma.TransactionClient) => Promise<unknown>) => db.$transaction(tx => callback(new Proxy(tx, { get(transaction, name) { return name === "outboxEvent" ? { create: async () => { throw new Error("Synthetic outbox failure"); } } : Reflect.get(transaction, name); } })));

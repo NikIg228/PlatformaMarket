@@ -754,6 +754,12 @@ export class MarketplaceApiClient {
     );
   }
 
+  resolveIntegrationReconciliation(supplierId: string, connectionId: string, entryId: string, input: import("@marketplace/schemas").ResolveReconciliationInput) {
+    return this.post<import("@marketplace/schemas").ResolvedReconciliation>(
+      `/suppliers/${supplierId}/integrations/${connectionId}/reconciliation/${entryId}/resolve`, input,
+    );
+  }
+
   listCatalogImportReviews() {
     return this.get<CatalogImportReviewQueueResponse>(
       "/moderation/import-reviews",

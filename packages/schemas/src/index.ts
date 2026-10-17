@@ -1380,7 +1380,10 @@ export const reconciliationQuerySchema = z.object({
 
 export const resolveReconciliationSchema = z.object({
   resolution: z.string().trim().min(3).max(2_000),
+  expectedUpdatedAt: z.iso.datetime().optional(),
 });
+export const resolvedReconciliationSchema = z.object({ id: z.uuid(), status: z.literal("RESOLVED"), resolution: z.string(), resolvedAt: z.iso.datetime() });
+export type ResolvedReconciliation = z.infer<typeof resolvedReconciliationSchema>;
 
 export const connectorReadinessDirectionSchema = z.enum(["CATALOG", "PRICE", "STOCK", "LOT", "ORDER", "RESERVATION", "SHIPMENT", "DOCUMENT"]);
 export const updateConnectorReadinessSchema = z.object({

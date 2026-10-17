@@ -13,7 +13,7 @@ import { notificationInboxQuerySchema, notificationInboxSchema, notificationRead
 import { commerceAnalyticsQuerySchema, commerceAnalyticsResponseSchema, supplierImportPreviewInputSchema, supplierImportPreviewSchema } from "@marketplace/schemas";
 import { accessPolicySchema } from "@marketplace/schemas";
 import { internalNotificationSchema, internalNotificationListSchema, notificationQuerySchema } from "@marketplace/schemas";
-import { operationObjectSchema, operationWorkQueueQuerySchema } from "@marketplace/schemas";
+import { operationObjectSchema, operationWorkQueueQuerySchema, resolveReconciliationSchema, resolvedReconciliationSchema } from "@marketplace/schemas";
 import { uploadedDocumentSchema } from "@marketplace/schemas";
 import { emailLoginSchema, emailTokenSchema, emailResetPasswordSchema, authEmailSessionSchema, authEmailVerifiedSchema, authPasswordResetResultSchema, mfaCodeSchema, mfaStatusSchema, mfaEnrollmentSchema, mfaVerificationResultSchema, mfaChallengeResultSchema, mfaDisabledSchema, uploadDocumentSchema } from "@marketplace/schemas";
 import { createSupportTicketSchema, addSupportMessageSchema, updateSupportTicketSchema, supportTicketSummarySchema, supportTicketListSchema, supportTicketQuerySchema, supportTicketDetailSchema, supportMessageQuerySchema, supportMessageResponseSchema, uploadSupportAttachmentSchema, uploadedSupportAttachmentSchema } from "@marketplace/schemas";
@@ -178,6 +178,8 @@ const coreZodSchemas = {
   OperatorOrganizationsQuery: operatorOrganizationsQuerySchema,
   OperatorOrganizationDetail: operatorOrganizationDetailSchema,
   OperationObject: operationObjectSchema,
+  ResolveReconciliation: resolveReconciliationSchema,
+  ResolvedReconciliation: resolvedReconciliationSchema,
   OperationWorkQueueQuery: operationWorkQueueQuerySchema,
   AuthEmailLoginRequest: emailLoginSchema,
   AuthEmailVerifyRequest: emailTokenSchema,

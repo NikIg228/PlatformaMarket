@@ -52,7 +52,7 @@ test('operator ticket recovery initializes the saved status, priority and assign
   const writes: unknown[] = [];
   const ticket = { id: id(201), number: 'AUDIT-RECOVERY', subject: 'Проверка восстановления', description: 'Сохранённое закрытое обращение', version: 8,
     status: 'CLOSED', priority: 'HIGH', assigneeId: id(2), slaDueAt: '2026-10-15T12:00:00.000Z', messages: [], links: [], hasOlder: false };
-  await page.addInitScript(({ organizationId }) => sessionStorage.setItem('dentmarket_admin_session', JSON.stringify({ accessToken: 'synthetic-operator-ui-audit', activeOrganizationId: organizationId, organizationId })), { organizationId: id(1) });
+  await page.addInitScript(({ organizationId }) => sessionStorage.setItem('dentmarket_admin_session', JSON.stringify({ accessToken: 'synthetic-operator-ui-audit', sessionId: '10000000-0000-4000-8000-000000000001', user: { id: '20000000-0000-4000-8000-000000000001' }, expiresAt: Date.now() + 3600000, activeOrganizationId: organizationId, organizationId })), { organizationId: id(1) });
   await page.route('**/api/**', async route => {
     const request = route.request(), path = new URL(request.url()).pathname.replace(/^\/api/, '');
     let json: unknown;

@@ -7,12 +7,14 @@ import { LoadingState } from "@marketplace/ui/primitives";
 import { errorMessage, formatStatus } from "@marketplace/ui/format";
 import { adminApiContext } from "./admin-auth";
 import { useAdminQuery } from "./use-admin-query";
+import { OperationImportFocus } from "./operation-import-focus";
 
 export function OperationObjectFocus() {
   const api = useMemo(() => new MarketplaceApiClient(process.env.NEXT_PUBLIC_API_URL ?? "/api", adminApiContext()), []);
   const { state, write } = useAdminQuery();
   const { queueType, object: id } = state;
-  const target = queueType && id && !(state.section === "orders" && queueType === "SUPPLIER_CONFIRMATION") ? `${queueType}:${id}` : "";
+  const importContext = state.section === "imports" && (queueType === "IMPORT_ATTENTION" || queueType === "INTEGRATION_RECONCILIATION");
+  const target = queueType && id && !importContext && !(state.section === "orders" && queueType === "SUPPLIER_CONFIRMATION") ? `${queueType}:${id}` : "";
   const [result, setResult] = useState<{ target: string; object?: Awaited<ReturnType<typeof api.operationObject>>; error?: string }>();
   const [revision, setRevision] = useState(0);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -26,6 +28,7 @@ export function OperationObjectFocus() {
     return () => { active = false; };
   }, [api, queueType, id, target, revision]);
   useEffect(() => { if (target) heading.current?.focus(); }, [target]);
+  if (importContext && id && queueType) return <OperationImportFocus key={`${queueType}:${id}`} id={id} queueType={queueType} />;
   if (!target) return null;
   const current = result?.target === target ? result : undefined;
   return <section aria-label="Объект из очереди"><DmSurface><div style={{ padding: "var(--dm-space-6)" }}>

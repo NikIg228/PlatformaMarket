@@ -1,6 +1,6 @@
 import { membershipPermission } from "../access-control/access-mode";
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import type { OperationAssignment, OperationAssignmentResult, OperationQueueType } from "@marketplace/schemas";
+import type { OperationAssignment, OperationAssignmentResult, OperationQueueType, OperationObject } from "@marketplace/schemas";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import { AccessControlService } from "../access-control/access-control.service";
 import { workflowCommand } from "../support/workflow-command";
@@ -25,12 +25,13 @@ export class OperationWorkflowService {
     return members.map(item => item.user);
   }
 
-  async object(type: OperationQueueType, id: string, context: SupplierActorContext) {
+  async object(type: OperationQueueType, id: string, context: SupplierActorContext): Promise<OperationObject> {
     await this.authorize(context);
     if (type === "PROMOTION_REVIEW" && environment().DEPLOYMENT_PROFILE !== "go_live") throw new NotFoundException("Queue object not found");
     const fields: { label: string; value: string }[] = [];
     const field = (label: string, value: unknown) => fields.push({ label, value: value instanceof Date ? value.toISOString() : value == null ? "Не указано" : String(value) });
     let title = "";
+    let objectContext: OperationObject["context"];
     if (type === "ORGANIZATION_REVIEW") {
       const item = await this.prisma.supplierTermsAcceptance.findUnique({ where: { id }, select: { admissionStatus: true, acceptedAt: true, organization: { select: { displayName: true } } } });
       if (item) { title = item.organization.displayName; field("Статус", item.admissionStatus); field("Акцепт", item.acceptedAt); }
@@ -44,11 +45,18 @@ export class OperationWorkflowService {
       const item = await this.prisma.complianceCheck.findUnique({ where: { id }, select: { status: true, riskLevel: true, reasons: true, evaluatedAt: true } });
       if (item) { title = "Проверка допуска"; field("Статус", item.status); field("Риск", item.riskLevel); field("Причины", Array.isArray(item.reasons) ? item.reasons.filter(value => typeof value === "string").join("; ") : "Требуется проверка"); field("Проверено", item.evaluatedAt); }
     } else if (type === "INTEGRATION_RECONCILIATION") {
-      const item = await this.prisma.integrationReconciliationEntry.findUnique({ where: { id }, select: { kind: true, status: true, externalRef: true, detectedAt: true } });
-      if (item) { title = "Расхождение данных"; field("Тип", item.kind); field("Статус", item.status); field("Внешняя ссылка", item.externalRef); field("Обнаружено", item.detectedAt); }
+      const item = await this.prisma.integrationReconciliationEntry.findUnique({ where: { id }, select: { kind: true, status: true, externalRef: true, detectedAt: true, updatedAt: true, connectionId: true, resolution: true, connection: { select: { supplierOrganizationId: true, displayName: true, supplier: { select: { organization: { select: { displayName: true } } } } } } } });
+      if (item) {
+        title = "Расхождение данных"; field("Тип", item.kind); field("Статус", item.status); field("Поставщик", item.connection.supplier.organization.displayName); field("Подключение", item.connection.displayName); field("Внешняя ссылка", item.externalRef); field("Обнаружено", item.detectedAt);
+        objectContext = { kind: "RECONCILIATION", supplierOrganizationId: item.connection.supplierOrganizationId, connectionId: item.connectionId, connectionName: item.connection.displayName, status: item.status, updatedAt: item.updatedAt.toISOString(), resolution: item.resolution, canResolve: !["MATCHED", "RESOLVED"].includes(item.status) && await this.access.hasAll(context.actorId, context.organizationId, ["integration.reconcile"]) };
+      }
     } else if (type === "IMPORT_ATTENTION") {
-      const item = await this.prisma.importBatch.findUnique({ where: { id }, select: { fileName: true, status: true, totalRows: true, processedRows: true, errorRows: true } });
-      if (item) { title = item.fileName; field("Статус", item.status); field("Строк", item.totalRows); field("Обработано", item.processedRows); field("Ошибки", item.errorRows); }
+      const item = await this.prisma.importBatch.findUnique({ where: { id }, select: { fileName: true, status: true, totalRows: true, processedRows: true, errorRows: true, supplierOrganizationId: true, updatedAt: true, supplier: { select: { organization: { select: { displayName: true } } } } } });
+      if (item) {
+        title = item.fileName; field("Статус", item.status); field("Поставщик", item.supplier.organization.displayName); field("Строк", item.totalRows); field("Обработано", item.processedRows); field("Ошибки", item.errorRows);
+        const canManage = await this.access.hasAll(context.actorId, context.organizationId, ["import.manage"]);
+        objectContext = { kind: "IMPORT", supplierOrganizationId: item.supplierOrganizationId, status: item.status, updatedAt: item.updatedAt.toISOString(), canProcess: canManage && item.status === "MAPPED", canRollback: canManage && ["COMPLETED", "COMPLETED_WITH_ERRORS"].includes(item.status) };
+      }
     } else if (type === "AGREEMENT_SIGNATURE") {
       const item = await this.prisma.marketplaceAgreement.findUnique({ where: { id }, select: { agreementNumber: true, status: true, createdAt: true } });
       if (item) { title = `Договор ${item.agreementNumber}`; field("Статус", item.status); field("Создан", item.createdAt); }
@@ -60,7 +68,7 @@ export class OperationWorkflowService {
       if (item) { title = `Остаток ${item.offer?.supplierSku ?? id}`; field("Склад", item.warehouse.name); field("Доступно", item.quantityAvailable); field("Актуальность", item.freshnessStatus); field("Подтверждено до", item.freshnessExpiresAt); }
     }
     if (!title) throw new NotFoundException("Queue object not found");
-    return { id, queueType: type, title, fields };
+    return { id, queueType: type, title, fields, ...(objectContext ? { context: objectContext } : {}) };
   }
 
   private async requireObject(type: OperationQueueType, id: string) {

@@ -12,7 +12,11 @@ export const operationAssignmentSchema = z.object({
 export const operationAssignmentResultSchema = z.object({ id: z.uuid(), version: z.number().int().positive(), priority: z.string(), assigneeId: z.uuid().nullable(), assigneeName: z.string().nullable(), dueAt: z.string().nullable(), reason: z.string(), updatedAt: z.string() });
 export const operationHistorySchema = z.array(z.object({ id: z.uuid(), action: z.string(), actorId: z.uuid().nullable(), createdAt: z.string(), before: z.unknown(), after: z.unknown() }));
 export const operationAssigneesSchema = z.array(z.object({ id: z.uuid(), displayName: z.string() }));
-export const operationObjectSchema = z.object({ id: z.uuid(), queueType: operationQueueTypeSchema, title: z.string(), fields: z.array(z.object({ label: z.string(), value: z.string() })) });
+export const operationObjectContextSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("IMPORT"), supplierOrganizationId: z.uuid(), status: z.string(), updatedAt: z.iso.datetime(), canProcess: z.boolean(), canRollback: z.boolean() }).strict(),
+  z.object({ kind: z.literal("RECONCILIATION"), supplierOrganizationId: z.uuid(), connectionId: z.uuid(), connectionName: z.string(), status: z.string(), updatedAt: z.iso.datetime(), resolution: z.string().nullable(), canResolve: z.boolean() }).strict(),
+]);
+export const operationObjectSchema = z.object({ id: z.uuid(), queueType: operationQueueTypeSchema, title: z.string(), fields: z.array(z.object({ label: z.string(), value: z.string() })), context: operationObjectContextSchema.optional() });
 export const operationPrioritySchema = z.enum(["CRITICAL", "HIGH", "NORMAL", "LOW"]);
 export const operationWorkQueueQuerySchema = z.object({
   q: z.string().trim().max(200).regex(/^[^\u0000-\u001f\u007f]*$/).default(""),
