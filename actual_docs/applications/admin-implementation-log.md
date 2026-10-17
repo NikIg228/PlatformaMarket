@@ -792,3 +792,93 @@ Scope review: только собственные imports/context/contracts/test
 документа. Чужие catalog/CI/config/governance WIP сохранены вне staging.
 Полный release/E2E не запускался: задача ограничена imports/support; применимые
 доменные gates выше выполнены. R7.7.6.3 и deploy не выполнялись.
+
+### 17.10 — R7.7.6.3: документальное исключение (LOCAL_PASS)
+
+Поручение «Приступай» после R7.7.6.2. База main/dcedcc4; CI39009934479 и
+Security39009934485 SUCCESS. Чужой catalog/CI/config/governance WIP сохранён.
+Сценарий: очередь → конкретное опубликованное расхождение R7.6.5 → заказ,
+партия, доступный документ/обращения и история → публичная рекомендация
+оператора, видимая обеим сторонам. Не менять получение, деньги, подписи,
+согласованное сторонами решение или комплектность документов.
+
+До реализации write-команды задан вопрос владельцу: рекомендация завершает
+обработку текущей редакции с повторным появлением после ответа стороны, либо
+случай остаётся в очереди. Ответ требуется только для этой семантики; чтение
+разрешённой проекции независимо от ответа. ADM-09 требует определить смысл
+закрытия до команды; контракт R7.6 запрещает оператору закрывать расхождение
+за стороны. Полное документальное закрытие/НУЦ не входят в этот пакет.
+
+План и риск: shared schema/OpenAPI/client → read projection без drafts,
+вложений, raw snapshots и лишних данных → focused API tests → согласованная
+публичная команда с version/replay/atomic audit → focused PostgreSQL → UI
+оператора и обеих сторон → совместная приёмка. Переиспользовать существующие
+discrepancy events/assignment и support links, без второго доменного lifecycle.
+Проверки: schema/client/API unit, реальные role/tenant/draft/invalid/stale/replay/
+race/rollback, неизменность статусов/денег/товара/документов; core-contract,
+runtime-split, PostgreSQL; types и unified web build; targeted browser трёх ролей,
+recovery, deep-link/filter retention,1440/390 и keyboard/screenshot/computed styles.
+Только disposable dentmarket_audit_20260914 и API4113; dev3000/API4012 сохраняются.
+Лимит каждого gate3 попытки; DoD — согласованный scope и зелёные применимые gates,
+документы, scoped commit/push/CI. Следующий этап автоматически не начинается.
+
+Паспорт UI: аналог operator-order-detail.tsx и operation-import-focus.tsx;
+DmSurface(section), DmTable, DmField/Textarea, DmButton, DmFeedback/Dialog,
+общие tokens, Manrope14/controls44/radius8. Новый feature только композиция.
+Baseline `.tmp/operator-document-exceptions/before-{1440,390}.png` просмотрен,
+computed styles PASS, overflow отсутствует. Первый baseline script остановился
+на ошибочном точном названии heading; исправленный locator PASS, runtime не менялся.
+
+Независимая read-часть реализована: GET operations/document-exceptions/:id,
+shared schema/OpenAPI/client и строгая проекция опубликованного случая.
+Platform authority и order.confirm проверяются до данных; document/support
+поля отдельно ограничены правами. Точные количества и безопасная история,
+без private draft/attachments/raw snapshots. Публичная команда, очередь и UI
+ещё не менялись; семантика завершения ожидает ответа владельца.
+`npm run build --workspace packages/schemas`, typecheck apps/api и
+packages/api-client, scoped ESLint — PASS. Focused API unit4 PASS:
+`npm run test --workspace apps/api -- --run src/modules/operations/operator-document-exceptions.service.spec.ts`.
+Первый run2 PASS/2 FAIL из-за несобранного нового schema export; после сборки
+schemas повтор4 PASS. Diff hygiene PASS. HTTP/PostgreSQL и итоговые gates этого
+этапа ещё NOT_RUN; это промежуточная реализация, не ACCEPTED и не опубликована.
+
+Владелец согласовал рекомендованный смысл завершения: публичная рекомендация
+завершает операторскую обработку текущей редакции; новый ответ стороны возвращает
+случай в очередь. Статус расхождения и действия сторон не подменяются.
+Реализация: OPERATOR_REVIEW в существующей истории, неизменный domain status,
+reason/nextStep видны обеим сторонам; общая блокировка заказа, expected versions,
+идемпотентный повтор и атомарные event/audit/outbox. Отдельная внутренняя заметка
+не вводится. Финальное документальное закрытие по-прежнему вне scope.
+
+Итог: очередь DOCUMENT_EXCEPTION и карточка опубликованного случая связаны
+с заказом, партией, доступной накладной и обращениями. UI показывает точные
+количества, историю и публичную рекомендацию/следующий шаг; обе стороны видят
+её в существующем диалоге. Confirm/Escape/focus, неизвестный результат с тем же
+ключом, сохранение текста при409 с явной повторной проверкой, различение успешной
+публикации и неудачного refresh, поздний ответ для другого объекта проверены.
+
+Проверки на собственном change set поверх dcedcc4 (чужой WIP не включён):
+- `npm run test --workspace packages/schemas -- --run src/admin-query.test.ts src/operations-workflow.test.ts src/operator-document-exception.test.ts` —50 PASS.
+- `npm run test --workspace packages/api-client -- --run src/operator-document-exception.test.ts` —1 PASS; builds schemas/client PASS.
+- `npm run test --workspace apps/api -- --run src/modules/operations/operation-queue.service.spec.ts src/modules/operations/operation-workflow.service.spec.ts src/modules/operations/operation-object-context.spec.ts src/modules/operations/operator-document-exceptions.service.spec.ts` —37 PASS (13 новых read/write tests).
+- `npm run db:test -- run test --workspace apps/api -- --run src/modules/operations/operator-document-exceptions.postgres.spec.ts` — focused transaction PASS: четыре одинаковых команды дают одно событие/audit/outbox; сбой audit/outbox откатывает запись. Первая попытка выявила пропущенное recipientName в synthetic fixture; исправлен fixture, повтор PASS.
+- `npx playwright test --config apps/e2e/playwright.operator-document-exceptions-api.config.ts` —1 real HTTP scenario PASS:401/403/404/400/409, private draft denial, версия/replay/гонка, очередь/назначение, публикация обеим сторонам, ответ поставщика возвращает случай, unchanged order/shipment/documents/stock и отозванное право.
+- `npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs` —PASS, включая upgrade-path и purchase concurrency/rollback/tenant gates; `.tmp/operator-document-exceptions/postgres.log`.
+- `npm run db:test -- exec -- node scripts/verify-pilot-backend.mjs --contract-only` —PASS; `.tmp/operator-document-exceptions/core-contract.log`. `node scripts/verify-runtime-split.mjs` после API build —PASS.
+- `npm run typecheck --workspace <workspace>` —PASS для apps/api, apps/admin-web, apps/buyer-web, apps/supplier-web, apps/e2e, packages/ui и packages/api-client; `npm exec --workspace apps/api -- nest build` PASS.
+- `node .tmp/operator-document-exceptions/build-web.mjs` — unified webpack build PASS (49 routes); canonical source, isolated dist/tsconfig, next-env restored. `.tmp/operator-document-exceptions/build-web.log`. Без reinstall и альтернативного source tree.
+- `npx playwright test --config apps/e2e/playwright.operator-document-exceptions.config.ts` —16 PASS:7 новых операторских,4 existing registry/navigation,4 обеих сторон1440/390,1 existing supplier counterproposal. Повтор только2 операторских и4 party visual cases после уточнения capture: full-page снимается с scroll0, отдельный viewport формы и прокрутка к публичной рекомендации. Runtime не менялся; все повторные cases PASS.
+- Scoped `npx eslint --quiet <own TS/TSX files>` и `git diff --check` —PASS.
+
+Визуальная приёмка: `output/playwright/operator-document-exceptions/` и
+`output/playwright/operator-document-exceptions-parties/`; Манrope14,
+controls44/radius8,1440/390, keyboard/focus и отсутствие horizontal overflow PASS.
+Начальный full-page capture после возврата focus показывал fixed header в середине
+изображения; capture с scroll0 и отдельный viewport подтвердили штатный layout.
+Миграция `20261017100000_document_exception_queue` расширяет только CHECK
+назначения очереди, сохраняя прежние типы/version/priority. Prisma validate и
+применение51 migrations на disposable dentmarket_audit_20260914 PASS.
+Рабочая БД не мигрировалась; dev API4012 остался на предыдущей сборке, API4113
+после теста остановлен. Full release/E2E и deploy не входили в эту задачу.
+R7.7.6 закрыт локально по согласованным .1–.3; R7.7.7 не начат.
+Публикация и CI проверяются отдельно после scoped commit.

@@ -165,7 +165,7 @@ export default function OperationsWorkspace() {
     access: <><SupplierControls /><PlatformAssurance /></>,
     catalog: <><ManualProductReview />{frontendFeatures.promotions ? <PromotionModeration /> : null}<ProductCorrectionQueue /><CatalogQuality /><CatalogFoundation /><FoundationManagement catalogOnly /></>,
     imports: state.object && (state.queueType === "IMPORT_ATTENTION" || state.queueType === "INTEGRATION_RECONCILIATION") ? null : <><CatalogImportReviewQueue /><SupplierOperations /><IntegrationOperations /><ConnectorReadinessRegistry /></>,
-    orders: <OperatorOrders />,
+    orders: state.object && state.queueType === "DOCUMENT_EXCEPTION" ? null : <OperatorOrders />,
     security: <>{frontendFeatures.trust && <TrustOperations />}<AuditOperations /></>,
     settings: <><PlatformSettings onNavigate={navigate} /><IdentitySettings /></>,
   };

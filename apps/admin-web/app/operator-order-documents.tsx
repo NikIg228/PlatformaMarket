@@ -30,7 +30,7 @@ function DocumentPage({ orderId, cursor, previous, next, select }: { orderId: st
   </div>;
 }
 
-function DocumentDialog({ orderId, id, close }: { orderId: string; id: string; close: () => void }) {
+export function DocumentDialog({ orderId, id, close }: { orderId: string; id: string; close: () => void }) {
   const [open, setOpen] = useState(true);
   const [versionId, setVersionId] = useState(id);
   const [busy, setBusy] = useState(false), [downloadError, setDownloadError] = useState("");

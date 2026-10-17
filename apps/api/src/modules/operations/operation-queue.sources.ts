@@ -27,6 +27,12 @@ export function operationQueueSources(promotionsEnabled: boolean): Prisma.Sql {
     Prisma.sql`SELECT 'SUPPLIER_CONFIRMATION', id, "orderNumber", "supplierOrganizationId", "buyerOrganizationId",
       "createdAt", "updatedAt", 'HIGH', 'Заказ ожидает подтверждения поставщика', 'orders', ''
       FROM "SupplierOrder" WHERE status = 'AWAITING_CONFIRMATION'`,
+    Prisma.sql`SELECT 'DOCUMENT_EXCEPTION', d.id, concat_ws(' · ', o."orderNumber", s."shipmentNumber"), o."supplierOrganizationId", o."buyerOrganizationId",
+      d."createdAt", d."updatedAt", 'HIGH', 'Опубликованное расхождение требует рекомендации оператора', 'orders', concat_ws(' ', o."orderNumber", s."shipmentNumber")
+      FROM "OrderDiscrepancy" d JOIN "SupplierOrder" o ON o.id = d."supplierOrderId" JOIN "Shipment" s ON s.id = d."shipmentId"
+      WHERE d.status <> 'DRAFT' AND NOT EXISTS (
+        SELECT 1 FROM "OrderDiscrepancyEvent" e WHERE e."discrepancyId" = d.id AND e.version = d.version AND e.action = 'OPERATOR_REVIEW'
+      )`,
     Prisma.sql`SELECT 'STALE_INVENTORY', b.id, concat_ws(' · ', COALESCE(o."supplierSku", 'Остаток'), w.name), b."supplierOrganizationId", NULL::uuid,
       b."createdAt", b."updatedAt", 'HIGH', 'Остаток требует подтверждения актуальности', 'catalog', COALESCE(o."supplierSku", '')
       FROM "InventoryBalance" b JOIN "Warehouse" w ON w.id = b."warehouseId" LEFT JOIN "SupplierOffer" o ON o.id = b."offerId"

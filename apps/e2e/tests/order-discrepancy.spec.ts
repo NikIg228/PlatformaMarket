@@ -111,6 +111,27 @@ for (const width of [1440, 390]) test(`working resupply documents recovery, hist
   await page.keyboard.press("Escape"); await expect(page.getByRole("button", { name: /Открыть заявление/ })).toBeFocused();
 });
 async function visit(page: Page, buyer = true) { await page.goto(`/${buyer ? "clinic" : "supplier"}/orders/${orderId}`); await page.getByRole("tab", { name: "Отгрузки", exact: true }).click(); }
+for (const buyer of [true, false]) for (const width of [1440, 390]) test(`public operator recommendation remains separate from party resolution ${buyer ? "clinic" : "supplier"} ${width}`, async ({ page }, info) => {
+  const state = stateFixture();
+  state.rows.push({ id: id(180), shipmentId, version: 2, status: "SUBMITTED", previousDiscrepancyId: null,
+    statement: { kind: "SHORTAGE", reason: "Получено восемь из десяти", requestedResolution: "RESUPPLY", attachmentIds: [], lines: [{ shipmentItemId: itemId, actualQuantity: "8", damagedQuantity: "0" }] },
+    source, resolution: null, resupply: null, createdAt: date, updatedAt: date, attachments: [],
+    events: [{ id: id(250), version: 2, action: "OPERATOR_REVIEW", actorId: id(251), organizationId: id(252), createdAt: date,
+      details: { reason: "Оператор проверил исходное заявление и количества", nextStep: "Поставщику согласовать довоз двух единиц", reviewedExceptionVersion: 1 } }] });
+  await fixture(page, buyer, state); await page.setViewportSize({ width, height: 1000 }); await visit(page, buyer);
+  await page.getByRole("button", { name: "Открыть заявление · PART-1 · редакция 2", exact: true }).click();
+  const panel = dialog(page);
+  await expect(panel.getByText(/Рекомендация оператора для клиники и поставщика/)).toBeVisible();
+  await expect(panel.getByText("Оператор проверил исходное заявление и количества", { exact: true })).toBeVisible();
+  await expect(panel.getByText("Следующий шаг: Поставщику согласовать довоз двух единиц", { exact: true })).toBeVisible();
+  await expect(panel.getByText("Оператор рассмотрел эту редакцию. Рекомендация не закрывает расхождение и не заменяет решение или подпись сторон.", { exact: true })).toBeVisible();
+  await expect(panel.getByText(/Ожидает ответа поставщика/)).toBeVisible();
+  if (!buyer) await expect(panel.getByRole("button", { name: "Отправить ответ", exact: true })).toBeEnabled();
+  await panel.getByText("Следующий шаг: Поставщику согласовать довоз двух единиц", { exact: true }).scrollIntoViewIfNeeded();
+  await noOverflow(page); await page.screenshot({ path: info.outputPath(`public-review-${buyer ? "clinic" : "supplier"}-${width}.png`), animations: "disabled" });
+  expect(state.requests).toHaveLength(0); expect(state.rows[0].status).toBe("SUBMITTED");
+  await page.keyboard.press("Escape"); await expect(page.getByRole("button", { name: "Открыть заявление · PART-1 · редакция 2", exact: true })).toBeFocused();
+});
 async function createDraft(page: Page) {
   await page.getByRole("button", { name: "Сообщить о расхождении · PART-1", exact: true }).click();
   await dialog(page).getByRole("textbox", { name: "Фактически получено — позиция 1", exact: true }).fill("8");

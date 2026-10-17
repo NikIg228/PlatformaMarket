@@ -26,6 +26,7 @@ export function OperatorOrderDetail({ id, state, write }: { id: string; state: A
 
 function OrderFacts({ data, state, write }: { data: Detail; state: AdminQuery; write: (state: AdminQuery) => void }) {
   const { workflow: flow } = data, { order } = flow;
+  const exceptionTarget = (id: string): AdminQuery => ({ ...adminSectionQuery(state, "orders"), queueType: "DOCUMENT_EXCEPTION", object: id });
   const itemName = (id: string) => order.items.find(item => item.id === id)?.offer?.productVariant.product.canonicalName ?? `Позиция ${order.items.findIndex(item => item.id === id) + 1}`;
   return <>
     <DmSurface variant="section" className={styles.section}><h3>Заказ {order.orderNumber}</h3><div className={styles.tags}><StatusTag>Исполнение: {orderStatusLabel(flow.status)}</StatusTag><StatusTag>Оплата: {orderStatusLabel(flow.paymentStatus)}</StatusTag></div>
@@ -54,6 +55,7 @@ function OrderFacts({ data, state, write }: { data: Detail; state: AdminQuery; w
     <DmSurface variant="section" className={styles.section}><h3>Расхождения и допоставка</h3>{!data.discrepancies.length ? <p>Поданных заявлений о расхождениях нет.</p> : data.discrepancies.map(claim => <section key={claim.id} className={styles.section} aria-label={`Расхождение ${claim.id}`}>
       <h4>{order.shipments?.find(shipment => shipment.id === claim.shipmentId)?.shipmentNumber ?? "Партия"} · {orderStatusLabel(claim.status)}</h4><p>{claim.reason}</p><p>Способ урегулирования: {orderStatusLabel(claim.resolution ?? "NOT_SELECTED")}. Редакция заявления: {claim.version}.</p>
       {claim.sourceDocumentVersion ? <p>Исходный документ: редакция {claim.sourceDocumentVersion}.</p> : null}
+      <div><DmButton as="a" href={orderHref(exceptionTarget(claim.id))} onClick={event => orderNavigate(event, exceptionTarget(claim.id), write)}>Открыть расхождение · редакция {claim.version}</DmButton></div>
       {claim.resupply ? <><p>Документальное урегулирование: {claim.resupply.documentStatus === "INCOMPLETE" ? "Не завершено" : "Не подтверждено"}.</p><p>Допоставка: {claim.resupply.shipment?.number ?? "Ещё не отправлена"}.</p>{claim.resupply.lines.map(line => <p key={line.shipmentItemId}>{line.name}: исходно получено {line.originalReceivedQuantity}; к довозу {line.quantity}; получено по допоставке {line.deliveredQuantity} {line.uom}.</p>)}</> : null}
     </section>)}</DmSurface>
     <DmSurface variant="section" className={styles.section}><h3>Возвраты</h3>{!flow.returns?.length ? <p>Возвратов нет.</p> : flow.returns.map(item => <section key={item.id} className={styles.section}><h4>{orderStatusLabel(item.status)} · {formatMoney(item.amountMinor, item.currency)}</h4><p>{item.reason}</p>{item.decisionReason ? <p>Решение: {item.decisionReason}</p> : null}{item.items.map(line => <p key={line.orderItemId}>{itemName(line.orderItemId)}: {line.quantity} · {line.condition}</p>)}<p>Товар возвращён: {formatDate(item.goodsReceivedAt, true)}. Возврат денег получен: {formatDate(item.refundReceivedAt, true)}.</p></section>)}</DmSurface>
@@ -70,7 +72,7 @@ function OrderTimeline({ data }: { data: Detail }) {
   const events = [
     { id: "created", at: workflow.order.createdAt, title: "Заказ создан", context: workflow.order.orderNumber },
     ...workflow.events.map(event => ({ id: event.id, at: event.createdAt, title: eventLabels[event.action] ?? orderStatusLabel(event.action), context: "Заказ" })),
-    ...data.discrepancies.flatMap(claim => claim.events.map(event => ({ id: event.id, at: event.createdAt, title: eventLabels[event.action] ?? orderStatusLabel(event.action), context: `Расхождение · редакция ${event.version}` }))),
+    ...data.discrepancies.flatMap(claim => claim.events.map(event => ({ id: event.id, at: event.createdAt, title: event.action === "OPERATOR_REVIEW" ? "Оператор опубликовал рекомендацию сторонам" : eventLabels[event.action] ?? orderStatusLabel(event.action), context: `Расхождение · редакция ${event.version}` }))),
     ...(workflow.order.shipments ?? []).flatMap(shipment => [
       { id: `${shipment.id}:created`, at: shipment.createdAt, title: "Партия создана", context: shipment.shipmentNumber },
       ...(shipment.dispatchedAt ? [{ id: `${shipment.id}:sent`, at: shipment.dispatchedAt, title: "Партия отправлена", context: shipment.shipmentNumber }] : []),

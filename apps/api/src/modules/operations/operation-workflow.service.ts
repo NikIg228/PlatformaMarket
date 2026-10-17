@@ -27,6 +27,7 @@ export class OperationWorkflowService {
 
   async object(type: OperationQueueType, id: string, context: SupplierActorContext): Promise<OperationObject> {
     await this.authorize(context);
+    if (type === "DOCUMENT_EXCEPTION" && !await this.access.hasAll(context.actorId, context.organizationId, ["order.confirm"])) throw new ForbiddenException("Order permission is required");
     if (type === "PROMOTION_REVIEW" && environment().DEPLOYMENT_PROFILE !== "go_live") throw new NotFoundException("Queue object not found");
     const fields: { label: string; value: string }[] = [];
     const field = (label: string, value: unknown) => fields.push({ label, value: value instanceof Date ? value.toISOString() : value == null ? "Не указано" : String(value) });
@@ -60,6 +61,9 @@ export class OperationWorkflowService {
     } else if (type === "AGREEMENT_SIGNATURE") {
       const item = await this.prisma.marketplaceAgreement.findUnique({ where: { id }, select: { agreementNumber: true, status: true, createdAt: true } });
       if (item) { title = `Договор ${item.agreementNumber}`; field("Статус", item.status); field("Создан", item.createdAt); }
+    } else if (type === "DOCUMENT_EXCEPTION") {
+      const item = await this.prisma.orderDiscrepancy.findFirst({ where: { id, status: { not: "DRAFT" } }, select: { status: true, version: true, supplierOrder: { select: { orderNumber: true } }, shipment: { select: { shipmentNumber: true } } } });
+      if (item) { title = `Расхождение · ${item.supplierOrder.orderNumber}`; field("Партия", item.shipment.shipmentNumber); field("Статус", item.status); field("Редакция", item.version); }
     } else if (type === "SUPPLIER_CONFIRMATION") {
       const item = await this.prisma.supplierOrder.findUnique({ where: { id }, select: { orderNumber: true, status: true, paymentStatus: true, buyer: { select: { displayName: true } }, supplier: { select: { displayName: true } }, createdAt: true } });
       if (item) { title = `Заказ ${item.orderNumber}`; field("Статус", item.status); field("Оплата", item.paymentStatus); field("Клиника", item.buyer.displayName); field("Поставщик", item.supplier.displayName); field("Создан", item.createdAt); }
@@ -82,12 +86,14 @@ export class OperationWorkflowService {
       : type === "IMPORT_ATTENTION" ? await this.prisma.importBatch.findUnique({ where: { id }, select })
       : type === "AGREEMENT_SIGNATURE" ? await this.prisma.marketplaceAgreement.findUnique({ where: { id }, select })
       : type === "SUPPLIER_CONFIRMATION" ? await this.prisma.supplierOrder.findUnique({ where: { id }, select })
+      : type === "DOCUMENT_EXCEPTION" ? await this.prisma.orderDiscrepancy.findFirst({ where: { id, status: { not: "DRAFT" } }, select })
       : await this.prisma.inventoryBalance.findUnique({ where: { id }, select });
     if (!record) throw new NotFoundException("Queue object not found");
   }
 
   async assign(type: OperationQueueType, id: string, input: OperationAssignment, context: SupplierActorContext) {
     await this.authorize(context, true);
+    if (type === "DOCUMENT_EXCEPTION" && !await this.access.hasAll(context.actorId, context.organizationId, ["order.confirm"])) throw new ForbiddenException("Order permission is required");
     await this.requireObject(type, id);
     if (input.assigneeId && !await this.access.hasAll(input.assigneeId, context.organizationId, ["support.ticket.manage"])) throw new ConflictException("Assignee must be an active operator in your organization");
     return this.prisma.$transaction(tx => workflowCommand(tx, `operation.assign:${context.organizationId}:${context.actorId}`, input.idempotencyKey, { type, id, ...input }, async () => {
@@ -110,6 +116,10 @@ export class OperationWorkflowService {
 
   async history(type: OperationQueueType, id: string, context: SupplierActorContext) {
     await this.authorize(context);
+    if (type === "DOCUMENT_EXCEPTION") {
+      if (!await this.access.hasAll(context.actorId, context.organizationId, ["order.confirm"])) throw new ForbiddenException("Order permission is required");
+      await this.requireObject(type, id);
+    }
     const assignment = await this.prisma.operationAssignment.findUnique({ where: { operatorOrganizationId_queueType_entityId: { operatorOrganizationId: context.organizationId, queueType: type, entityId: id } } });
     if (!assignment) return [];
     return this.prisma.auditLog.findMany({ where: { organizationId: context.organizationId, entityType: "OperationAssignment", entityId: assignment.id }, select: { id: true, action: true, actorId: true, createdAt: true, before: true, after: true }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 30 });

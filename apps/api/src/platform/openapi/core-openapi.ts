@@ -1,4 +1,4 @@
-import { operatorOrdersQuerySchema, operatorOrdersSchema, operatorOrderDetailSchema } from "@marketplace/schemas";
+import { operatorOrdersQuerySchema, operatorOrdersSchema, operatorOrderDetailSchema, operatorDocumentExceptionSchema, operatorExceptionReviewSchema, operatorExceptionReviewResultSchema } from "@marketplace/schemas";
 import { orderDiscrepancyCommandSchema, orderDiscrepancyResultSchema, orderDiscrepanciesResponseSchema, discrepancyUploadSchema, discrepancyAttachmentSchema, discrepancyDownloadSchema } from "@marketplace/schemas";
 import { prepareResupplyDocumentSchema, resupplyDocumentViewSchema, resupplyDocumentsResponseSchema } from "@marketplace/schemas";
 import { prepareShipmentWaybillSchema, shipmentWaybillViewSchema, shipmentWaybillsResponseSchema } from "@marketplace/schemas";
@@ -175,6 +175,9 @@ const coreZodSchemas = {
   OperatorOrdersQuery: operatorOrdersQuerySchema,
   OperatorOrders: operatorOrdersSchema,
   OperatorOrderDetail: operatorOrderDetailSchema,
+  OperatorDocumentException: operatorDocumentExceptionSchema,
+  OperatorExceptionReview: operatorExceptionReviewSchema,
+  OperatorExceptionReviewResult: operatorExceptionReviewResultSchema,
   OperatorOrganizationsQuery: operatorOrganizationsQuerySchema,
   OperatorOrganizationDetail: operatorOrganizationDetailSchema,
   OperationObject: operationObjectSchema,

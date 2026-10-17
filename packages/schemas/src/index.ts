@@ -1378,6 +1378,8 @@ export const reconciliationQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(200).default(50),
 });
 
+export * from "./operator-document-exception";
+
 export const resolveReconciliationSchema = z.object({
   resolution: z.string().trim().min(3).max(2_000),
   expectedUpdatedAt: z.iso.datetime().optional(),

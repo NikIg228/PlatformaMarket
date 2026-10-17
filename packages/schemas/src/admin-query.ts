@@ -1,7 +1,7 @@
 /** Read-only URL state. Never conveys identity, authority or commands. */
 import { operatorOrderStatuses, operatorOrderPaymentStatuses } from "./operator-order-status";
 export const adminSections = ["analytics", "overview", "organizations", "access", "catalog", "imports", "orders", "support", "security", "settings"] as const;
-export const adminQueueTypes = ["ORGANIZATION_REVIEW", "PROMOTION_REVIEW", "CATALOG_REVIEW", "COMPLIANCE_REVIEW", "INTEGRATION_RECONCILIATION", "IMPORT_ATTENTION", "AGREEMENT_SIGNATURE", "SUPPLIER_CONFIRMATION", "STALE_INVENTORY"] as const;
+export const adminQueueTypes = ["ORGANIZATION_REVIEW", "PROMOTION_REVIEW", "CATALOG_REVIEW", "COMPLIANCE_REVIEW", "INTEGRATION_RECONCILIATION", "IMPORT_ATTENTION", "AGREEMENT_SIGNATURE", "SUPPLIER_CONFIRMATION", "STALE_INVENTORY", "DOCUMENT_EXCEPTION"] as const;
 export type AdminSection = typeof adminSections[number];
 export type AdminQueueType = typeof adminQueueTypes[number];
 export type AdminQuery = {

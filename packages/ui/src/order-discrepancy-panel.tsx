@@ -7,7 +7,7 @@ import { useOrderDiscrepancies, type OrderDiscrepancyApi } from "./order-discrep
 import { OrderResupplyPanel, discrepancyExecutionLabel } from "./order-resupply-panel";
 import { ResupplyDocumentPanel, type ResupplyDocumentApi } from "./resupply-document-panel";
 const statusLabels: Record<OrderDiscrepancyView["status"], string> = { DRAFT: "Черновик клиники", SUBMITTED: "Ожидает ответа поставщика", RESOLUTION_PROPOSED: "Ожидает решения клиники", REJECTED: "Отклонено — расхождение не урегулировано", AGREED: "Решение согласовано — требуется исполнение" };
-const eventLabels: Record<string, string> = { CREATE: "Создан черновик", SAVE: "Сохранён черновик", SUBMIT: "Клиника отправила заявление", RESPOND: "Поставщик ответил", DECIDE: "Клиника рассмотрела предложение", DISPATCH_RESUPPLY: "Поставщик отправил допоставку" };
+const eventLabels: Record<string, string> = { CREATE: "Создан черновик", SAVE: "Сохранён черновик", SUBMIT: "Клиника отправила заявление", RESPOND: "Поставщик ответил", DECIDE: "Клиника рассмотрела предложение", DISPATCH_RESUPPLY: "Поставщик отправил допоставку", OPERATOR_REVIEW: "Рекомендация оператора для клиники и поставщика" };
 export function OrderDiscrepancyPanel({ api, orderId, orderVersion, events, onChanged }: { api: OrderDiscrepancyApi; orderId: string; orderVersion: number; events: OrderWorkflowResponse["events"]; onChanged?: () => Promise<void> }) {
   const resource = useOrderDiscrepancies(api, orderId, orderVersion), { data } = resource;
   const [selectedId, setSelectedId] = useState<string | null>(null), [newShipment, setNewShipment] = useState<string | null>(null);
@@ -89,6 +89,7 @@ export function OrderDiscrepancyPanel({ api, orderId, orderVersion, events, onCh
             const details = event.details && typeof event.details === "object" ? event.details as Record<string, unknown> : {};
             return <li key={event.id}><p>{formatDate(event.createdAt, true)} — {eventLabels[event.action] ?? event.action} · редакция {event.version}</p>
               {typeof details.reason === "string" ? <p>{details.reason}</p> : null}
+              {event.action === "OPERATOR_REVIEW" ? <><p>Оператор рассмотрел эту редакцию. Рекомендация не закрывает расхождение и не заменяет решение или подпись сторон.</p>{typeof details.nextStep === "string" ? <p>Следующий шаг: {details.nextStep}</p> : null}</> : null}
               {typeof details.decision === "string" ? <p>{details.decision === "AGREE" ? "Согласовано" : details.decision === "REJECT" ? "Отклонено" : "Встречное предложение"}</p> : null}
               {typeof details.accepted === "boolean" ? <p>{details.accepted ? "Клиника согласна" : "Клиника не согласна"}</p> : null}
             </li>;

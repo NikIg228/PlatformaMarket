@@ -11,7 +11,7 @@ import { useAdminQuery } from "./use-admin-query";
 import { OperationQueueFilters } from "./operation-queue-filters";
 import styles from "./operation-queue.module.css";
 
-export const queueLabels: Record<string, string> = { ORGANIZATION_REVIEW: "Допуск поставщиков", PROMOTION_REVIEW: "Модерация акций", CATALOG_REVIEW: "Карточки на проверке", COMPLIANCE_REVIEW: "Проверка документов", INTEGRATION_RECONCILIATION: "Расхождения в данных", IMPORT_ATTENTION: "Загрузки требуют проверки", AGREEMENT_SIGNATURE: "Договоры ждут подписи", SUPPLIER_CONFIRMATION: "Подтверждение заказов", STALE_INVENTORY: "Устаревшие остатки" };
+export const queueLabels: Record<string, string> = { ORGANIZATION_REVIEW: "Допуск поставщиков", PROMOTION_REVIEW: "Модерация акций", CATALOG_REVIEW: "Карточки на проверке", COMPLIANCE_REVIEW: "Проверка документов", INTEGRATION_RECONCILIATION: "Расхождения в данных", IMPORT_ATTENTION: "Загрузки требуют проверки", AGREEMENT_SIGNATURE: "Договоры ждут подписи", SUPPLIER_CONFIRMATION: "Подтверждение заказов", STALE_INVENTORY: "Устаревшие остатки", DOCUMENT_EXCEPTION: "Документальные расхождения" };
 export const priorityLabels: Record<string, string> = { CRITICAL: "Критический", HIGH: "Высокий", NORMAL: "Обычный", LOW: "Низкий" };
 export type QueueItem = OperationQueueItem;
 export const queueItemLabel = (item: QueueItem) => item.title;
@@ -57,7 +57,7 @@ export function OperationQueue() {
       <div className={styles.actions}><DmButton onClick={event => { openerRef.current = event.currentTarget; setSelected(item); }}>Назначение и история</DmButton><DmButton as="a" href={objectHref(item.href)} onClick={event => { if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; const next = parseAdminQuery(new URL(event.currentTarget.href).search); if (next) { event.preventDefault(); write(next); } }}>Открыть объект</DmButton></div>
     </DmSurface>)}</div>
     {data ? <div className={styles.pagination}><DmButton disabled={!offset || busy} onClick={() => write({ ...state, queueOffset: Math.max(0, offset - 50) })}>Предыдущие</DmButton><span>{data.items.length ? `Случаи ${offset + 1}–${offset + data.items.length} из ${data.total}` : `Всего по фильтру: ${data.total}`}</span><DmButton disabled={busy || offset >= 100000 || !data.hasMore} onClick={() => write({ ...state, queueOffset: offset + 50 })}>Следующие</DmButton></div> : null}
-    {selected ? <OperationAssignmentPanel key={selected.caseKey} api={api} type={selected.queueType} item={selected} defaultPriority={selected.priority} assignees={assignees} canManage={permissions.includes("support.ticket.manage")} onClose={() => { (openerRef.current?.isConnected ? openerRef.current : headingRef.current)?.focus(); setSelected(null); }} onSaved={async assignment => { setSelected(value => value ? { ...value, assignment } : null); await load(); }} /> : null}
+    {selected ? <OperationAssignmentPanel key={selected.caseKey} api={api} type={selected.queueType} item={selected} defaultPriority={selected.priority} assignees={assignees} canManage={permissions.includes("support.ticket.manage") && (selected.queueType !== "DOCUMENT_EXCEPTION" || permissions.includes("order.confirm"))} onClose={() => { (openerRef.current?.isConnected ? openerRef.current : headingRef.current)?.focus(); setSelected(null); }} onSaved={async assignment => { setSelected(value => value ? { ...value, assignment } : null); await load(); }} /> : null}
   </DmSurface>;
 }
 
