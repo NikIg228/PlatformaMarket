@@ -4,6 +4,37 @@
 Требования — [Workflow документооборота](MARKET_DOCUMENT_WORKFLOW.md), единственный
 checklist — [R7.6 основного roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#document-workflow).
 
+## 19.10 — R7.6.1.3: исполняемые общие схемы, SCOPED PASS / PARTIAL
+
+По поручению «окей, продолжаем» после принятых решений, база b87e9d5/main.
+Граница шага: независимый schema-first модуль, без HTTP, БД и UI изменений.
+Риск — принять клиентские identity/tenant/status поля за доверенные либо
+выдать подготовку назначения за активное право. План проверок: targeted tests
+положительных/недопустимых входов и состояний, сборка schemas (включая типы),
+lint изменённых TS, typecheck API-клиента как потребителя, docs/diff hygiene.
+
+Добавлены `pilot-document-signing.ts` и11 целевых тестов; модуль экспортирован
+из `@marketplace/schemas`. Личность, допуск руководителя, подписанное назначение,
+отзыв, план двух сторон, версия/checksum, CMS и восстановление имеют строгие
+request/read schemas. ACTIVE требует ссылки на evidence соответствующего
+процесса; сотруднику обязателен конечный срок, руководителю схема не выдумывает
+срок действия допуска. Доказательства каждой стороны не переиспользуются в
+projection. Реальные существование/доступ/криптография/гонки проверяются сервером
+в последующей реализации, схема их не удостоверяет.
+
+Проверки на итоговых входах:
+- `npm run test --workspace=@marketplace/schemas -- --run src/pilot-document-signing.test.ts` —11PASS.
+- `npm run build --workspace=@marketplace/schemas` —PASS, включая TypeScript.
+- `npm exec eslint -- packages/schemas/src/pilot-document-signing.ts packages/schemas/src/pilot-document-signing.test.ts packages/schemas/src/index.ts --max-warnings=0` —PASS.
+- `npm run typecheck --workspace=@marketplace/api-client` —PASS.
+
+Описание границ и лимитов — [DWF§18.5](MARKET_DOCUMENT_WORKFLOW.md#185-общие-схемы-пилотной-подписи--19102026).
+OpenAPI/client HTTP methods не добавлены для отсутствующих маршрутов. Нет нового
+runtime/crypto/DB/UI PASS; guards preview сохраняются. Следующий зависимый шаг —
+завершить решения §18.1 и HTTP/error/state contract, затем серверный и UI поток
+с проверками полномочий и реальных подписей. Форма ждёт профильной приёмки.
+R7.6.1.2–3 остаются PARTIAL. Несвязанный UI/CI/docs WIP сохранён.
+
 ## 19.10 — R7.6.1.2–3: проект пилотной накладной и полномочий
 
 **Последующее решение владельца19.10:** подтверждены все четыре предложения:

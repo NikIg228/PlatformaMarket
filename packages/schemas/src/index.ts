@@ -1472,3 +1472,4 @@ export * from "./order-discrepancy";
 export * from "./resupply-document";
 export * from "./operator-orders";
 export * from "./operator-trust";
+export * from "./pilot-document-signing.js";
