@@ -31,6 +31,7 @@ export type DetachedCmsSigningResult = {
 
 type NcalayerResponse = {
   status?: boolean;
+  body?: { result?: unknown };
   result?: unknown;
   code?: string;
   message?: string;
@@ -81,6 +82,18 @@ async function sha256Hex(bytes: Uint8Array) {
 }
 
 function extractSignature(response: NcalayerResponse) {
+  if (response.body !== undefined) {
+    const result = response.body?.result;
+    if (!Array.isArray(result) || result.length !== 1 || typeof result[0] !== "string") {
+      throw new NcalayerError("NCALayer did not return one CMS container", "SIGNATURE_MISSING");
+    }
+    const pem = /^-----BEGIN CMS-----\s*([A-Za-z0-9+/=\s]+)-----END CMS-----\s*$/.exec(result[0]);
+    const base64 = (pem ? pem[1] : result[0]).replace(/\s/g, "");
+    if (!base64 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(base64)) {
+      throw new NcalayerError("NCALayer returned invalid CMS encoding", "NCALAYER_INVALID_RESPONSE");
+    }
+    return base64;
+  }
   if (typeof response.result === "string" && response.result.length > 0) return response.result;
   if (response.result && typeof response.result === "object" && !Array.isArray(response.result)) {
     const result = response.result as Record<string, unknown>;

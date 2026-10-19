@@ -4,6 +4,181 @@
 Требования — [Workflow документооборота](MARKET_DOCUMENT_WORKFLOW.md), единственный
 checklist — [R7.6 основного roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#document-workflow).
 
+## 19.10 — R7.6.3.1: реальный прототип, SCOPED PASS / этап PARTIAL
+
+**Актуализация21:57 — issuer revocation blocker снят.** По поручению владельца
+найден официальный каталог КУЦ `https://crl.root.gov.kz/`, публикующий тестовый
+RSA2020 CRL `https://crl.root.gov.kz/test_rsa2020.crl`. В test profile прописан
+явный override сломанного CDP; доверие не ослаблено: подпись проверяется SDK root,
+issuer и freshness обязательны. CRL действует02.10.2026 05:05:43Z–06.11.2026
+05:05:43Z; intermediate не отозван, stale CRL отвергается.
+Третья попытка issuer-revocation gate обоснована новым официальным источником.
+
+`verify-timestamp-evidence` на Windows16:56:09 и Linux16:56:26 UTC — **9 PASS**
+на каждой ОС, exit0; manifests в `.tmp/nca-prototype[/linux]/`. Проверены исходный
+CMS, timestamp signature/imprint, wrong imprint, EKU/validity, SDK цепочка,
+доверенная цепочка, TSA OCSP, CA CRL/freshness и повреждённый штамп (часть checks
+сгруппирована). SHA/URL/nextUpdate сохранены в manifest/evidence. Неизменённые
+offline/browser/обычные revocation и client checks переиспользованы по области.
+Текущий blocker закрыт; полный R7.6.3.1 остаётся PARTIAL из-за остальных границ
+приёмки, включая unavailable-revocation fixture и ограничения validity cases.
+Рабочий verifier/полномочия/документы/UI и mobile этим прототипом не реализованы.
+История FAIL/BLOCKED ниже относится к предыдущим входам и не текущему TSP gate.
+
+**Актуализация21:54 — RSA trust найден, issuer revocation BLOCKED.** Поручение
+продолжить сравнение сертификатов; план: проверить локальный SDK/официальный
+портал, установить provenance, test-only trust по hash, targeted TSP и отзыв,
+регрессия общей CRL-функции, diff hygiene. Новый SDK в Downloads не появился.
+Портал повторного получения требует email; запрос не отправлялся, поскольку
+дополнительная инвентаризация вложенных архивов решила вопрос provenance.
+
+Исправление прежнего вывода: корень отсутствует в Java store/основной CA-папке,
+но **есть в полученном официальном SDK**, в
+`C/Linux/ca-certs/ca-certs_old/test.zip` вместе с нужным RSA issuer.
+Архив SHA256622b758f00d957a215dcfb895a549b86d3adcadf08cc5e548fb49a20323c77b9;
+root DER совпал с HTTP candidate, issuer также соответствует цепочке TSA.
+Harness читает и проверяет hashes архивных cert entries, использует только
+явное тестовое доверие; настройки ОС/NCALayer не менялись.
+
+Сохранённый реальный timestamp: manifest16:51:45 UTC —7 PASS, включая
+trusted-chain и OCSP TSA GOOD. Расширенный gate16:52:24 —8 PASS/1 FAIL:
+добавлен PASS повреждённого штампа, но CRL из issuer certificate
+`http://test.pki.gov.kz/crl/root_rsa_test.crl` возвращает404. Каталог `/crl/`
+доступен и этого файла не содержит; отдельный OCSP запрос для intermediate
+получил status1 (не GOOD). Две попытки нового issuer-revocation блокера:
+CRL и диагностический OCSP; дальнейшие повторы остановлены без новой гипотезы.
+Следующий точный вход — свежий root-signed CRL для RSA intermediate либо
+работающий OCSP этого intermediate. Trust blocker снят; полный TSP результат
+INDETERMINATE по отзыву CA, не INVALID и не VERIFIED.
+
+Общая CRL-функция обобщена на явный issuer; прежний GOST revocation gate
+16:53:38 —3 PASS. `node --check`/diff hygiene PASS. Evidence в
+`.tmp/nca-prototype`, точные manifests/хеши в README. Полная приёмка и публикация
+пакета остаются заблокированы; нет новых app/API/DB изменений или обращений в НУЦ.
+
+**Актуализация21:48 — Linux runtime SCOPED PASS.** После перезагрузки владельцем
+обнаружен WSL3.0.1 без distro; `wsl --install -d Ubuntu --no-launch` завершился
+exit0. Фактическое окружение Ubuntu26.04.1, x86_64, kernel
+6.18.40.1-microsoft-standard-WSL2. Portable Linux Node24.18.0 и Temurin8u504
+получены с nodejs.org/Adoptium, SHA256 проверены; глобальные Node/Java не менялись.
+Исходники исполнялись из канонического checkout через /mnt/c, без клона/копии.
+План завершения: offline/browser + отдельный CRL/OCSP gate, сверка hashes,
+manifest/evidence, docs и diff hygiene; known TSP trusted-chain не повторять.
+
+`bash scripts/nca-prototype/run-linux.sh` — **18 PASS**, первая попытка каждого
+Linux gate: offline11, verify-browser4 (две реальные NCALayer CMS), revocation3
+(CRL good/revoked/stale и OCSP good/revoked). Каждая команда exit0. Сводка:
+`.tmp/nca-prototype/linux/summary.json`; manifests offline16:47:48,
+verify-browser16:47:54, revocation16:47:57 UTC. SDK/SLF4J hashes, исходные байты,
+test signer и оба receipts совпадают с Windows evidence. Runner дополнен
+architecture/kernel/Node metadata и отдельным режимом revocation (та же логика
+CRL/OCSP без TSP); Linux outputs изолированы. Node/Bash syntax и diff hygiene PASS.
+
+Linux-блокер standalone прототипа снят. Запуск под root в новой WSL distro не
+сертифицирует production service account/deployment. TSP trust provenance,
+TSA revocation и оставшаяся приёмка полного прототипа остаются открыты;
+обновлённый SDK владелец получает отдельно. Полный R7.6.3.1 не ACCEPTED,
+commit/push полного пакета не выполнены из-за известного trusted-chain FAIL.
+Далее сохранена история подготовки: записи Linux NOT_RUN ниже относятся к
+предыдущим запускам и заменены результатом21:48.
+
+WSL setup, уточнение21:25: по явному разрешению владельца агент запустил
+`wsl --install -d Ubuntu --no-launch` через elevated PowerShell (OS RunAs).
+CBS journal подтверждает21:17:39 успешную установку VirtualMachinePlatform,
+HRESULT0/S_OK, `Reboot required: yes`. Диагностика сохранена в
+`.tmp/nca-prototype/wsl-diagnostic.txt`. Полная установка WSL/Ubuntu ещё не
+подтверждена: wrapper/wsl остаются запущены без итогового exit/result, Linux
+NOT_RUN. Следующий шаг — сохранение работы и перезагрузка Windows владельцем,
+затем проверка установленного WSL/distro до любых повторных install-команд.
+Автоперезагрузка и принудительное завершение Windows servicing не выполнялись.
+
+Linux follow-up по поручению владельца: preflight на main/9f2418b подтвердил
+отсутствие установленного WSL/distro, Docker/Podman и admin token. План:
+изолировать Linux artifacts от Windows evidence, подготовить запуск из того же
+канонического checkout через /mnt/c, проверить синтаксис/отказ на non-Linux,
+после host setup выполнить offline + browser crypto gates. Добавлен
+`scripts/nca-prototype/run-linux.sh`; runner сохраняет Linux outputs в отдельной
+`.tmp/nca-prototype/linux`. Node syntax и Bash syntax PASS; non-Linux guard
+отказывает exit1 как ожидается. Реальный Linux NOT_RUN: требуется установка WSL
+из Administrator PowerShell владельцем, затем Linux Node/JDK8. Установка и
+перезагрузка не выполнялись; инструкция в README. Windows crypto gates не
+повторялись: их входы не изменились. Обновлённый SDK владелец получает отдельно.
+
+Продолжение по поручению владельца после ручного подписания, база main/9f2418b:
+проверить реальные receipts, проанализировать и устранить блокеры. План: Kalkan
+verify исходного/изменённого документа, диагностика RSA trust без автоматического
+доверия AIA, исправление подтверждённого response parsing с regression/types/lint
+и проверкой зависимого signing helper. Несвязанный WIP сохранён.
+
+Два NCALayer receipts 16:01:10/16:01:34 UTC: **4 PASS** — обе detached CMS
+проверены на исходных байтах, ожидаемом test signer, chain, роли руководителя и
+БИН; изменение байта отвергнуто. Manifest:
+`.tmp/nca-prototype/verify-browser-2026-10-19T16-03-21-530Z.json`.
+Реальный ответ `body.result: [PEM]` выявил дефект `packages/eds-client`:
+добавлен разбор одного CMS, нормализация PEM→base64, отказ malformed/multiple.
+Legacy response сохранён. `npm run test --workspace=@marketplace/eds-client`
+9 PASS; typecheck/lint того же workspace PASS; targeted supplier
+`app/marketplace-agreement-signing.test.ts` 3 PASS. `npm audit --omit=dev
+--audit-level=high` — high/critical0, moderate9 (не изменение зависимостей).
+
+TSP: новый разрешённый цикл, попытка1 диагностического gate на сохранённом CMS:
+5 PASS (original/signature/imprint/negative imprint/EKU/date/candidate signatures
+сгруппированы в пять checks), trusted-chain FAIL. Manifest
+`.tmp/nca-prototype/verify-timestamp-evidence-2026-10-19T16-05-28-625Z.json`.
+Корень RSA TEST2020 доступен по HTTP `/cert/`; AIA `/crl/` даёт404, HTTPS root и
+issuer завершились timeout20с. SDK0.8.5 и installed NCALayer utils0.9.2 содержат
+старые RSA test roots с другими ключами. HTTP candidate криптографически
+связывает TSA и issuer, но **не добавлен в доверенные**. Статус INDETERMINATE;
+нужен аутентифицированный SDK update либо подтверждение fingerprint от НУЦ.
+SHA256 и вопрос поддержке записаны в README; сообщение не отправлялось.
+Cancellation: первая попытка16:06:32 вернула CMS (не PASS отмены); повторное
+ручное действие владельца16:07:40 вернуло `status:true, body:{}` без CMS.
+Факт отмены зафиксирован отдельно; клиент не принимает этот envelope как успех.
+Добавлен regression: итоговый client suite10 PASS, types/lint PASS. Сообщение
+локальной тестовой страницы учитывает наличие CMS, а не один status.
+Linux NOT_RUN; desktop CMS и ручная отмена подтверждены,
+полный R7.6.3.1 не ACCEPTED. Commit/push не выполнены: trusted-chain gate FAIL.
+
+Ниже — исходный запуск и история ограничений (состояние NCALayer обновлено выше).
+
+Поручение владельца «приступай» после актуализации спецификации. База main/16aac34.
+Scope: отдельный synthetic-прототип SDK/NCALayer, без включения подписания рабочих
+документов, изменения доменных API/БД и рабочего профиля NCALayer. Применяется
+development-toolkit backend/verification. Риски: ложный crypto PASS, смешение
+test/production trust, потеря оригинала, неограниченные внешние вызовы.
+План проверок: компиляция standalone Java harness; реальные CMS и негативные
+случаи integrity/certificate/trust/revocation/TSP с manifest; NCALayer отдельно
+от прямого SDK signing, Linux отдельно от Windows; bounded network timeouts,
+максимум3 обоснованные попытки на gate. Итог: evidence/ограничения в журнале и
+roadmap, diff hygiene. Общие app build/DB suites не нужны для standalone harness.
+Preflight: системный javac/Docker и готовый WSL отсутствуют; рабочий NCALayer
+содержит JRE8u422. Изолированный portable JDK8u504 получен с официального Adoptium,
+SHA256 проверен, лежит в ignored .tmp/nca-prototype; системные настройки не менялись.
+
+Создан [standalone harness и инструкция](../../scripts/nca-prototype/README.md).
+На Windows/JDK8u504: offline-3 — 11 PASS (CMS, integrity, chain, validity,
+EKU/BIN, отсутствие обязательного TSP); online-3 — CRL и два OCSP случая PASS,
+TSP FAIL `ISSUER_CERT_NOT_FOUND`. Тестовый TSA использует RSA TEST; цепочка с
+bundled test trust store не построена. Лимит3 попыток online исчерпан; повтор
+остановлен. Следующий точный шаг: подтвердить актуальную официальную RSA test
+цепочку доверия и открыть новый ограниченный цикл проверки. Корень из AIA
+автоматически доверенным не становится. Проверка отзыва TSA ещё не реализована.
+
+Диагностическая команда `node scripts/nca-prototype/run.mjs inspect-timestamp`
+PASS (компиляция/runner, без повторения crypto gates); manifest
+`.tmp/nca-prototype/inspect-timestamp-2026-10-19T10-11-28-514Z.json` содержит
+runtime, source/dependency/evidence SHA256. Логи offline-3/online-3 сохранены
+локально; manifest диагностики не является повторным выполнением этих тестов.
+`node --check` для обоих mjs и `git diff --check` PASS.
+
+NCALayer: подготовлена localhost4079 страница, запрос ограничен тестовым
+сертификатом руководителя 2026–2027 и явной test chain; CMS без TSP, результат
+сохраняется отдельно. Ожидается действие владельца в нативном окне (инструмент
+управления нативными окнами недоступен). Подписание/отмена через NCALayer,
+независимая проверка полученного CMS и Linux runtime пока NOT_RUN.
+Прямое SDK signing не заменяет NCALayer evidence. Product API/UI/БД не менялись;
+этап не ACCEPTED, checkbox открыт, переход к .3.2/.3.3 не выполнен.
+
 ## 19.10 — R7.6.3: SDK получен, спецификация и порядок актуализированы
 
 Поручение владельца: проверить достаточность технических описаний и дополнить

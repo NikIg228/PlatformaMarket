@@ -20,6 +20,35 @@ class FakeSocket implements NcalayerWebSocket {
 }
 
 describe("NcalayerClient", () => {
+  function withResponse(response: unknown) {
+    return new NcalayerClient({ webSocketFactory: () => {
+      const socket = new FakeSocket();
+      socket.send = () => queueMicrotask(() => socket.onmessage?.({ data: JSON.stringify(response) }));
+      queueMicrotask(() => socket.onopen?.());
+      return socket;
+    } });
+  }
+
+  it("decodes the body.result PEM array observed from installed NCALayer", async () => {
+    const client = withResponse({ status: true, body: { result: ["-----BEGIN CMS-----\r\nY21zLXNpZ25hdHVyZQ==\r\n-----END CMS-----\r\n"] } });
+    await expect(client.signCmsDetached(new Uint8Array([1]))).resolves.toMatchObject({ signedContainerBase64: "Y21zLXNpZ25hdHVyZQ==" });
+  });
+
+  it.each([[], ["YQ==", "Yg=="], [null], "YQ=="].map(result => ({ result })))("rejects ambiguous or malformed body result $result", async ({ result }) => {
+    await expect(withResponse({ status: true, body: { result } }).signCmsDetached(new Uint8Array([1])))
+      .rejects.toMatchObject({ code: "SIGNATURE_MISSING" });
+  });
+
+  it("rejects malformed PEM without falling back to a legacy result", async () => {
+    await expect(withResponse({ status: true, body: { result: ["-----BEGIN CMS-----invalid!-----END CMS-----"] }, result: "YQ==" })
+      .signCmsDetached(new Uint8Array([1]))).rejects.toMatchObject({ code: "NCALAYER_INVALID_RESPONSE" });
+  });
+
+  it("does not accept status true with an empty body observed after user cancellation", async () => {
+    await expect(withResponse({ status: true, body: {} }).signCmsDetached(new Uint8Array([1])))
+      .rejects.toMatchObject({ code: "SIGNATURE_MISSING" });
+  });
+
   it("keeps the checksum bound to the original bytes while signing is pending", async () => {
     const data = new Uint8Array([0, 1, 2]);
     const client = new NcalayerClient({ webSocketFactory: () => {

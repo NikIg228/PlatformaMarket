@@ -646,7 +646,7 @@ R7.6/R7.7 PLANNED. Полная переработка Admin теперь вхо
 | --- | --- | --- | --- | --- | --- |
 | R7.6.1 Контракт | PARTIAL: инвентаризация завершена; контракт не реализован | Inventory review PASS; runtime NOT_RUN | Карта в текущей docs-публикации | Не сертификат runtime | R1: формы/полномочия; R7.6.3.1 для signature-полей |
 | R7.6.2 Счёт | GENERATED: подготовка/PDF/подтверждение/история | SCOPED PASS15.10: PG/core/runtime/UI/PDF | 0586a2d | Общий CI4582db1 SUCCESS16.10 | НУЦ/прочие документы отдельно; рабочая миграция отдельно |
-| R7.6.3 НУЦ | PARTIAL: adapter boundary, неизменные signing bytes, unsigned prototype packet; SDK получен19.10 | Подготовка PASS; реальный прототип NOT_RUN | Код подготовки76d5c1d; спецификация актуализирована19.10 | Общий CI4582db1 SUCCESS; не evidence реальной подписи | Начать desktop-прототип .3.1; затем формы/полномочия/контракт .1.2–3, adapter/UI .3.2–3; mobile OPEN |
+| R7.6.3 НУЦ | PARTIAL: desktop/Linux prototype SCOPED PASS; NCALayer CMS/отмена и TSP подтверждены | offline11/NCALayer4/client10 PASS; Linux18 PASS; TSP9 PASS на Windows и Linux, включая отзыв intermediate | Код подготовки76d5c1d; prototype и response parsing fix — текущий пакет | Полный этап не ACCEPTED; scope/ограничения в журнале | Оставшаяся приёмка .3.1, затем контракт/полномочия и verifier/UI; mobile OPEN |
 | R7.6.4 Партия и подписи | PARTIAL: .4.1 черновик накладной фактической партии | Подготовка/PDF/PG/UI SCOPED PASS; подписи NOT_RUN | 6b2b383 | Общий CI4582db1 SUCCESS | Подписи и документальная приёмка .4.2/3 требуют R7.6.3 |
 | R7.6.5 Исключения | PARTIAL: заявление, ответы сторон, история; AGREED без исполнения | SCOPED PASS операционного пакета; .5.3 целиком не принят | 1e65365 | Общий CI4582db1 SUCCESS; целевой PG/UI в журнале | Исполнение допоставки, уменьшение/возврат и подписанные исправления остаются |
 | R7.6.6 SMS физлица | NOT_STARTED | NOT_RUN | NOT_PUBLISHED | NOT_RUN | Личный заказ/получатель, параметры и канал R5.3 |
@@ -742,6 +742,21 @@ SMS физлица — отдельный согласованный докум�
     Владелец подтвердил отсутствие SDK/тестовых сертификатов: реальная CMS,
     Kalkan verification и mobile NOT_RUN; R7.6.3.1 BLOCKED внешними входами.
     Подробности — [журнал](domains/document-workflow-implementation-log.md).
+    19.10: SDK-прототип выполнен частично: 11 offline PASS, CRL и good/revoked
+    OCSP PASS; TSP chain FAIL `ISSUER_CERT_NOT_FOUND`, лимит3 попыток исчерпан.
+    Продолжение19.10: две NCALayer CMS проверены, 4 PASS; response parser исправлен,
+    9 package tests + 3 consumer tests PASS. TSP cryptography PASS, но текущий RSA
+    root получен только по HTTP, его provenance не подтверждён; INDETERMINATE.
+    Отмена подтверждена16:07:40: пустой body при status:true, client regression
+    отклоняет отсутствие CMS; итоговый client suite10 PASS. Linux после перезагрузки
+    и установки Ubuntu: offline11/browser4/CRL-OCSP3 PASS (WSL2, JDK8u504), hashes
+    сверены с Windows. Это standalone runtime, не production deployment.
+    Уточнение21:54: RSA root/issuer найдены в `C/Linux/ca-certs/ca-certs_old/test.zip`
+    исходного SDK, hashes совпали. Уточнение21:57: актуальный CRL найден на
+    официальном crl.root.gov.kz; подпись/freshness/отзыв intermediate проверены.
+    TSP9 PASS на Windows/Linux. Текущий статус SCOPED PASS / этап PARTIAL,
+    не ACCEPTED целиком. Инструкция и границы —
+    [прототип](../scripts/nca-prototype/README.md); подробные результаты — журнал.
   - [ ] **R7.6.3.2** Backend: после R7.6.1.3 реализовать адаптер, проверку байтов/стороны/полномочий при фиксации, reconciliation и поздний результат; доказать invalid/revoke/race/replay.
   - [ ] **R7.6.3.3** UI и интеграционная приёмка: предпросмотр подписываемой версии → внешнее действие → серверно проверенный результат; проверить отмену, неизвестный исход и восстановление на выбранном реальном пути.
 
