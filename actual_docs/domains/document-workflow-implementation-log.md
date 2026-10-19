@@ -6,6 +6,37 @@ checklist — [R7.6 основного roadmap](../MAIN_ROADMAP_TO_PRODUCTION_20
 
 ## 19.10 — R7.6.3.1: реальный прототип, SCOPED PASS / этап PARTIAL
 
+**Актуализация22:03 — negative evidence PASS на Windows/Linux.** Поручение
+владельца: продолжить R7.6.3.1. База6584fd5/main, canonical checkout, чужой WIP
+сохранён. План: закрыть actual expiry и unavailable revocation; риск ложного
+GOOD при ошибке сети/парсинга. Gates: compile + новый focused mode на двух ОС,
+регрессия общих CRL/реальных CMS/TSP, node syntax и diff hygiene. Budget: Java60с,
+до3 попыток; API/БД/UI не меняются. Применены development-toolkit и Reality Checker
+для сопоставления утверждений с реальными crypto evidence, без общего E2E.
+
+Новый `negative-evidence`: **6 PASS** Windows17:02:34 UTC и Linux17:02:58 UTC.
+Сертификат руководителя из SDK2024–2025 истёк29.10.2025; проверяется текущая дата,
+а не injected clock. Kalkan создаёт CMS этим тестовым ключом, но `verifyCMS`
+отклоняет её с причиной CertificateExpiredException. HTTP503 CRL/OCSP и
+повреждённые HTTP200 ответы воспроизводятся только loopback-сервером; реальные
+SDK parsers не дают успеха. CRL parser может вернуть null — добавлен явный отказ.
+Это не внешний outage и не сертификат production retry/fallback/timeout/UNKNOWN.
+
+Попытка1:2 PASS/4 FAIL (ошибочные ожидания типов исключений и места expiry отказа).
+Попытка2:5 PASS/1 FAIL (createCAdES не проверяет expiry). Попытка3:6 PASS после
+изоляции verifyCMS и проверки цепочки причины. Linux:6 PASS с первой попытки.
+Manifests: `.tmp/nca-prototype/negative-evidence-2026-10-19T17-02-34-158Z.json`
+и `linux/negative-evidence-2026-10-19T17-02-58-318Z.json` в том же каталоге.
+Регрессия Windows revocation17:02:21 —3 PASS, browser17:02:35 —4 PASS;
+Linux timestamp17:03:03 —9 PASS, exit0. SDK/dependencies прежние, новые hashes
+source/expired certificate/CMS записаны в manifest. Приватные ключи не публикуются.
+
+Desktop prototype SCOPED PASS. Общий этап PARTIAL: доступ/контракт eGov QR и
+реальная mobile подпись отсутствуют. Следующий внешний вход — актуальный паспорт
+и тестовый доступ мобильного сервиса с подтверждением подписи от имени ЮЛ.
+Рабочие adapter/полномочия/UI требуют R7.6.1.2–3; этот прогон их не реализует.
+Прежние ограничения unavailable/actual expiry ниже закрыты этим evidence.
+
 **Актуализация21:57 — issuer revocation blocker снят.** По поручению владельца
 найден официальный каталог КУЦ `https://crl.root.gov.kz/`, публикующий тестовый
 RSA2020 CRL `https://crl.root.gov.kz/test_rsa2020.crl`. В test profile прописан

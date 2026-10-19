@@ -8,6 +8,7 @@ import java.security.cert.*;
 import java.util.*;
 import java.util.stream.*;
 import java.util.zip.*;
+import com.sun.net.httpserver.HttpServer;
 import kz.gov.pki.kalkan.jce.provider.KalkanProvider;
 import kz.gov.pki.kalkan.jce.provider.cms.*;
 import kz.gov.pki.kalkan.ocsp.*;
@@ -41,6 +42,15 @@ public final class NcaPrototype {
     private static void reject(Action action) throws Exception {
         try { action.run(); } catch (Exception e) { return; }
         throw new AssertionError("Expected rejection, operation accepted");
+    }
+    private static void rejectAs(Class<? extends Exception> expected, Action action) throws Exception {
+        try { action.run(); }
+        catch (Exception e) {
+            if (!expected.isInstance(e)) throw e;
+            System.out.println("META\texpectedRejection-" + expected.getSimpleName() + "\t" + e.getClass().getSimpleName());
+            return;
+        }
+        throw new AssertionError("Expected " + expected.getSimpleName() + ", operation accepted");
     }
     private static X509Certificate certificate(Path file) throws Exception {
         try (InputStream input = Files.newInputStream(file)) {
@@ -133,6 +143,7 @@ public final class NcaPrototype {
         checkCrl(crl, target, at, issuer);
     }
     private static void checkCrl(X509CRL crl, X509Certificate target, Date at, X509Certificate crlIssuer) throws Exception {
+        if (crl == null) throw new CertificateException("CRL response contains no CRL");
         crl.verify(crlIssuer.getPublicKey(), PROVIDER.getName());
         if (!crl.getIssuerX500Principal().equals(crlIssuer.getSubjectX500Principal())) throw new CertificateException("CRL issuer mismatch");
         if (crl.getThisUpdate().after(at) || crl.getNextUpdate() == null || !crl.getNextUpdate().after(at))
@@ -189,6 +200,69 @@ public final class NcaPrototype {
                 throw new CertificateException("Required timestamp absent");
         }));
     }
+    private static void negativeEvidence() throws Exception {
+        SigningEntity head = fixture("Первый руководитель", "valid");
+        // Uppercase Valid selects the SDK's 2024-2025 fixture, not the current key.
+        SigningEntity expired = fixture("Первый руководитель", "Valid");
+        Date now = new Date();
+        require(leaf(expired).getNotAfter().before(now), "Expired fixture must actually be expired now");
+        Files.write(output.resolve("expired-test-signer.cer"), leaf(expired).getEncoded());
+        System.out.println("META\texpiredFixtureNotAfter\t" + leaf(expired).getNotAfter().toInstant());
+        System.out.println("META\tvalidationTime\t" + now.toInstant());
+        test("actual-expired-certificate-rejected", () -> rejectAs(CertificateExpiredException.class,
+            () -> leaf(expired).checkValidity(now)));
+        test("sdk-verification-of-actual-expired-cms-rejected", () -> {
+            byte[] original = Files.readAllBytes(output.resolve("original.txt"));
+            byte[] cms = sign(expired, original);
+            Files.write(output.resolve("sdk-expired.cms"), cms);
+            // createCAdES allows this synthetic fixture; verifyCMS rejects its validity.
+            try { CMSUtil.verifyCMS(cms, original, PROVIDER); }
+            catch (Exception e) {
+                for (Throwable cause = e; cause != null; cause = cause.getCause())
+                    if (cause instanceof CertificateExpiredException) return;
+                throw e;
+            }
+            throw new AssertionError("SDK verification accepted expired CMS");
+        });
+        // Controlled transport faults only. No fake GOOD response or trust anchor.
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        java.util.concurrent.atomic.AtomicInteger requests = new java.util.concurrent.atomic.AtomicInteger();
+        server.createContext("/unavailable", exchange -> {
+            requests.incrementAndGet();
+            exchange.sendResponseHeaders(503, -1); exchange.close();
+        });
+        server.createContext("/malformed", exchange -> {
+            requests.incrementAndGet();
+            byte[] bytes = "not a signed revocation response".getBytes(StandardCharsets.US_ASCII);
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream body = exchange.getResponseBody()) { body.write(bytes); }
+            finally { exchange.close(); }
+        });
+        server.start();
+        String base = "http://127.0.0.1:" + server.getAddress().getPort();
+        try {
+            test("crl-http503-not-accepted", () -> {
+                int before = requests.get();
+                rejectAs(IOException.class, () -> downloadTestCrl(base + "/unavailable"));
+                require(requests.get() > before, "CRL fault endpoint was not reached");
+            });
+            test("ocsp-http503-not-good", () -> {
+                int before = requests.get();
+                rejectAs(IOException.class, () -> OCSPUtil.verify(leaf(head), issuer, new URL(base + "/unavailable"),
+                    KalkanHashAlgorithm.HASH_SHA256, KNCAServiceRequestMethod.POST, true, PROVIDER));
+                require(requests.get() > before, "OCSP fault endpoint was not reached");
+            });
+            test("malformed-crl-not-accepted", () -> rejectAs(CertificateException.class, () -> {
+                X509CRL crl = (X509CRL) CertificateFactory.getInstance("X.509", PROVIDER)
+                    .generateCRL(new ByteArrayInputStream(downloadTestCrl(base + "/malformed")));
+                checkCrl(crl, leaf(head), now);
+            }));
+            test("malformed-ocsp-not-good", () -> rejectAs(EOFException.class, () ->
+                OCSPUtil.verify(leaf(head), issuer, new URL(base + "/malformed"),
+                    KalkanHashAlgorithm.HASH_SHA256, KNCAServiceRequestMethod.POST, true, PROVIDER)));
+        } finally { server.stop(0); }
+        System.out.println("META\trevocationFaultSource\tloopback HTTP503/malformed; real SDK parser; no external outage claimed");
+    }
     private static void online(boolean includeTimestamp) throws Exception {
         SigningEntity head = fixture("Первый руководитель", "valid");
         SigningEntity revoked = fixture("Первый руководитель", "revoke");
@@ -242,6 +316,7 @@ public final class NcaPrototype {
         if (args[2].equals("offline")) offline();
         else if (args[2].equals("online")) online(true);
         else if (args[2].equals("revocation")) online(false);
+        else if (args[2].equals("negative-evidence")) negativeEvidence();
         else if (args[2].equals("verify-timestamp-evidence")) {
             byte[] cms = Files.readAllBytes(output.resolve("sdk-head-timestamp.cms"));
             byte[] original = Files.readAllBytes(output.resolve("original.txt"));

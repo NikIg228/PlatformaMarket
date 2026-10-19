@@ -5,6 +5,35 @@ No application API, database, real document or NCALayer configuration is changed
 Only the supplied public SDK test fixtures may be used. Private keys, passwords,
 SDK binaries and generated evidence stay outside Git.
 
+## Latest negative evidence, 19.10 22:03
+
+`node scripts/nca-prototype/run.mjs negative-evidence` passes six checks on
+Windows (`negative-evidence-2026-10-19T17-02-34-158Z.json`) and Linux
+(`linux/negative-evidence-2026-10-19T17-02-58-318Z.json`). It requires the same
+SDK test password and existing synthetic `original.txt` as the offline mode.
+No external service is contacted by this mode; its ephemeral HTTP server binds
+only to loopback and is stopped in `finally`.
+
+The SDK 2024–2025 head certificate is actually expired (29.10.2025), without
+clock injection. Both its validity check and Kalkan verification of a CMS made
+with that fixture reject expiry. `createCAdES` alone permits creation: signing
+success is not verification success. HTTP503 from CRL/OCSP and malformed HTTP200
+responses cannot produce a successful check. Exceptions are checked by type;
+the SDK CRL parser's null result is explicitly rejected before use.
+
+These are controlled transport faults through real SDK parsers, not evidence
+of an actual NCA outage or production fallback/retry policy. Timeout, OCSP UNKNOWN
+and production recovery are not certified. The first two Windows attempts failed
+because expected SDK exceptions/operation boundaries were incorrect; the third
+passed after isolating rejection to `verifyCMS`. Linux passed on its first run.
+
+Regression: Windows live CRL/OCSP 3 PASS (`17-02-21-926Z`), NCALayer receipts
+4 PASS (`17-02-35-657Z`); Linux TSP 9 PASS (`17-03-03-138Z`), all exit0.
+These results supersede the unavailable-revocation and actual-expiry coverage
+gaps below. Desktop prototype scope is demonstrated; overall R7.6.3.1 remains
+PARTIAL because mobile API access/contract and actual mobile evidence are absent.
+Production adapter, authority model and UI belong to the dependent phases.
+
 ## Latest TSP result, 19.10 21:57
 
 Issuer revocation blocker resolved using the [official RCA CRL directory](https://crl.root.gov.kz/),

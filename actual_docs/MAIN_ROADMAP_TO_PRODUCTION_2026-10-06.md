@@ -757,6 +757,10 @@ SMS физлица — отдельный согласованный докум�
     TSP9 PASS на Windows/Linux. Текущий статус SCOPED PASS / этап PARTIAL,
     не ACCEPTED целиком. Инструкция и границы —
     [прототип](../scripts/nca-prototype/README.md); подробные результаты — журнал.
+    Продолжение22:03: negative-evidence6 PASS на Windows/Linux — настоящий
+    истёкший SDK сертификат/CMS, loopback HTTP503 и malformed CRL/OCSP.
+    Регрессии Windows revocation3/browser4, Linux TSP9 PASS. Desktop SCOPED PASS;
+    общий этап PARTIAL: mobile contract/access и реальная mobile подпись NOT_RUN.
   - [ ] **R7.6.3.2** Backend: после R7.6.1.3 реализовать адаптер, проверку байтов/стороны/полномочий при фиксации, reconciliation и поздний результат; доказать invalid/revoke/race/replay.
   - [ ] **R7.6.3.3** UI и интеграционная приёмка: предпросмотр подписываемой версии → внешнее действие → серверно проверенный результат; проверить отмену, неизвестный исход и восстановление на выбранном реальном пути.
 
