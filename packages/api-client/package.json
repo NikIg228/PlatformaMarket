@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./frontend-routes": "./src/frontend-routes.ts"
+    "./frontend-routes": "./src/frontend-routes.ts",
+    "./pilot-signing": "./src/pilot-signing.ts"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

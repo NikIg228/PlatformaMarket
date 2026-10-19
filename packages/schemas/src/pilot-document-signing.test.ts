@@ -4,17 +4,17 @@ import {
   preparePilotEmployeeAuthoritySchema, pilotAuthorityViewSchema,
   createPilotWaybillSignatureSchema, pilotWaybillSigningPlanSchema,
   pilotWaybillSignatureProgressSchema, pilotSigningSessionViewSchema,
-  reviewPilotHeadAdmissionSchema, PILOT_CMS_MAX_BYTES,
+  reviewPilotPrincipalAdmissionSchema, PILOT_CMS_MAX_BYTES,
 } from "./pilot-document-signing";
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const ref = { id: id(1), version: 1 };
 const time = "2026-10-19T10:00:00.000Z";
-const later = "2026-10-19T10:05:00.000Z";
+const later = "2026-10-19T10:10:00.000Z";
 const hash = "a".repeat(64);
 const basis = { description: "Synthetic appointment", document: ref };
 const grant = { employeeUserId: id(2), employeeIdentityBinding: ref,
-  expectedMembershipVersion: 1, headAdmission: ref, basis,
+  expectedMembershipVersion: 1, principalAdmission: ref, basis,
   validFrom: time, validUntil: later, documentKinds: ["WAYBILL"], idempotencyKey: "test-key-1" };
 const plan = { version: 1, documentId: id(3), documentVersion: 1, checksumSha256: hash,
   parties: [{ role: "SUPPLIER", organizationId: id(4) }, { role: "BUYER", organizationId: id(5) }] };
@@ -56,32 +56,32 @@ describe("pilot signing request trust boundaries", () => {
 describe("authority preparation is not activation", () => {
   it("requires versioned head, employee binding, basis and a finite ordered term", () => {
     expect(preparePilotEmployeeAuthoritySchema.safeParse(grant).success).toBe(true);
-    for (const patch of [{ validUntil: time }, { validUntil: null }, { headAdmission: undefined },
+    for (const patch of [{ validUntil: time }, { validUntil: null }, { principalAdmission: undefined },
       { basis: { description: "text alone" } }, { documentKinds: ["ALL"] },
       { documentKinds: ["WAYBILL", "WAYBILL"] }, { expectedMembershipVersion: 0 }, { status: "ACTIVE" }]) {
       expect(preparePilotEmployeeAuthoritySchema.safeParse({ ...grant, ...patch }).success).toBe(false);
     }
   });
   it("requires operator review evidence and optimistic version without client actor IDs", () => {
-    const review = { decision: "APPROVE", expectedVersion: 1, checkedBasis: basis,
+    const review = { decision: "APPROVE", expectedVersion: 1, checkedBasis: { kind: "LEGAL_ENTITY_HEAD", appointment: basis }, verification: { source: "OFFICIAL_REGISTER", evidenceDocument: ref, checkedAt: time },
       reviewNote: "Checked synthetic fixture", idempotencyKey: "review-key" };
-    expect(reviewPilotHeadAdmissionSchema.safeParse(review).success).toBe(true);
+    expect(reviewPilotPrincipalAdmissionSchema.safeParse(review).success).toBe(true);
     for (const patch of [{ checkedBasis: undefined }, { reviewerId: id(1) }, { expectedVersion: 0 }]) {
-      expect(reviewPilotHeadAdmissionSchema.safeParse({ ...review, ...patch }).success).toBe(false);
+      expect(reviewPilotPrincipalAdmissionSchema.safeParse({ ...review, ...patch }).success).toBe(false);
     }
   });
   it("cannot label a pending grant ACTIVE without the required evidence", () => {
-    const pending = { id: id(1), version: 1, status: "AWAITING_HEAD_SIGNATURE", challengeId: id(6) };
+    const pending = { id: id(1), version: 1, status: "AWAITING_PRINCIPAL_SIGNATURE", sessionId: id(6) };
     expect(pilotAuthorityViewSchema.safeParse(pending).success).toBe(true);
     expect(pilotAuthorityViewSchema.safeParse({ ...pending, status: "ACTIVE" }).success).toBe(false);
     const active = { id: id(1), version: 1, status: "ACTIVE", organizationId: id(4), userId: id(2),
       identityBinding: ref, basis, validFrom: time, validUntil: later, documentKinds: ["WAYBILL"],
-      approval: { kind: "HEAD_SIGNED_GRANT", headAdmission: ref, signatureEvidenceId: id(8) } };
+      approval: { kind: "PRINCIPAL_SIGNED_GRANT", principalAdmission: ref, signatureEvidenceId: id(8) } };
     expect(pilotAuthorityViewSchema.safeParse(active).success).toBe(true);
     expect(pilotAuthorityViewSchema.safeParse({ ...active, validUntil: null }).success).toBe(false);
     expect(pilotAuthorityViewSchema.safeParse({ ...active, validUntil: null,
-      approval: { kind: "OPERATOR_HEAD_REVIEW", reviewId: id(9) } }).success).toBe(true);
-    expect(pilotAuthorityViewSchema.safeParse({ ...active, approval: { kind: "HEAD_SIGNED_GRANT", headAdmission: ref } }).success).toBe(false);
+      approval: { kind: "OPERATOR_PRINCIPAL_REVIEW", reviewId: id(9), principalKind: "LEGAL_ENTITY_HEAD" } }).success).toBe(true);
+    expect(pilotAuthorityViewSchema.safeParse({ ...active, approval: { kind: "PRINCIPAL_SIGNED_GRANT", principalAdmission: ref } }).success).toBe(false);
   });
 });
 
@@ -109,13 +109,15 @@ describe("two-party immutable waybill contract", () => {
   });
   it("distinguishes pending, evidence-only and committed results", () => {
     const session = { id: id(6), version: 1, purpose: "SIGN_WAYBILL" };
-    expect(pilotSigningSessionViewSchema.safeParse({ ...session, status: "UNKNOWN" }).success).toBe(true);
+    expect(pilotSigningSessionViewSchema.safeParse({ ...session, status: "UNKNOWN", reasonCode: "VERIFIER_UNAVAILABLE" }).success).toBe(true);
+    expect(pilotSigningSessionViewSchema.safeParse({ ...session, status: "REJECTED", reasonCode: "VERIFIER_UNAVAILABLE" }).success).toBe(false);
+    expect(pilotSigningSessionViewSchema.safeParse({ ...session, status: "EVIDENCE_ONLY", evidenceId: id(8), reasonCode: "INVALID_SIGNATURE" }).success).toBe(false);
     expect(pilotSigningSessionViewSchema.safeParse({ ...session, status: "COMMITTED" }).success).toBe(false);
     expect(pilotSigningSessionViewSchema.safeParse({ ...session, status: "EVIDENCE_ONLY", evidenceId: id(8), reasonCode: "AUTHORITY_NOT_ACTIVE" }).success).toBe(true);
-    const awaiting = { ...session, status: "AWAITING_USER", challenge: { id: id(6), purpose: "SIGN_WAYBILL",
+    const awaiting = { ...session, purpose: "BIND_IDENTITY", status: "AWAITING_USER", signingInput: { kind: "CHALLENGE", id: id(6), purpose: "BIND_IDENTITY",
       contentBase64: "AQID", checksumSha256: hash, createdAt: time, expiresAt: later } };
     expect(pilotSigningSessionViewSchema.safeParse(awaiting).success).toBe(true);
-    expect(pilotSigningSessionViewSchema.safeParse({ ...awaiting, challenge: { ...awaiting.challenge, purpose: "BIND_IDENTITY" } }).success).toBe(false);
-    expect(pilotSigningSessionViewSchema.safeParse({ ...awaiting, challenge: { ...awaiting.challenge, expiresAt: time } }).success).toBe(false);
+    expect(pilotSigningSessionViewSchema.safeParse({ ...awaiting, signingInput: { ...awaiting.signingInput, purpose: "AUTHORIZE_EMPLOYEE" } }).success).toBe(false);
+    expect(pilotSigningSessionViewSchema.safeParse({ ...awaiting, signingInput: { ...awaiting.signingInput, expiresAt: time } }).success).toBe(false);
   });
 });

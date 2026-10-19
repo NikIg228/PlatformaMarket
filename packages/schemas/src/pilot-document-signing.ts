@@ -8,13 +8,14 @@ const instant = z.iso.datetime();
 const replayKey = z.string().trim().min(8).max(160);
 const reason = z.string().trim().min(2).max(1000);
 const versionReference = z.strictObject({ id: z.uuid(), version });
+export const PILOT_SIGNING_CHALLENGE_TTL_MS = 10 * 60 * 1000;
 
 export const pilotSigningPurposeSchema = z.enum([
   "BIND_IDENTITY", "AUTHORIZE_EMPLOYEE", "SIGN_WAYBILL",
 ]);
 export const pilotSigningFailureCodeSchema = z.enum([
   "IDENTITY_MISMATCH", "IDENTITY_CONFLICT", "IDENTITY_NOT_VERIFIED",
-  "ORGANIZATION_MISMATCH", "AUTHORITY_NOT_ACTIVE", "HEAD_NOT_APPROVED",
+  "ORGANIZATION_MISMATCH", "AUTHORITY_NOT_ACTIVE", "PRINCIPAL_NOT_APPROVED",
   "VERSION_CONFLICT", "CONTENT_MISMATCH", "INVALID_SIGNATURE",
   "CERTIFICATE_EXPIRED", "CERTIFICATE_REVOKED", "TRUST_INDETERMINATE",
   "VERIFIER_UNAVAILABLE", "SESSION_EXPIRED", "SESSION_CANCELLED",
@@ -24,14 +25,24 @@ export const pilotSigningFailureCodeSchema = z.enum([
 export const createPilotIdentityChallengeSchema = z.strictObject({ idempotencyKey: replayKey });
 
 const challengeFields = {
-  id: z.uuid(), purpose: pilotSigningPurposeSchema,
-  contentBase64: z.string().min(4).max(131072), checksumSha256: checksum,
+  kind: z.literal("CHALLENGE"), id: z.uuid(),
+  purpose: z.enum(["BIND_IDENTITY", "AUTHORIZE_EMPLOYEE"]),
+  contentBase64: z.string().min(4).max(131072)
+    .regex(/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/), checksumSha256: checksum,
   createdAt: instant, expiresAt: instant,
 };
 export const pilotSigningChallengeSchema = z.strictObject(challengeFields).refine(
-  value => Date.parse(value.expiresAt) > Date.parse(value.createdAt),
-  { path: ["expiresAt"], message: "Challenge must expire after creation" },
+  value => Date.parse(value.expiresAt) - Date.parse(value.createdAt) === PILOT_SIGNING_CHALLENGE_TTL_MS,
+  { path: ["expiresAt"], message: "Challenge lifetime must be ten minutes" },
 );
+// Waybill bytes come from the existing authenticated document download, not a
+// small inline identity challenge. The server and browser both check the hash.
+export const pilotSigningDocumentInputSchema = z.strictObject({
+  kind: z.literal("DOCUMENT"), purpose: z.literal("SIGN_WAYBILL"),
+  document: versionReference, checksumSha256: checksum,
+  createdAt: instant, expiresAt: instant,
+}).refine(value => Date.parse(value.expiresAt) - Date.parse(value.createdAt) === PILOT_SIGNING_CHALLENGE_TTL_MS,
+  { path: ["expiresAt"], message: "Signing input lifetime must be ten minutes" });
 
 // Base64 transport for DER CMS; only the verifier can establish the CMS structure.
 // PEM normalization belongs at the NCALayer boundary.
@@ -60,20 +71,31 @@ export const pilotAuthorityBasisSchema = z.strictObject({
   // Existing document reference, never an arbitrary remote URL or storage path.
   document: versionReference,
 });
-export const submitPilotHeadAdmissionSchema = z.strictObject({
+// The subject kind is checked against confirmed organization requisites by the server.
+export const pilotPrincipalBasisSchema = z.discriminatedUnion("kind", [
+  z.strictObject({ kind: z.literal("LEGAL_ENTITY_HEAD"),
+    appointment: pilotAuthorityBasisSchema }),
+  z.strictObject({ kind: z.literal("INDIVIDUAL_ENTREPRENEUR"),
+    registrationNotice: pilotAuthorityBasisSchema }),
+]);
+export const submitPilotPrincipalAdmissionSchema = z.strictObject({
   expectedOrganizationVersion: version, identityBinding: versionReference,
-  basis: pilotAuthorityBasisSchema, idempotencyKey: replayKey,
+  basis: pilotPrincipalBasisSchema, idempotencyKey: replayKey,
 });
-export const reviewPilotHeadAdmissionSchema = z.discriminatedUnion("decision", [
+export const reviewPilotPrincipalAdmissionSchema = z.discriminatedUnion("decision", [
   z.strictObject({ decision: z.literal("APPROVE"), expectedVersion: version,
-    checkedBasis: pilotAuthorityBasisSchema, reviewNote: reason, idempotencyKey: replayKey }),
+    checkedBasis: pilotPrincipalBasisSchema,
+    // Preserve the source and time of the operator's check, not a client "verified" flag.
+    verification: z.strictObject({ source: z.enum(["OFFICIAL_REGISTER", "OFFICIAL_EXTRACT"]),
+      evidenceDocument: versionReference, checkedAt: instant }),
+    reviewNote: reason, idempotencyKey: replayKey }),
   z.strictObject({ decision: z.literal("REJECT"), expectedVersion: version,
     reason, idempotencyKey: replayKey }),
 ]);
 
 export const preparePilotEmployeeAuthoritySchema = z.strictObject({
   employeeUserId: z.uuid(), employeeIdentityBinding: versionReference,
-  expectedMembershipVersion: version, headAdmission: versionReference,
+  expectedMembershipVersion: version, principalAdmission: versionReference,
   basis: pilotAuthorityBasisSchema,
   validFrom: instant, validUntil: instant,
   // Only the selected pilot document, not a wildcard permission grant.
@@ -89,22 +111,23 @@ export const revokePilotAuthoritySchema = z.strictObject({
 // Pending admission/draft grant must not be represented as active authorization.
 export const pilotAuthorityViewSchema = z.discriminatedUnion("status", [
   z.strictObject({ id: z.uuid(), version, status: z.literal("PENDING_REVIEW") }),
-  z.strictObject({ id: z.uuid(), version, status: z.literal("AWAITING_HEAD_SIGNATURE"), challengeId: z.uuid() }),
+  z.strictObject({ id: z.uuid(), version, status: z.literal("AWAITING_PRINCIPAL_SIGNATURE"), sessionId: z.uuid() }),
   z.strictObject({ id: z.uuid(), version, status: z.literal("ACTIVE"),
     organizationId: z.uuid(), userId: z.uuid(), identityBinding: versionReference,
     basis: pilotAuthorityBasisSchema, validFrom: instant, validUntil: instant.nullable(),
     documentKinds: z.tuple([z.literal("WAYBILL")]),
     approval: z.discriminatedUnion("kind", [
-      z.strictObject({ kind: z.literal("OPERATOR_HEAD_REVIEW"), reviewId: z.uuid() }),
-      z.strictObject({ kind: z.literal("HEAD_SIGNED_GRANT"), headAdmission: versionReference,
+      z.strictObject({ kind: z.literal("OPERATOR_PRINCIPAL_REVIEW"), reviewId: z.uuid(),
+        principalKind: z.enum(["LEGAL_ENTITY_HEAD", "INDIVIDUAL_ENTREPRENEUR"]) }),
+      z.strictObject({ kind: z.literal("PRINCIPAL_SIGNED_GRANT"), principalAdmission: versionReference,
         signatureEvidenceId: z.uuid() }),
     ]),
   }).refine(value => value.validUntil === null
-    ? value.approval.kind === "OPERATOR_HEAD_REVIEW"
+    ? value.approval.kind === "OPERATOR_PRINCIPAL_REVIEW"
     : Date.parse(value.validUntil) > Date.parse(value.validFrom), {
     path: ["validUntil"], message: "Authority end must follow its start",
   }),
-  z.strictObject({ id: z.uuid(), version, status: z.enum(["REJECTED", "REVOKED", "EXPIRED"]), reason }),
+  z.strictObject({ id: z.uuid(), version, status: z.enum(["SUSPENDED", "REJECTED", "REVOKED", "EXPIRED"]), reason }),
 ]);
 
 const party = z.enum(["SUPPLIER", "BUYER"]);
@@ -124,15 +147,20 @@ export const createPilotWaybillSignatureSchema = z.strictObject({
 });
 
 const sessionBase = { id: z.uuid(), version, purpose: pilotSigningPurposeSchema };
+const definitiveFailure = pilotSigningFailureCodeSchema.exclude(["TRUST_INDETERMINATE", "VERIFIER_UNAVAILABLE"]);
 export const pilotSigningSessionViewSchema = z.discriminatedUnion("status", [
-  z.strictObject({ ...sessionBase, status: z.literal("AWAITING_USER"), challenge: pilotSigningChallengeSchema }),
-  z.strictObject({ ...sessionBase, status: z.enum(["VERIFYING", "UNKNOWN"]) }),
+  z.strictObject({ ...sessionBase, status: z.literal("AWAITING_USER"),
+    signingInput: z.union([pilotSigningChallengeSchema, pilotSigningDocumentInputSchema]) }),
+  z.strictObject({ ...sessionBase, status: z.literal("VERIFYING") }),
+  z.strictObject({ ...sessionBase, status: z.literal("UNKNOWN"),
+    reasonCode: z.enum(["TRUST_INDETERMINATE", "VERIFIER_UNAVAILABLE"]) }),
   z.strictObject({ ...sessionBase, status: z.literal("COMMITTED"), evidenceId: z.uuid(), committedAt: instant }),
-  z.strictObject({ ...sessionBase, status: z.literal("EVIDENCE_ONLY"), evidenceId: z.uuid(), reasonCode: pilotSigningFailureCodeSchema }),
-  z.strictObject({ ...sessionBase, status: z.literal("REJECTED"), reasonCode: pilotSigningFailureCodeSchema }),
+  z.strictObject({ ...sessionBase, status: z.literal("EVIDENCE_ONLY"), evidenceId: z.uuid(),
+    reasonCode: pilotSigningFailureCodeSchema.exclude(["INVALID_SIGNATURE", "CERTIFICATE_EXPIRED", "CERTIFICATE_REVOKED", "CONTENT_MISMATCH", "TRUST_INDETERMINATE", "VERIFIER_UNAVAILABLE"]) }),
+  z.strictObject({ ...sessionBase, status: z.literal("REJECTED"), reasonCode: definitiveFailure }),
   z.strictObject({ ...sessionBase, status: z.enum(["CANCELLED", "EXPIRED"]) }),
-]).refine(value => value.status !== "AWAITING_USER" || value.purpose === value.challenge.purpose, {
-  path: ["challenge", "purpose"], message: "Challenge purpose must match the session",
+]).refine(value => value.status !== "AWAITING_USER" || value.purpose === value.signingInput.purpose, {
+  path: ["signingInput", "purpose"], message: "Signing input purpose must match the session",
 });
 export const pilotWaybillSignatureProgressSchema = z.strictObject({
   plan: pilotWaybillSigningPlanSchema,
@@ -151,8 +179,8 @@ export const pilotWaybillSignatureProgressSchema = z.strictObject({
 export type CreatePilotIdentityChallenge = z.infer<typeof createPilotIdentityChallengeSchema>;
 export type SubmitPilotCms = z.infer<typeof submitPilotCmsSchema>;
 export type PilotIdentityView = z.infer<typeof pilotIdentityViewSchema>;
-export type SubmitPilotHeadAdmission = z.infer<typeof submitPilotHeadAdmissionSchema>;
-export type ReviewPilotHeadAdmission = z.infer<typeof reviewPilotHeadAdmissionSchema>;
+export type SubmitPilotPrincipalAdmission = z.infer<typeof submitPilotPrincipalAdmissionSchema>;
+export type ReviewPilotPrincipalAdmission = z.infer<typeof reviewPilotPrincipalAdmissionSchema>;
 export type PreparePilotEmployeeAuthority = z.infer<typeof preparePilotEmployeeAuthoritySchema>;
 export type RevokePilotAuthority = z.infer<typeof revokePilotAuthoritySchema>;
 export type PilotAuthorityView = z.infer<typeof pilotAuthorityViewSchema>;

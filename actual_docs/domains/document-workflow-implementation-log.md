@@ -4,6 +4,60 @@
 Требования — [Workflow документооборота](MARKET_DOCUMENT_WORKFLOW.md), единственный
 checklist — [R7.6 основного roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#document-workflow).
 
+## 20.10 — R7.6.1.2–3: принятые правила допуска и HTTP-контракт — SCOPED PASS / PARTIAL
+
+Поручение «приступай» после согласования владельцем: смена руководителя только
+через поддержку/оператора; допуск ЮЛ/ИП и представителей, физлицо от собственного
+имени вне B2B-пилота; ИИН без самостоятельной перепривязки; challenge10мин;
+идемпотентность и восстановление существующей сессии; реализация полными потоками.
+База d0d9717/main, canonical root; несвязанный UI/CI/docs WIP сохраняется.
+
+Текущий шаг R7.6.1.3: отразить решения в профильном контракте и общих схемах,
+зафиксировать HTTP/request/response/error и клиентский контракт до подключения
+маршрутов. Риски: принудительный БИН для ИП, самоназначение, ложный успех при
+таймауте, подпись устаревшего документа и утечка identity/evidence в ошибках.
+План gates: focused schemas/client tests, сборка/типы затронутых пакетов,
+targeted lint, проверяемая генерация отдельного OpenAPI-контракта, docs/diff.
+HTTP/runtime/DB/UI не объявляются реализованными контрактным шагом. Переход к
+R7.6.3.2–3 требует серверного verifier и совместной приёмки потоков с UI.
+Бюджет отдельного gate20мин, максимум3 попытки с новой гипотезой; установки,
+рабочие данные, deploy и сторонние процессы не затрагиваются.
+
+Результат: принятые правила сохранены в приоритетной карте/overview, DWF§18.6–18.8
+и EDS. Общие схемы различают руководителя ЮЛ и ИП (`principalAdmission`),
+проверку источника оператором, статус SUSPENDED и TTL10мин. Накладная получает
+reference/version/checksum для существующего download вместо inline challenge;
+CMS не смешивается с произвольным nonce в PDF. UNKNOWN с причиной unavailable/
+indeterminate не может быть REJECTED или EVIDENCE_ONLY. Версии, основание,
+подпись назначения и стороны остаются обязательными; схема не проверяет их
+существование/доступ/криптографию.
+
+`pilot-signing-http.ts` задаёт15 операций, role/access contract, request/response,
+пагинацию и безопасный error envelope/status mapping. Отдельный generated
+`pilot-signing.openapi.json` помечен CONTRACT_ONLY, не добавлен в runtime Swagger.
+Клиент вынесен в opt-in subpath `@marketplace/api-client/pilot-signing`, чтобы не
+подключать новый runtime import к существующим экранам. Использует штатный auth
+transport, валидирует payload/UUID/response; после timeout не повторяет CMS.
+Первоначальная заявка не служит сменой действующего руководителя; её серверная
+реализация должна вернуть SUPPORT_REQUIRED. Исполнение операторских исключений
+отдельное, самостоятельных пользовательских операций для них нет.
+
+Итоговые проверки (без неуспешных запусков):
+- `npm run test --workspace=@marketplace/schemas -- --run src/pilot-document-signing.test.ts src/pilot-signing-http.test.ts` —18PASS.
+- `npm run build --workspace=@marketplace/schemas` —PASS, включая TypeScript.
+- `npm run test --workspace=@marketplace/api-client -- --run src/pilot-signing.test.ts` —5PASS.
+- `npm run typecheck --workspace=@marketplace/api-client` —PASS.
+- Targeted ESLint изменённых schemas/client TS и генератора, `--max-warnings=0` —PASS.
+- `node scripts/generate-pilot-signing-contract.mjs` и `--check` —PASS;
+  schema refs/auth markers/path+query parameters проверены целевым тестом.
+
+Повторы успешных checks выполнялись только после изменения соответствующих
+схем/тестов; зависимости не переустанавливались. Routes не подключались, поэтому
+DB/browser/runtime gates не запускались и не заменялись schema tests.
+Следующий runtime-пакет — подтверждение личности/допуск/назначение с independent
+verifier и необходимым UI, затем накладная обеих сторон. Приёмка формы и отдельные
+операторские процедуры смены/исправления остаются открыты; полные .1.2/.1.3 PARTIAL.
+
 ## 19.10 — R7.6.1.3: исполняемые общие схемы, SCOPED PASS / PARTIAL
 
 По поручению «окей, продолжаем» после принятых решений, база b87e9d5/main.
