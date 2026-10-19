@@ -1,381 +1,47 @@
 "use client";
-
-import { CheckmarkCircle20Regular } from "@fluentui/react-icons/svg/checkmark-circle";
-import { ShieldError20Regular } from "@fluentui/react-icons/svg/shield-error";
-import { MarketplaceApiClient } from "@marketplace/api-client";
-import {
-  DmButton,
-  DmFeedback,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  StatusTag,
-} from "@marketplace/ui";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { formatAdminStatus } from "./admin-labels";
-import { adminApiContext } from "./admin-auth";
-import styles from "./trust-operations.module.css";
-import { summarizeTrustOperations } from "./trust-operations-view-model";
-
-type Supplier = {
-  organizationId: string;
-  organization: { displayName: string };
-};
-type Incident = {
-  id: string;
-  impactedOrganizationId: string | null;
-  type: string;
-  severity: string;
-  status: string;
-  actionType: string;
-  explanation: string;
-  remediation: string;
-  restorationCondition: string;
-  actionExpiresAt: string | null;
-  version: number;
-  appeals: Array<{ id: string; status: string; reason: string }>;
-};
-type Rating = {
-  supplierOrganizationId: string;
-  status: string;
-  score: string | null;
-  eventCount: number;
-  confidence: string;
-  computedAt: string;
-};
-type Warehouse = { id: string; geoStatus: string };
-
-const incidentTypeLabels: Record<string, string> = {
-  MATCHING_ERROR: "Ошибка сопоставления товара",
-  STALE_PRICE: "Устаревшая цена",
-  UNRELIABLE_STOCK: "Недостоверный остаток",
-  PACKAGING_ERROR: "Ошибка упаковки",
-  INCOMPLETE_DOCUMENTS: "Неполные документы",
-  DELIVERY_FAILURE: "Срыв доставки",
-  SUSPICIOUS_PROMOTION: "Проверка акции",
-  FAKE_REVIEW: "Проверка отзыва",
-  UNVERIFIED_LOCATION: "Адрес не подтверждён",
-  PAYMENT_DETAILS_CHANGE: "Изменение реквизитов",
-};
-const severityLabels: Record<string, string> = {
-  CRITICAL: "Критический",
-  HIGH: "Высокий",
-  NORMAL: "Обычный",
-  LOW: "Низкий",
-};
-const actionLabels: Record<string, string> = {
-  HARD_BLOCK: "Операции заблокированы",
-  NONE: "Без ограничений",
-  REVIEW_REQUIRED: "Нужна проверка оператора",
-  HIDDEN: "Публикация скрыта",
-};
-const severityTone = (severity: string) =>
-  severity === "CRITICAL" || severity === "HIGH"
-    ? "danger" as const
-    : severity === "NORMAL"
-      ? "warning" as const
-      : "info" as const;
+import { useCallback } from "react";
+import { Tab } from "@fluentui/react-components";
+import type { MarketplaceApiClient } from "@marketplace/api-client";
+import { DmButton, DmFeedback, DmSurface, DmTabList, EmptyState, ErrorState, LoadingState } from "@marketplace/ui";
+import { useOperatorProjection } from "./use-operator-projection";
+import { useAdminQuery } from "./use-admin-query";
+import { TrustIncidentCard, TrustSupplierCard } from "./operator-trust-cards";
+import styles from "./operator-orders.module.css";
 
 export function TrustOperations() {
-  const api = useMemo(
-    () =>
-      new MarketplaceApiClient(
-        process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4012/api",
-        adminApiContext(),
-      ),
-    [],
-  );
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [ratings, setRatings] = useState<Array<Rating & { name: string }>>([]);
-  const [warehouseStats, setWarehouseStats] = useState({ total: 0, verified: 0 });
-  const [loading, setLoading] = useState(true);
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [busy, setBusy] = useState<string | null>(null);
-  const [loadError, setLoadError] = useState("");
-  const [feedback, setFeedback] = useState<{
-    tone: "success" | "danger";
-    description: string;
-  } | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setLoadError("");
-    try {
-      const [supplierData, nextIncidents] = await Promise.all([
-        api.get<Supplier[]>("/suppliers"),
-        api.get<Incident[]>("/trust/incidents"),
-      ]);
-      const [nextRatings, warehouseGroups] = await Promise.all([
-        Promise.all(
-          supplierData.map(async ({ organizationId, organization }) => ({
-            ...(await api.get<Rating>(
-              `/trust/ratings/suppliers/${organizationId}`,
-            )),
-            name: organization.displayName,
-          })),
-        ),
-        Promise.all(
-          supplierData.map(({ organizationId }) =>
-            api.get<Warehouse[]>(`/suppliers/${organizationId}/warehouses`),
-          ),
-        ),
-      ]);
-      const warehouses = warehouseGroups.flat();
-      setSuppliers(supplierData);
-      setIncidents(nextIncidents);
-      setRatings(nextRatings);
-      setWarehouseStats({
-        total: warehouses.length,
-        verified: warehouses.filter(({ geoStatus }) => geoStatus === "VERIFIED")
-          .length,
-      });
-      setHasLoaded(true);
-    } catch (cause) {
-      setLoadError(
-        cause instanceof Error
-          ? cause.message
-          : "Не удалось загрузить операционные проверки",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [api]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const summary = useMemo(
-    () =>
-      summarizeTrustOperations({
-        incidents,
-        ratingStatuses: ratings.map(({ status }) => status),
-        warehouseStats,
-      }),
-    [incidents, ratings, warehouseStats],
-  );
-  const openIncidents = incidents.filter(({ status }) => status !== "RESOLVED");
-
-  const resolve = async (incident: Incident) => {
-    setBusy(incident.id);
-    setFeedback(null);
-    try {
-      await api.patch(`/trust/incidents/${incident.id}`, {
-        version: incident.version,
-        status: "RESOLVED",
-        actionType: "NONE",
-        resolution: "Условие восстановления выполнено.",
-      });
-      await load();
-      setFeedback({
-        tone: "success",
-        description: "Ограничение закрыто, операционные данные обновлены.",
-      });
-    } catch (cause) {
-      setFeedback({
-        tone: "danger",
-        description:
-          cause instanceof Error
-            ? cause.message
-            : "Не удалось закрыть ограничение",
-      });
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  return (
-    <section className={styles.section} aria-labelledby="trust-operations-title">
-      <div className={styles.header}>
-        <div>
-          <span className={styles.eyebrow}>
-            <ShieldError20Regular /> Операционный контроль
-          </span>
-          <h2 id="trust-operations-title">Риски и восстановление поставщиков</h2>
-          <p>
-            Ограничения, обращения и подтверждение исправлений в одном рабочем
-            контуре.
-          </p>
-        </div>
-
+  const { state, write } = useAdminQuery();
+  const { trustView: view, trustIncidentOffset: incidentOffset, trustSupplierOffset: supplierOffset } = state;
+  const read = useCallback((api: MarketplaceApiClient, signal: AbortSignal) => api.operatorTrust({ incidentOffset, supplierOffset }, signal), [incidentOffset, supplierOffset]);
+  const { data, loading, error, refresh } = useOperatorProjection(read);
+  const incidents = data?.incidents.status === "AVAILABLE" ? data.incidents.data : null;
+  const suppliers = data?.suppliers.status === "AVAILABLE" ? data.suppliers.data : null;
+  const page = view === "incidents" ? incidents : suppliers;
+  const offset = view === "incidents" ? incidentOffset : supplierOffset;
+  const setOffset = (value: number) => write({ ...state, [view === "incidents" ? "trustIncidentOffset" : "trustSupplierOffset"]: value });
+  const currentPage = page?.offset === offset;
+  return <section className={styles.section} aria-label="Контроль доверия" aria-busy={loading}>
+    <div className={styles.header}><h2>Инциденты и репутация</h2><DmButton disabled={loading} onClick={() => void refresh()}>Обновить Trust</DmButton></div>
+    <DmFeedback tone="warning" title="Полнота событий не подтверждена" description="Автоматическое поступление событий заказов, оплат, доставки и импорта ещё не подтверждено. Рассчитанный балл сам по себе не доказывает качество реальной работы. Ручные и тестовые записи могут участвовать в расчёте." />
+    {loading && !data ? <LoadingState label="Загружаем Trust" /> : null}
+    {error ? <ErrorState presentation="inline" title="Trust не обновлён" description={`${error}${data ? " Ниже — последняя успешная загрузка; действия недоступны." : ""}`} action={<DmButton onClick={() => void refresh()}>Повторить загрузку Trust</DmButton>} /> : null}
+    {data ? <>
+      <p>Загружено: {new Date(data.observedAt).toLocaleString("ru-KZ", { timeZone: "Asia/Almaty" })} (UTC+5){loading ? " · Обновление…" : ""}</p>
+      <DmSurface variant="card"><dl className={styles.details}>
+        <div><dt>Открытые инциденты</dt><dd>{incidents ? `${incidents.open} · жёстких ограничений: ${incidents.hardBlocks}` : "Данные недоступны"}</dd></div>
+        <div><dt>Апелляции инцидентов без решения</dt><dd>{incidents ? incidents.pendingAppeals : "Данные недоступны"}</dd></div>
+        <div><dt>Геопроверка складов</dt><dd>{data.warehouses.status === "AVAILABLE" ? `${data.warehouses.data.verified} из ${data.warehouses.data.total}` : data.warehouses.status === "FORBIDDEN" ? "Нет прав на просмотр складов" : "Источник складов недоступен"}</dd></div>
+      </dl></DmSurface>
+      <DmTabList selectedValue={view} onTabSelect={(_, value) => write({ ...state, trustView: value.value as "incidents" | "reputation" })} aria-label="Разделы Trust"><Tab id="trust-incidents-tab" value="incidents" aria-controls="trust-incidents">Инциденты и апелляции</Tab><Tab id="trust-reputation-tab" value="reputation" aria-controls="trust-reputation">Репутация</Tab></DmTabList>
+      <div role="tabpanel" id={`trust-${view}`} aria-labelledby={`trust-${view}-tab`} className={styles.section}>
+        {!page ? <ErrorState presentation="inline" title={(view === "incidents" ? data.incidents : data.suppliers).status === "FORBIDDEN" ? "Нет прав на этот источник" : "Источник недоступен"} description="Другие источники показаны независимо. Нельзя считать отсутствующие данные нулевыми." action={<DmButton onClick={() => void refresh()}>Повторить загрузку источников</DmButton>} /> : null}
+        {page && !currentPage ? <LoadingState label="Загружаем выбранную страницу" /> : null}
+        {page && currentPage ? <>
+          <p>Всего: {page.total}. Показано: {page.items.length}{page.items.length ? ` · записи ${page.offset + 1}–${page.offset + page.items.length}` : ""}.</p>
+          {page.items.length === 0 ? <EmptyState title={view === "incidents" ? "Инциденты не найдены" : "Поставщики не найдены"} description="Это результат чтения данного источника, а не подтверждение полноты автоматического контроля." /> : null}
+          {view === "incidents" ? incidents?.items.map(incident => <TrustIncidentCard key={incident.id} incident={incident} canResolve={data.canResolve && !loading && !error} onResolved={refresh} />) : suppliers?.items.map(supplier => <TrustSupplierCard key={supplier.id} supplier={supplier} />)}
+          <nav className={styles.actions} aria-label="Страницы Trust"><DmButton disabled={loading || offset === 0} onClick={() => setOffset(Math.max(0, offset - 25))}>Предыдущая страница Trust</DmButton><span>Страница {offset / 25 + 1}</span><DmButton disabled={loading || offset + 25 >= page.total || offset >= 1000000} onClick={() => setOffset(offset + 25)}>Следующая страница Trust</DmButton>{offset > 0 ? <DmButton onClick={() => setOffset(0)}>В начало списка</DmButton> : null}</nav>
+        </> : null}
       </div>
-
-      {feedback ? (
-        <DmFeedback
-          tone={feedback.tone}
-          title={feedback.tone === "success" ? "Данные обновлены" : "Действие не выполнено"}
-          description={feedback.description}
-          alert={feedback.tone === "danger"}
-        />
-      ) : null}
-      {loadError && hasLoaded ? (
-        <DmFeedback
-          tone="danger"
-          title="Не удалось обновить раздел"
-          description={loadError}
-          action={<DmButton onClick={() => void load()}>Повторить загрузку</DmButton>}
-          alert
-        />
-      ) : null}
-
-      {loading && !hasLoaded ? (
-        <LoadingState label="Загружаем операционные проверки" />
-      ) : loadError && !hasLoaded ? (
-        <ErrorState
-          title="Контроль рисков недоступен"
-          description={loadError}
-          action={
-            <DmButton appearance="secondary" onClick={() => void load()}>
-              Повторить
-            </DmButton>
-          }
-        />
-      ) : (
-        <>
-          <div className={styles.metrics} aria-label="Сводка контроля рисков">
-            <div>
-              <span>Открытые ограничения</span>
-              <strong>{summary.open}</strong>
-              <small>жёстких блокировок: {summary.hardBlocks}</small>
-            </div>
-            <div>
-              <span>Обращения</span>
-              <strong>{summary.pendingAppeals}</strong>
-              <small>ожидают решения</small>
-            </div>
-            <div>
-              <span>Подтверждённые склады</span>
-              <strong>{summary.verifiedWarehouses} / {summary.totalWarehouses}</strong>
-              <small>прошли геопроверку</small>
-            </div>
-            <div>
-              <span>Внутренний рейтинг</span>
-              <strong>{summary.calculatedRatings} / {ratings.length}</strong>
-              <small>рассчитан по событиям</small>
-            </div>
-          </div>
-
-          <div className={styles.layout}>
-            <div className={styles.queuePane}>
-              <div className={styles.paneHeading}>
-                <div>
-                  <h3>Открытые ограничения</h3>
-                  <p>Закрывайте блокировку только после выполнения условия восстановления.</p>
-                </div>
-                <StatusTag tone={summary.hardBlocks > 0 ? "danger" : "success"}>
-                  {summary.hardBlocks > 0
-                    ? `Жёстких: ${summary.hardBlocks}`
-                    : "Критических нет"}
-                </StatusTag>
-              </div>
-              {openIncidents.length ? (
-                <div className={styles.queue}>
-                  {openIncidents.map((incident) => (
-                    <article key={incident.id}>
-                      <header>
-                        <div>
-                          <strong>
-                            {incidentTypeLabels[incident.type] ?? "Требуется проверка"}
-                          </strong>
-                          <span>
-                            {suppliers.find(
-                              ({ organizationId }) =>
-                                organizationId === incident.impactedOrganizationId,
-                            )?.organization.displayName ?? "PlatformaMarket"}
-                          </span>
-                        </div>
-                        <StatusTag tone={severityTone(incident.severity)}>
-                          {severityLabels[incident.severity] ?? "Приоритет не указан"}
-                        </StatusTag>
-                      </header>
-                      <p>{incident.explanation}</p>
-                      <dl>
-                        <div>
-                          <dt>Текущее ограничение</dt>
-                          <dd>
-                            {actionLabels[incident.actionType] ??
-                              formatAdminStatus(incident.actionType)}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt>Что исправить</dt>
-                          <dd>{incident.remediation}</dd>
-                        </div>
-                        <div>
-                          <dt>Условие восстановления</dt>
-                          <dd>{incident.restorationCondition}</dd>
-                        </div>
-                      </dl>
-                      <footer>
-                        <span>
-                          {incident.appeals.length
-                            ? `Обращений: ${incident.appeals.length}`
-                            : "Обращений нет"}
-                        </span>
-                        <DmButton
-                          appearance="primary"
-                          icon={<CheckmarkCircle20Regular />}
-                          disabled={busy !== null || loading}
-                          onClick={() => void resolve(incident)}
-                        >
-                          {busy === incident.id
-                            ? "Закрываем…"
-                            : "Подтвердить восстановление"}
-                        </DmButton>
-                      </footer>
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="Открытых ограничений нет"
-                  description="Новые операционные риски появятся здесь после проверки каталога, остатков, документов или исполнения заказа."
-                />
-              )}
-            </div>
-
-            <div className={styles.ratingPane}>
-              <div className={styles.paneHeading}>
-                <div>
-                  <h3>Внутренний сигнал оператора</h3>
-                  <p>Используется для контроля качества и не публикуется как trust score.</p>
-                </div>
-              </div>
-              {ratings.length ? (
-                <div className={styles.ratings}>
-                  {ratings.map((rating) => (
-                    <div key={rating.supplierOrganizationId}>
-                      <span>{rating.name}</span>
-                      <strong>
-                        {rating.status === "CALCULATED" && rating.score !== null
-                          ? Number(rating.score).toFixed(1)
-                          : "Нет оценки"}
-                      </strong>
-                      <small>
-                        {rating.eventCount ?? 0} подтверждённых событий
-                      </small>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="Рейтинг ещё не рассчитан"
-                  description="Сначала нужны подтверждённые операционные события поставщиков."
-                />
-              )}
-              <aside>
-                <strong>Граница пилота</strong>
-                <p>
-                  Публичный trust score и расширенные рекомендации не входят в
-                  первый пилот. Этот блок остаётся внутренним диагностическим
-                  сигналом оператора.
-                </p>
-              </aside>
-            </div>
-          </div>
-        </>
-      )}
-    </section>
-  );
+    </> : null}
+  </section>;
 }

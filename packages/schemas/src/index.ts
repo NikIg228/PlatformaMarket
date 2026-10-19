@@ -1471,3 +1471,4 @@ export * from "./order-invoice";
 export * from "./order-discrepancy";
 export * from "./resupply-document";
 export * from "./operator-orders";
+export * from "./operator-trust";

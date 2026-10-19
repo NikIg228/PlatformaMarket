@@ -1022,3 +1022,100 @@ verification и project profile, DESIGN_SYSTEM/component-contract/semantic-light
 Workflow: минимальный контракт → атомарная реализация → UI → риск-ориентированная
 проверка. Агентов/межчатовой координации не было. Чужие catalog/CI/config/governance
 WIP сохранены и не включаются в commit. R7.7.7 целиком не закрыт.
+
+### 19.10 — миграция dev и последовательность R7.7.7.2 (IN PROGRESS)
+
+Владелец явно разрешил применить миграцию, проверить CI и после зелёных проверок
+начать следующий подпункт R7.7.7.2. Git main/16aac34; последний commit docs-only,
+код R7.7.7.1 cefdac4. CI39026313605 и Security39026313606 SUCCESS; дополнительный
+Security39217854164 SUCCESS. Для docs16aac34 CI пропущен через [skip ci].
+Чужой diff roadmap относится к НУЦ R7.6.3 и сохраняется отдельно.
+План миграции: проверить exact local marketplace/pending migration, backup+readability,
+prisma migrate deploy только20261017100000_document_exception_queue; сверить сохранность
+OperationAssignment и validated constraint, затем schema/health локального запуска.
+Это расширение CHECK допустимых queueType, без изменения записей; тестовый upgrade
+предыдущего этапа переиспользуется при неизменном SQL. Никакого seed/reset.
+Trust начнётся только после этих проверок; R7.7.7.3 не входит.
+
+Миграция завершена: backup проверен pg_restore; применена только указанная миграция,
+число и SHA256 записей OperationAssignment сохранены, CHECK validated. Schema PASS;
+API /api/health/ready и web / HTTP200. Evidence .tmp/operator-trust (backup приватный,
+не публикуется). Запуск npm run dev из canonical root оставлен работать.
+
+R7.7.7.2 brief: оператор просматривает отдельные страницы инцидентов/апелляций и
+репутации, полные totals и ограниченные страницы; источники читаются независимо.
+Происхождение metric event не определяется по произвольному sourceEntityType:
+ручной audit trail отличаем от неподтверждённого происхождения; автоматические
+order/payment/delivery/import producers не заявляем реализованными.
+Не меняем формулу, бизнес-поток R7.5, deployment profile или рабочие данные.
+Существующее закрытие инцидента сохраняем с вводом причины, подтверждением,
+атомарным audit и optimistic conflict; новые решения по апелляциям не вводим.
+Риски: platform/permission denial, скрытые/неполные источники, stale response,
+ложное происхождение, утечка произвольного evidence, потеря причины при conflict.
+Проверки: focused schema/service/client tests до UI; API/types/build, runtime split,
+core contract, targeted HTTP/PG на disposable DB (denial, totals, rollback/race),
+web/admin types и web build, browser1440/390/keyboard/error/recovery + screenshots
+и computed styles; lint и diff hygiene. Никаких full release/E2E или seed dev.
+UI-паспорт будет сверён с текущим экраном перед UI-кодом; аналог OperatorAudit и
+operator-orders.module.css, shared adapters без локальных overrides.
+UI-паспорт R7.7.7.2: baseline1440 просмотрен (.tmp/operator-trust/before-1440.png),
+Manrope14/control44 подтверждены computed styles. Аналог OperatorAudit:
+DmSurface(card), DmTabList, DmButton, DmField/Textarea, DmDialog, state adapters;
+operator-orders.module.css только композиция. Контракты component-contract.json
+и semantic-light.json прочитаны: controls44/radius8, card12/dialog16, body14/line1.5,
+gap12/16/24. Две вкладки Trust без смены shell; формы сохраняют причину при ошибке,
+закрытие с явным подтверждением, отдельные unavailable/forbidden/empty состояния.
+
+### 19.10 — R7.7.7.2 Trust: LOCAL PASS
+
+Добавлены Zod/OpenAPI/client contracts и platform-authorized `/trust/operator`:
+одна агрегированная сводка вместо2+2N запросов браузера, отдельные состояния
+AVAILABLE/FORBIDDEN/UNAVAILABLE для инцидентов, поставщиков и геопроверки.
+В каждой странице25 записей, totals считаются по всему источнику; реальные
+HTTP fixtures доказали обход более100 поставщиков без потери/дублирования.
+Нет snapshot — явно «не рассчитан», недоступный источник не превращается в ноль.
+
+Две вкладки Trust, их страницы сохраняются в URL/Back/reload. Инцидент раскрывает
+объект, основание, ограничение/срок, исправление, условие восстановления и апелляции.
+Репутация раскрывает дату/окно/версию расчёта, число записей и постраничное
+происхождение событий. `sourceEntityType` не считается доказательством producer:
+MANUAL_RECORDED требует audit `trust.metric.recorded`, иначе UNVERIFIED.
+Автоматические order/payment/delivery/import потоки R7.5 остаются NOT_VERIFIED.
+Seed/ручной ввод не выдаются за подтверждённую реальную работу.
+
+Существующее восстановление теперь требует причины и подтверждения; новый
+operator endpoint проверяет активное platform membership и permission, version,
+наличие открытой апелляции; CAS и audit выполняются в одной транзакции.
+Конфликт/неизвестный исход сохраняют причину и требуют обновления до повтора.
+Подтверждённая запись при сбое refresh остаётся явным inline результатом, без
+повторной команды.401/403 очищают закрытые данные; запоздалый ответ не меняет
+актуальную страницу. Formula/recompute/решения апелляций/producer R7.5 не менялись.
+
+Граница сводки: последние25 апелляций на объект и полный appealCount; усечение
+явно подписано. Произвольный JSON evidence/metadata и actor/служебные поля не
+выдаются: показывается наличие материалов, без заявления об их просмотре.
+Безопасный формат материалов и полный workflow решений относятся к R7.5;
+не заявляем этим подпунктом готовность всего ADM-10 или Trust в production.
+При анализе старых decideIncidentAppeal/decideRatingAppeal обнаружены границы
+атомарности CAS/audit/recompute; новые UI-команды их не вызывают, отдельный
+ремонт старого workflow не включался в эту задачу.
+
+Проверки и evidence (`.tmp/operator-trust/`, только disposable тестовая БД):
+- schemas: `npm run test --workspace @marketplace/schemas -- src/operator-trust.test.ts src/admin-query.test.ts` —47 PASS; build PASS.
+- service: `npm run test --workspace @marketplace/api -- src/modules/trust-commerce/operator-trust.service.spec.ts src/modules/trust-commerce/trust-commerce.service.spec.ts` —11 PASS.
+- client: `npm run test --workspace @marketplace/api-client -- src/operator-trust.test.ts src/deployment-profile.test.ts` —6 PASS, build PASS. Первая попытка нового теста использовала default pilot и закономерно была заблокирована; fixture исправлена на явный go_live, профиль приложения не менялся.
+- focused PG: `npm run db:test -- run test --workspace @marketplace/api -- src/modules/trust-commerce/operator-trust.postgres.spec.ts` —PASS, rollback/audit failure, CAS race1success+2conflicts, redaction, paging. Повтор после добавления строгого hosted-CI target guard PASS; cleanup собственных fixtures.
+- HTTP: `npm run db:test -- exec -- playwright test --config apps/e2e/playwright.operator-trust-api.config.ts` —PASS. Первая попытка обнаружила403 вместо401 при пустом trusted context в новом summary; добавлена явная проверка до membership query и regression. Повтор доказал JWT/role/platform denial, spoof rejection, totals, partial rights, origin,400/404/409 и отозванное membership.
+- browser: `npm exec -- playwright test --config apps/e2e/playwright.operator-trust.config.ts` —первые5 сценариев PASS,1FAIL: success feedback по умолчанию toast вне локатора секции. Для подтверждённой записи со stale списком выбран явный persistent inline feedback; целевой `--grep restoration` —2 PASS (включая добавленный unknown outcome). Итого7 сценариев PASS;5 неизменённых переиспользованы. `--grep geometry` —2 PASS для точного кадрирования карточек1440/390; PNG просмотрены, Manrope14/control44/radius8 и отсутствие overflow подтверждены, Escape возвращает focus.
+- `npm run typecheck --workspace @marketplace/api`, admin-web и `npm exec -- tsc -p apps/e2e/tsconfig.json --noEmit` —PASS. Первый API build выявил только TS-тип UUID-массива в PG test; исправлен, `npm exec --workspace @marketplace/api -- nest build` PASS. Генерация Prisma не дублировалась при работающем dev до планового restart.
+- `node .tmp/operator-trust/build-web.mjs` —PASS, единый frontend go_live, отдельный generated output, foreign next-env сохранён; source-копий/worktrees нет.
+- `npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs` —PASS; `node scripts/verify-runtime-split.mjs` —PASS; `npm run db:test -- exec -- node scripts/verify-pilot-backend.mjs --contract-only` —PASS (372 pilot operations,71 core checks). Новые go_live Trust endpoints дополнительно проверены целевым HTTP тестом выше.
+- Scoped ESLint и `git diff --check` —PASS. Новых Prisma migrations нет; schema неизменна. Full release/E2E не запускались: нет релизной или cross-cutting задачи.
+
+Dev перезапущен только после проверки ancestry своего launcher972/API7412/web9600.
+Новый `npm run dev` из canonical root, launcher7760, API6800, web9332: schema,
+Prisma generation/API build, /api/health/ready200, /200, /api/trust/operator401 без
+аутентификации (новый маршрут активен). Никаких seed/reset/команд Trust в рабочей БД.
+Процессы оставлены работать; .tmp/operator-trust/dev-updated.log.
+Публикуется только собственный scope; чужие catalog/CI/NCA/docs WIP сохранены.
+CI новой публикации проверяется отдельно после push; R7.7.7.3 не начат.
