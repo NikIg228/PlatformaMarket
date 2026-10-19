@@ -5,6 +5,7 @@ import { DmButton, DmEditableAvatar, DmFeedback, DmInlineEdit, DmSurface, ErrorS
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
 import { ProfileSessions } from "./profile-sessions";
+import { ProfileIdentity } from "./profile-identity";
 import styles from "./account-settings.module.css";
 
 export default function Profile() {
@@ -68,6 +69,7 @@ export default function Profile() {
       {avatarError ? <DmFeedback tone="danger" title="Фото не обновлено" description={avatarError} alert /> : null}
       {resource.data && (saveError || avatarError) ? <div className={styles.refresh}><DmButton appearance="subtle" density="compact" disabled={avatarBusy || resource.loading} onClick={() => { setAvatarError(null); setAvatarRevision(value => value + 1); void resource.refresh(); }}>Повторить загрузку</DmButton></div> : null}
     </DmSurface>
+    <ProfileIdentity />
     <ProfileSessions />
     <DmButton appearance="outline" intent="brand" className={styles.logout} disabled={logout.logoutPending} onClick={logout.onLogout}>{logout.logoutPending ? "Выходим…" : "Выйти из профиля"}</DmButton>
   </div>;

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// R7.6.1.3 contracts only: no route is enabled by exporting these schemas.
+// R7.6.1.3 contracts: exporting a schema does not enable its HTTP route.
 // Parsing does not verify a certificate, membership, authority, ownership or replay.
 const version = z.number().int().positive();
 const checksum = z.string().regex(/^[a-f0-9]{64}$/);
@@ -48,6 +48,7 @@ export const pilotSigningDocumentInputSchema = z.strictObject({
 // PEM normalization belongs at the NCALayer boundary.
 // Transport cap: 1 MiB decoded detached CMS, not a document upload size limit.
 export const PILOT_CMS_MAX_BYTES = 1024 * 1024;
+export const PILOT_CMS_MAX_JSON_BYTES = 4 * Math.ceil(PILOT_CMS_MAX_BYTES / 3) + 4096;
 const cmsBase64 = z.string().min(4).max(4 * Math.ceil(PILOT_CMS_MAX_BYTES / 3))
   .regex(/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/)
   .refine(value => {
@@ -61,7 +62,7 @@ export const submitPilotCmsSchema = z.strictObject({
 
 // Read projection for the current account; full IIN/certificates stay in protected evidence.
 export const pilotIdentityViewSchema = z.discriminatedUnion("status", [
-  z.strictObject({ status: z.literal("UNVERIFIED") }),
+  z.strictObject({ status: z.literal("UNVERIFIED"), verificationAvailable: z.boolean(), activeSessionId: z.uuid().nullable() }),
   z.strictObject({ status: z.literal("VERIFIED"), bindingId: z.uuid(), version,
     maskedIin: z.string().regex(/^\*{8}\d{4}$/), verifiedAt: instant }),
 ]);

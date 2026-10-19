@@ -43,6 +43,7 @@ import { deploymentProfileModules } from "./platform/runtime/deployment-profile.
 import { OutboxModule } from "./platform/outbox/outbox.module";
 import { ObservabilityModule } from "./platform/observability/observability.module";
 import { RedisThrottlerStorage } from "./platform/security/rate-limit.storage";
+import { IdentitySigningModule } from "./modules/identity-signing/identity-signing.module";
 
 const config = environment();
 const runtime = runtimeCapabilities(config.PROCESS_ROLE);
@@ -92,6 +93,7 @@ const sentryProviders = config.SENTRY_DSN
     MfaModule,
     OnboardingModule,
     AuthSessionsModule,
+    IdentitySigningModule,
     OrganizationsModule,
     CatalogModule,
     ApprovalsModule,

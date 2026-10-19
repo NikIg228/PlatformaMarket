@@ -1,0 +1,3 @@
+.content { display: grid; gap: var(--dm-space-4); min-width: 0; }
+.description { margin: 0; color: var(--dm-text-secondary); font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); }
+.actions { display: flex; flex-wrap: wrap; gap: var(--dm-space-3); }

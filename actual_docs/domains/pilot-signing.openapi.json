@@ -2117,6 +2117,151 @@
           }
         }
       }
+    },
+    "/signing/sessions/{sessionId}/retry": {
+      "post": {
+        "operationId": "retrySession",
+        "x-implementation-status": "CONTRACT_ONLY",
+        "x-access-policy": "SESSION_OWNER",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Versioned resource; inspect status before treating an action as committed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Safe core error envelope; domain code determines recovery",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Safe core error envelope; domain code determines recovery",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Safe core error envelope; domain code determines recovery",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Safe core error envelope; domain code determines recovery",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Safe core error envelope; domain code determines recovery",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Safe core error envelope; domain code determines recovery",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Safe core error envelope; domain code determines recovery",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Safe core error envelope; domain code determines recovery",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Safe core error envelope; domain code determines recovery",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Safe core error envelope; domain code determines recovery",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelSessionRequest"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2129,10 +2274,27 @@
               "status": {
                 "type": "string",
                 "const": "UNVERIFIED"
+              },
+              "verificationAvailable": {
+                "type": "boolean"
+              },
+              "activeSessionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "required": [
-              "status"
+              "status",
+              "verificationAvailable",
+              "activeSessionId"
             ],
             "additionalProperties": false
           },
@@ -7830,6 +7992,7 @@
               "SESSION_EXPIRED",
               "SESSION_CANCELLED",
               "SESSION_ALREADY_COMMITTED",
+              "SESSION_ALREADY_ACTIVE",
               "SUPPORT_REQUIRED",
               "UNSUPPORTED_SUBJECT",
               "DOCUMENT_NOT_SIGNABLE",

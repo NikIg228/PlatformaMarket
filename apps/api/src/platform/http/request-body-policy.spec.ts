@@ -6,6 +6,7 @@ import { createHash } from "node:crypto";
 import { AVATAR_MAX_BYTES, AVATAR_MAX_JSON_BYTES, DOCUMENT_UPLOAD_MAX_BYTES, IMPORT_UPLOAD_MAX_BYTES } from "@marketplace/schemas";
 import { DEFAULT_JSON_MAX_BYTES, DOCUMENT_JSON_MAX_BYTES, IMPORT_JSON_MAX_BYTES, marketplaceBodyParser, requestBodyPolicy } from "./request-body-policy";
 import { toApiErrorResponse } from "./api-exception.filter";
+import { PILOT_CMS_MAX_BYTES, PILOT_CMS_MAX_JSON_BYTES } from "@marketplace/schemas";
 
 describe("HTTP request body resource boundary", () => {
   let server: Server;
@@ -91,6 +92,14 @@ describe("HTTP request body resource boundary", () => {
     expect(invalid.status).toBe(400);
     expect(invalid.body).toMatchObject({ code: "BAD_REQUEST", message: "Invalid request body" });
     expect(JSON.stringify(invalid.body)).not.toContain("private-marker");
+  });
+
+  it("accepts the bounded CMS envelope only on its exact POST route", async () => {
+    const body = JSON.stringify({ contentBase64: Buffer.alloc(PILOT_CMS_MAX_BYTES).toString("base64") });
+    expect((await send("/api/signing/sessions/cms", body)).status).toBe(200);
+    expect((await send("/api/signing/sessions/cms", JSON.stringify({ contentBase64: "A".repeat(PILOT_CMS_MAX_JSON_BYTES) }), { chunked: true })).status).toBe(413);
+    expect((await send("/api/signing/sessions/other", body)).status).toBe(413);
+    expect(requestBodyPolicy("GET", "/api/signing/sessions/cms").limit).toBe(DEFAULT_JSON_MAX_BYTES);
   });
 
   it.each(["/api/integrations/webhooks/endpoint", "/api/payments/webhooks/provider", "/api/documents/signatures/callback"])("preserves exact signed bytes and the 1 MiB bound for %s", async (path) => {

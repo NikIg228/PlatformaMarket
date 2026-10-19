@@ -25,6 +25,7 @@ async function fixture(page: Page, role: "clinic" | "supplier", canEdit = true) 
     if(path === "/access-control/policy") return route.fulfill({ json:{ mode:"ROLE_BASED", permissions:["organization.view", ...(canEdit ? ["organization.members.manage"] : []), "inventory.view", "import.manage", "supplier.warehouse.manage", "support.ticket.view", "support.ticket.create", "notification.view"] } });
     if(path === "/auth/current") return route.fulfill({ json:url.searchParams.has("workspace") ? { sessionId,user:state.personal } : null });
     if(path === "/auth/profile") return route.fulfill({ json:state.personal });
+    if(path === "/identity/signing-binding") return route.fulfill({ json:{status:"UNVERIFIED",verificationAvailable:false,activeSessionId:null} });
     if(path === "/auth/profile/avatar") return route.fulfill({ json:{contentType:"image/png",contentBase64:png} });
     if(path === "/auth/sessions") return route.fulfill({ json:state.sessions });
     if(path === "/organizations/current/profile") return route.fulfill({ json:state.organization });

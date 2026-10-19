@@ -987,6 +987,8 @@ enum BuyerSupplierAgreementStatus {
 }
 
 model User {
+  signingIdentityBindings SigningIdentityBinding[]
+  identitySigningSessions IdentitySigningSession[]
   operationAssignments OperationAssignment[]
   conversationMessages ConversationMessage[]
   conversationReads ConversationRead[]
@@ -1048,6 +1050,7 @@ model UserMfaFactor {
 }
 
 model Organization {
+  identitySigningSessions IdentitySigningSession[]
   operationAssignments OperationAssignment[]
   conversationMessages ConversationMessage[]
   conversationReads ConversationRead[]
@@ -3692,6 +3695,7 @@ model ExternalIdentity {
 }
 
 model AuthSession {
+  identitySigningSessions IdentitySigningSession[]
   id                   String            @id @default(uuid()) @db.Uuid
   userId               String            @db.Uuid
   originLoginSessionId String?           @db.Uuid
@@ -4551,4 +4555,98 @@ model OperationAssignment {
   assignee User? @relation(fields: [assigneeId], references: [id], onDelete: Restrict)
   @@unique([operatorOrganizationId, queueType, entityId])
   @@index([operatorOrganizationId, assigneeId, dueAt])
+}
+
+enum IdentitySigningStatus {
+  AWAITING_USER
+  VERIFYING
+  UNKNOWN
+  COMMITTED
+  EVIDENCE_ONLY
+  REJECTED
+  CANCELLED
+  EXPIRED
+}
+
+enum IdentityBindingStatus {
+  ACTIVE
+  REVOKED
+}
+
+model IdentitySigningSession {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  organizationId String @db.Uuid
+  authSessionId String @db.Uuid
+  version Int @default(1)
+  status IdentitySigningStatus @default(AWAITING_USER)
+  original String
+  originalSha256 String @db.VarChar(64)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  acceptedAt DateTime?
+  cmsSha256 String? @db.VarChar(64)
+  cmsEncrypted String?
+  reasonCode String?
+  leaseId String? @db.Uuid
+  leaseUntil DateTime?
+  attempts Int @default(0)
+  nextAttemptAt DateTime?
+  completedAt DateTime?
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  authSession AuthSession @relation(fields: [authSessionId], references: [id], onDelete: Restrict)
+  commands IdentitySigningCommand[]
+  evidence IdentitySigningEvidence?
+  @@unique([id, userId, organizationId, authSessionId])
+  @@index([userId, authSessionId, organizationId, createdAt])
+  @@index([status, nextAttemptAt, leaseUntil])
+}
+
+model IdentitySigningCommand {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  organizationId String @db.Uuid
+  authSessionId String @db.Uuid
+  sessionId String @db.Uuid
+  scope String
+  idempotencyKey String
+  requestSha256 String @db.VarChar(64)
+  response Json
+  createdAt DateTime @default(now())
+  session IdentitySigningSession @relation(fields: [sessionId, userId, organizationId, authSessionId], references: [id, userId, organizationId, authSessionId], onDelete: Restrict)
+  @@unique([authSessionId, organizationId, scope, idempotencyKey])
+}
+
+model IdentitySigningEvidence {
+  id String @id @default(uuid()) @db.Uuid
+  sessionId String @unique @db.Uuid
+  encryptedPayload String
+  payloadSha256 String @db.VarChar(64)
+  policySha256 String @db.VarChar(64)
+  accepted Boolean
+  reasonCode String?
+  createdAt DateTime @default(now())
+  session IdentitySigningSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  binding SigningIdentityBinding?
+}
+
+model SigningIdentityBinding {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  version Int @default(1)
+  status IdentityBindingStatus @default(ACTIVE)
+  iinEncrypted String
+  iinFingerprint String @db.VarChar(64)
+  maskedIin String @db.VarChar(12)
+  evidenceId String @unique @db.Uuid
+  verifiedAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  evidence IdentitySigningEvidence @relation(fields: [evidenceId], references: [id], onDelete: Restrict)
+  // Partial unique ACTIVE user/IIN indexes are maintained in the migration.
+  @@index([userId, status])
+  @@index([iinFingerprint, status])
 }

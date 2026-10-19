@@ -1618,8 +1618,11 @@ api-client добавляются одновременно с соответст
 ### 18.7 HTTP и клиентский контракт R7.6.1.3
 
 Единый исполняемый manifest — `packages/schemas/src/pilot-signing-http.ts`.
-Отдельный [OpenAPI3.1](pilot-signing.openapi.json) содержит15 операций и помечен
-`CONTRACT_ONLY`: эти маршруты **не зарегистрированы** в NestJS/runtime Swagger.
+Отдельный [OpenAPI3.1](pilot-signing.openapi.json) содержит16 операций и помечен
+`CONTRACT_ONLY`: файл описывает весь целевой контракт, а не доступность маршрутов.
+20.10 реализован только identity-поднабор: чтение привязки, challenge, чтение сессии,
+отправка CMS, отмена и повтор проверки. Эти шесть маршрутов зарегистрированы в
+NestJS/runtime Swagger; admission/authority/waybill остаются контрактами.
 Клиент `@marketplace/api-client/pilot-signing` использует существующий transport
 и проверяет request/response; к пользовательским экранам пока не подключён.
 Старые поля `headAdmission` заменены на `principalAdmission`: первичный допуск

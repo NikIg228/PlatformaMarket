@@ -1,9 +1,13 @@
 import { Injectable, ServiceUnavailableException } from "@nestjs/common";
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes } from "node:crypto";
 
 @Injectable()
 export class SecurityCryptoService {
   private readonly key = this.resolveKey();
+
+  fingerprint(value: string, purpose: string) {
+    return createHmac("sha256", this.key).update(`marketplace:${purpose}\0`).update(value).digest("hex");
+  }
 
   encrypt(value: string) {
     const iv = randomBytes(12);

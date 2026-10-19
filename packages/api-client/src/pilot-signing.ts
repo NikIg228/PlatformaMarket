@@ -6,7 +6,7 @@ import {
 } from "@marketplace/schemas";
 import type { MarketplaceApiClient } from "./index";
 
-/** R7.6.1.3 contract client. Not connected to UI until the server flow is accepted. */
+/** Identity operations are used by the profile. Other pilot operations remain contracts until their server flow is implemented. */
 export class PilotSigningApiClient {
   constructor(private readonly transport: Pick<MarketplaceApiClient, "request">) {}
 

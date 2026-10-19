@@ -34,6 +34,7 @@ export const pilotSigningHttpStatus = {
   ORGANIZATION_MISMATCH: 422, AUTHORITY_NOT_ACTIVE: 409, PRINCIPAL_NOT_APPROVED: 409,
   VERSION_CONFLICT: 409, CONTENT_MISMATCH: 409, IDEMPOTENCY_CONFLICT: 409,
   SESSION_EXPIRED: 409, SESSION_CANCELLED: 409, SESSION_ALREADY_COMMITTED: 409,
+  SESSION_ALREADY_ACTIVE: 409,
   SUPPORT_REQUIRED: 409, UNSUPPORTED_SUBJECT: 422, DOCUMENT_NOT_SIGNABLE: 409,
   INVALID_SIGNATURE: 422, CERTIFICATE_EXPIRED: 422, CERTIFICATE_REVOKED: 422,
   TRUST_INDETERMINATE: 503, VERIFIER_UNAVAILABLE: 503,
@@ -109,6 +110,7 @@ export const pilotSigningOperations = {
   session: { method: "GET", path: "/signing/sessions/{sessionId}", request: null, response: "Session", status: 200, access: "SESSION_OWNER" },
   submitCms: { method: "POST", path: "/signing/sessions/cms", request: "SubmitCmsRequest", response: "Session", status: 202, access: "SESSION_OWNER" },
   cancelSession: { method: "POST", path: "/signing/sessions/{sessionId}/cancel", request: "CancelSessionRequest", response: "Session", status: 200, access: "SESSION_OWNER" },
+  retrySession: { method: "POST", path: "/signing/sessions/{sessionId}/retry", request: "CancelSessionRequest", response: "Session", status: 202, access: "SESSION_OWNER" },
 } as const satisfies Record<string, Operation>;
 
 export type PilotSigningOperationName = keyof typeof pilotSigningOperations;

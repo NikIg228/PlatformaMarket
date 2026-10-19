@@ -688,10 +688,15 @@ SMS физлица — отдельный согласованный докум�
     20.10: приняты уточнения допуска ЮЛ/ИП/представителей, support-only смены
     руководителя/исправления ИИН, challenge10мин и восстановления сессии.
     [DWF§18.6–18.8](domains/MARKET_DOCUMENT_WORKFLOW.md#186-решения-владельца2010-допуск-поддержка-и-идентичность)
-    содержит15 HTTP-операций, errors/access/replay и UI-state map; schemas,
+    содержит16 HTTP-операций, errors/access/replay и UI-state map; schemas,
     отдельный OpenAPI CONTRACT_ONLY и opt-in клиент подготовлены.
     Полные .1.2/.1.3 остаются PARTIAL: приёмка формы и отдельные операторские
-    процедуры исправления/смены ещё открыты. Runtime/DB/UI этим не приняты.
+    процедуры исправления/смены ещё открыты. Контрактный шаг сам по себе не принимает runtime.
+    В следующем identity-пакете реализованы6 маршрутов, профиль клиники/поставщика,
+    independent Kalkan verifier, encrypted binding/evidence и recovery; подробное
+    evidence и границы — [журнал](domains/document-workflow-implementation-log.md).
+    Admission/authority/подписи накладной не включены; production trust/native/mobile
+    приёмка остаётся отдельной. Полные .3.2/.3.3 этим пакетом не закрываются.
 
     19.10, следующий шаг: экспортированы общие Zod-схемы личности, допуска
     руководителя, назначения сотрудника, плана двух сторон и CMS/session states

@@ -1,8 +1,93 @@
 # Документооборот — выполненные этапы и технические решения
 
-Обновлено 19.10.2026. Журнал реализации полного документального процесса сделки.
+Обновлено 20.10.2026. Журнал реализации полного документального процесса сделки.
 Требования — [Workflow документооборота](MARKET_DOCUMENT_WORKFLOW.md), единственный
 checklist — [R7.6 основного roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#document-workflow).
+
+## 20.10 — Подтверждение личности NCALayer: рабочий поток — SCOPED PASS
+
+Поручение «продолжай», база8ddd3c3/main. Первый вертикальный runtime-пакет:
+личный профиль клиники/поставщика → challenge10мин → NCALayer → независимый
+Kalkan verifier → сохранённая привязка ИИН, masked состояние и восстановление.
+Полномочие организации/накладная не выдаются подтверждением личности.
+Несвязанный UI/CI/docs WIP сохраняется, рабочая БД не изменяется.
+
+Риски: подмена actor/session/original/ИИН, повторное использование CMS,
+конкурентная привязка, отмена/отзыв сессии во время проверки, недоступный CRL/TSP,
+смешение тестовой и production trust policy, утечка данных сертификата.
+Порядок: verifier с focused проверками → модель/миграция и сервис с focused
+проверками после каждого перехода → HTTP/client/UI → изолированный PostgreSQL
+и браузерный поток. Gates: реальный SDK (positive/tamper/trust/revocation/TSP),
+targeted schemas/API/client tests, Prisma validate/upgrade, DB race/replay/rollback/
+actor isolation, runtime split и применимые config checks; web types/build,
+targeted browser desktop/mobile/keyboard/error/unknown/reload, screenshot/computed
+styles; lint/diff. Точные команды/evidence добавляются по мере исполнения.
+Budget: отдельный gate20мин, probe2мин, сервер5мин, blocker15мин; максимум3 попытки.
+UI-аналог — существующий `workspaces/profile.tsx` и ProfileSessions, shared
+DmSurface/DmButton/DmFeedback/LoadingState/ErrorState; паспорт и текущий экран
+сверяются до UI-кода. Новый дизайн, миграция рабочей БД, deploy и смена руководителя
+в этот вертикальный пакет не входят.
+
+Паспорт UI20.10: текущий `/clinic/profile` сверён в браузере до правки,
+`.tmp/nca-identity/ui/profile-before.png`; Manrope, card padding24px/radius12px.
+Аналог — `profile-sessions.tsx`, shared DmSurface(card), DmHeading,
+DmFeedback(inline), DmButton(default44px/radius8px), LoadingState.
+Новая карточка между данными профиля и сеансами; композиция grid/gap16px,
+padding24px на desktop и16px до760px, heading18px/600/1.25, body14px/1.5,
+surface.default/text.primary/text.secondary из semantic-light.json.
+Controls без локальных overrides; действия переносятся на узком экране.
+Состояния: загрузка/ошибка, недоступная проверка, неподтверждённая личность,
+ожидание NCALayer, серверная проверка, UNKNOWN/retry сохранённой CMS,
+отмена/expiry/rejected/evidence-only, подтверждённый masked ИИН.
+Браузерные fixtures проверяют UI отдельно от настоящего SDK HTTP/DB gate.
+
+Результат:6 JWT-only маршрутов, durable challenge/CMS/replay, worker с lease и
+ограниченными повторами, независимая проверка Kalkan, encrypted ИИН/receipt,
+частичные unique indexes для активной привязки, карточка профиля обоих кабинетов.
+Отмена/отзыв доступа до фиксации исключают привязку; поздняя валидная подпись
+остаётся evidence. ИИН берётся только из проверенного сертификата, UI видит маску.
+Сетевой сбой не вызывает автоматическую новую подпись; сохранённые bytes/key
+повторяются только по действию пользователя после восстановления состояния.
+Настройка и восстановление — [runbook](../../scripts/nca-verifier/README.md).
+
+Фактические проверки на canonical working tree (несвязанный WIP не включён):
+
+| Gate / команда | Результат и граница |
+| --- | --- |
+| `node scripts/verify-nca-identity.mjs` с предоставленным публичным SDK |11PASS: настоящие CMS/цепочки/TSP/4CRL, tamper, malformed, expiry/revoked, missing TSP, pins, TEST denied production, deadline, unavailable/malformed CRL. После локальной классификации config failure криптографическая логика не менялась; свежая компиляция/positive HTTP и missing-policy→VERIFIER_UNAVAILABLE проверены отдельно |
+| `npm run test --workspace @marketplace/api -- src/modules/identity-signing/nca-identity-verifier.service.spec.ts` |5PASS: binding receipt к bytes/policy, trust profile, time/CRL, отказ и предел процессов |
+| `npm run test --workspace @marketplace/api -- src/modules/identity-signing/identity-signing.store.spec.ts` |6PASS: JWT-only, lock/auth scope, owner, replay, expired projection, envelope |
+| `npm run test --workspace @marketplace/api -- src/platform/http/request-body-policy.spec.ts src/platform/security/security-crypto.service.spec.ts` |16PASS: CMS body cap, общие upload/webhook consumers, AES/HMAC и purpose separation |
+| `npm run test --workspace @marketplace/api -- src/platform/openapi/runtime-swagger.spec.ts` |3PASS; identity runtime schemas зарегистрированы, остальные pilot операции не включены |
+| `npm run test --workspace @marketplace/schemas -- src/pilot-document-signing.test.ts src/pilot-signing-http.test.ts` |18PASS |
+| `npm run test --workspace @marketplace/api-client -- src/pilot-signing.test.ts` |5PASS |
+| `npm run test --workspace @marketplace/web -- app/workspaces/identity-signing-feedback.test.ts` |3PASS; ошибка до приёма CMS не заявляет её сохранение |
+| `npx prisma validate --schema apps/api/prisma/schema.prisma`, `prisma generate` |PASS; validate использовал offline placeholder URL |
+| `npm run db:test -- exec -- prisma migrate deploy --schema apps/api/prisma/schema.prisma` |PASS upgrade; только disposable `dentmarket_audit_20260914` |
+| `npm run db:test -- exec -- tsx --tsconfig apps/api/tsconfig.json scripts/verify-identity-signing.mjs` |PASS: create/strict input, concurrent replay, encryption, different user/tenant/auth-session read/write denial, cancel/expiry, audit rollback, revoked auth |
+| Аналогичная команда для `scripts/verify-identity-signing-worker.mjs` |PASS: atomic binding/evidence/audit, cancel/logout/member revoke, concurrent same-IIN conflict, rollback, retained-CMS retry, stale lease, invalid signature, exhausted crash recovery; synthetic receipts проверяют только транзакции |
+| `npm run db:test -- exec --call "node scripts/verify-identity-signing-http.mjs"` |PASS: JWT HTTP challenge→настоящая SDK CMS→Java trust/TSP/CRL→БД→masked read/replay. Evidence `.tmp/identity-http-f2d305f7-cc61-4698-a35b-ee4b65b7dc3a/checks.json`; fixtures очищены |
+| `node scripts/verify-identity-signing-ui.mjs`, дополнения `--states-only`, `--appearance-only` |PASS clinic/supplier1440/390, keyboard, native-boundary failure, loss before/after accept, retained bytes/key, UNKNOWN reload/retry, verified, cancel/expired/rejected/evidence-only/unavailable. Screenshot/computed:44px, radius8px, focus1px/offset2px; `.tmp/nca-identity/ui/*checks.json` |
+| `npx --no-install playwright test --config apps/e2e/playwright.workspaces.config.ts apps/e2e/tests/settings-profile.spec.ts --grep "profile-edit clinic layout and keyboard 1440"` |1PASS существующего редактирования профиля на production build |
+| `npm run build --workspace @marketplace/schemas`, `npm run build --workspace @marketplace/api`, `npm run typecheck --workspace @marketplace/api`, `npm run typecheck --workspace @marketplace/web`, `npm run build --workspace @marketplace/web` |PASS; финальный web build включает TypeScript после исправления feedback |
+| `node scripts/verify-runtime-split.mjs`, `node scripts/verify-production-config.mjs` |PASS на неизменной API build; повторная сборка для оформления evidence не запускалась |
+| `node scripts/generate-pilot-signing-contract.mjs --check`, targeted ESLint, `git diff --check` |PASS;16 операций в design OpenAPI,6 реализованных маршрутов |
+
+Попытки не скрыты: SDK gate первоначально выявил selector fixture и необязательный
+TSA KU; исправлено, третий запуск11PASS. DB command gate: два сбоя harness
+(повторный env guard, sync validation)→третийPASS; новый тест реальных scope denial
+добавлен отдельно иPASS. HTTP: npm exec попытался скачать Node, затем Java sandbox
+запретил `toRealPath` SDK; штатный запуск через `exec --call` с разрешённым доступом
+третьей попыткойPASS. Baseline UI: sandbox spawn и неполная organization fixture,
+после исправления третьяPASS. Первый web build не получил Google Font из sandbox;
+разрешённый сетевой повторPASS. После изменения feedback финальный buildPASS.
+Активных незавершённых проверок нет; собственные тестовые серверы остановлены.
+
+Граница: реализован только identity vertical. Native NCALayer UI проверялся через
+controlled WebSocket fixture; криптография — настоящим SDK/HTTP, это разные evidence.
+Production trust/configuration, пользовательский native desktop sign-off, mobile
+signing, admission/authority и подписи накладной этим пакетом не принимаются.
+Рабочая БД/боевые ключи не изменялись. R7.6.1.2–3 и полные R7.6.3.2–3 PARTIAL.
 
 ## 20.10 — R7.6.1.2–3: принятые правила допуска и HTTP-контракт — SCOPED PASS / PARTIAL
 
