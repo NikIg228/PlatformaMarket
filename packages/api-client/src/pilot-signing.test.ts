@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { PilotSigningApiClient } from "./pilot-signing";
+import { PilotEvidenceUpload, PilotSigningApiClient, pilotSigningErrorCode, pilotSigningOutcomeUnknown } from "./pilot-signing";
 
 const id = "00000000-0000-4000-8000-000000000001";
 function fixture(result: unknown = { status: "UNVERIFIED", verificationAvailable: true, activeSessionId: null }) {
@@ -8,6 +8,26 @@ function fixture(result: unknown = { status: "UNVERIFIED", verificationAvailable
 }
 
 describe("pilot signing contract client", () => {
+  it("retains identical evidence bytes and document number when the upload response is lost", async () => {
+    const send = vi.fn().mockRejectedValueOnce(new Error("lost response")).mockResolvedValue({ id, version: 1 });
+    const upload = new PilotEvidenceUpload({ uploadDocument: send }, id);
+    const file = new File(["synthetic evidence"], "basis.pdf", { type: "application/pdf" });
+    await expect(upload.upload(file)).rejects.toThrow("lost response");
+    const result = await upload.upload(file);
+    expect(result).toEqual({ id, version: 1 });
+    expect(send.mock.calls[0][0]).toEqual(send.mock.calls[1][0]);
+    expect(await upload.upload(file)).toEqual(result); expect(send).toHaveBeenCalledTimes(2);
+  });
+  it("rejects invalid evidence before sending and separates definite rejection from unknown outcome", async () => {
+    const send = vi.fn(), upload = new PilotEvidenceUpload({ uploadDocument: send }, id);
+    await expect(upload.upload(new File(["x"], "script.exe"))).rejects.toThrow();
+    await expect(upload.upload(new File([], "empty.pdf"))).rejects.toThrow();
+    expect(send).not.toHaveBeenCalled();
+    expect(pilotSigningOutcomeUnknown({ status: 409 })).toBe(false);
+    expect(pilotSigningOutcomeUnknown({ status: 503 })).toBe(true);
+    expect(pilotSigningOutcomeUnknown(new Error("network"))).toBe(true);
+    expect(pilotSigningErrorCode({ payload: { code: "VERSION_CONFLICT" } })).toBe("VERSION_CONFLICT");
+  });
   it("reads identity using the existing transport without user-supplied actor or tenant headers", async () => {
     const f = fixture();
     expect(await f.client.call("identity", {})).toEqual({ status: "UNVERIFIED", verificationAvailable: true, activeSessionId: null });

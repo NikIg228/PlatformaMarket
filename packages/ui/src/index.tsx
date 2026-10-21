@@ -1,4 +1,5 @@
 "use client";
+export { signingAdmissionMessage } from "./signing-admission-feedback";
 export { DocumentRegistry } from "./document-registry";
 export { DmInfoTip } from "./info-tip";
 export { DmHeading, DmFormSections } from "./heading";

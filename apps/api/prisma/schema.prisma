@@ -987,6 +987,10 @@ enum BuyerSupplierAgreementStatus {
 }
 
 model User {
+  signingAdmissions SigningPrincipalAdmission[]
+  signingReviews SigningPrincipalReview[]
+  signingPrincipalAuthorities SigningPrincipalAuthority[]
+  signingAdmissionCommands SigningAdmissionCommand[]
   signingIdentityBindings SigningIdentityBinding[]
   identitySigningSessions IdentitySigningSession[]
   operationAssignments OperationAssignment[]
@@ -1050,6 +1054,9 @@ model UserMfaFactor {
 }
 
 model Organization {
+  signingAdmissions SigningPrincipalAdmission[]
+  signingReviews SigningPrincipalReview[]
+  signingPrincipalAuthorities SigningPrincipalAuthority[]
   identitySigningSessions IdentitySigningSession[]
   operationAssignments OperationAssignment[]
   conversationMessages ConversationMessage[]
@@ -1200,6 +1207,7 @@ model OrganizationCapability {
 }
 
 model OrganizationMembership {
+  signingAdmissions SigningPrincipalAdmission[]
   id             String           @id @default(uuid()) @db.Uuid
   userId         String           @db.Uuid
   organizationId String           @db.Uuid
@@ -3161,6 +3169,8 @@ model OrderInvoicePreparation {
 }
 
 model Document {
+  signingAdmissionBases SigningPrincipalAdmission[]
+  signingReviewEvidence SigningPrincipalReview[]
   id                     String                  @id @default(uuid()) @db.Uuid
   ownerOrganizationId    String                  @db.Uuid
   templateId             String?                 @db.Uuid
@@ -4633,6 +4643,8 @@ model IdentitySigningEvidence {
 }
 
 model SigningIdentityBinding {
+  signingAdmissions SigningPrincipalAdmission[]
+  principalAuthorities SigningPrincipalAuthority[]
   id String @id @default(uuid()) @db.Uuid
   userId String @db.Uuid
   version Int @default(1)
@@ -4649,4 +4661,82 @@ model SigningIdentityBinding {
   // Partial unique ACTIVE user/IIN indexes are maintained in the migration.
   @@index([userId, status])
   @@index([iinFingerprint, status])
+}
+
+// Initial principal admission only. Replacement is a separate support workflow.
+model SigningPrincipalAdmission {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  userId String @db.Uuid
+  identityBindingId String @db.Uuid
+  identityBindingVersion Int
+  membershipId String @db.Uuid
+  membershipUpdatedAt DateTime
+  organizationVersion Int
+  requisitesVersion Int
+  status String @default("PENDING_REVIEW")
+  version Int @default(1)
+  application Json
+  applicantName String
+  maskedIin String @db.VarChar(12)
+  basisDocumentId String @db.Uuid
+  basisDocumentVersion Int
+  basisChecksum String @db.VarChar(64)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  review SigningPrincipalReview?
+  authority SigningPrincipalAuthority?
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  binding SigningIdentityBinding @relation(fields: [identityBindingId], references: [id], onDelete: Restrict)
+  membership OrganizationMembership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  basisDocument Document @relation(fields: [basisDocumentId], references: [id], onDelete: Restrict)
+  @@index([organizationId, userId, createdAt])
+  @@index([status, createdAt])
+}
+
+model SigningPrincipalReview {
+  id String @id @default(uuid()) @db.Uuid
+  admissionId String @unique @db.Uuid
+  operatorOrganizationId String @db.Uuid
+  reviewerId String @db.Uuid
+  decision String
+  reason String
+  verification Json?
+  evidenceDocumentId String? @db.Uuid
+  evidenceChecksum String? @db.VarChar(64)
+  createdAt DateTime @default(now())
+  admission SigningPrincipalAdmission @relation(fields: [admissionId], references: [id], onDelete: Restrict)
+  operator Organization @relation(fields: [operatorOrganizationId], references: [id], onDelete: Restrict)
+  reviewer User @relation(fields: [reviewerId], references: [id], onDelete: Restrict)
+  evidenceDocument Document? @relation(fields: [evidenceDocumentId], references: [id], onDelete: Restrict)
+}
+
+model SigningPrincipalAuthority {
+  id String @id @default(uuid()) @db.Uuid
+  admissionId String @unique @db.Uuid
+  organizationId String @db.Uuid
+  userId String @db.Uuid
+  identityBindingId String @db.Uuid
+  status String @default("ACTIVE")
+  version Int @default(1)
+  validFrom DateTime @default(now())
+  admission SigningPrincipalAdmission @relation(fields: [admissionId], references: [id], onDelete: Restrict)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  binding SigningIdentityBinding @relation(fields: [identityBindingId], references: [id], onDelete: Restrict)
+  @@index([organizationId, status])
+}
+
+// Durable replay survives logout and cannot be reused with a changed payload.
+model SigningAdmissionCommand {
+  id String @id @default(uuid()) @db.Uuid
+  actorId String @db.Uuid
+  scope String
+  key String
+  requestSha256 String @db.VarChar(64)
+  response Json
+  createdAt DateTime @default(now())
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  @@unique([actorId, scope, key])
 }

@@ -1,0 +1,10 @@
+.section, .stack { display: grid; gap: var(--dm-space-4); min-width: 0; }
+.section { margin-block-start: var(--dm-space-6); font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); }
+.section p { margin: 0; overflow-wrap: anywhere; }
+.card { display: grid; gap: var(--dm-space-4); padding: var(--dm-space-6); min-width: 0; width: min(100%, 960px); margin-inline: auto; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: var(--dm-space-4); flex-wrap: wrap; }
+.actions { display: flex; align-items: center; gap: var(--dm-space-3); flex-wrap: wrap; }
+.details { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--dm-space-2) var(--dm-space-4); margin: 0; }
+.details dt { color: var(--dm-text-secondary); }
+.details dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 760px) { .card { padding: var(--dm-space-4); } .details { grid-template-columns: minmax(0, 1fr); } .details dd + dt { margin-block-start: var(--dm-space-2); } }

@@ -29,6 +29,7 @@ export type AdminQuery = {
   queueSort: "queue" | "oldest" | "recent";
   queueOffset: number;
   orgId?: string;
+  admissionId?: string;
   orgQ: string;
   orgStatus: "" | "ACTIVE" | "INACTIVE" | "ARCHIVED";
   orgCapability: "" | "BUYER" | "SUPPLIER" | "IMPORTER" | "LOGISTICS_PROVIDER" | "SERVICE_PROVIDER" | "MARKETPLACE_OPERATOR" | "PAYMENT_PARTNER";
@@ -73,6 +74,7 @@ export function parseAdminQuery(search: string): AdminQuery | undefined {
     else if (key === "supportQ" && value.length <= 200 && !/[\u0000-\u001f\u007f]/.test(value)) result.supportQ = value.trim();
     else if (key === "orgQ" && value.length <= 200 && !/[\u0000-\u001f\u007f]/.test(value)) result.orgQ = value.trim();
     else if (key === "orgId" && uuid.test(value)) result.orgId = value;
+    else if (key === "admissionId" && uuid.test(value)) result.admissionId = value;
     else if (key === "orderId" && uuid.test(value)) result.orderId = value;
     else if ((key === "orderQ" || key === "orderBuyer" || key === "orderSupplier") && value.length <= 200 && !/[\u0000-\u001f\u007f]/.test(value)) result[key] = value.trim();
     else if (key === "orderStatus" && operatorOrderStatuses.includes(value as AdminQuery["orderStatus"] & typeof operatorOrderStatuses[number])) result.orderStatus = value as AdminQuery["orderStatus"];
@@ -92,6 +94,7 @@ export function parseAdminQuery(search: string): AdminQuery | undefined {
   if ((result.ticketId || result.conversationId) && result.section !== "support") return;
   if (result.orgId && result.section !== "organizations") return;
   if (result.orderId && result.section !== "orders") return;
+  if (result.admissionId && result.section !== "organizations") return;
   if (result.orderFrom && result.orderTo && result.orderFrom > result.orderTo) return;
   if (result.auditFrom && result.auditTo && result.auditFrom > result.auditTo) return;
   if (result.section === "orders" && result.queueType === "SUPPLIER_CONFIRMATION") {
@@ -121,5 +124,5 @@ export function serializeAdminQuery(state: AdminQuery): string {
 }
 
 export function adminSectionQuery(state: AdminQuery, section: AdminSection): AdminQuery {
-  return { ...state, section, object: undefined, queueType: undefined, ticketId: undefined, conversationId: undefined, orgId: undefined, orderId: undefined };
+  return { ...state, section, object: undefined, queueType: undefined, ticketId: undefined, conversationId: undefined, orgId: undefined, admissionId: undefined, orderId: undefined };
 }

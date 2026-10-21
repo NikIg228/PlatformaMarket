@@ -3,6 +3,13 @@ import { adminSectionQuery, defaultAdminQuery, parseAdminQuery, serializeAdminQu
 import { adminReturnPath } from "./product-navigation";
 const id = "00000000-0000-4000-8000-000000000001";
 describe("Admin read query state", () => {
+  it("restores a signing admission after reload without carrying it into another section", () => {
+    const state = { ...defaultAdminQuery, section: "organizations" as const, admissionId: id };
+    expect(parseAdminQuery(serializeAdminQuery(state))).toEqual(state);
+    expect(adminSectionQuery(state, "orders").admissionId).toBeUndefined();
+    expect(parseAdminQuery(`?section=orders&admissionId=${id}`)).toBeUndefined();
+    expect(parseAdminQuery("?section=organizations&admissionId=bad")).toBeUndefined();
+  });
   it("retains audit filters through object navigation and technical paging", () => {
     const state = { ...defaultAdminQuery, section: "security" as const, controlView: "technical" as const, auditOrganization: id, auditActor: id, auditEntityType: "SupplierOrder", auditEntityId: id, auditAction: "confirmed", auditFrom: "2026-10-17", auditTo: "2026-10-18", auditOffset: 25, outboxEventId: id, outboxEventType: "order.confirmed", outboxOffset: 50 };
     expect(parseAdminQuery(serializeAdminQuery(state))).toEqual(state);

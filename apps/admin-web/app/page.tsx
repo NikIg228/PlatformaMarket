@@ -23,6 +23,7 @@ import styles from "./page.module.css";
 import {
   IdentitySettings,
   OperatorOrganizationAdmission,
+  SigningAdmissions,
   OperatorOrders,
   AuditOperations,
   CatalogFoundation,
@@ -161,7 +162,7 @@ export default function OperationsWorkspace() {
     analytics: <OperatorCommerceAnalytics />,
     support: <SupportOperations />,
     overview,
-    organizations: <><OperatorOrganizations /><OperatorOrganizationAdmission /></>,
+    organizations: <><OperatorOrganizations /><SigningAdmissions /><OperatorOrganizationAdmission /></>,
     access: <><SupplierControls /><PlatformAssurance /></>,
     catalog: <><ManualProductReview />{frontendFeatures.promotions ? <PromotionModeration /> : null}<ProductCorrectionQueue /><CatalogQuality /><CatalogFoundation /><FoundationManagement catalogOnly /></>,
     imports: state.object && (state.queueType === "IMPORT_ATTENTION" || state.queueType === "INTEGRATION_RECONCILIATION") ? null : <><CatalogImportReviewQueue /><SupplierOperations /><IntegrationOperations /><ConnectorReadinessRegistry /></>,

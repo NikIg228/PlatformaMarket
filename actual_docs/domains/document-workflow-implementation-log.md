@@ -1,8 +1,106 @@
 # Документооборот — выполненные этапы и технические решения
 
-Обновлено 20.10.2026. Журнал реализации полного документального процесса сделки.
+Обновлено 21.10.2026. Журнал реализации полного документального процесса сделки.
 Требования — [Workflow документооборота](MARKET_DOCUMENT_WORKFLOW.md), единственный
 checklist — [R7.6 основного roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#document-workflow).
+
+## 21.10 — Первичный допуск ЮЛ/ИП: SCOPED PASS
+
+Поручение: продолжить остановленную реализацию подачи основания и проверки
+оператором после подтверждения личности. База `cca704e/main`; собственный WIP:
+модели `SigningPrincipal*`/`SigningAdmissionCommand` и `signing-admission.rules.ts`.
+Несвязанный каталог/CI/docs WIP сохранён. Назначение сотрудников, накладная,
+операторская смена руководителя/ИИН и рабочая миграция не входят в этот шаг.
+
+Проверки по риску: Prisma validate и upgrade изолированной БД; после серверных
+переходов — PostgreSQL сценарии JWT/member/operator denial, чужие документы,
+версии, ЮЛ/ИП, replay, approval race и rollback. После HTTP — JWT routes/Swagger;
+после UI — desktop/mobile/keyboard, loading/error/recovery и screenshot/computed
+styles. Завершение: affected types/build/lint, runtime split/config, документация,
+diff hygiene и собственный commit/push. Нужны обе пользовательские поверхности.
+
+Предварительное evidence: Prisma generate PASS; validate сначала не получил
+DATABASE_URL, затем PASS через `npm run db:test -- exec -- prisma validate
+--schema apps/api/prisma/schema.prisma`. Миграция `20261021010000_signing_principal_admission`
+применена только в `dentmarket_audit_20260914` через db:test/migrate deploy — PASS.
+API typecheck PASS. `npm run db:test -- exec --call "tsx scripts/verify-signing-admission.mjs"`:
+первый запуск остановлен существующим immutable-document trigger на ошибочной
+fixture update; fixture заменена на новую версию документа, второй запуск PASS.
+Подтверждены создание/replay/approve/reject/resubmit, изоляция, актуальность
+binding/membership/requisites/document, rollback и две конкурентные проверки.
+Криптография использует отдельное сохранённое evidence identity-пакета;
+admission fixtures намеренно синтетические и не доказывают SDK.
+
+Паспорт UI: текущие `/clinic/settings` и `/admin?section=organizations` просмотрены
+на production artifact, viewport1440×1000/100%; screenshots
+`.tmp/signing-admission/settings-before.png` и `admin-before.png`.
+Ближайшие аналоги — `settings-organization.tsx`, `settings-requisites.tsx`,
+`operator-organizations.tsx`. Вкладка «Подписант» в настройках обоих кабинетов;
+отдельная проверка заявок в существующем разделе организаций оператора.
+Shell: sidebar200px, header60px, content padding32px на desktop — без изменений.
+Контракты `market-components-v1`/`platforma-semantic-light-v1`: Manrope,
+body14px/400/1.5, heading18px/600/1.25; DmSurface(card), DmHeading,
+DmField/Input/Textarea/FileInput, DmButton(default44px/radius8px), DmFeedback,
+DmTabList, EmptyState/LoadingState/ErrorState. Card radius12px, padding24px,
+gap16px; на узком экране padding16px и одна колонка. Keyboard focus1px/offset2px.
+Feature CSS только композиция; новые параметры controls не вводятся.
+Состояния: prerequisites, форма, pending, rejected/corrected, approved,
+source/evidence review, загрузка/пусто/ошибка, сохранённый ввод и тот же ключ
+при неопределённом результате отправки. UUID не вводятся пользователем вручную.
+
+Результат: пять JWT-only HTTP routes и runtime Swagger, модели заявки/проверки/
+первичного полномочия и durable command replay. Перед одобрением повторно
+проверяются действующие user/session/member/binding, подтверждённые реквизиты,
+версия и сохранённые байты основания. Для ИП проверяется принадлежность ИИН.
+Решение, полномочие, audit и replay фиксируются одной транзакцией; partial unique
+index исключает двух активных первичных подписантов. Отказ допускает исправленную
+новую заявку. Смена существующего подписанта требует отдельного support workflow.
+
+Пользовательский поток: вкладка «Подписант» в настройках клиники/поставщика,
+PDF/DOCX основание → проверка → ожидание/отказ/подтверждение. Оператор видит очередь,
+маскированную личность и основание, скачивает файл через авторизованный endpoint,
+прикладывает официальный источник и принимает решение с комментарием.
+При потере ответа сохраняются файл/ключ операции; статус восстанавливается чтением.
+После отзыва доступа прежние данные скрываются; смена организации сбрасывает форму.
+
+Завершающее evidence:
+- `npm run db:test -- exec --call "tsx scripts/verify-signing-admission.mjs"` —
+  PASS,5 групп сценариев, включая race/replay/rollback и актуальность доказательств.
+- `npm run db:test -- exec -- node scripts/verify-signing-admission-http.mjs` —
+  PASS на настоящем Nest/JWT/PostgreSQL/storage;5 маршрутов, ошибки и Swagger.
+  Первая попытка исправляла synthetic fixture original(Buffer вместо string);
+  вторая PASS. Evidence `.tmp/admission-http-c1d9777d-d161-462f-b4c3-029bf52bb380/checks.json`.
+- Focused Vitest: admin-query44 + signing HTTP7 + api-client7 =58PASS.
+  Schema build, API typecheck/build, api-client/UI/web typecheck — PASS.
+- `node scripts/verify-signing-admission-ui.mjs` — PASS: clinic/supplier
+  1440/390, keyboard, submit/approve/reload, loss upload/before submit/after submit,
+  lost review response, identity prerequisite, reject/correct/resubmit.
+  Попытки1–2 исправляли fixture selector required-label и отсутствующий cities
+  response; третья PASS. Новых попыток того же failed gate не делалось.
+- `node scripts/verify-signing-admission-ui.mjs --additional-states-only` —
+  отдельная добавленная проверка PASS: loading, read error/recovery с сохранением
+  ввода, revoked access, document.upload denial, empty operator queue.
+  Screenshots/computed styles просмотрены; control44px/radius8px/focus1px,
+  горизонтального переполнения нет. Evidence `.tmp/signing-admission/ui/`.
+- `npm run build --workspace=@marketplace/web` и финальный web typecheck —
+  PASS. На production artifact targeted существующий Playwright
+  `profile-edit readonly organization and supplier tabs` —1PASS
+  (`.tmp/signing-admission/regression.config.ts`, без запуска API/рабочих fixtures).
+- `node scripts/verify-runtime-split.mjs` (переиспользована неизменная API build),
+  `node scripts/verify-production-config.mjs`,
+  `node scripts/generate-pilot-signing-contract.mjs --check` — PASS.
+  Focused ESLint собственных TS/TSX/scripts и `git diff --check` — PASS.
+
+Применены development-toolkit, ранее выбранные backend/frontend/verification
+практики, DESIGN_SYSTEM и UI_UX_IMPLEMENTATION_STANDARD. Общие tokens/adapters
+не менялись. Собственные dev/preview процессы остановлены.
+Полные release/E2E suites не запускались: область ограничена первичным допуском.
+Рабочая БД/env/deploy не изменялись; миграция проверена только в disposable DB.
+Браузерные HTTP fixtures не заменяют серверное evidence, synthetic identity
+не заменяет сохранённое evidence Kalkan предыдущего пакета.
+Назначения сотрудников, подпись накладной, support-смена, production trust и
+нативная NCALayer/mobile приёмка остаются вне этого результата; полные roadmap
+R7.6.1.2/3 и R7.6.3.2/3 не закрываются.
 
 ## 20.10 — Подтверждение личности NCALayer: рабочий поток — SCOPED PASS
 

@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 const loading = () => <LoadingState label="Загружаем раздел" />;
 export const OperatorOrders = dynamic(() => import("./operator-orders").then(module => module.OperatorOrders), { loading });
 export const OperatorOrganizationAdmission = dynamic(() => import("./operator-organization-admission").then(module => module.OperatorOrganizationAdmission), { loading });
+export const SigningAdmissions = dynamic(() => import("./signing-admissions").then(module => module.SigningAdmissions), { loading });
 export const OperatorOrganizations = dynamic(() => import("./operator-organizations").then(module => module.OperatorOrganizations), { loading });
 export const IdentitySettings = dynamic(() => import("./identity-settings").then(module => module.IdentitySettings), { loading });
 export const OperatorCommerceAnalytics = dynamic(() => import("./commerce-analytics").then(module => module.OperatorCommerceAnalytics), { loading });
