@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 import { DOCUMENT_UPLOAD_MAX_BYTES, IMPORT_UPLOAD_MAX_JSON_BYTES, uploadedDocumentSchema } from "@marketplace/schemas";
 import { request as httpRequest } from "node:http";
 
-test("CORE08 maximum document upload and safe body rejection cross the real same-origin proxy", async ({ page }) => {
+test("CORE08 maximum document upload and safe body rejection cross the real same-origin proxy", async ({ page, baseURL }) => {
   const fixture = await installPilotWorkspace(page, "BUYER", ["document.upload"]);
   try {
     await page.goto("/clinic/documents");
@@ -15,7 +15,7 @@ test("CORE08 maximum document upload and safe body rejection cross the real same
     expect(oversized.status()).toBe(413);
     expect(await oversized.json()).toMatchObject({ code: "PAYLOAD_TOO_LARGE", path: "/api/auth/login", requestId: expect.any(String) });
     const chunkedStatus = await new Promise<number>((resolve, reject) => {
-      const request = httpRequest(`http://127.0.0.1:3000/api/suppliers/${fixture.organizationId}/import-batches`, {
+      const request = httpRequest(new URL(`/api/suppliers/${fixture.organizationId}/import-batches`, baseURL!), {
         method: "POST", headers: { "content-type": "application/json" }, signal: AbortSignal.timeout(20_000),
       }, response => { response.resume(); response.on("end", () => resolve(response.statusCode!)); });
       request.on("error", reject);

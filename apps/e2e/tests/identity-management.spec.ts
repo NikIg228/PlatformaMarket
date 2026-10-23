@@ -7,20 +7,23 @@ import { workspaceFixture } from "../fixtures/workspace-session";
 
 test.use({ trace: "off", screenshot: "off" });
 const mailDirectory = path.resolve("../api/.tmp/auth-mail");
-async function invitationMail(email: string) {
+async function invitationMail(email: string, baseURL: string) {
   const found: Array<{ file: string; link: string; createdAt: string }> = [];
   for (const file of await readdir(mailDirectory)) {
     if (!/^[a-f0-9-]{36}\.json$/.test(file)) continue;
     const message = JSON.parse(await readFile(path.join(mailDirectory, file), "utf8"));
     if (message.to !== email) continue;
     expect(message.delivery).toBe("LOCAL_FILE");
-    const link = String(message.text).match(/http:\/\/127\.0\.0\.1:3000\/invitation#token=[A-Za-z0-9_-]+/)?.[0];
-    if (link) found.push({ file, link, createdAt: message.createdAt });
+    const link = String(message.text).match(/https?:\/\/[^\s]+\/invitation#token=[A-Za-z0-9_-]+/)?.[0];
+    if (link) {
+      expect(new URL(link).origin).toBe(new URL(baseURL).origin);
+      found.push({ file, link, createdAt: message.createdAt });
+    }
   }
   return found.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
-for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const) test(`${capability}: invitation, colleague access and session revocation`, async ({ page, browser, request }) => {
+for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const) test(`${capability}: invitation, colleague access and session revocation`, async ({ page, browser, request, baseURL }) => {
   const width = capability === "SUPPLIER" ? 390 : 1440;
   const operator = capability === "MARKETPLACE_OPERATOR";
   await page.setViewportSize({ width, height: 900 });
@@ -64,9 +67,9 @@ for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const)
       expect(delivered.ok()).toBe(true);
       expect(await delivered.json()).toMatchObject({ delivery: "LOCAL_FILE" });
     }
-    const messages = await invitationMail(email); expect(messages.length).toBe(1);
+    const messages = await invitationMail(email, baseURL!); expect(messages.length).toBe(1);
     await invitePage.goto(messages[0].link);
-    await expect(invitePage).toHaveURL("http://127.0.0.1:3000/invitation");
+    await expect(invitePage).toHaveURL(new URL("/invitation", baseURL!).href);
     await invitePage.getByLabel("Ваше имя").fill("Synthetic colleague");
     await invitePage.getByLabel("Создайте пароль", { exact: false }).fill(randomBytes(24).toString("base64url"));
     await invitePage.getByRole("button", { name: "Принять приглашение" }).click();
@@ -127,7 +130,7 @@ for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   } finally {
     await invitePage.goto("about:blank"); await colleague.close(); await page.goto("about:blank");
-    for (const message of await invitationMail(email).catch(() => [])) await unlink(path.join(mailDirectory, message.file));
+    for (const message of await invitationMail(email, baseURL!).catch(() => [])) await unlink(path.join(mailDirectory, message.file));
     const users = await db.user.findMany({ where: { OR: [{ email }, ...(userId ? [{ id: userId }] : [])] }, select: { id: true } });
     await db.authSession.updateMany({ where: { userId: { in: users.map(user => user.id) } }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "core05_browser_finished" } });
     await db.$disconnect();

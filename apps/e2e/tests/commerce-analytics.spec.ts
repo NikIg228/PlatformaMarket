@@ -11,7 +11,7 @@ test("CORE07: supplier confirmation and three-role analytics at desktop/mobile",
     sessionStorage.setItem("dentmarket_admin_session", JSON.stringify({ ...operator, actorId: operator.userId, user: { id: operator.userId }, activeOrganizationId: operator.organizationId }));
   }, { supplier, buyer, operator });
   const post = async (path: string, body: unknown) => {
-    const response = await request.post(`http://127.0.0.1:4012/api${path}`, { headers: { authorization: `Bearer ${buyer.accessToken}` }, data: body });
+    const response = await request.post(`/api${path}`, { headers: { authorization: `Bearer ${buyer.accessToken}` }, data: body });
     expect(response.status(), await response.text()).toBe(201); return response.json();
   };
   try {
