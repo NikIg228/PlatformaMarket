@@ -1,0 +1,11 @@
+Edit supplied Platforma Market chat reference. Preserve all layout, logo, sidebar,
+conversation list, message history, bottom composer, Manrope typography and colors.
+ONLY change chat header right group: completely remove text Переписка не изменяет
+условия заказа and its circled question icon. Replace plain status text with a compact
+noninteractive status chip: subtle pale green#EEF8F2 rounded rectangle, dark green
+#237A4A check icon and exact label Вопрос решён,12px semibold,8px corner radius,
+8px horizontal padding. Keep ellipsis menu to its right separated by16px.
+Align chip and menu at product-title axis. No separate row, no extra status,
+no added controls. Existing white cards12px, controls44px radius8px, page canvas
+#F6F8F7, neutral fills#F0F4F2 and brand#007A59 remain unchanged. Clean UI mockup,
+readable Cyrillic; no browser chrome or annotations. This is one resolved state.

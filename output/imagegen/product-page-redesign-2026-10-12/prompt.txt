@@ -1,0 +1,31 @@
+Use case: ui-mockup.
+Create ONE high-fidelity desktop product-detail redesign reference for the Russian-language B2B dental marketplace Platforma Market. This is a complete extended webpage screenshot, flat front view, NOT a device mockup, NOT a poster or design presentation. Render at high resolution about 1440x1440. Reference image is the CURRENT website: preserve its exact Platforma Market logo and public header language, but redesign the main product content as specified. Do not preserve the empty layout or wrong package photo. This is a future populated-state composition with illustrative data, not a screenshot of working software.
+
+DESIGN PASSPORT (mandatory):
+1440px desktop composition, header64px tall white, same small original logo144x48 at x24 y8, right city "Алматы" neutral44px control and account "Демо-клиника 01". NO sidebar. NO new global search/cart/header navigation. Main centered max1240px, x100. Manrope everywhere: H1 32px/40 weight700; section20px/25 weight600; body14px/21; secondary12px/18; price28px/35 bold; rowprices20px/25bold. Canvas #F6F8F7, white surfaces, text#17201E, secondary#4F5E58 muted#607169, primary#007A59 white text. Buttons and fields min44px high radius8, neutral fill#F0F4F2 without outlines, chosen options mint#E4F3ED with dark text. Cards radius12 thin #D7E1DC borders, minimal shadows. Spacing4/8/12/16/24/32. Flat quiet clear professional UI, no gradients, no dark sections, no huge marketing typography, no decorative illustrations. Controls should visually match shared Fluent-adapter style shown in reference.
+
+MAIN CONTENT:
+Below header simple breadcrumb "Каталог  /  Терапия  /  Композиты".
+Full title "3M Filtek Universal Restorative" above three columns, subtitle "Универсальный реставрационный материал".
+Three columns of420,436,336 CSSpx with24px gaps:
+LEFT gallery: small vertical thumbnail rail56px and generous square white product image356px. Professionally photographed SINGLE dental composite syringe black plunger, clear white label with restrained magenta strip, labeled Filtek Universal, A2,4g; matching small package. Three thumbnails showing product, package, detail, unobtrusive magnifier. Do NOT show the white box of jars from the old reference, that is not this chosen sale package. Keep product photo realistic and clean, no extraneous props.
+MIDDLE product identity and choice:
+"Бренд" "3M / Solventum"
+"Оттенок" three neutral choice controls "A1" "A2" "A3", A2 selected mint.
+"Фасовка" selected control "Шприц 4 г".
+compact key/value facts: "Тип материала — Композит"; "Отверждение — Световое"; "Форма выпуска — Шприц"; "Масса — 4 г".
+small green text-link "Все характеристики".
+RIGHT compact white price-summary card: caption "A2 · шприц 4 г"; price "от 24 800 ₸"; secondary "6 200 ₸ / г"; text "3 поставщика"; small availability "Есть в наличии"; city/delivery context "Доставка в Алматы"; primary44px fullwidth button "Выбрать поставщика". Below muted concise "Доставка оплачивается отдельно". Do not preselect a supplier in this summary. No Buy Now here, no installments, no promotional countdowns.
+
+Immediately below hero (starting roughly y620 or earlier), prominent fullwidth "Предложения поставщиков" heading with count3. Under heading brief "A2 · шприц 4 г" and right neutral sorting44px "Сначала дешевле". Clearly designed row-comparison table on one white rounded surface; horizontal separators, generous readable aligned columns; not independent giant vertical cards. Column labels: "Поставщик" / "Наличие и доставка" / "Цена за шприц" / "Количество".
+Three rows using illustrative layout data:
+1 "Dental Supply" with secondary "Нет отзывов"; stock "В наличии · 24 шт."; "1–2 дня · 1 500 ₸"; price "24 800 ₸", secondary "6 200 ₸ / г"; small quantity control "−  1  +" and green "В корзину"44px. Small secondary "Задать вопрос" text link.
+2 "MedDent" with "Нет отзывов"; "В наличии · 12 шт."; "До 24 ч · 1 000 ₸"; price "25 500 ₸", secondary "6 375 ₸ / г"; quantity1, green "В корзину".
+3 "StomTrade" with "Нет отзывов"; "В наличии · 8 шт."; "2–3 дня · по запросу"; price "26 100 ₸", secondary "6 525 ₸ / г"; quantity1, green "В корзину".
+All three rows SAME selected variant and4g package, avoid mismatched facts. No false verified badges or star ratings. No opaque best/recommended tag. Numbers and stock are only illustrative future state.
+
+Below suppliers a simple in-page navigation "Характеристики   Описание   Документы", characteristics underlined green.
+Show the top of a clean two-column key/value specifications section and adjacent short description:
+"Основные характеристики" with "Бренд — 3M / Solventum", "Оттенок — A2", "Фасовка — Шприц 4 г".
+"О товаре" with short neutral text "Композитный материал для прямых реставраций. Перед применением ознакомьтесь с инструкцией производителя."
+No large empty blocks, no fake certificates/document filenames, no unrelated product recommendations, no app-development labels, no title explaining this is a mockup inside UI. All Russian labels accurately typeset. Essential composition priority: explicit product identification, gallery+variant choice, supplier comparison on screen, consistent understated green design. It should look like a polished implementable purchasing workspace, not a marketing landing page.

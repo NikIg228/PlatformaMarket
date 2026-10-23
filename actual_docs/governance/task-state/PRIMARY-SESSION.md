@@ -6,6 +6,45 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 23.10 — публикация накопленных изменений по прямому запросу владельца
+
+Scope: все существующие tracked/untracked изменения после анализа проекта;
+база `main@5c152d6`, remote SHA подтверждён. Новых продуктовых функций нет.
+Публикуются точечные UI imports/chunking, переносимые E2E URL, pipefail CI,
+исторические receipts, дизайн-референсы, synthetic PDF previews и сводка компании.
+Generated переключение next-env с dev на build после проверки восстановлено;
+игнорируемые build/log/test artifacts не включаются. Рабочая БД не изменялась.
+
+План по риску: типы затронутых consumers, каталог/unit, production web build и
+неизменённый JS budget; targeted browser каталога и изменённых E2E; review всех
+путей, новых изображений, секретов, ссылок и diff; commit/push и отдельный CI status.
+PASS с первой попытки выбранных gates:
+- `npm run build --workspace=@marketplace/web` и отдельный web typecheck;
+- `npm run typecheck --workspace=@marketplace/ui --workspace=@marketplace/buyer-web --workspace=@marketplace/e2e`;
+- buyer Vitest: `app/features/catalog`, `app/features/marketplace-header/navigation.test.ts`,
+  `app/performance-boundaries.test.ts` — 10 файлов / 27 тестов;
+- ESLint изменённых TS/TSX/MJS — без warnings/errors;
+- `npm run verify:web-bundle` — обе public routes: 22 файла, 1166666 raw,
+  356156 gzip; лимиты 24/1500000/450000 сохранены;
+- `npm run db:test -- exec -- prisma migrate status --schema apps/api/prisma/schema.prisma`
+  — 53 migrations, isolated schema актуальна, миграции не применялись;
+- `npm run db:test -- exec -- node scripts/run-canonical-browser.mjs --config playwright.unified.config.ts public-catalog.spec.ts identity-management.spec.ts commerce-analytics.spec.ts unified-application.spec.ts --grep 'semantic palette|catalog comparison|public catalog restores|invitation, colleague|CORE07|CORE08'`
+  — 11 PASS: каталог390/1440 и keyboard, comparison/cart recovery, фильтры,
+  приглашения/отзыв сессий трёх ролей, analytics и upload proxy.
+  Только `dentmarket_audit_20260914`, собственные API/web завершены.
+  npm exec разрешил отсутствующий локальный node через cache/download node26.12.1;
+  lockfile/зависимости проекта не изменились; повторный запуск не выполнялся.
+- В предшествующем read-only анализе Node tests production-readiness/lint-policy:
+  11 PASS; inputs этих проверок неизменны.
+
+Логи локально `.tmp/push-20261023-*`; проверены новые PNG и added local links,
+в текстовых файлах не обнаружены private-key/token patterns. Старые FAIL/PENDING
+ниже сохраняют датированную историю, не являются статусом этой публикации.
+Последняя функциональная приёмка подписанта — журнал документооборота21.10;
+полный release, внешние providers и production этим пакетом не принимаются.
+Применены development-toolkit/review/verification и Git Workflow Master:
+проверка состава, логические commits, обычный fast-forward push без deploy.
+
 ### 16.10 — R7.6.5 операционный довоз: SCOPED PASS
 
 Последний запрос: завершить целевые проверки довоза после сверки roadmap.
@@ -225,8 +264,7 @@ DB не менялась. Собственные API/Next процессы за�
 Применены development-toolkit (backend/frontend/verification), Agency backend
 architect/code reviewer и PDF/Playwright practices; агенты не запускались.
 
-
-### 15.10 — убрать ручное обновление и время загрузки: LOCAL PASS, публикация pending
+### 15.10 — убрать ручное обновление и время загрузки: PUBLISHED, scoped PASS; CI SKIPPED
 
 Запрос владельца: убрать refresh-кнопки (текст/иконки) и статусы времени
 обновления со всех client/supplier/admin страниц. HEAD e854799/main.
@@ -290,8 +328,11 @@ Source hashes — final-inputs.json. Проверки относятся к ра
 LiveMetrics остаётся с неопубликованной реализацией владельца; её целиком не staging.
 Адаптация трёх ранее untracked operator tests также остаётся локальной.
 Новые backend/projection модули не публиковались; это не приёмка их готовности.
+Опубликован 2112e6a1fff5eff3a8a33b9ef29ead58455669ba в origin/main; SHA совпадает.
+GitHub Actions head_sha: total_count=0, [skip ci] по запросу владельца.
 
-### 15.10 — равные карточки действий и подчёркнутые категории: LOCAL PASS, публикация pending
+
+### 15.10 — равные карточки действий и подчёркнутые категории: PUBLISHED, scoped PASS; CI SKIPPED
 
 Запрос: анализ и исправление сжатых backgrounds ProductActions; одинаковый размер
 всех карточек. Категории/фильтры всех кабинетов — selected underline как Settings,
@@ -334,8 +375,10 @@ hover/selected, selected underline3px как Settings; focus сохранён. �
   отдельный distDir, next-env восстановлен. git diff --check — PASS.
 Evidence: .tmp/category-tabs и output/playwright/category-tabs-visual (local ignored).
 Полный CI не запускать по запросу владельца, commit [skip ci].
+Опубликован e85479956688f28f469228099c293ca01ea5f854 в origin/main; remote SHA совпадает.
 
-### 15.10 — точечное закрытие назначения по Escape: LOCAL PASS, публикация pending
+
+### 15.10 — точечное закрытие назначения по Escape: PUBLISHED, scoped PASS; CI SKIPPED
 
 Запрос: исправить Escape в диалоге назначения; полный CI не запускать.
 HEAD fc57098/main; прежний WIP сохранён в .tmp/assignment-escape/baseline.json.
@@ -369,10 +412,12 @@ tsc -p apps/e2e/tsconfig.json --noEmit; scoped eslint; node .tmp/assignment-esca
 build-web.mjs; playwright test --config .tmp/assignment-escape/preview.config.ts.
 Temporary preview3105 PID11132 остановлен после proof; dev3000PID9140/API4012PID2220
 работают. Own source2files + newtest/config + own doc hunks; foreign WIP сохраняется.
+Опубликован 1efdc2c73272c4f92b536fde1c5dea6569f18820 в origin/main, remote SHA
+совпадает; [skip ci] указан по запросу владельца. Узкий scope закрыт.
 
 
 
-### 15.10 — рамки предупреждений, разделители и подсказки кабинетов: LOCAL PASS, публикация pending
+### 15.10 — рамки предупреждений, разделители и подсказки кабинетов: PUBLISHED, CI FAIL / rerun BLOCKED
 
 Запрос владельца: предупреждения о недостающих реквизитах отделить тонкой рамкой
 в цвет текста; тематические группы полей разделять как рабочие контакты;
@@ -422,11 +467,23 @@ border1/radius12/padding16, header help в строке, maxform960/field440,
 без overflow. Stable VAT shots повторены после окончания popover fade:
 output/playwright/ui-guidance-visual-stable; остальные ui-guidance-help-2,
 ui-guidance-final-1/2, ui-guidance-visual-1. Backend/schema/рабочие данные не менялись.
-Следующий шаг: selective review/stage/commit/push только собственного diff,
-проверка exact remote SHA и actual CI. Own files manifest .tmp/ui-guidance;
-старый WIP сохранён, индекс пока пуст. Dev3000/API4012 продолжают работать.
+Коммит fc57098032a3363d01c7de025081f1ca165e5c88 опубликован в origin/main;
+remote SHA совпадает. Включены только33own paths; прежний WIP сохранён.
+CI38638377189 и Security38638377256 queued, ждать actual result.
+При staging возник кратковременный index.lock; исчез сам, partial index проверен,
+атомарный update-index завершён. Никакие lock/processes не удалялись.
+Dev3000/API4012 продолжают работать.
 
-### 15.10 — UI Settings/controls: LOCAL PASS, публикация/CI pending
+### 15.10 — UI Settings/controls: PUBLISHED, CI/SECURITY PASS
+
+Итог: `02cb2d63de8aab214762544c14d4154191508bef` опубликован в origin/main;
+remote SHA совпал. [CI38632147815](https://github.com/NikIg228/PlatformaMarket/actions/runs/38632147815)
+и [Security38632148097](https://github.com/NikIg228/PlatformaMarket/actions/runs/38632148097)
+completed/success на этом SHA. Все четыре CI jobs PASS: verify,
+postgres-integration, container-build(api/web). Собственные24пути опубликованы
+выборочно; прежний WIP сохранён. Индекс пуст. Этот итоговый receipt добавлен
+локально после публикации без новых code changes. DoD выполнен; следующий scope
+не начат. Dev3000/API4012 сохранены работающими.
 
 Запрос: убрать случайное растяжение действий/уведомлений/селекторов в VAT и
 реквизитах; закрепить корректное применение shared controls для всех ролей.
@@ -473,10 +530,53 @@ Next webpack сборка + TypeScript PASS (.tmp/ui-sizing/build-final-run.log)
 49 routes; dev3000/API4012 продолжают работать. Собственные проверки завершены.
 Логи .tmp/ui-sizing, screenshots output/playwright/ui-sizing-final-1 и
 ui-sizing-notes-final; baseline сохраняет прежний WIP. Выборочный commit/push
-и actual CI ещё pending; следующий шаг — review/stage только собственного diff.
+и actual CI завершены — итоговый receipt выше.
 
+### 15.10 — активация VAT в рабочем local dev: разрешена владельцем
 
-### 15.10 — R7.6.1.4: реализация налоговых условий (IN_PROGRESS, новый цикл разрешён)
+Владелец ответил «разрешаю» на применение VAT migration, генерацию Prisma и
+перезапуск dev. Граница: локальная marketplace, без reseed/изменения цен.
+План проверки: exact pending migration, контроль hash/count старых цен до/после,
+Prisma generate, штатный запуск canonical dev и HTTP readiness/VAT contract.
+Preflight: main9c5e38c, прежние dirty сохранены; БД127.0.0.1:5432/marketplace,
+единственная pending20261014020000_supplier_vat, 576 цен, история0.
+Риск: краткая недоступность dev и additive schema upgrade; продуктовые CI PASS
+переиспользуются, повторные полные suites для активации не нужны.
+
+Результат: DONE. `node .tmp/vat/activate-dev.mjs deploy` — Prisma migrate deploy
+PASS, применена только20261014020000_supplier_vat. `npm run db:generate` PASS.
+After-check PASS: pending0, hash всех576 цен совпал, OfferPriceHistory0,
+оба taxSnapshot столбца существуют, SupplierVatSettings0 (автозаполнения нет).
+Старое canonical dev дерево PID10948 остановлено; новый `npm run dev` PID7980,
+launcher16276 запущен скрыто из canonical root, оставлен работающим.
+Штатные schema/API build и readiness PASS; API4012 health/ready200,
+docs-json200 содержит все3 VAT routes, неавторизованный VAT GET401.
+Web3000 `/`, `/supplier`, `/catalog-search?...`200; catalog item получен,
+launcher подтвердил `DentMarket unified is ready`. Логи в .tmp/vat/
+dev-activation.stdout.log и stderr.log. Код не менялся, новый commit не нужен.
+Предыдущие строки о необходимости разрешения на активацию ниже — история;
+разрешение получено и активация завершена. Следующей продуктовой задачи нет.
+
+### 15.10 — R7.6.1.4: VAT опубликован, CI PASS; рабочая активация отдельно
+
+Публикация: `9c5e38ce098df2ed6773ea71284c3f851e446f50` → origin/main,
+87files, только VAT scope; прежние чужие dirty файлы сохранены. Security
+[38624076310](https://github.com/NikIg228/PlatformaMarket/actions/runs/38624076310)
+PASS (CodeQL/dependencies). CI
+[38624076481](https://github.com/NikIg228/PlatformaMarket/actions/runs/38624076481)
+completed/success на точном SHA9c5e38c: verify, containers API/web и PostgreSQL
+job PASS. Canonical browser113PASS, import publication/rollback7PASS,
+full-access3PASS, enabled-module promotion4PASS. Types/lint/tests/build/budget/
+runtime/core-contract/production/auth/API и Security PASS. CI проверил именно
+опубликованный пакет без чужих незакоммиченных изменений.
+Собственные процессы завершены, индекс пуст. Итоговый CI receipt сохранён
+локально после публикации; кодовых изменений после зелёного SHA нет.
+Рабочая миграция ещё не применена: отдельный следующий scope — применить
+20261014020000_supplier_vat, обновить Prisma client и перезапустить dev из
+canonical root после разрешения владельца. Это не разрешение менять старые цены.
+
+Далее история локальной приёмки перед публикацией; pending/blocked ниже —
+прежние состояния, заменённые итогом выше.
 
 Итог локальной проверки15.10: LOCAL PASS; готовится выборочный commit/push,
 actual CI ещё pending. Buyer cycle2: attempt1PASS2/2; после уточнения текста
@@ -646,6 +746,12 @@ a6ead47: CI38586675189 и Security38586675282 SUCCESS. Unrelated WIP сохра�
 
 ### 14.10 — promotion CI ACCEPTED; подготовка НДС
 
+Финальный receipt: docs-коммит a6ead473e93a926dcfa2956d3f74b340e3d5fb88
+опубликован в origin/main, remote SHA проверен. CI38586675189 и
+Security38586675282 завершились SUCCESS на этом SHA. Последующая запись receipt
+локальная; продуктовый код/CI inputs после проверки не менялись. Пакет promotion
+завершён. Налоговая цепочка R7.6.1.4 остаётся открытой по внешним правилам ниже.
+
 Исправление опубликовано в main: 03828c311fb3f4bec2ddcfd04c63571b20b6fcb5.
 [CI38583712037](https://github.com/NikIg228/PlatformaMarket/actions/runs/38583712037)
 и [Security38583712595](https://github.com/NikIg228/PlatformaMarket/actions/runs/38583712595)
@@ -690,7 +796,14 @@ npm exec -- eslint apps/e2e/tests/promotion-workspace.spec.ts --max-warnings=0.
 Roadmap синхронизирован:2 scoped результата [x], общийR7.2 и promotionCI ещё [ ].
 Selective publication: только1fixture+текущие roadmap/log/checkpoint записи.
 
-### 14.10 — workspace-context read throttling (LOCAL_PASS; CI pending)
+Опубликован03828c311fb3f4bec2ddcfd04c63571b20b6fcb5 в main; remoteSHA совпал.
+CI38583712037 verifyjob115919992932, Security38583712595 RUNNING.
+Следующий шаг: дождаться actualCI, синхронизировать checkbox и перейти к сверке
+R7.6.1.4. Вопрос владельцу о наличии утверждённых налоговых правил отправлен;
+ответа пока нет. Без него можно подготовить вариант и отмеченные зависимости,
+но не выдавать выбранные ставки/основания за утверждённые внешние факты.
+
+### 14.10 — workspace-context read throttling (ACCEPTED; общий CI BLOCKED другим тестом)
 Владелец «приступай» разрешил исправить диагностированный read-limit blocker.
 База d5e42b2; canonical root/main, unrelated WIP сохраняется. Изменение: только
 GET /auth/workspace-context получает обычные API ip/user/tenant limits, как current;
@@ -720,7 +833,28 @@ Review: только один read endpoint override, все3 scopes+TTL про�
 register, forgot/reset ограничения сохранены. Обходов auth/retry/skip нет.
 Публикация:3 code/test paths и этот brief; несвязанный WIP исключён. CI pending.
 
-### 14.10 — возобновление CI assertions после диагностики (LOCAL_PASS; CI pending)
+Опубликован60a9860408192631143a31cf672704dfa76ed365 в main; remoteSHA совпал.
+CI38579022595 verifyjob115903636660 FAILURE; Security38579022695 SUCCESS.
+Owned3016/4116 завершены; canonical dev3000/4012 сохранены.
+
+Итог actualCI60a9860: canonical browser113/113PASS4.3m; full-access3/3PASS7.7s
+включая21read regression — исходный auth429 blocker закрыт. Types/lint/unit,
+полная clean build с Prisma generate(v6.19.3), runtime/core-contract/production,
+extendedAPI, PostgreSQL, API/webcontainers, enabled-module webbuild PASS.
+Следующий promotion-workspace4tests:3PASS/1FAIL operator review keyboardfiltering,
+line36 ждёт heading «Согласование акций», а artifact11904010572 error-context
+показывает только main/button «Повторить проверку»/alert. Sourcefixture использует
+synthetic admin-ui-fixture, тестовый fallback503 для неизвестныхAPI. Причина не
+доказана; trace network содержит /admin200 и assets, authresponse не восстановлен.
+HEADpagecatalog действительно содержит PromotionModeration при promotions=true;
+менять heading/route вслепую нельзя. Это отдельный fixture/operator entry blocker,
+не продолжение workspace-context rate fix. Следующий шаг — сверить adminfixture
+с текущим session-store/init контрактом и targeted promotion test на go_live build.
+Дальнейший CI rerun не запускался. Общий CI остаётся FAILURE, не full-green.
+CI https://github.com/NikIg228/PlatformaMarket/actions/runs/38579022595
+Security https://github.com/NikIg228/PlatformaMarket/actions/runs/38579022695
+
+### 14.10 — возобновление CI assertions после диагностики (113 browser PASS; общий CI BLOCKED)
 Владелец «продолжай» разрешил исправить диагностированные 7 browser failures.
 HEAD7792563; source root canonical, несвязанный WIP сохраняется. Scope: проверки
 catalog/unified return-link и sticky toolbar, ожидание возврата фокуса inline edit.
@@ -747,7 +881,27 @@ Review: assertions сверены с HEAD; fixture проверяется общ
 сохранены. Scope публикации: эти3tests (кроме несвязанного CORE08 hunk) и этот
 checkpoint. Предыдущий CI7792563 FAIL106/7 сохранён; новый CI ещё не подтверждён.
 
-### 14.10 — исправление CI-селектора импорта (LOCAL_PASS, публикация pending)
+Опубликован d5e42b2fa3334273c6ad4bfe39812023a4671e38; origin/main SHA совпал.
+CI38571833416 FAILURE; Security38571833573 SUCCESS.
+Owned3016/4116 завершены; canonical dev3000/4012 сохранены.
+
+Финал CI d5e42b2: canonical browser113/113PASS5.1m — все7 прежних failures
+устранены. Все types/lint/unit/build/bundle/runtime/core-contract/production,
+extended API, PostgreSQL и container jobs PASS. Следующий full-access step2PASS/1FAIL:
+SUPPLIER /supplier/orders показывает «Не удалось проверить вход», а тест ждёт
+heading «Заказы». CI artifact11899376487 error-context подтверждает auth error.
+Это НЕ доказанная ошибка heading: workspace-session.ts:117 выдаёт данный текст
+для non-OK /auth/workspace-context после исключения401/403; точный HTTP status
+не сохранён (этот тест отключает trace/screenshot). Новый auth blocker не относится
+к исправленным selectors/focus. Не менять auth, не добавлять retries/ослабление
+проверок без диагностики. Следующий точный шаг: scoped SUPPLIER full-access
+на disposable DB с безопасным сбором status/requestId workspace-context (без
+токенов), затем определить источник ошибки. No CI rerun после этого результата.
+CI: https://github.com/NikIg228/PlatformaMarket/actions/runs/38571833416
+Security: https://github.com/NikIg228/PlatformaMarket/actions/runs/38571833573
+Scope7 исправлен и опубликован; общий зелёный CI пока НЕ достигнут.
+
+### 14.10 — исправление CI-селекторов (опубликовано; импорт PASS; общий CI BLOCKED)
 Владелец «Приступай» разрешил приёмку и публикацию существующей правки
 flow-b3-publication.spec.ts: button→link для навигации «Загрузка товаров».
 База main dd1dac8; несвязанный WIP сохраняется. Риск — корректность достижения
@@ -765,8 +919,36 @@ API responses реальные. Test fixtures cleaned; собственные se
 Команда: npm run db:test -- exec -- node .tmp/import-selector-2026-10-14/run.mjs.
 Локальный runner/proxy не публикуется: CI использует стандартный canonical flow.
 Изменение публикации — только button→link плюс эта запись evidence.
+Опубликован 5ca43045bd5c334f745137c95770b6bab317163a в main, remote SHA совпал.
+CI38554613009/Security38554613027 запущены для первого selector commit. Дополнительно read-only аудит CI
+обнаружил такие же button→link mismatches в settings-навигации identity-management
+и full-access. Их существующие WIP selectors проверены на isolated frontend3016/
+API4116: operator identity1PASS9.9s, full-access1PASS6.9s; новый build PASS.
+Только 3 selector hunks опубликованы 779256329dfca56b0fc2915cae80a09318dfab4e;
+CI38555231285 FAILURE; Security38555231308 SUCCESS. Остальной WIP не принимается этим evidence.
+Generated next-env.d.ts восстановлен к исходному HEAD; собственные servers завершены.
+Финал 14.10 11:40 UTC: импорт/rollback PASS в обоих CI; runtime/contract/types/
+lint/unit/build/bundle/production/extended API PASS, все container/PostgreSQL jobs PASS.
+На SHA7792563 общий browser106PASS/7FAIL: public-catalog comparison390/1440 и
+restore390/1440 плюс unified public catalog ждут старую ссылку «← Вернуться
+в каталог» вместо HEAD «← Каталог» (5 failures). Unified mobile CSS ждёт header
+y=0 вместо фактического -600; в HEAD sticky toolbar. Supplier settings1440:
+avatar.focus(), overlay opacity ожидание1/факт0; причина ещё не установлена.
+Settings тест прошёл на предыдущем SHA5ca4304, поэтому считать этот сбой
+доказанным регрессом продукта нельзя. Operator identity на последнем SHA PASS;
+full-access CI skipped после общего FAIL (локальный целевой1PASS сохраняется).
+CI5ca4304 также106PASS/7FAIL: те же6 catalog/unified + старый settings selector
+operator identity; последний selector закрыт7792563. Дальнейшие steps skipped.
+Три запуска CI dd1dac8/5ca4304/7792563 завершились FAIL; по AGENTS§7.1 остановка,
+без четвёртого запуска. Ранее исчерпанный локальный catalog gate тоже не повторяли.
+Следующий точный шаг — отдельное возобновление целевой сверки catalog/unified
+assertions и диагностики avatar focus; не публиковать весь чужой catalog WIP.
+Run: https://github.com/NikIg228/PlatformaMarket/actions/runs/38555231285
+Diagnostics: https://github.com/NikIg228/PlatformaMarket/actions/runs/38555231285/artifacts/11890334451
+Scope selector fixes опубликован (5ca4304,7792563); зелёный общий CI НЕ достигнут.
+VAT/offers/checkout/documents не начинались. Локальные API4012/frontend3000 оставлены.
 
-### 14.10 — R7.6.1.4: сквозной профиль реквизитов (LOCAL_PASS, публикация pending)
+### 14.10 — R7.6.1.4: сквозной профиль реквизитов (LOCAL_PASS, опубликован, CI FAIL вне пакета)
 Финальный локальный результат14.10: владелец явно разрешил дополнительный запуск
 после исправления команды dev. Попытка4 npm run dev без временного adapter и
 переменной TURBOPACK PASS: schemas build, Prisma generate, API build, schema/data
@@ -779,8 +961,25 @@ preflight, API ready200, frontend/login200, launcher «unified is ready».
 
 Применены development-toolkit: backend/frontend/verification и self-review;
 Playwright для целевых UI-flow. Чужие WIP и процессы после восстановления не трогаются.
-Готовится selective commit только этого пакета и явной команды dev; push/CI ещё
-не заявлены PASS. После публикации receipt с SHA/CI будет добавлен локально.
+Selective commit только этого пакета и явной команды dev опубликован в origin/main:
+dd1dac84421b242929966a81365337a5ee3681de, feat: add versioned organization requisites.
+31 файл; чужие WIP не включены. Push подтверждён remote SHA; index пуст.
+Security38551470794 SUCCESS; CI38551470768 FAILURE (попытка1, 14.10 11:00 UTC).
+CI: typecheck, lint, npm test, build, JS budget, core contract, runtime/profile/
+production checks и extended API PASS. Jobs postgres-integration (полный
+verify:postgres, platform-authority, backup-restore), container-build API/web PASS.
+FAIL — Canonical import publication and rollback: 5 PASS / 2 FAIL CSV/EXCEL.
+apps/e2e/tests/flow-b3-publication.spec.ts:158 ждёт role=button «Загрузка товаров»
+90 секунд, тогда как опубликованный admin-shell передаёт href для navigation.
+Test/admin-shell не изменялись этим коммитом. В исходном чужом WIP уже есть
+замена button→link; она сознательно не включена в пакет реквизитов. Не публиковать
+чужую правку автоматически и не перезапускать CI без исправления входов.
+Оставшиеся browser steps после FAIL skipped, зелёный общий CI не заявляется.
+Run: https://github.com/NikIg228/PlatformaMarket/actions/runs/38551470768
+Diagnostics: https://github.com/NikIg228/PlatformaMarket/actions/runs/38551470768/artifacts/11888180187
+Следующий точный шаг для общего CI — отдельная приёмка/публикация существующей
+правки селектора импорта с целевой проверкой, затем CI нового SHA.
+Пакет реквизитов локально проверен и опубликован; финальная общая CI-приёмка BLOCKED.
 
 ---
 Ниже сохранён журнал промежуточных блокеров и разрешений; они сняты результатом выше.
@@ -959,8 +1158,10 @@ UI и проверки. В R7.6.2 указана зависимость данн
 PLANNED/NOT_RUN; начало — контракт и сквозной профиль реквизитов, затем налоговая
 цепочка при определённых правилах/округлении, затем GENERATED-счёт.
 Прежние pending working migration и catalog3 attempts сохраняются; их обхода
-или нового запуска нет. Product gates NOT_RUN, docs checks выполняются перед
-commit. Baseline/own.patch — .tmp/roadmap-vat-2026-10-14/.
+или нового запуска нет. Product gates NOT_RUN. Ссылки/anchors, сохранность прежних
+checkbox и собственный staged diff --check PASS. Commit64a31b2, push origin/main
+PASS, remote SHA совпадает. CI после push проверяется отдельно; PASS не заявлен.
+Baseline/own.patch — .tmp/roadmap-vat-2026-10-14/. Receipt сохранён локально.
 
 ### 14.10 — общие реквизиты и предложение по НДС
 
@@ -994,6 +1195,10 @@ TS/build/DB/browser NOT_RUN: код не менялся, этап R7.6.2 не з
 Проверки: локальные ссылки/checkbox history и собственный patch PASS; продуктовые
 TS/build/DB/browser NOT_RUN, код не менялся. Старые blocker/попытки сохранены.
 Baseline: .tmp/invoice-proposal-2026-10-14/baseline.json; собственный patch рядом.
+Публикация: e892d209321d9255412d74f4860c1e0f6a9b17fb, push origin/main PASS,
+remote SHA совпадает. Собственный staged diff --check PASS; только4 docs-файла,
+прежний WIP сохранён. CI38524845202 / Security38524845271 IN_PROGRESS при
+проверке после push; PASS не заявлен. Receipt сохранён локально.
 Следующий шаг: оценка предложенной формы и профильных налоговых правил;
 не начинать зависимую реализацию из одного наличия этой записи.
 
@@ -1027,10 +1232,553 @@ App/types/build/DB/browser NOT_RUN: docs-only, продуктовые inputs н�
 Review: открытые формы/полномочия/внешние входы сохранены; статусы частичного
 результата не закрывают весь пакет. Практики development-toolkit: границы
 backend/API, инварианты и пропорциональная проверка. Прежний WIP не включать.
-Следующий шаг: отдельная публикация проверенных docs hunks по Workflow §5.1;
-новая продуктовая реализация этим checkpoint не запускается. CI отдельно.
+Публикация docs: commit52ebd3465160c38a5fbca3793c3390b7ccead1f5, обычный push
+origin/main PASS; remote SHA сверён через ls-remote. Только7 Markdown-файлов,
+прежний product/docs WIP не вошёл. Остаток прежнего diff roadmap27/4,
+решений11/0 и checkpoint541/5 сохранён перед добавлением этого локального receipt.
+Автоматические CI38522453070 и Security38522453133 на этом SHA: IN_PROGRESS
+по проверке14.10 после push; это не PASS. Ручных rerun нет, новые продуктовые
+проверки не запускались. Итоговый receipt сохранён локально после публикации.
+Документационная задача выполнена; следующий продуктовый пакет определяется
+поручением владельца и готовностью входов, обозначенных в R7.6.1.2.
 
-### 14.10 / 03:29 — dependent auth fixtures LOCAL_PASS
+### 14.10 — явная ручная передача контекста / awaiting_archive generation7
+
+Преемник01a138f5-b047-7db2-96ce-065bcec6d801 подтвердил содержательный READY
+в завершённом turn01a138f5-b215-7691-b233-582f95de9853; native wait_threads
+подтвердил idle/completed. Проверены Git/WIP, результаты, оба blocker, запреты.
+Он назначен primary и единственным finalizer generation7. Source после этой
+записи прекращает ВСЕ filesystem writes и завершает свой turn. Finalizer должен
+подтвердить idle source, штатно архивировать только01a11758-1c55-7e52-bf15-2a04427aaf5d,
+проверить архив, завершить тот же переход idle/successorThreadId=null без новой
+generation. Продукт остаётся BLOCKED; передача не разрешает устранение blockers.
+
+Владелец: «Окей, бро, пожалуйста перенеси свой контекст в новый чат».
+Разрешена одна передача при незавершённом DoD; это не PASS и не согласие на
+рабочую migration/новый цикл catalog tests из предыдущего вопроса. Source
+01a11758-1c55-7e52-bf15-2a04427aaf5d прекращает продуктовую запись. Только три
+handoff metadata файла могут меняться. main287664806c3163d3faa0a808ca1107421df36b3c,
+dirty source/docs/tests и untracked artifacts сохранены; staged пуст, push не было.
+Dev DOWN; тестовые3103/4113 остановлены. Незавершённых наших запусков нет.
+Read-only comprehension завершён; finalizer назначен только для этой передачи.
+Текущий результат и оба blocker ниже; предыдущие сроки/«running» — история.
+После передачи ждать решения владельца, не продолжать roadmap автоматически.
+
+### 14.10 — owner scope: review completed work, required checks and green CI
+
+Final acceptance status: BLOCKED after catalog gate attempt3; no commit/push/new CI.
+Final dev health correction: initial3000/4012 health200 was point-in-time evidence.
+At final check both listeners were gone and both URLs refused connection; cause
+not established. Standard hidden `npm run dev` from canonical root (parent13244)
+rebuilt schemas/API, then STOPPED at assertLocalSchema: working DB pending
+20261014000000_session_origin_login. No migration/reseed/bypass performed; dev
+currently DOWN. Existing tracked migration adds nullable AuthSession origin UUID,
+index and self-FK with SET NULL; separate owner authorization for working DB and
+backup/upgrade validation needed before application. Logs dev-restored.out.log /
+dev-restored.err.log under the same ignored acceptance directory. Git/HEAD unchanged.
+Canonical107 run completed105PASS/2FAIL (catalog comparison390/1440). Diagnostic
+attempt2 reproduced the same product backlink timeout. Screenshot showed root
+error page: old comparison mock contained only offers, whereas ProductDetail reads
+product/variants/comparisonAttributes. Attempt3 preserves the real response and
+validates both real/mock responses with offerComparisonResponseSchema, but fails
+before navigation: first real offer has availability=[] for the selected city.
+The new assertion at public-catalog.spec.ts67 incorrectly assumes stock exists.
+This is an unvalidated test-fixture correction, not a demonstrated API defect.
+E2E TypeScript after that correction PASS. Runtime product code did not change.
+AGENTS §7.1: three unsuccessful attempts exhausted; no fourth run, alternate tool
+or CI retry to bypass the limit. Next exact step after owner-directed resumption:
+make the mocked warehouse availability deterministic and contract-valid without
+requiring real city stock, then verify both390/1440 and all existing cart assertions.
+No reseed or working DB change. Failure logs retained in
+`.tmp/ci-acceptance-2026-10-14/catalog-browser-2.log` and `catalog-browser-3.log`;
+canonical log `unified-browser-1.log`.
+Remaining acceptance: catalog2, full FlowB3, full-access roles, final representative
+Admin chunk loading, final lint after latest edits, outgoing review and actual CI/
+Security on published SHA. Do not mark prior general lint PASS as final patch lint.
+Earlier105 browser PASS and unit/types/build/budget evidence retained; no full rerun
+without changed inputs. R7.7.3.2 remains deferred. User dev must remain running.
+
+Progress10:12: dev3000/4012 health200 preserved. Full lint1/UI-contract374 PASS;
+full typecheck1 13/13 PASS. Full unit1 FAIL PDF parser15s under concurrent build,
+isolated parser2 PASS14 (no timeout/code change). Remaining unit pass uncovered
+Admin performance expectation22 vs new23 dynamic panels; explicit organization
+assertion +23 corrected, focused4PASS. Full unit2 PASS12/12 (8 caches unchanged).
+Policies lint/dependency6PASS. E2E types2PASS after same-origin test portability.
+
+Web baseline31files/2048603raw/559440gzip. Narrow unchanged UI imports alone:
+build1PASS/budget1FAIL33/2060951/566035. Root error.tsx broad barrel found in all
+route client manifests; leaf imports: build2PASS/budget2FAIL only files26,
+raw1107675/gzip337901 PASS. Third build groups same tree-shaken Fluent icons:
+build3PASS/budget3PASS23/1146176/349175. Original24/1500000/450000 budgets unchanged.
+CI budget step explicit bash/pipefail stops swallowed error. Bundle script accepts
+explicit --build-dir for generated isolated build with unchanged default/gates.
+Sources:13 buyer imports/UI exports, web error/config, script/workflow, Admin test.
+No UI geometry/interaction implementation change. Build outputs in ignored
+`.tmp/ci-acceptance-2026-10-14`, user dev dist unchanged.
+
+New owner-requested acceptance admin browser1PASS15/23.1s on build2 including prior
+object390 NOT_RUN; screenshot mobile inspected, readable/no overflow. Historical
+policy denial retained, new normal invocation allowed. Final build3 shared chunks
+requires representative consumer load acceptance. Full canonical107 browser suite
+running on owned3103/4113/audit DB via isolated unified config, preserves all specs/
+assertions. Test hardcoded dev URLs replaced by baseURL/same-origin in unified,
+public catalog, identity invitations and commerce analytics; never hit user API.
+Preflight500pilot offers,400positive balances, no expired price/balance;5expired
+compliance checks recorded (no reseed). Publication/CI still pending, no new push.
+
+Новый явный запрос владельца: полный анализ выполненного, необходимые проверки
+и зелёный CI; первым проверить dev (DFB уточнено как dev server). Primary sole
+writer. R7.7.3.2 новая функциональность отложена на время этой приёмки.
+Canonical main2876648/dirty scope восстановлены; сохраняются все прежние inputs,
+failures и attempt counts. Новый запрос разрешает исправления причин CI, необходимые
+проверки и публикацию проверенного результата по §8; не разрешает deploy/рабочую
+migration/reseed или ослабление gates. Старые policy denials не считаются PASS.
+
+Dev preflight: frontend3000 PID13588 из canonical root отвечает200; API4012 PID8200
+ready200 (database/storage ok). Процессы уже запущены, не перезапускались.
+CI38476936649 actual jobs: postgres + api/web containers SUCCESS; verify FAIL
+на FlowB3 CSV/EXCEL locator, subsequent browser gates SKIPPED. Actual logs также
+подтверждают hidden web-budget FAIL31files/2040197raw/557347gzip (tee swallowed exit).
+
+План до изменений: review накопленного scope/manifest/tests; исправить обнаруженные
+регрессии и web bundle без повышения лимитов; сделать CI budget failure обязательным.
+Риск shared frontend composition/auth/navigation + CI integrity. Focused checks:
+budget baseline/affected consumers, auth/query/projections/registry tests и оставшаяся
+mobile visual acceptance; reuse PASS только unchanged inputs. Completion: full
+lint/types/unit + canonical build/budget, нужные isolated DB/browser checks, review
+staged/outgoing scope, обычный push и фактические CI/Security на точном SHA. Новые
+продуктовые этапы не начинать; рабочую БД не менять. Полный CI здесь явно запрошен.
+
+### 14.10 — R7.7.3.2 preparation: runtime launch BLOCKED, product unchanged
+
+После восстановления сверены canonical checkout/main/HEAD2876648 и прежний dirty
+scope. Primary остаётся единственным writer; UI передал read-only brief review READY.
+Уточнение API matrix: role create требует roles.manage; assign/remove требуют
+members.manage + roles.manage; FULL_ACCESS role mutation возвращает conflict409,
+не403. Несовпадающая active organization возвращает403 до service; чужая сессия404.
+No-permission fixture должен сохранять organization.view для входа в Admin.
+Личный profile/sessions не зависят от AccessPolicy. FULL_ACCESS сохраняет active
+user/membership/organization и operator capability boundary. Штатный auth401 может
+завершать expected вход; тест failed revoke без logout относится к500/неверному receipt.
+
+Прочитаны актуальные shared SessionManagement/AppShell, Admin identity/auth/query,
+контракты component market-components-v1 и semantic platforma-semantic-light-v1,
+обязательный порядок DESIGN_SYSTEM и профильный UI standard. До product edits
+предпринят запуск существующей isolated .3.1 сборки для baseline settings/menu:
+NODE_ENV=production, DEPLOYMENT_PROFILE=pilot, INTERNAL_API_URL=http://127.0.0.1:4113/api,
+NEXT_ADAPTER_PATH=.tmp/operator-organizations-2026-10-14/next-adapter.mjs;
+`node node_modules/next/dist/bin/next start apps/web --hostname 127.0.0.1 --port 3103`.
+Автоматическая проверка отклонила CreateProcess: `rejected: blocked by policy`.
+Процесс не запущен; попыток обхода/другого порта/инструмента не было. Точная причина
+policy не предоставлена. Baseline screenshot и зависимые browser gates NOT_RUN.
+На preflight работали только пользовательские3000 PID13588/4012 PID8200;
+3103/4113 свободны. Ни product code, ни тесты .3.2 не изменены/не запускались.
+
+Следующий необходимый шаг: разрешённый запуск указанного isolated runtime и
+baseline, затем реализация по brief ниже. До изменения внешнего ограничения
+не повторять эквивалентный запуск. Старый object390 denial и publication BLOCKED
+не изменились; commit/push/CI отсутствуют. Read-only review не закрывает DoD.
+
+### 14.10 — primary writer: R7.7.3.2 own access / protected sessions
+
+UI явно завершил все записи/процессы и released writer после LOCAL_PASS .3.1.
+Primary `01a11758-1c55-7e52-bf15-2a04427aaf5d` принимает единственную запись;
+UI `01a1369b-2bfb-7f33-8f32-b9bc119fda3a` только read-only review/preparation.
+Сверены canonical root/main2876648/dirty scope и final57 source hashes .3.1.
+Предыдущий счёт59 был опечаткой сообщения; фактический manifest содержит57.
+
+Следующий bounded результат по постоянному поручению roadmap: зафиксировать
+матрицу действующих полномочий, разместить существующий own-platform
+MemberManagement в access, добавить доступный из меню личный profile с фактическими
+read-only данными auth/profile и собственными сессиями. Settings оставляет
+platform configuration. Это .3.2 и часть .3.3; полноценный editor имени/email/avatar,
+cross-org сотрудники/приглашения/роли/сессии и полный R7.7.3 не закрываются этим пакетом.
+SupplierControls/PlatformAssurance сохранить reachable в прежнем access ниже
+блока сотрудников с существующими предметными заголовками; их профильный перенос
+остаётся R7.7.4/6/7. Не терять функции и не вводить новый каталог legacy маршрутов.
+
+Матрица существующего API: memberships/invitations только active organization и
+members.manage, roles.manage дополнительно для role mutation, FULL_ACCESS сохраняет
+отключение role mutations; self/last-manager guards прежние. Сессии только current
+user, чужой id404; supplier admission остаётся отдельным document.view/manage +
+platform authority, selfapproval/version guards. Не добавлять permissions/endpoints.
+Исправить конкретный UI revoke risk: проверить response.id/status REVOKED до success,
+зафиксировать выбранную session и expected Admin identity; поздний ответ/unmount
+не очищает другой вход. clearAdminSession(expected) + redirect только при true.
+Штатный signed logoutAdmin не менять. API/models/migrations/рабочая БД без изменений.
+
+Разрешённый shared UI scope: SessionManagement (единственный текущий consumer Admin),
+opt-in profileHref/onProfile в workspace AppShell без изменения legacy/default,
+dynamic Admin access/profile composition, typed section=profile и safe-return tests.
+Нужные изменения прежних frozen admin-shell/admin-query/page разрешены только для
+этого нового сценария. Старые manifests исторические; новый пакет получает свой.
+Запуск отклонённого object390/эквивалента запрещён. Publication .1.3/.2/.3 BLOCKED,
+commit/push/CI не выполнять; старые лимиты попыток сохраняются.
+
+План проверки: сначала regression receipt/malformed/wrong-id/failed/current/other/
+lateA→B/unmount/double-submit и admin-auth; shared AppShell/default tests, query/return.
+Затем real disposable operator own-members/invitation/block/revoke/401, cross-org403,
+foreign session404 и FULL_ACCESS/no-permission, целевой browser1440/390/menu/focus/
+Back/reload/error/retry. Внешнюю email delivery не заявлять. Backend не переписывать;
+reuse неизменённых service evidence, affected service suites по доказанному impact.
+Completion: affected UI/Admin/E2E types/lint/UI-contract, Admin budget и isolated
+unified build последовательно с typegen, final screenshots/computed styles + review,
+docs/manifest/process/fixture cleanup. Не повторять весь проект.
+
+UI passport перед реализацией ещё завершить: DESIGN_SYSTEM/relevant UI standard,
+оба JSON, current isolated screenshot старого settings/menu, аналоги IdentitySettings,
+MemberManagement/SessionManagement и workspace ProfileMenu/ProfileSessions.
+Manrope/body14/heading24, Dm controls44/radius8, surface12/padding16/gap16–24,
+existing200px sidebar/sticky header; layout только feature composition. Полный
+workspace Profile не импортировать: он привязан к clinic/supplier useWorkspace.
+
+### 14.10 — R7.7.3.1 + read-only list/detail UI: LOCAL_PASS / writer release
+
+UI `01a1369b-2bfb-7f33-8f32-b9bc119fda3a` завершил назначенный вертикальный
+результат. Primary подтвердил source и final visual review READY: все6 обновлённых
+PNG1440/390 проверены, замечаний нет.57 хешей final manifest совпадают;
+HEAD287664806c3163d3faa0a808ca1107421df36b3c, unified build `srctBlL7RayXKvLbN_PsM`.
+DoD выбранного сценария имеет LOCAL_PASS, публикация BLOCKED прежним R7.7.1.3.
+Новых cross-org write прав нет; .3.2 и оставшаяся .3.3 открыты. Roadmap/Matrix/
+admin log обновлены, failed attempts сохранены. Никаких commit/push/CI или
+отклонённого object390. Рабочая БД не изменялась; disposable fixtures очищены.
+Owned3103/4113 остановлены, пользовательские3000 PID13588/4012 PID8200 сохранены.
+После финальной diff/link/scope сверки UI явно освобождает writer и прекращает
+все filesystem writes/tests/processes; primary назначает следующий bounded пакет.
+Это завершение исполнения данного пакета, не ротация/архивация задач.
+
+### 14.10 — R7.7.3.1 writer progress / UI passport
+
+FINAL LOCAL CHECKS: implementation and all selected gates PASS, final independent
+visual receipt READY. API/schema/client/unit/types/lint/core/runtime evidence below
+is unchanged; mock browser7 aggregate PASS, real operator/profile/two cities/readiness
+1PASS9.4s. Visual first run had2 locator failures (combo/listbox label and required
+marker); focused2 PASS6.1s. Review requested feature form100%width and .actions
+wrappers for auto-width refresh buttons; final visual attempt3 PASS1/5.3s, six PNG
+1440/390 updated. Final Admin/unified builds2 PASS; Admin15files1042473raw317140gzip.
+Admin typecheck raced build-generated .next/types and failedTS6053; sequential
+postbuild typecheck PASS. UI-contract4/374 and scoped lint PASS.
+Frozen manifest `.tmp/operator-organizations-2026-10-14/final-source-manifest.json`
+has57 source hashes. Prior navigation9 hashes unchanged/2 explicitly allowed new
+scope changes; old dashboard only5 planned integration inputs changed. Diff-check
+PASS. Owned3103/4113 stopped, user3000 PID13588/4012 PID8200 preserved.
+All tests used disposable audit DB and cleaned fixture rows. No commit/push/CI.
+Publication BLOCKED R7.7.1.3; .3.2/remaining.3.3 not implemented. Legacy catalog
+write and future protected-revoke risks recorded once in admin-implementation-log.
+
+Update: detail safe city labels added after review; schema/service/client25 PASS
+(client attempt1 fixture reused consumed Response; corrected new Response per call
+attempt2 PASS). API151 + nonempty profile/two cities attempt3 PASS16.4s; no raw address
+metadata. Schema query33/navigation2 PASS. API contract-only PASS344 operations/62
+verified/222 schemas; reused generated Prisma client (schema unchanged, earlier DLL
+lock remains protected), actual API build PASS. Runtime split PASS. Admin types and
+E2E types PASS; scoped ESLint PASS, UI-contract4/374 PASS. Admin build+budget attempt1
+PASS15 files/1042473 raw/317144 gzip. Unified isolated build running in separate
+`.tmp/operator-organizations-2026-10-14`; no user process stopped. Browser pending.
+Review fixes: detail404 clears stale data, refresh also renews supplier readiness at
+same org version, row/back clears old object target while preserving list filters.
+
+UI remains sole writer. New schema/controller/service and safe list/detail projection
+implemented; focused schema/service/controller + profile/authority39 PASS, control-char
+review fix schema18 PASS, API types/build PASS. Read-only primary review: no remaining
+backend source blockers. Real API invocation1 stopped before test by npm argument
+separator; corrected invocation2 running, disposable DB, owned4113. No working DB.
+No commit/push/CI; previous publication blocker remains.
+
+UI passport before implementation: existing organizations composition ResourceLists
+and FoundationManagement inspected; old screenshot admin-organization-form.png is
+historical only. Closest current analogs: support-operations filters/list URL state,
+platform-settings DmSurface/StatusTag/error/retry, shared DmDropdown/DmField/DmInput/
+DmButton. New registry dynamic import; default44px controls/radius8, cards12, Manrope
+body14/line1.5, h2 heading24/line1.25, spacing16/24; JSON component-contract and
+semantic-light authoritative. Desktop list grid becomes stacked rows at390; no control
+overrides. Read-only detail uses real capabilities/profile; supplier onboarding fetched
+only for SUPPLIER. Query retains filters/offset through detail, Back, reload/login.
+FoundationManagement catalog-only mode moves its existing attribute/rule functions
+to Catalog and skips fixed-org role/member requests. No new membership/role editor.
+Required remaining: API151 fixture, typed client/query regressions, scoped UI/types/lint,
+build budgets/unified build, mock/real browser with nonempty detail, screenshots/styles.
+
+### 14.10 — R7.7.3.1 + связанный UI: передача writer задаче UI
+
+По постоянному поручению владельца следующий независимый вертикальный результат:
+операторский paginated реестр организаций (поиск название/БИН, status/capability),
+read-only detail с реальными capabilities/анкетой и возврат к прежнему списку.
+Это .3.1 + соответствующий UI .3.3, не завершение всего R7.7.3. Cross-org сотрудники,
+приглашения, роли и сессии не добавляются; существующий узкий допуск не расширяется.
+Не менять legacy GET /organizations: это также consumer проверки входа.
+Новые read endpoints имеют active platform authority + organization.view до данных,
+bounded строгий query, стабильный sort/total, безопасный DTO/404/no write on GET.
+Supplier onboarding переиспользовать только для SUPPLIER; non-supplier не называть
+BUYER по старому fallback. БД/permissions/migration/profile остаются прежними.
+
+Риск: глобальное чтение, shared query/safe-return, late responses и неверный tenant
+контекст. План: schema/service/controller и focused tests прежде UI; >page-size,
+tie-break/filter/full totals/404/denial/allowlist/no-write доказать на disposable DB.
+Затем UI по DESIGN_SYSTEM с паспортом/аналогами, loading/error/empty/retry/abort,
+Back/reload/keyboard1440+390, scoped types/lint/core/runtime по impact, Admin/unified
+build и адресный browser с реальным operator. Полный E2E не требуется.
+
+Writer назначен PlatformaMarket UI `01a1369b-2bfb-7f33-8f32-b9bc119fda3a` после
+доставки следующего назначения; primary прекращает ВСЕ filesystem writes/tests/
+процессы и остаётся read-only reviewer. Канонический main2876648, dirty scope сохранён.
+R7.7.2 final manifest `.tmp/operator-dashboard-2026-10-14/final-source-manifest.json`,
+11 navigation hashes MATCH перед передачей; standard diff-check/документальные
+ссылки PASS. Проба diff с core.autocrlf=false дала ложные CRLF whitespace сообщения;
+каноническая команда без override PASS, файлы ради этого не переписывались.
+Owned3103/4113 нет; пользовательские3000 PID13588/4012 PID8200 сохранены.
+
+Явная граница изменения прежних frozen paths: допускаются только необходимые
+добавления org query полей в admin-query + тесты/serializer и organizations composition
+в page.tsx для НОВОГО сценария .3. Остальные frozen URL/support/object paths не трогать.
+Старый manifest остаётся историческим evidence, новый change set получает свой manifest.
+Это не разрешение запускать отклонённый object390 harness/его эквивалент или закрывать
+R7.7.1.3 gate. Публикация .1.3/.2/.3 остаётся BLOCKED; commit/push/CI не запускать.
+FoundationManagement не должен показывать fixed dev-org формы в выбранной организации;
+own-org сотрудники остаются в существующих settings, catalog features не терять:
+перед переносом сверить actual consumers, не создавать параллельный редактор.
+
+### 14.10 — primary reclaims writer; navigation viewport BLOCKED, independent R7.7.2
+
+R7.7.2 current completion evidence: unified isolated build1 PASS; UI browser attempt1
+5PASS11.3s (new panels3 + dependent assignment2). Real operator/UI/disposable API
+PASS1/8.4s, visible counts equal DB totals and settings reflect pilot; fixtures cleaned.
+Locator screenshots of long settings included sticky-header overlap after keyboard
+scroll (capture artifact); only capture changed to page/fullPage at scroll0, focused
+panel visual repeat PASS1/3.5s. Product/build inputs unchanged; no broad rerun.
+Final four screenshots under output/playwright/operator-projections reviewed by
+primary and independent read-only UI task: no new-panel blockers,1440/390 readable,
+focus visible/no overflow. Older overview loader/IdentitySettings are outside this
+visual receipt. E2E types/lint PASS before capture-only line change. R7.7.2 LOCAL_PASS;
+docs/evidence recorded in admin-implementation-log and roadmap, checkbox remains open.
+Primary still sole writer; no commits/push or denied object390 rerun. Publication
+BLOCKED by R7.7.1.3 dependency; CI NOT_RUN. Next: final diff/input/process verification
+and independent read-only R7.7.3 preparation; no automatic rights/DB/deploy expansion.
+
+R7.7.2 first backend slice: schemas build + dashboard schema3 PASS; focused
+dashboard service6/controller2 and existing authority9/access4 =21 PASS (attempt1).
+Counts use database count(), not list endpoints; complete/failure/0/permission and
+invalid query regressions included. HTTP/disposable database proof still pending.
+Capability mapping before next slice: five modules use deploymentFeatures of actual
+API profile, with explicit platform-only scope (not tenant entitlement). External AI
+model is separate: absent config NOT_CONFIGURED; present config still needs external
+confirmation; enabled AI assistant retains deterministic fallback. Payment connector
+requires external mode/configuration plus an ACTIVE non-MOCK provider, but still
+needs external confirmation; no automatic payout/production-certified claim.
+Registry summary groups existing connector readiness statuses, counts ACTIVE payment
+providers and ACTIVE compliance rules; DB errors are null/unavailable, not0. Registered
+LIVE_VERIFIED is labeled registry evidence, not a new external test. No default upsert.
+No arbitrary registry text, provider payload, environment URL, secret or token enters
+the projection. Existing valid section links only; no invented AI/billing editor.
+UI must compare API profile against baked frontend profile and flag mismatch.
+
+Completion gates R7.7.2: Admin types PASS; view-model3/client2 PASS; scoped lint
+PASS; UI-contract4/372 PASS. Core-contract attempt1 stopped in Prisma prebuild:
+EPERM rename query_engine-windows.dll.node while existing user runtime remains.
+No schema/model/migration changes. Preserve this failure; compare generated schema
+to source before reusing the validated existing client for build + contract-only
+attempt2. Do not stop user runtime or replace/delete its loaded DLL.
+Generated schema comparison: raw hashes differ only Prisma formatting; full
+git diff --no-index --ignore-all-space --ignore-blank-lines returned0/no diff.
+Source schema and lock have no task changes. Reuse generated client; actual
+API build script via npm run build --workspace @marketplace/api --ignore-scripts
+avoids redundant lifecycle generation, not application checks. Contract-only
+runner still uses the supported disposable-DB wrapper and real built API.
+API build reuse PASS, contract-only attempt2 PASS (342 operations/62 verified core,
+219 components), owned API exited0. Real operator-dashboard API attempt1 FAIL:
+test expected conflicting identity headers to be ignored200; existing JWT guard
+correctly rejects them401. Valid same token had already passed invalid-query400;
+this is test expectation, not auth regression. Separate explicit spoofed401 assertion
+from ordinary authorized200 request; repeat this one test as attempt2. Fixtures
+cleanup completed, E2E types PASS; no product change required.
+Real API attempt2 PASS1/4.8s:151 synthetic products +151 organizations across
+statuses, exact database totals, unique permissions, bad query, supplier denial,
+spoofed headers401, inactive organization/membership, missing role and revoked JWT.
+All owned fixtures removed. Runtime split PASS all roles/entrypoint/production
+checks using the same built API. Admin build1 PASS15files/1041189raw/316841gzip
+under unchanged limits; unified isolated build1 running. R7.7.2 browser tests
+target only new metrics/capabilities and affected assignment fixture, never the
+denied R7.7.1.3 object390 action. Old navigation viewport remains BLOCKED.
+
+Capability service9/controller3/dashboard6 PASS before UI; review clarified
+readinessReady means readinessStatus READY (not goLiveStatus INTERNAL_READY).
+Cross-status regression added; affected capability9 PASS after rename. API/client
+typecheck PASS. UI passport: main2876648 + frozen navigation + new API scope;
+operator overview/settings,1440x900/390x844 at100%. Read DESIGN_SYSTEM, both JSON
+market-components-v1/platforma-semantic-light-v1 and UI standard. Existing unchanged
+settings browser screenshots inspected under output/playwright/admin-shell-2026-10-14
+(admin-settings-1440x900.png and390x844.png); these are baseline, not new acceptance.
+Analog: commerce-analytics Summary semantic dl; existing settings metrics/status
+composition. Preserve shell and existing hierarchy (Manrope/body14/caption12,
+heading24/value32 bold), grid gap16/section gap24. New/changed card uses DmSurface
+default padding16/radius12 without old local card overrides; actions DmButton44/
+radius8/default density, StatusTag, LoadingState/ErrorState/DmFeedback adapters.
+Semantic colors only; feature CSS handles layout/reflow, no control overrides.
+Replace obsolete micro10 explanations with caption12. Three metrics collapse to1
+at900; settings4/2/1 summary layout1050/680 and long status rows wrap. Baseline
+working runtime was not visited because old readiness GET upserts defaults; final
+new surfaces will be checked only with mocked/disposable data. No object390 rerun.
+Readonly UI review: new panel links now reuse frozen adminSectionQuery/serializer
+to preserve list context for regular and modifier/new-tab navigation. Their new
+source depends on the existing unpublished R7.7.1.3 helper: R7.7.2 implementation
+and checks may proceed, but publication cannot bypass the earlier acceptance gap.
+Only dependent admin-shell fixture gains the new dashboard response; frozen query
+test and denied object390 assertions remain unchanged and unexecuted.
+
+UI explicitly released all writes/processes. Primary is sole writer; UI read-only.
+Reviewed final11 source hashes (all match), functional/browser/build receipts and
+support1440/390 screenshots. Owned3103/4113 absent, user3000/4012 intact.
+R7.7.1.3 implementation and focused functional checks passed, but final object390px
+viewport acceptance remains OPEN after automatic approval denial below. No equivalent
+rerun, no waived gate, no commit/push of this package. Preserve its frozen product
+paths and later NOT_RUN assertions. Tool denial is not an application failure.
+
+Standing owner instruction permits independent roadmap work. Select R7.7.2:
+replace page-length metrics with authorized server totals and replace static feature
+claims with safe profile/configuration/readiness projection, including their existing
+Admin panels. No navigation changes or replay of the denied object visual action.
+Semantics: all registered organizations/master products across statuses; current
+actor's unique effective permissions. Values are current observations, no invented
+period or transactional snapshot. Known empty is0; failed source is unavailable/null.
+Authorize active platform operator plus organization.view before global queries.
+Capabilities describe platform configuration, not tenant entitlement or production
+certification; expose finite statuses/reason codes, never secrets/env values.
+Read existing registries directly; do not call readiness.list(), which upserts defaults.
+No profile changes, external calls, new permission, migration, working-data write or
+production editor. Queue workflow/global pagination remains R7.7.6.
+
+Plan: shared schemas/OpenAPI/client then focused backend service/controller tests
+before UI. Verify totals beyond100, empty/failure isolation, denied/revoked/foreign
+authority before reads, safe payloads and profile consistency. Then existing DS
+panels with loading/error/retry/unknown states and target links; targeted UI/browser
+and representative consumers, scoped types/lint, core contract/runtime checks as
+affected, isolated builds/budgets and review. Final vertical acceptance is required;
+backend alone is not R7.7.2 DONE. Exact capability mapping is finalized from code
+before implementation. Prior blocked packages/foreign dirty files remain preserved.
+
+### 14.10 / 03:49 — R7.7.1.3 frozen review packet; UI releases writes
+
+UI stops all filesystem writes/tests/builds/process launches after this packet;
+primary may reclaim sole writer explicitly. No commit/push by UI. main remains
+287664806c3163d3faa0a808ca1107421df36b3c, foreign3docs/2E2E/output preserved.
+Own scope: schemas admin-query + product-navigation, Admin query hook/page/shell/
+support/queue/object/notifications, shared opt-in ConversationWorkspace, new query
+tests,6 dependent Admin selector files, admin-rebuild config,3 current docs.
+
+Checks: final parser/return84 PASS; Admin36 earlier + final navigation2 PASS;
+UI88 PASS; types UI/Admin/buyer/supplier/E2E and final Next types PASS;
+scoped lint/UI-contract4+371 PASS; diff hygiene PASS. Builds1/2 PASS, final3
+after affected object card composition PASS (not retries of failures): Admin
+1037463raw/315568gzip/15files under unchanged budgets; isolated unified PASS,
+BUILD_ID Im2FXp3F-LPOljp7deTMe, baked API4113. next-env restored exactly.
+11 input hashes including lock: .tmp/admin-query-2026-10-14/final-source-manifest.json.
+
+Browser1 PASS9/32.5s (7navigation +2existing clinic/supplier conversation consumers).
+Browser2 PASS7/17.8s after punctuation/notification guard and final card; actual
+guest/login safe-return with encoded #/backslash + filters/reload/logout DB REVOKED
+PASS. Logs browser-1/2.log, screenshots/computed manifest in
+output/playwright/admin-query-2026-10-14; desktop object and real support1440/390 viewed.
+FlowB3 CSV/EXCEL PASS2/5.2s+4.2s. Combined first run's full-access FAIL beforeUI:
+wrong ROLE_BASED harness; corrected dedicated FULL_ACCESS config attempt2 PASS1/6.7s.
+Logs flow-b3-1.log/full-access-2.log preserve both outcomes. No changed assertions
+were weakened; FlowB3 PASS was not rerun. Working DB untouched. Owned3103/4113 gone;
+user3000PID13588/4012PID8200 intact, independently checked.
+
+Coverage limit: two later object-specific390px screenshot/computed assertions were
+added to queue test but NOT_RUN. Creating/running an extra ignored visual harness
+was denied by automatic approval review at exec_command CreateProcess:
+"blocked by policy", no detailed reason. Files/launch command did not execute;
+no equivalent retry or other-actor workaround. This is tool denial, not app FAIL.
+Existing mobile support + shared clinic/supplier evidence remains valid, but does
+not prove the additional narrow object viewport assertions. Keep this gap visible;
+do not call complete viewport acceptance or mark R7.7.1.3 [x] from current packet.
+All code/tests frozen for primary final read-only review and gate-sufficiency decision.
+Prior CI/bundle FAIL and catalog BLOCKED6 remain; this packet does not waive them.
+
+### 14.10 — actual CI receipt, current navigation still WIP
+
+Primary read-only evidence: CI `59d944a` (`38476309767`) and CI `2876648` (`38476936649`)
+FAILURE. Both Security runs SUCCESS; PostgreSQL and web/API containers SUCCESS.
+Verify jobs115567742733/115569812564 reached FlowB3:5PASS/2FAIL (CSV/EXCEL),
+exact stale Admin navigation button selector flow-b3-publication:158. verify:web
+NOT_REACHED, including five auth fixture fixes: no browser CI PASS claimed.
+Canonical web budget remains FAIL31files/2040197raw/557347gzip, unchanged limits.
+UI includes bounded Admin selector compatibility fixes in current R7.7.1.3 package;
+supplier spreadsheet selector is unrelated and unchanged. Source audit covers
+flow-b3/full-access/identity-management/manual-candidate/offer-promotions/pilot-composition.
+Current local new navigation: parser/safe-return84 PASS, Admin36 PASS, shared UI88
+PASS, initial scoped types/lint/UI-contract PASS. Admin build attempt1 PASS
+1037344raw/315533gzip/15files; isolated unified build attempt1 PASS with baked4113.
+Targeted browser attempt1 RUNNING; final review/publication not started.
+
+### 14.10 — R7.7.1.3 implementation brief (UI sole writer)
+
+Snapshot main2876648; foreign dirty scope preserved. Shared query contract keeps
+the ten existing sections (default overview), nine queueType values + UUID object,
+support ticketId/conversationId UUIDs. Legacy mixed support targets remain accepted:
+conversation takes display precedence; new writes emit only one target.
+List context: supportMode=tickets|conversations (tickets), supportStatus=current
+five statuses (all when absent), supportQ=trimmed text up to200, supportSort=queue|recent
+(queue), supportOffset and queueOffset=integer0..100000 in steps50 (0),
+queueKind=nine queue types|ALL (ALL). Context remains in URL when changing sections;
+Encoded URL bound4096 supports the full200-character Unicode search plus bounded
+context. Encoded # and backslash in supportQ are text, raw fragment/backslash URLs
+and decoded controls are rejected; free-text authority-like words grant no authority.
+Conversation list uses conversationFilter=ALL|UNREAD|ORDERS and conversationOffset
+0..99990 in steps30 (existing API max100000). Optional controlled navigation in
+shared ConversationWorkspace preserves per-dialog drafts and default consumers.
+section navigation clears targets, object/support transitions are one history entry.
+No credentials, authority or action parameters; unknown/duplicate/invalid fields
+fail safe-return and show a recoverable invalid-link state without target requests.
+Risk: auth return allowlist and stale async results. Pure parser/serializer tests,
+safe-return tests, targeted browser direct/reload/history/filter/object race/error/
+notification/focus plus relevant computed styles; scoped types/lint/UI-contract,
+isolated Admin+unified builds with unchanged budgets. No backend or geometry changes.
+UI analogs: existing SupportOperations filters, OperationObjectFocus and ActionFeedback;
+reuse shared adapters and current JSON values. Final cleanup + primary read-only review
+before publication; prior catalog BLOCKED6 is neither rerun nor waived.
+
+### 14.10 / 03:22 — writer UI: R7.7.1.3, primary read-only
+
+Primary завершил owned writes/tests/процессы на main2876648. CORE02 unchanged
+focused attempt1 PASS1/11.1s (сам сценарий6s); прежний CI FAIL остаётся unexplained,
+не исправлен догадкой и не является локально воспроизведённым дефектом. Дальше
+сверять actual current CI; без повторного локального запуска при прежних inputs.
+Shell59d944a и test-fix2876648 опубликованы; CI/Security IN_PROGRESS.
+User3000PID13588/4012PID8200 intact, owned3103/4113 gone. Foreign3docs/2E2E/output
+сохранены; unstaged PRIMARY содержит этот receipt и исправление приблизительных
+временных меток на дату (история attempts/результаты неизменны).
+
+PlatformaMarket UI01a1369b-2bfb-7f33-8f32-b9bc119fda3a назначается sole writer
+независимого READY пакета R7.7.1.3. Primary прекращает все filesystem writes,
+ведёт read-only CI/ревью и подготовку следующего API пакета. R7.7.1.2 не[x] до
+CI receipt; это независимая адресная навигация, не объявление полного Admin DONE.
+Scope: единый typed query-state текущих section/object/support/queue URL,
+direct/refresh/Back/Forward, очистка stale target, pending-response isolation,
+сохранение существующего list filter/offset при переходах. Текущие разделы и
+операции сохраняются, новая nested route migration и новые domain/API actions
+исключены. Перед реализацией UI фиксирует whitelist/defaults/precedence в brief,
+изменения safe-return проверяются как auth boundary. Existing mixed ticket/dialog
+links принимаются совместимо, новые transitions канонизируются без двойного target.
+DoD/gates по READY packet: parser/serializer regression, object race/recovery,
+целевая browser навигация/история/list context и relevant focus/mobile states,
+types/lint/UI-contract, affected builds с неизменными budgets, review до publication.
+Не выполнять catalog BLOCKED6/полный E2E; UI может обновлять PRIMARY/свой техжурнал/
+roadmap только в выбранной границе, сохраняет этот незакоммиченный receipt.
+
+### 14.10 — fixtures published2876648, CORE02 focused diagnosis
+
+Remote287664806c3163d3faa0a808ca1107421df36b3c verified; CI38476936649 и
+Security38476936585 IN_PROGRESS. Shell59d944a runs пока IN_PROGRESS, не отменялись.
+Следующий короткий scope R7.2: установить причину единственного нового CORE02
+feedback failure из b197 CI. Source panel/контракт не менялся; HTTP GET/POST200
+в прежнем trace не доказывают видимую успешную обратную связь. Гипотеза — конфликт
+toast/polling или browser timing, не объявлять дефект auth. Один targeted unchanged
+CORE02 browser на validated build59d944a/owned4113+3103/mockedAPI (attempt1),
+без catalog scenarios и без изменения product. При PASS сохранить отличиеCI;
+при FAIL читать конкретную причину, не ослаблять assertion и не циклить retries.
+
+### 14.10 — dependent auth fixtures LOCAL_PASS
 
 Пять тестов приведены к действующему контракту. Targeted browser attempt1
 3PASS/2FAIL: strict request mock ожидал толькоsessionId, пропустил captured accessToken.
@@ -1041,7 +1789,7 @@ isolated shell build59d944a переиспользован. Все5 core asserti
 Публикуются только auth hunks unified + workspace fixture + эти2docs; foreign
 catalog backlink/sticky hunks остаются unstaged. Shell CI/Security ещё IN_PROGRESS.
 
-### 14.10 / 03:24 — shell published59d944a; адресные auth CI fixtures
+### 14.10 — shell published59d944a; адресные auth CI fixtures
 
 Remote main59d944a8c6dcbfa6482dd0eed04e7102e997bc12 подтверждён.
 CI38476309767/Security38476309753 IN_PROGRESS. Scoped buyer/supplier/E2E types
@@ -1056,7 +1804,7 @@ existing validated isolated build с baked4113, types/lint/diff. Попытки 
 fixture gate0; catalog BLOCKED6 и неизвестный CORE02 отдельно, не запускать.
 Foreign unified catalog hunks сохранить и не stage с auth hunks.
 
-### 14.10 / 03:20 — R7.7.1.2 LOCAL_PASS, публикация готовится
+### 14.10 — R7.7.1.2 LOCAL_PASS, публикация готовится
 
 Final Admin rebuild после racefix PASS1033817raw/314381gzip/15files. Unified
 isolated build PASS с baked rewrite4113. Final browser attempt3 PASS5/16.5s,
@@ -1069,7 +1817,7 @@ Stage только согласованный shell+dependent bundle пакет 
 Matrix/2cards/2oldE2E/output остаются вне commit. Общий CI b197 FAILURE сохранён,
 пять dependent auth fixtures ещё не изменялись, catalog BLOCKED6 не перезапускать.
 
-### 14.10 / 03:15 — dependent Admin bundle PASS, final browser pending
+### 14.10 — dependent Admin bundle PASS, final browser pending
 
 Primary sole writer, UI strict read-only review READY. Exact shared primitive/format/
 control bodies вынесены в leaf modules с обратными exports; IdentitySettings и
@@ -1696,7 +2444,7 @@ receipt was uncommitted; included in the subsequent09.10 documentation update.
 Historical failed attempts below are superseded by these final results.
 Owner explicitly authorized an additional repair cycle for the two named defects.
 No reset of previous attempts. Trace/source diagnosis: Fluent atomic .f494woh
-sets portal z-index1000000 after our same-specificity class; stronger shared
+sets portal z-index100000 after our same-specificity class; stronger shared
 selector fixes source-order dependency. Focus fallback uses last containing
 dialog when retry trigger is unmounted. Focused recovery run4 / filter run2 next.
 

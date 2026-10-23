@@ -1,0 +1,77 @@
+{
+  "purpose": "Fictional visual reference fixtures only; not production data or verified specifications",
+  "currency": "KZT",
+  "products": [
+    {
+      "id": "fced80c9-3670-4ee7-b500-95fcd3d74d4d",
+      "brand": "3M",
+      "name": "Clinpro White Varnish",
+      "packaging": "50 × 0,5 мл",
+      "priceFrom": 24900,
+      "supplierCount": 3
+    },
+    {
+      "id": "f96bf32c-864c-4acd-82d4-81fe70d07041",
+      "brand": "3M",
+      "name": "RelyX Universal Resin Cement",
+      "packaging": "шприц 3,4 г",
+      "priceFrom": 38500,
+      "supplierCount": 4
+    },
+    {
+      "id": "f272c0a7-a990-48ee-934d-1e2b4af25d99",
+      "brand": "NSK",
+      "name": "ENDO-MATE TC2",
+      "packaging": "комплект",
+      "priceFrom": 289000,
+      "supplierCount": 2
+    },
+    {
+      "id": "ebc800cf-6cac-4204-942a-969444a5b007",
+      "brand": "Kerr",
+      "name": "Harmonize",
+      "shade": "A2",
+      "shades": [
+        "A1",
+        "A2",
+        "A3",
+        "B1"
+      ],
+      "packaging": "шприц 4 г",
+      "priceFrom": 12500,
+      "supplierCount": 3,
+      "offers": [
+        {
+          "supplier": "DentSupply Алматы",
+          "price": 12500,
+          "stock": 24,
+          "deliveryDate": "2026-10-12",
+          "deliveryCost": 1000
+        },
+        {
+          "supplier": "MedDental KZ",
+          "price": 12900,
+          "stock": 18,
+          "deliveryDate": "2026-10-13",
+          "deliveryCost": 700
+        },
+        {
+          "supplier": "ProDent Trade",
+          "price": 13200,
+          "stock": 36,
+          "deliveryDate": "2026-10-12",
+          "deliveryCost": 1200
+        }
+      ]
+    },
+    {
+      "id": "c012aedc-48ba-48bb-b73a-ffe9a7777e2d",
+      "brand": "VOCO",
+      "name": "Admira Fusion",
+      "shade": "A2",
+      "packaging": "шприц 3 г",
+      "priceFrom": 16900,
+      "supplierCount": 3
+    }
+  ]
+}

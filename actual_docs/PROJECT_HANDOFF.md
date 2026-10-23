@@ -6,19 +6,67 @@
 
 # PlatformaMarket — текущий контекст
 
-## Активно14.10 — R7.2.1, авторизация
+23.10: по прямому запросу владельца выполняется публикация всех накопленных
+изменений после анализа проекта. База `main@5c152d6`; результаты целевой приёмки
+и граница публикации — [checkpoint23.10](governance/task-state/PRIMARY-SESSION.md).
+Записи14.10 ниже являются историей, а не текущим состоянием checkout.
+Последние продуктовые результаты21.10 —
+[журнал документооборота](domains/document-workflow-implementation-log.md).
+Эта публикация не закрывает production roadmap и не запускает следующую фазу.
 
-Primary — единственный writer; PlatformaMarket UI готовит и проверяет read-only.
-Уточнения журналов/UI не отменяют постоянное исполнение roadmap. После отдельного
-BLOCKED R7.2 (6 попыток) начат независимый R7.2.1: destination, Admin identity/
-safe return, exact self logout и persistent origin login. Реализация и локальные
-unit/API/PG/runtime/core/types/build/browser gates PASS; опубликовано37fa69a.
-Общий CI FAILURE: Flow B3 fixture требует полной identity; targeted fix LOCAL_PASS,
-commit4d60acb, новый CI pending;
-Security/PG/containers PASS. Прежний web-bundle budget FAIL также подтверждён.
-Основной browser5 групп PASS, дополнительно identity3/lifecycle2 PASS. Рабочая БД
-и пользовательские процессы не менялись; активация migration — отдельный scope.
-Детали, команды/попытки и remaining checks —
+14.10: владелец явно запросил перенос контекста в новую задачу, несмотря на
+BLOCKED ниже. Преемник `01a138f5-b047-7db2-96ce-065bcec6d801` подтвердил read-only
+READY и назначен primary/finalizer generation7. Фаза awaiting_archive; source
+прекращает запись. Фактический архив ещё должен подтвердить finalizer;
+текущая фаза и primary — в `.codex/project-session.json`.
+Передача не разрешает migration рабочей БД или новый цикл catalog gate.
+Новых продуктовых действий до отдельного решения владельца нет.
+
+## 14.10 — текущая приёмка и CI: BLOCKED
+
+Последний запрос владельца — анализ выполненного, необходимые проверки и зелёный
+CI. Финально dev3000/4012 DOWN: стандартный повторный `npm run dev` остановлен
+проверкой pending migration20261014000000_session_origin_login рабочей БД;
+нужно отдельное разрешение на её изменение, обхода/migrate/reseed не было.
+В начале проверки оба сервера отвечали200; причина их остановки не установлена.
+Primary — единственный writer; новую .3.2
+не начинать. Unit12/12, types13/13, isolated web build и исходный bundle budget
+PASS (23 файла/1146176 raw/349175 gzip). Общий browser105PASS/2FAIL.
+Три попытки catalog comparison исчерпаны: неполный mock ответа сравнения заменён
+на полный контракт, но последняя попытка упала на предположении о непустом
+availability первого предложения выбранного города. Исправление fixture ещё
+не принято. По AGENTS §7.1 gate остановлен; commit/push/new CI не выполнялись.
+Следующий точный шаг — независимая от реальных остатков контрактная фикстура
+availability и проверка390/1440 после решения владельца о возобновлении.
+Исторический object390 NOT_RUN ниже закрыт новым Admin browser15PASS и визуальной
+проверкой; это не снимает текущий общий blocker. Остальные обязательные проверки,
+попытки и ограничения evidence — верх
+[PRIMARY-SESSION](governance/task-state/PRIMARY-SESSION.md).
+
+Ниже сохранены результаты прежних этапов; они не заменяют этот текущий статус.
+
+R7.7.3.2 preparation14.10: brief/server-guard review READY, product code ещё не
+менялся. Новый запуск isolated Next3103 для обязательного baseline отклонён
+автоматической проверкой (`blocked by policy`, процесс не создан). Runtime/browser
+проверки NOT_RUN; обходов нет. Точная точка восстановления — верх PRIMARY-SESSION.
+
+## Активно14.10 — R7.7.3.1 и read-only карточка локально проверены; публикация BLOCKED
+
+PlatformaMarket UI завершил R7.7.3.1 и read-only list/detail часть .3.3;
+source/final visual review primary READY, scoped API/browser/real UI/build PASS.
+UI освободил writer; primary принял следующий bounded пакет own-platform access/
+личные сессии и protected revoke R7.7.3.2. UI выполняет только read-only review.
+Точная граница и failed attempts — в checkpoint.
+Checkout main2876648 с неопубликованными пакетами URL R7.7.1.3 и показателей/
+возможностей R7.7.2. Последний имеет LOCAL_PASS по backend/API, реальному UI,
+новым панелям1440/390, сборкам и review. Публикация зависит от R7.7.1.3:
+дополнительный object390 gate NOT_RUN после automatic approval denial; обхода нет.
+Прежние CI FAILURE/общий web budget FAIL и отдельный R7.2 BLOCKED сохранены.
+Реестр/read-only карточка с фильтрами, страницами, контактами/городами и supplier-only
+готовностью реализованы. Новых cross-org write полномочий нет; .3.2/остаток.3.3
+открыты, прежний publication blocker остаётся.
+Рабочая БД и пользовательские3000/4012 не менялись, owned3103/4113 завершены.
+Детали, команды/попытки, границы evidence и remaining checks —
 [PRIMARY-SESSION](governance/task-state/PRIMARY-SESSION.md).
 
 ## Исполнение14.10.2026 — постоянное поручение roadmap
@@ -27,8 +75,8 @@ Security/PG/containers PASS. Прежний web-bundle budget FAIL также п
 всего [roadmap](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md), без дедлайна и без нового
 подтверждения после каждого проверенного подшага. Роли могут меняться, writer
 в каждый момент один; второй готовит следующие пакеты строго read-only.
-Сейчас primary выполняет адресный R7.2 CI; UI подготовил R7.7.1 и ожидает
-назначения writer. Проверки пропорциональны риску; галочки только по DoD/evidence,
+Сейчас primary выполняет own access/protected sessions .3.2, UI read-only reviewer.
+Проверки пропорциональны риску; галочки только по DoD/evidence,
 автоматический CI отдельно. Неизвестные решения/доступы не подменять догадками;
 продолжать независимые пакеты. Рабочие данные/deploy не разрешены автоматически.
 Активный scope и попытки — [PRIMARY-SESSION](governance/task-state/PRIMARY-SESSION.md).

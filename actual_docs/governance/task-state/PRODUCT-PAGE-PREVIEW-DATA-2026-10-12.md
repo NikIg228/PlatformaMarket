@@ -1,4 +1,17 @@
-# PRODUCT-PAGE-PREVIEW-DATA — LOCAL_PASS / PUBLICATION_PENDING
+# PRODUCT-PAGE-PREVIEW-DATA — LOCAL_PASS / PUBLISHED / CI_PENDING
+
+## Publication receipt
+
+Implementation55c7d75fbb9714f196e75d148086855965e60f59 committed and pushed to
+origin/main; independent git ls-remote matches exactly.33 staged files reviewed,
+diff hygiene PASS; no source WIP. This receipt is the only post-publication local
+documentation change; two original untracked reference-image folders preserved.
+Exact-SHA snapshot: [CI38286240888](https://github.com/NikIg228/PlatformaMarket/actions/runs/38286240888)
+and [Security38286240911](https://github.com/NikIg228/PlatformaMarket/actions/runs/38286240911)
+IN_PROGRESS, conclusions not yet available. No CI_PASS/deploy claim or automatic
+monitor. The actual five-product data is local only; source/scripts/PDFs published.
+Dev remains running, browser viewport reset, product tab7 marked deliverable.
+Next: await owner feedback; no automatic new product phase, seed or CI repair.
 
 Owner12.10 explicitly requested local test content for five product pages and
 short catalog titles; clarified: exactly five cards in the attached screenshot,
@@ -109,4 +122,4 @@ release and full browser suites are not required for this bounded local preview.
 Self-review complete: exact fixture/tenant ownership, preserved reservations/source
 identity, decimal money, deterministic IDs, atomic failure, dev-only document paths,
 responsive/focus states, unchanged controls and same-flow icon boundary checked.
-Next: final diff/staged gate, commit/push and SHA CI snapshot. No next product phase.
+Final diff/staged gate and publication completed as recorded above. No next product phase.

@@ -1,0 +1,81 @@
+{
+  "task": "PRODUCT-PAGE-REDESIGN-2026-10-12",
+  "scope": "Owner requested current product-page screenshots, full UX analysis against Wildberries/Ozon/Kaspi, and a generated redesign reference. Proposal only; no product implementation, DB mutation, publication or additional agents.",
+  "status": "AUDIT_COMPLETE_REFERENCE_CONCEPT_DELIVERED",
+  "base": {
+    "root": "C:/Users/user/Desktop/dentmarket-kz-main",
+    "branch": "main",
+    "head": "4096d0b5093da1a5d6f479af53b522e655767d27",
+    "preexistingDirty": ["output/imagegen/catalog-product-reference-2026-10-09/"],
+    "registeredPrimary": "01a11758-1c55-7e52-bf15-2a04427aaf5d",
+    "productWrites": false,
+    "role": "Public product route, observed signed in as local fixture clinic",
+    "route": "/products/a88f8867-9a19-4703-aadf-e40ca4487b9b?returnTo=%2Fcatalog%3FdeliveryCityId%3D62eb0572-edeb-44cc-ac8b-bea17a24049d",
+    "screenshots": ["current-desktop.png", "current-desktop-full.png", "current-mobile.png", "current-second-product.png"],
+    "viewport": {"desktop": "1280x720 CSS px", "mobile": "390x844 CSS px", "devicePixelRatio": 1.25, "zoom": 1},
+    "screenshotLimitation": "IAB full-page mobile export showed a duplicated lower tile and scaling padding; DOM measured 390px client and scroll width, no horizontal overflow. Use corrected CDP capture if available; do not interpret export seams as product defects."
+  },
+  "verificationPlan": {
+    "behavior": "Design proposal and reference only",
+    "risk": "Inventing business data, mismatching variants/packages, implying backend readiness, altering shared shell in reference",
+    "focusedChecks": ["Read current route and supplier offer component", "Observe two local products and desktop/mobile layout", "Read computed styles", "Inspect live competitor product pages and Kaspi official guide", "Visually inspect generated reference against this passport"],
+    "completionChecks": ["Source and fixture disclosure", "Reference inspection", "git diff --check", "No tracked source modifications"],
+    "notRequired": "Build/types/tests: no runtime code changes; no cart or order writes"
+  },
+  "passport": {
+    "componentContract": "market-components-v1",
+    "componentSha256": "36940E6B7961025208AD823AD33A42DA14233D726C8F6EAAE7298743DE38AE0F",
+    "semanticContract": "platforma-semantic-light-v1",
+    "semanticSha256": "0D7748D962D27B6A661F10ACCDECB30F1A2FF2C77384B9943582B0134B2B5D40",
+    "referenceViewport": "1440 CSS px wide, extended page capture approx 1440px high; reference is composition concept, not pixel-certified implementation",
+    "shell": "Preserve public MarketplaceHeader: height minimum64 (observed64.8), white, desktop logo144x48, padding8px 24px, city and account right. No sidebar, no new global search/cart/navigation. Header breakpoint720 and1100 unchanged. Main width max1240.",
+    "composition": "Main x100 at1440. Breadcrumbs, title, then gallery420 + identity/variant436 + purchase-summary336 with24px gaps. Supplier comparison immediately below. Proposed reflow at1100 to two columns, at720 to one; mobile padding16. Feature composition only.",
+    "type": "Manrope. H1 desktop32/40 weight700, mobile24/30 weight700. Section heading20/25 weight600. Body14/21 weight400. Product fact16/24. Caption12/18. Lead price28/35 weight700; offer price20/25 weight700.",
+    "controls": "Shared DmButton, DmInput, DmSelect/Dropdown, DmAction choice, DmSurface. Controls44px minimum radius8, compact32 only dense desktop. Cardsradius12 border#D7E1DC, dialogs16. Spacing4/8/12/16/24/32. Neutralfill#F0F4F2 hover#EAF0ED selected#E4F3ED, transparent borders. Primary#007A59 white text. Focus1px offset2.",
+    "colors": "Canvas#F6F8F7; surface#FFFFFF; text#17201E; secondary#4F5E58; muted#607169; primary#007A59; selected#E4F3ED; separators#D7E1DC.",
+    "allowedChanges": "Page composition, gallery concept, specification visibility, variant/package selector, supplier comparison and purchase states; these are proposed capabilities, not implemented.",
+    "fixed": "Existing logo/public shell, Manrope, shared token values, controls states and geometry. No new sidebar, global header elements, payment/credit options, generic ads or unrelated recommendations.",
+    "runtimeDiscrepancies": ["Photo surface current radius16, proposed shared card12", "H2 current24 with inherited20px line-height, proposed20/25", "Page gradient removed in proposal, canvas semantic neutral retained"]
+  },
+  "findings": [
+    {"priority":"high","finding":"Current route loads attributes but never renders them; selected Filtek and long-name LUMEX pages have no specifications section or variant/package controls.","evidence":"apps/buyer-web/app/products/[id]/page.tsx, DetailProduct/fromComparison and returned JSX"},
+    {"priority":"high","finding":"Variant identity is discarded in projection. Global cheapest compares raw sale prices across packaging; explanatory text does not make different packs comparable.","evidence":"page.tsx fromComparison, cheapest; functional audit catalog section"},
+    {"priority":"high","finding":"Catalog showed10 suppliers; selected Filtek page showed0. Same empty state without selected city and for LUMEX. Root cause not diagnosed in this design-only task; do not reseed or invent live offers."},
+    {"priority":"medium","finding":"Active choose-supplier anchor with zero offers creates a dead end. Empty promotions panel occupies a large portion of the page before the actual empty offers message."},
+    {"priority":"medium","finding":"Single noninteractive image, no thumbnail gallery, zoom, technical drawing or photo/package identity confirmation. On mobile photo precedes product title."},
+    {"priority":"medium","finding":"Long buyer decision path: no compact key facts, no offer sorting/filtering, repeated contacts/question button/quantity blocks make large supplier lists tall.","evidence":"supplier-offers.tsx and supplier-offers.module.css; populated runtime rows unavailable in observed local data"},
+    {"priority":"medium","finding":"available=false is labelled Under order despite disabled purchase. Availability boolean alone does not establish preorder eligibility.","evidence":"supplier-offers.tsx"}
+  ],
+  "proposal": {
+    "principle": "Identify exact product + variant + sale package, then compare supplier offers on equal terms, choose supplier explicitly, add quantity in sale units.",
+    "firstScreen": "Breadcrumb, full title, brand/manufacturer/code, gallery, selectable variants/packages, 4-6 short relevant facts, price range for selected package and available supplier count, choose-supplier anchor.",
+    "supplierRows": "Supplier/profile + verified evidence/rating with sample size if available; available sale units/freshness if supported; city/method/lead time/shipping fee or request; exact package and minimum/increment; price per package plus normalized price; quantity, calculated line subtotal, add button. Contact/question as secondary expandable information.",
+    "ranking": "Default lowest product subtotal among eligible offers for chosen variant/package/quantity; state if delivery excluded. With complete shipping quotes allow total delivered sort. Unknown quotes never assumed zero. Faster delivery/rating sorts only with comparable verified data. No opaque best seller badge.",
+    "below": "Supplier comparison first, then anchored specifications, description, manufacturer instructions/documents. Seller reviews on seller profile; product reviews separate only if supported. No empty promotion panels; real applicable promotion in relevant offer row.",
+    "mobile": "Title before gallery, swipe with visible buttons, selected variant/package and price before list, supplier rows become stacked cards,44px targets; sticky Choose supplier before selection, chosen supplier+subtotal+Add only after explicit choice; no horizontal offer table.",
+    "states": ["loading independent gallery/offer skeletons", "no matching variant or city with reset action", "no current offers without buy CTA", "API error retains product information and Retry", "stale/unknown stock not presented as available", "invalid min/increment keeps typed value and inline error", "add pending locks duplicate", "unknown write outcome links cart before retry", "price/stock changes require revalidation and acknowledgment", "missing media/docs/reviews presented honestly"],
+    "futureOptions": "Gallery zoom, manufacturer code copy/share exact selection, contextual supplier question, specifications search for complex equipment. Favorites/stock subscriptions and product-review system need independent working flows; not decorative controls. No medical equivalence recommendation without curated compatibility data."
+  },
+  "dependencies": {
+    "existing": "Live comparison, package name/quantity/unit, normalized price, min/increment, delivery rules, verified markers, supplier official contact, cart actions and contextual offer question",
+    "requiresWork": "Expose/select variantId and package identity in page, exact count consistency, gallery/media identity, render attributes, truthful availability, optional quantity-aware comparison",
+    "notCertified": "Aggregated reservable units/lot expiry, guaranteed delivery date and delivered total, supplier ratings complete apps/web flow R7.5, document eligibility, package conversion UOM contract. Do not claim ready from mockup."
+  },
+  "sources": [
+    {"name":"Kaspi live dental product","url":"https://kaspi.kz/shop/p/3m-kompozit-stomatologicheskii-filtek-universal-a2-dlja-plombirovanija-151556653/","observed":"Product photo/zoom, title and price; Sellers/Reviews/Characteristics/Description; seller row with reviews, date/method/cost, price, Choose.","screenshots":["kaspi-desktop.png","kaspi-suppliers.png"]},
+    {"name":"Kaspi official seller selection guide","url":"https://guide.kaspi.kz/client/ru/shop/choice/q1059","observed":"Price, ratings/reviews, receiving method/date/location and official seller status are choice criteria."},
+    {"name":"Ozon live product, Kazakhstan regional redirect","url":"https://ozon.kz/product/kogtetochka-dlya-koshek-napolnaya-54h20h21-sm-kartonnaya-belaya-1620056265/","observed":"Gallery, explicit dimensions/color, compact facts, purchase panel, delivery/return and seller, alternative offer entry.","screenshots":["ozon-desktop.png"]},
+    {"name":"Wildberries live product","url":"https://www.wildberries.ru/catalog/962445179/detail.aspx","observed":"Gallery/video, variants, short attributes, purchase and delivery/seller block, alternate seller offers.","screenshots":["wildberries-desktop.png"]}
+  ],
+  "fixtureDisclosure": "The future reference will use illustrative prices, suppliers, quantities and options to explain populated design. They are not local database or marketplace facts, not valid commercial offers. Disclosure belongs to this manifest and accompanying answer, not clutter inside the product UI.",
+  "referenceReview": {
+    "generator": "Built-in image_gen; one generation and one focused controls correction",
+    "finalFile": "reference-v2.png",
+    "prompts": ["prompt.txt", "prompt-v2.txt"],
+    "visuallyChecked": "Both outputs inspected. Final preserves public logo/header, three-column product choice, explicit A2/4g, same-package supplier rows, prices and normalized arithmetic, no fabricated review scores, borderless neutral/selected controls.",
+    "classification": "Composition concept, NOT pixel-accurate implementation reference",
+    "remainingDeviations": ["Generated overall image sizing, content gutters and column proportions differ from numeric passport", "H1 remains in middle column rather than full-width above gallery", "Green buttons retain slight raster texture; implementation must use flat shared brand token", "Exact Manrope font/44px target geometry and hex colors cannot be certified from generated raster", "Illustrative syringe/packaging must be replaced with approved actual media before implementation", "Small green stock dot is decorative; real implementation uses success token and textual availability"],
+    "mobileEvidence": "DOM measured390px width with no horizontal overflow. IAB exported mobile full-page has scaling/tile artifacts; CDP alternate returned desktop physical surface, so current-mobile-viewport.png is not valid mobile evidence. Do not deliver these images as exact mobile reference.",
+    "completion": "git diff --check PASS, tracked diff empty; only new review/reference artifacts plus preexisting output folder. No build/test, cart/order/DB writes, commit/push, agents or implementation."
+  }
+}

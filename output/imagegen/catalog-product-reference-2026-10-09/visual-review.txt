@@ -1,0 +1,3 @@
+Built-in ImageGen, two desktop concepts inspected visually. Five distinct product master cards; Kerr min12500 and3suppliers consistent with detail. Unit calculations3125/3225/3300 correct. No runtime/DB edits.
+Concept deviations: catalog search wider than440px; product search moved into header; hero price above20px contract; selected shade uses solid green rather than soft selected; extra footer links and generated promo copy. Product photographs are illustrative generated approximations. These are not pixel-perfect or implementation-accepted references; use source JSON contracts for implementation. No responsive or interaction acceptance claimed.
+Catalog follow-up prompt: change sorting label from По цене to По умолчанию only, preserving image.

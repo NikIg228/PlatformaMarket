@@ -98,6 +98,18 @@ page route.continue обходил retarget в тестовом harness при r
 эскалацию. В durable test изменён только article → row. Lint/diff PASS.
 Общий CI остаётся красным; очередной push и CI фиксируются отдельным receipt.
 
+Итоговый receipt13.10: follow-up `1ff5d985848e0bce206d8439f85057e47e6e1e85`
+опубликован в origin/main, remote SHA совпал. Security38440062044 SUCCESS.
+CI38440062021 FAILURE: verify job115444011193 завершён, canonical browser100 PASS/
+7 FAIL. CORE06 conversations больше не падает; оставшиеся failures совпадают с
+прежним набором: public-catalog48/120 ×390/1440 (4), unified144/183 (2),
+settings-profile39 supplier390 (1: focus avatar overlay opacity0 вместо1).
+PostgreSQL115444011517 и containers115444011621/115444011641 SUCCESS. Общего CI PASS
+нет; сторонние catalog/profile проблемы не исправлялись в admin scope и не
+запускают следующую задачу. Изменения этой задачи LOCAL_PASS и опубликованы;
+production acceptance/deploy не заявляются. Этот итоговый post-push receipt
+сохраняется локально, повторный docs-only push и повтор gates не выполняются.
+
 ## 13.10 Messages comprehensive audit — COMPLETE_WITH_FINDINGS
 
 **Результат:** основной сквозной сценарий работает, полную функциональную

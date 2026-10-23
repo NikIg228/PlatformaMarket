@@ -23,8 +23,7 @@ UI contract и browser3/3 (1440/390, keyboard/retry/stale) PASS. PDF1/10pages
 Публикация — отдельный feature-коммит текущего пакета; SHA/remote в Git-квитанции.
 
 
-
-15.10 — **Без ручного обновления: LOCAL PASS, публикация pending.**
+15.10 — **Без ручного обновления: PUBLISHED, scoped PASS; CI SKIPPED.**
 Постоянные refresh controls и время последней загрузки удалены из кабинетов;
 контекстный retry, automatic refresh и бизнес-команды сохранены. UI90,
 23 уникальных mock-browser сценария, scoped lint/types, UI contract и финальная
@@ -32,26 +31,33 @@ isolated web build49routes PASS. Неуспешные попытки сохра�
 [checkpoint](task-state/PRIMARY-SESSION.md). DB/full CI не запускались.
 Новые локальные operator modules и три untracked tests сохранены как WIP,
 не входят в собственную публикацию; рабочий UI исправлен также в них.
+Опубликован 2112e6a1fff5eff3a8a33b9ef29ead58455669ba в origin/main; SHA совпадает.
+GitHub Actions head_sha: total_count=0, [skip ci] по запросу владельца.
 
 
-15.10 — **Равные карточки и подчёркнутые категории: LOCAL PASS, публикация pending.**
+
+15.10 — **Равные карточки и подчёркнутые категории: PUBLISHED, scoped PASS; CI SKIPPED.**
 Карточки товаров равного размера; категории supplier/clinic/admin используют
 общие tab adapters без hover/selected заливки, с подчёркиванием как Settings.
 UI unit90, contract2, types/lint, UI contract386files, browser18/18,
 изолированная pilot web build/types49routes — PASS. Initial visual6/8 исправлен
 сверкой толщины underline с Settings; повтор8/8PASS. Полный CI исключён запросом
-владельца, [skip ci]. Детали: [checkpoint](task-state/PRIMARY-SESSION.md).
+владельца, [skip ci]. Детали:
+Опубликован e85479956688f28f469228099c293ca01ea5f854 в origin/main; remote SHA совпадает.
+ [checkpoint](task-state/PRIMARY-SESSION.md).
 
 
-15.10 — **Escape назначения оператора: LOCAL PASS, публикация pending.**
+15.10 — **Escape назначения оператора: PUBLISHED, scoped PASS; CI SKIPPED.**
 Один modal/focus trap сохраняется при lazy загрузке формы; закрытие и возврат
 фокуса проверены до/после загрузки, при повторном открытии1440/390, retry и busy.
 Фокус-регрессия воспроизведена до fix; production browser6/6PASS после fix,
 admin/E2E types, scoped lint, isolated frontend build/types PASS.
 Полный CI исключён явным запросом владельца; прежний CI FAIL сохраняется как история.
+Опубликован 1efdc2c73272c4f92b536fde1c5dea6569f18820 в origin/main, remote SHA
+совпадает; [skip ci] указан по запросу владельца. Узкий scope закрыт.
 Детали и неуспешные попытки: [checkpoint](task-state/PRIMARY-SESSION.md).
 
-15.10 — **Рамки, подсказки и разделение форм кабинетов: LOCAL PASS; публикация pending.**
+15.10 — **Рамки, подсказки и разделение форм кабинетов: PUBLISHED; CI FAIL / rerun BLOCKED.**
 Общие DmHeading/InfoTip/FormSections; note с рамкой в цвет текста; обращения на
 «вы». Налоговый статус: статус и дата начала на виду, прочее раскрывается;
 validation автоматически показывает скрытое ошибочное поле, значения сохраняются.
@@ -59,9 +65,18 @@ UI unit90PASS, UI/E2E types/scoped lint/UI-contract386files/build+types PASS;
 28 целевых browser cases PASS по итоговому evidence, screenshots/computed1440/390
 просмотрены. Escape hovered help исправлен; прежний intermittent profile focus
 fail и успешная отдельная проверка сохранены в [checkpoint](task-state/PRIMARY-SESSION.md).
-Backend/API и рабочие данные без изменений; публикация/actual CI ещё pending.
+Backend/API и рабочие данные без изменений. Коммит `fc57098` опубликован;
+[CI38638377189](https://github.com/NikIg228/PlatformaMarket/actions/runs/38638377189)
+FAIL:120browserPASS/1FAIL — operator assignment Escape, conversations.spec.ts:89.
+Security, PostgreSQL, контейнеры, types/unit/build/API checks PASS. Следующие
+full-access/promotion steps skipped. Запрос повторного verify-job отклонён GitHub403;
+повтор не запущен. Нужен owner rerun failed job; scope не закрыт как общий PASS.
 
-15.10 — **Settings/общие controls: LOCAL PASS; публикация/CI pending.**
+15.10 — **Settings/общие controls: PUBLISHED; CI/SECURITY PASS**, `02cb2d6` → origin/main.
+[CI38632147815](https://github.com/NikIg228/PlatformaMarket/actions/runs/38632147815)
+и [Security38632148097](https://github.com/NikIg228/PlatformaMarket/actions/runs/38632148097)
+completed/success на этом SHA; verify, PostgreSQL и оба контейнера PASS.
+Итоговый receipt сохранён локально после публикации без новых code changes.
 Действия по ширине содержимого с явным fullWidth; DmField без растяжения по
 соседней подсказке; persistent note с заметным переходом справа/mobile снизу.
 VAT/реквизиты центрированы, selectors тематизированы. Убраны UI истории и вкладка
@@ -71,8 +86,11 @@ visual2PASS; representative catalog/admin3PASS, UI89PASS + note4PASS, UI/E2E typ
 scoped lint/UI-contract и final web build/types PASS. Screenshot/computed1440/390
 просмотрены. Команды/попытки/граница — [checkpoint](task-state/PRIMARY-SESSION.md).
 
-
-15.10 — **R7.6.1.4 VAT: LOCAL PASS, publication/CI pending**, main699047b + VAT patch.
+15.10 — **R7.6.1.4 VAT: PUBLISHED, CI/SECURITY PASS**, `9c5e38c` → origin/main.
+[CI38624076481](https://github.com/NikIg228/PlatformaMarket/actions/runs/38624076481)
+и [Security38624076310](https://github.com/NikIg228/PlatformaMarket/actions/runs/38624076310)
+completed/success на этом SHA. CI browser113PASS, import7PASS, full-access3PASS,
+promotion4PASS; API/web containers и отдельный PostgreSQL job PASS.
 Владелец разрешил новый цикл: buyer browser2/2PASS390/1440, keyboard/computed
 и screenshots PASS после исправления композиции; supplier10PASS + price1PASS.
 Backend275/schema291/client74/UI89 tests PASS; types/build/lint/UI contract/
@@ -80,7 +98,8 @@ web budget/runtime PASS. Full isolated PostgreSQL attempt2PASS (attempt1:
 collision test fixture indices); core-contract69 operations PASS.
 Команды, логи, оставшиеся checks и следующий шаг —
 [checkpoint R7.6.1.4](task-state/PRIMARY-SESSION.md). Прошлые PASS ниже не
-сертифицируют этот пакет; рабочая БД не мигрировалась. Legacy manual browser
+сертифицируют этот пакет; рабочая БД не мигрировалась. Итоговый CI receipt
+добавлен локально после публикации, новых code changes нет. Legacy manual browser
 fixtures обновлены и typechecked, отдельная legacy suite не запускалась.
 
 Маршрут с08.10: приоритет №1 — [функциональная карта](../FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md),
@@ -91,6 +110,34 @@ fixtures обновлены и typechecked, отдельная legacy suite не
 по совместимым адресам как архив; читать их только для нужного evidence.
 Пересборка документации не переоткрывает CORE и не закрывает POST/EXT/R0–R9.
 
+14.10 общая приёмка по новому запросу владельца — BLOCKED на `2876648` + dirty
+patch, публикации нет. Full unit12/12/types13/13 PASS; web build/budget PASS
+23files/1146176raw/349175gzip без изменения лимитов. Admin browser15PASS включает
+ранее NOT_RUN object390 (скриншот проверен). Canonical browser105PASS/2FAIL:
+catalog comparison390/1440. Попытка2 повторила ошибку неполного mock; попытка3
+с полным контрактом выявила неверное предположение fixture о наличии складских
+остатков. Лимит3 исчерпан, gate остановлен. Последний E2E typecheck PASS;
+тестовая коррекция не принята. Нужны оставшиеся scoped checks и фактический CI
+после публикации; прежний CI FAILURE не заменён локальными PASS.
+[Точные результаты и следующий шаг](task-state/PRIMARY-SESSION.md).
+
+14.10 R7.7.3.1 + read-only list/detail UI части .3.3 — LOCAL_PASS выбранного
+сценария на `2876648` + scoped patch: API151/full filtered pages/authority/404,
+safe profile/two cities, real operator UI, browser7 (с адресными locator fixes),
+1440/390 screenshot/computed styles, types/lint/core/runtime/Admin+unified build.
+Source и final visual review READY,57 source hashes MATCH; receipt — в checkpoint.
+Публикация BLOCKED зависимостью R7.7.1.3; CI NOT_RUN; .3.2/остальная .3.3 открыты.
+Команды, попытки и ограничение legacy catalog write —
+[технический журнал](../applications/admin-implementation-log.md).
+
+14.10 R7.7.2 — LOCAL_PASS на `2876648` + scoped patch: authorized server totals,
+safe capabilities projection и существующие Admin panels. Unit/types/lint/core/runtime,
+real API с151 объектами каждого вида, real operator UI,1440/390 screenshot/computed
+styles и read-only review PASS. Семантика и попытки —
+[технический журнал](../applications/admin-implementation-log.md).
+Публикация BLOCKED зависимостью R7.7.1.3 (object390 NOT_RUN после tool denial),
+новый CI NOT_RUN. Это не общая приёмка Admin и не подтверждение внешних подключений.
+
 13.10 ADMIN_REBUILD — LOCAL_PASS на `64784c2` + scoped patch. Штатный вход оператора
 email/пароль без Google/Apple/MFA, отдельная cookie/session и постоянная проверка
 operator membership; рабочая очередь/уведомления, исправления MA-01–05.
@@ -100,6 +147,10 @@ Real auth1 и messages2 PASS; targeted UI/regression/consumer checks PASS.
 Canonical local operator login/cookie recovery/mobile/logout PASS. Локальный
 аккаунт подготовлен по явному разрешению, credentials ignored. Git/CI отдельно;
 общей production-приёмки нет. [Попытки и evidence](task-state/CATALOG-PROMOTIONS-MESSAGES-2026-10-12.md).
+Опубликованы55744ff + test follow-up1ff5d98, remote совпал. На1ff5d98 Security
+38440062044 SUCCESS; CI38440062021 FAILURE: browser100 PASS/7 прежних failures
+catalog/unified/profile; CORE06 conversations исправлен и больше не падает.
+PostgreSQL и обе контейнерные сборки SUCCESS. Итоговый post-push receipt локальный.
 
 13.10 Messages/support/operator audit на `64784c2` — COMPLETE_WITH_FINDINGS,
 не полная функциональная приёмка: новые browser23 PASS/5 FAIL + backend1 FAIL.
