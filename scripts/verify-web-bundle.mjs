@@ -3,11 +3,13 @@ import { gzipSync } from "node:zlib";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
+import { parseArgs } from "node:util";
 
 // Same ceiling as the prior buyer catalog gate; a new entry point must earn
 // its budget by removing unused code, not by relaxing the existing limits.
 const budgets = { javascriptFiles: 24, rawBytes: 1_500_000, gzipBytes: 450_000 };
-const build = fileURLToPath(new URL("../apps/web/.next/", import.meta.url));
+const { values } = parseArgs({ options: { "build-dir": { type: "string" }, "report-only": { type: "boolean", default: false } } });
+const build = values["build-dir"] ? resolve(values["build-dir"]) : fileURLToPath(new URL("../apps/web/.next/", import.meta.url));
 const base = JSON.parse(readFileSync(resolve(build, "build-manifest.json"), "utf8"));
 const results = [];
 for (const route of ["/(marketplace)/page", "/(marketplace)/catalog/page"]) {
@@ -32,7 +34,7 @@ for (const route of ["/(marketplace)/page", "/(marketplace)/catalog/page"]) {
 }
 console.log(JSON.stringify(results, null, 2));
 // Baselines report the same measurements before an optimization; CI enforces.
-if (!process.argv.includes("--report-only")) {
+if (!values["report-only"]) {
   const failures = results.flatMap(result => Object.entries(budgets)
     .filter(([key, limit]) => result[key] > limit)
     .map(([key, limit]) => `${result.route}: ${key} ${result[key]} > ${limit}`));

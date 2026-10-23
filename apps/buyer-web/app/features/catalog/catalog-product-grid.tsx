@@ -1,7 +1,7 @@
 "use client";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { frontendFeatures } from "@marketplace/api-client";
-import { DmButton } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/actions";
 import type { SearchMedia, SearchProduct } from "../../catalog-search-types";
 import type { MarketplaceCatalogState } from "../../catalog/marketplace-url";
 import { CompactProductCard } from "./compact-product-card";

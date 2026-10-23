@@ -1,7 +1,7 @@
 "use client";
 import { Option } from "@fluentui/react-components";
 import { DmFluentDropdown as Dropdown } from "@marketplace/ui/controls";
-import { dmDropdownPositioning } from "@marketplace/ui";
+import { dmDropdownPositioning } from "@marketplace/ui/primitives";
 import { useDeliveryContext } from "./delivery-context";
 import styles from "./header.module.css";
 

@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { errorMessage } from "@marketplace/ui";
+import { errorMessage } from "@marketplace/ui/format";
 import type { SearchResult } from "../../catalog-search-types";
 import { appendCatalogPage, fetchLiveCatalog, loadCatalogWindow } from "../../catalog/live-search";
 import { marketplaceCatalogUrl, readMarketplaceCatalog } from "../../catalog/marketplace-url";

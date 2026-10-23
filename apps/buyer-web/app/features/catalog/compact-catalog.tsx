@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState, type ReactNode } from "react";
-import { ActionFeedback, DmButton } from "@marketplace/ui";
+import { ActionFeedback } from "@marketplace/ui/action-feedback";
+import { DmButton } from "@marketplace/ui/actions";
 import type { SearchResult, SearchMedia } from "../../catalog-search-types";
 import { marketplaceCatalogUrl, type MarketplaceCatalogState } from "../../catalog/marketplace-url";
 import { CatalogProductGrid } from "./catalog-product-grid";

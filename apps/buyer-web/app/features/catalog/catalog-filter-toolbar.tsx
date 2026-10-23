@@ -1,5 +1,5 @@
 "use client";
-import { DmButton } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/actions";
 import Link from "next/link";
 import { dmLinkButtonProps } from "@marketplace/ui/link-button";
 import { HeaderCity } from "../marketplace-header/header-city";

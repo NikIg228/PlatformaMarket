@@ -2,7 +2,10 @@
 import { useEffect, useRef, useState } from "react";
 import { MarketplaceApiClient } from "@marketplace/api-client";
 import type { PublicPromotion } from "@marketplace/schemas";
-import { DmButton, DmDialog, formatDate, formatMoney } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/actions";
+import { DmDialog } from "@marketplace/ui/primitives";
+import { formatDate } from "@marketplace/ui/format";
+import { formatMoney } from "@marketplace/ui/money";
 import { catalogMediaSource } from "../../catalog/catalog-media-source";
 import { promotionProductHref } from "./promotion-display";
 import styles from "./promotion-banner.module.css";

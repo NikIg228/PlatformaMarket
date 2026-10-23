@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { MarketplaceApiClient } from "@marketplace/api-client";
 import type { PromotionListQuery, PublicPromotionPage } from "@marketplace/schemas";
-import { errorMessage } from "@marketplace/ui";
+import { errorMessage } from "@marketplace/ui/format";
 import { activePromotions } from "./promotion-display";
 
 export function usePromotionPage(query: Partial<PromotionListQuery>, enabled = true) {

@@ -1,7 +1,8 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { DmButton, StatusTag } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/actions";
+import { StatusTag } from "@marketplace/ui/primitives";
 import type { SearchMedia, SearchProduct } from "../../catalog-search-types";
 import { formatCatalogMoney, selectCatalogOffer } from "../../catalog/catalog-view-model";
 import { catalogCardPresentation } from "./catalog-card-presentation";

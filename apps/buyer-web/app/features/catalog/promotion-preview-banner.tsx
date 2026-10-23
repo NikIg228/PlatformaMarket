@@ -1,6 +1,8 @@
 "use client";
 import { useRef, useState } from "react";
-import { DmButton, DmDialog, formatDate } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/actions";
+import { DmDialog } from "@marketplace/ui/primitives";
+import { formatDate } from "@marketplace/ui/format";
 import type { PromotionPreview } from "./local-promotion-previews";
 import styles from "./promotion-banner.module.css";
 

@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { Option } from "@fluentui/react-components";
 import { DmCombobox as Combobox, DmFluentDropdown as Dropdown } from "@marketplace/ui/controls";
-import { DmField, DmInput, dmDropdownPositioning } from "@marketplace/ui";
+import { DmField, DmInput } from "@marketplace/ui/controls";
+import { dmDropdownPositioning } from "@marketplace/ui/primitives";
 import { attributePatch, readAttributes, type CatalogFilters, type FilterOptions, type FilterPatch } from "./catalog-filter-model";
 import styles from "./catalog-filters.module.css";
 

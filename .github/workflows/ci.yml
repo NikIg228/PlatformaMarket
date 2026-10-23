@@ -76,7 +76,9 @@ jobs:
       - run: npm run verify:outbox
       - run: npm run build
       - name: Canonical web JavaScript budget
+        shell: bash
         run: |
+          set -o pipefail
           mkdir -p outputs/ci
           npm run verify:web-bundle | tee outputs/ci/web-bundle.json
       - run: npm run verify:observability
