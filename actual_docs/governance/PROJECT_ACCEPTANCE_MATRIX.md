@@ -1,5 +1,16 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+28.10 — **Опубликованный код5be8417: CI / Security SUCCESS.**
+При docs-only актуализации roadmap read-only запрос GitHub Actions подтвердил
+`head_sha=5be841759b03046a6c3bb27293c93829355355ca`, completed/success:
+[CI40742163553](https://github.com/NikIg228/PlatformaMarket/actions/runs/40742163553),
+[Security40742163648](https://github.com/NikIg228/PlatformaMarket/actions/runs/40742163648).
+Ожидание corrected CI и FAIL предыдущих публикаций ниже сохраняют историю;
+финальный corrected workflow завершён успешно. Это не полный code audit,
+не live НУЦ/providers, не R7/R8/R9 acceptance и не разрешение production.
+[Текущий остаток roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#current-status).
+Локальные app/DB/browser suites для редакции Markdown не повторялись.
+
 28.10 — **Security dev/build: LOCAL SCOPED PASS; новый CI ожидается после push.**
 По отдельному поручению9 audit records→0 всех severity, полное npm resolution
 exit0. Vitest4.1.12/Nest CLI12.0.11/API TS6.0.3; runtime Nest11 и frontend TS5

@@ -6,6 +6,32 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+### 28.10 — актуализация roadmap по запросу владельца
+
+Scope: сверить локальный roadmap, перечислить остаток и актуализировать связанные
+документы. База canonical main@5be841759b03046a6c3bb27293c93829355355ca;
+несвязанный untracked `output/security-remediation-20261028/` сохранён без изменений.
+План: проверить код/журналы и текущий CI; обновить текущую сводку и устаревшие
+строки R7.6/R7.7, сохранить историю и границы PASS; проверить ссылки/consistency,
+diff hygiene, затем отдельные docs commit/push. Runtime/DB/deploy вне scope.
+
+Результат: [срез28.10](../../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#current-status)
+с остатком R1–R9 и POST_PILOT; исправлены статусы частичной реализации документов
+и Admin, ожидание CI и устаревший дедлайн в приоритетной карте. Overview, README,
+Matrix и security receipt согласованы. Новые checkbox не закрывались.
+Read-only GitHub Actions: CI40742163553/Security40742163648 completed/success
+на5be8417. Наличие кода identity/admission и операторских audit/trust сверено
+с журналами; отсутствие полной приёмки не подменялось общим CI.
+Применены AGENTS, Workflow docs-only и Git Workflow Master (одна логическая
+публикация, явный staging, сохранность чужих файлов). Продуктовые этапы не начаты.
+
+Docs gates PASS: read-only Node проверил12 добавленных локальных ссылок/якорей
+в7 файлах и неизменность всех checkbox; `git diff --check` PASS. Сверены scoped
+результаты с журналами и code paths, текущие CI conclusions — с GitHub Actions.
+App/types/build/DB/browser не запускались: только Markdown. Docs-коммит с
+`[skip ci]` не запускает повтор неизменённых runtime gates; code CI5be8417 указан
+отдельно и не выдаётся за новый запуск. Следующий продуктовый этап не выбран.
+
 ### 23.10 — подробный технический документ финансовой модели
 
 Прямое поручение владельца: описать всю цепочку от регистрации юридического

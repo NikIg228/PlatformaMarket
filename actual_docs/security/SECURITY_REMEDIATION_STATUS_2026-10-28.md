@@ -254,3 +254,10 @@ Vitest verifier-командах добавлен тот же `--dir src`; filte
 62 tests/14 files при наличии5 compiled observability specs; alert catalog7
 rules/14 synthetic vectors PASS. Lockfile, types и продуктовый код не менялись;
 их прежние PASS переиспользованы. Финальный CI проверяет полный orchestrated gate.
+
+Итог проверен28.10 при актуализации документации: публикация
+`5be841759b03046a6c3bb27293c93829355355ca`,
+[CI40742163553](https://github.com/NikIg228/PlatformaMarket/actions/runs/40742163553)
+и [Security40742163648](https://github.com/NikIg228/PlatformaMarket/actions/runs/40742163648)
+completed/success. Ожидание финального CI снято; прежние ошибки выше сохранены
+как история попыток. Общий code audit и production-приёмка этим не закрываются.
