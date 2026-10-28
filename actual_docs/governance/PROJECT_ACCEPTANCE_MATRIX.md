@@ -1,5 +1,16 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+28.10 — **Security dev/build: LOCAL SCOPED PASS; новый CI ожидается после push.**
+По отдельному поручению9 audit records→0 всех severity, полное npm resolution
+exit0. Vitest4.1.12/Nest CLI12.0.11/API TS6.0.3; runtime Nest11 и frontend TS5
+сохранены. Types13tasks, API build/font bytes/watch/runtime, isolated web build,
+node verification9 PASS. Все1832 unit cases прошли по workspace; root npm test
+имел timeout, scoped sequential completion PASS (7 opt-in PG skips).
+Оба workflow проверяют также devDependencies. Предыдущие CI40729017785 и
+Security40729017814 на7bd4e2db SUCCESS, включая go_live document verifier.
+[Изменения, команды и история попыток](../security/SECURITY_REMEDIATION_STATUS_2026-10-28.md#дополнение-devbuild-зависимости).
+Оставшийся code audit и прежние границы покрытия сохраняются.
+
 28.10 — **Security CI dependencies: LOCAL PASS; remote CI проверяется после push.**
 По явному выбору владельца исправлены production dependencies и устаревший
 admin lazy-import regression. Audit15→0, npm test1832, types13tasks,

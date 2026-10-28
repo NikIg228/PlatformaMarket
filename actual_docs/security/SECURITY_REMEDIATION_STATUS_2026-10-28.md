@@ -180,3 +180,61 @@ API: PDF/checksum, версия2/SUPERSEDED, credentials/rule/check и SENT noti
 Receipts/logs: `document-verifier-run/` (первая попытка) и
 `document-verifier-run-2/` (PASS) в `artifacts/security-ci-dependencies-20261028/`.
 Неизменённые dependency/build/types/full-unit/SQL gates не повторялись.
+
+## Дополнение: dev/build зависимости
+
+Предыдущий verifier опубликован в `7bd4e2db08873bce3372e8e507a3b1dd8138553a`;
+[CI40729017785](https://github.com/NikIg228/PlatformaMarket/actions/runs/40729017785)
+и [Security40729017814](https://github.com/NikIg228/PlatformaMarket/actions/runs/40729017814)
+SUCCESS. Владелец отдельно разрешил устранить оставшиеся9 dev/build audit records
+(2critical/3high/1moderate/3low), проверить совместимость и CI. Аудит кода этим
+пакетом не продолжается; прежние ограничения покрытия сохраняются.
+
+Vitest обновлён до4.1.12, Vite закреплён на7.3.7; fast-uri3.1.9 и js-yaml4.3.2
+зафиксированы overrides. Nest CLI12.0.11 удаляет цепочку optional webpack checker
+и deepmerge, у которого нет исправленного upstream release. Tinypool также
+исключён из дерева. API использует требуемый CLI compiler TypeScript6.0.3;
+runtime Nest остаётся11, frontend и остальные workspace — TypeScript5.9.3.
+Chokidar5 согласован с Angular Devkit22; Prisma сохраняет свою совместимую ветку.
+Существующий безопасный UUID11.1.1 закреплён через direct reference и override.
+
+Совместимость: API больше не использует ненужный baseUrl и приватный Swagger
+type import; typed renewal mock возвращает реальный `{ processed: 0 }`.
+Font asset outDir адаптирован к CLI12 с сохранением прежнего runtime-пути.
+Vitest discovery явно ограничен существующими src/app, без generated dist.
+Два buyer profile cases сохранили assertions; холодные imports перенесены
+в beforeEach без увеличения test timeout. Audit в обоих workflow теперь
+включает devDependencies при прежнем пороге high.
+
+Фактические локальные результаты на изменённом дереве:
+
+- `npm audit --json --package-lock-only` — **0 всех severity**, exit0;
+  `npm ls --all --json` — exit0, invalid/missing dependencies отсутствуют.
+- `npm run typecheck -- --concurrency=2` —13/13 tasks PASS; после изменения
+  buyer fixture его scoped typecheck и ESLint трёх изменённых TS/TSX PASS.
+- Все1832 unit cases прошли по workspace. Общий `npm test` сначала выявил
+  cold-import timeout buyer; после исправления buyer122 PASS, но общий запуск
+  упёрся в5s source-scan UI при параллельном IO. Последовательное завершение
+  `npm exec -- turbo test --filter=@marketplace/ui --filter=@marketplace/schemas
+  --filter=@marketplace/api --concurrency=1` прошло4/4 tasks: UI90, schemas366,
+  API1007 PASS;7 opt-in PostgreSQL cases skipped. Root command не объявляется
+  успешным по сумме scoped проверок. Отдельная попытка с двумя concurrency flags
+  была ошибкой подготовки команды и тестов не запускала.
+- API build, четыре font/assets с побайтовой сверкой, runtime split и реальный
+  CLI12/TS6 watch compile с0 errors PASS. Application при watch не запускался.
+  Первые compiler errors и неверный asset путь исправлены; два watch setup
+  отказа сохранены (absolute config path, затем output вне API). Финальный
+  output находится внутри API, guard не отключён. Prisma client переиспользован
+  без смены schema; clean generation остаётся в CI.
+- Unified Next16.4.3 webpack build PASS с isolated generated output;
+  пользовательский dev-процесс/.next и точный next-env сохранены.
+- `node --test scripts/dependency-security.test.mjs scripts/ci-verification.test.mjs`
+  —9/9 PASS; `git diff --check` PASS. Локальные DB для этого пакета не создавались.
+
+Managed evidence: `artifacts/security-dev-build-20261028/` в supplemental artifact
+collection проекта (audit, полное дерево resolution, build/watch/types/unit logs
+и итоговый receipt). Self-review отдельно проверил удаление уязвимых цепочек,
+compiler/runtime resolution, discovery и сохранность guards/assertions; делегации
+не было. Изменения transitive production resolution при hoisting не выдаются
+за dev-only lock diff; runtime/build PASS и clean CI проверяют совместимость.
+Публикация и точные CI conclusions фиксируются в итоговом receipt этого пакета.

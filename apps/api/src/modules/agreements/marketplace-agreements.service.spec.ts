@@ -18,7 +18,7 @@ describe("marketplace agreement annual renewal", () => {
     const prisma = { marketplaceAgreement: { findFirst: vi.fn().mockResolvedValue(agreement) }, supplierTermsAcceptance: { findFirst: vi.fn().mockResolvedValue(null) } };
     const terms = new SupplierTermsService(prisma as never, new SupplierLegalDocuments(), {} as never);
     const service = new MarketplaceAgreementsService(prisma as never, {} as never, terms);
-    vi.spyOn(service as never, "processRenewals" as never).mockResolvedValue(undefined);
+    vi.spyOn(service, "processRenewals").mockResolvedValue({ processed: 0 });
     return { service, findFirst: prisma.marketplaceAgreement.findFirst };
   }
 

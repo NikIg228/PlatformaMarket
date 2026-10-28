@@ -10,7 +10,7 @@
     "start:worker": "node dist/src/worker.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . --max-warnings=0",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run --dir src --passWithNoTests",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed:legacy": "tsx prisma/seed.ts"
@@ -51,12 +51,13 @@
     "zod": "^4.6.6"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.10",
+    "@nestjs/cli": "^12.0.11",
     "@types/express": "^5.0.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/pdfkit": "^0.17.6",
     "prisma": "^6.19.0",
     "tsx": "^4.20.6",
-    "vitest": "^3.2.4"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.12"
   }
 }

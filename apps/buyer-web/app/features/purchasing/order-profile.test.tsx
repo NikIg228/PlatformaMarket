@@ -1,6 +1,6 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupplierOrder } from "./types";
 
 // This test exercises the feature composition, not Fluent's browser focus engine.
@@ -44,14 +44,20 @@ afterEach(() => {
   vi.resetModules();
 });
 
-describe("delivered order profile UI", () => {
-  it.each(["pilot", "go_live"])(
-    "keeps order details and gates the review form in %s",
-    async (profile) => {
+describe.each(["pilot", "go_live"])(
+  "delivered order profile UI (%s)",
+  (profile) => {
+    let MarketplaceApiClient: typeof import("@marketplace/api-client").MarketplaceApiClient;
+    let BuyerOrders: typeof import("./buyer-orders").BuyerOrders;
+
+    beforeEach(async () => {
       vi.stubEnv("NEXT_PUBLIC_DEPLOYMENT_PROFILE", profile);
       vi.resetModules();
-      const { MarketplaceApiClient } = await import("@marketplace/api-client");
-      const { BuyerOrders } = await import("./buyer-orders");
+      ({ MarketplaceApiClient } = await import("@marketplace/api-client"));
+      ({ BuyerOrders } = await import("./buyer-orders"));
+    });
+
+    it("keeps order details and gates the review form", () => {
       const html = renderToStaticMarkup(
         createElement(BuyerOrders, {
           orders: [delivered],
@@ -66,6 +72,6 @@ describe("delivered order profile UI", () => {
       expect(html).toContain("PROFILE-001");
       expect(html).toContain("Profile Supplier");
       expect(html.includes("Оставить отзыв")).toBe(profile === "go_live");
-    },
-  );
-});
+    });
+  },
+);

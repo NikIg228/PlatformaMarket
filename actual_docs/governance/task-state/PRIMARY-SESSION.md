@@ -4259,3 +4259,49 @@ go_live Redis остаётся CI gate. Первая подготовка чер
 Managed evidence: artifacts/security-ci-dependencies-20261028/document-verifier-run-2/.
 Перед следующей публикацией product source и lockfile неизменны: reuse их PASS;
 следующий шаг — publish scoped verifier и проверить новый CI.
+
+## SECURITY-DEV-BUILD-DEPENDENCIES-20261028 — IN PROGRESS
+
+Явное поручение владельца: исправить оставшиеся9 dev/build audit records,
+проверить совместимость и CI; оставшийся аудит кода — после этого пакета.
+База main@7bd4e2db08873bce3372e8e507a3b1dd8138553a, предыдущие CI40729017785
+и Security40729017814 SUCCESS. Tracked tree clean; output history не трогать.
+Исходный полный audit:9 (2critical/3high/1moderate/3low); production0.
+
+План до реализации: Vitest4.1.12 (удаляет Tinypool и исправляет mocker),
+Vite7.3.7, fast-uri3.1.9 и js-yaml4.3.2; удалить deepmerge dependency chain
+обновлением только Nest CLI12.0.11 с optional webpack checker. Nest runtime11
+и project TypeScript5 сохраняются. Проверить фактический compiler resolution.
+У deepmerge upstream fix отсутствует: не подменять merge API и не downgrade CLI.
+Учесть Vitest4 discovery dist/ и constructor mocks, сохранить состав и смысл
+всех тестов. Риск: общий test runner и API build/watch, не продуктовые правила.
+Gates: full+production audit, npm resolution, focused runner/mocking/Fluent tests,
+полный unit и types, API build/assets/watch smoke, изолированный unified build,
+runtime smoke; исходники/lock review, commit/FF push, remote SHA и полный CI.
+Изменения lock инвалидируют прежний PASS соответствующих checks; тестовые БД
+использовать только при применимых gates в проверенном disposable окружении.
+Security-boundary/compatibility перспектива — отдельный проход того же исполнителя,
+без запрещённой AGENTS делегации. Source/config edits только canonical root.
+
+Уточнение стратегии по фактическому resolution: CLI12 требует TypeScript~6.0.2.
+Попытки удержать API на5.9.3 не дали согласованного дерева; эта гипотеза остановлена.
+Выбран согласованный API dev compiler6.0.3, frontend/прочие workspace сохраняют5.9.3;
+продуктовый Nest runtime11 не меняется. Нужны фактические build/type/runtime gates,
+а не объявление совместимости по audit. После scoped dedupe временно вернулся
+UUID8 у ExcelJS: целевое npm update uuid восстановило существующий security override.
+Vite7.3.7 закреплён как общий dev peer; override ссылается на $vite, чтобы не
+конфликтовать с direct spec. npm ls vite/typescript/uuid теперь exit0.
+CI и Security audit теперь включают devDependencies с прежним audit-level=high.
+
+LOCAL COMPLETE: полный audit0, полное npm ls exit0. Types13/13 PASS,
+последний buyer typecheck/ESLint PASS. Все1832 unit cases прошли по workspace:
+root npm test завершался timeout (buyer import исправлен, затем UI source scan
+при IO); оставшиеся UI90/schemas366/API1007 завершены последовательно через
+turbo filters,4/4 tasks PASS. Не объявлять root npm test exit0;7 PG opt-in skips.
+API build/assets(4 byte-equal)/runtime split/watch0errors PASS. Font outDir
+исправлен по фактическому CLI12 копированию; watcher guard сохранён, финальный
+output внутри API. Unified build PASS с isolated generated output и восстановленным
+next-env. Node dependency+CI tests9/9, diff hygiene PASS. Никаких DB/deploy.
+Evidence и честная история попыток — текущая security status §dev/build и managed
+artifacts/security-dev-build-20261028/. Следующий шаг: scoped commit/push main,
+remote SHA и полный CI/Security на новом коммите; не начинать code audit.

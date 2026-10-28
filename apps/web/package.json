@@ -9,7 +9,7 @@
     "start": "next start --port 3000",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --dir app --passWithNoTests"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.74.4",
@@ -27,6 +27,6 @@
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.12"
   }
 }

@@ -10,9 +10,9 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . --max-warnings=0",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --dir src --passWithNoTests"
   },
   "devDependencies": {
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.12"
   }
 }
