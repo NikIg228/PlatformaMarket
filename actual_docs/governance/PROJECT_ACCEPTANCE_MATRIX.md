@@ -7,6 +7,10 @@ fresh owned PostgreSQL/API build, API client/unified web build16.4.3,
 runtime split/actual OTel smoke/scoped lint PASS.
 [Команды, история попыток и ограничения](../security/SECURITY_REMEDIATION_STATUS_2026-10-28.md#дополнение-зависимости-и-блокеры-ci).
 Полного аудита или production/provider acceptance это не означает.
+Публикация0f7bd27: Security SUCCESS; CI прошёл исходные блокеры и PostgreSQL,
+но обнаружил старую impersonation fixture в document-compliance. Исправленный
+verifier получил отдельный real HTTP/SQL PASS (pilot/all, owned PG); go_live
+результат требует следующего CI, защита actor не ослаблялась.
 
 28.10 — **Security remediation: LOCAL SCOPED PASS.** Четыре исторических finding,
 три дополнительных пакета и три WAVE1 инварианта сопоставлены с кодом и evidence.

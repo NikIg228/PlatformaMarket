@@ -4233,3 +4233,29 @@ Retained evidence: managed collection artifacts-affe45ff7ccd29c6dcc081e3663d7082
 artifacts/security-ci-dependencies-20261028/. Review тем же исполнителем выполнен
 отдельным проходом по direct callers, resolution и bypass/regression; agents нет.
 Следующий шаг: review staged scope, commit/FF push, remote SHA и CI.
+
+Пакет опубликован0f7bd27691bb088ad4ba8761e26101bebdddb8ce, remote SHA совпал.
+CI40726395894: PostgreSQL/оба containers PASS, unit/build/types и исходные
+блокеры PASS. Security40726395925: dependencies+CodeQL PASS. Новый FAIL verify:
+старый verify-document-compliance пытается подписать за поставщика из operator
+context, получает ожидаемый403 от предыдущего security fix. Продолжение того же
+CI compatibility scope: исправить только verifier actor fixture, не продуктовые
+guards. План: seed supplier20/user510 с реальной membership вместо supplier25
+без fixture-user; отрицательные operator impersonation/completion403, создание
+и завершение собственной supplier подписи, существующий PDF/version/compliance/
+notification scenario. Проверки: syntax/lint, существующие document regressions,
+isolated real HTTP/SQL verifier, затем publication и CI. Не повторять прежние
+неизменённые build/types/audit/full unit/SQL suites без новой причины.
+
+Verifier follow-up LOCAL PASS: node --check, scoped ESLint, document unit23.
+Реальный HTTP/SQL полный script PASS на новом owned PG17.10; signer defaults,
+operator impersonation/completion403, own signature SIGNED, PDF/checksum,
+versions/SUPERSEDED, credentials/check и SENT notifications. Task-owned API и PG
+остановлены, кластер удалён. Локальный профиль pilot/all, inline outbox;
+go_live Redis остаётся CI gate. Первая подготовка через search-commerce упала
+на отсутствии трёх glove suppliers в сокращённой fixture; второй запуск создал
+только synthetic order после SQL ownership proof и прошёл. Лимит:2 попытки,
+не менять каталог/ослаблять assertions ради подготовительного сценария.
+Managed evidence: artifacts/security-ci-dependencies-20261028/document-verifier-run-2/.
+Перед следующей публикацией product source и lockfile неизменны: reuse их PASS;
+следующий шаг — publish scoped verifier и проверить новый CI.

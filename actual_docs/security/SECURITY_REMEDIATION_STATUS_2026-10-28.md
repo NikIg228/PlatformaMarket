@@ -157,3 +157,26 @@ SWC DLL, удерживаемой dev-процессом. Процесс/ACL н�
 consumers, parser bootstrap, API/worker instrumentation и окончательный diff.
 Это не независимая делегация. Новая публикация и итоговый CI — в отчёте коммита;
 Workbench metadata и неполное покрытие сканов остаются отдельными границами.
+
+Публикация dependencies: `0f7bd27691bb088ad4ba8761e26101bebdddb8ce`, remote SHA
+совпал. [Security40726395925](https://github.com/NikIg228/PlatformaMarket/actions/runs/40726395925)
+SUCCESS (audit и CodeQL); [CI40726395894](https://github.com/NikIg228/PlatformaMarket/actions/runs/40726395894)
+прошёл исходный unit blocker, types/build, containers и PostgreSQL, затем
+выявил несовместимость старого `verify-document-compliance` с предыдущим actor
+fix: оператор пытался создать подпись от имени supplier25 и получил403.
+
+Verifier исправлен в том же CI compatibility scope: используется существующий
+supplier20/user510 с membership и `document.sign`; session/complete идут из его
+контекста. Добавлены operator impersonation403, foreign completion403 и проверки
+сохранённого signer organization/user и успешной собственной подписи.
+Продуктовые guards сохранены. Syntax/scoped ESLint и document unit23 PASS.
+Полный исправленный verifier прошёл на новой owned PostgreSQL17.10 + реальном
+API: PDF/checksum, версия2/SUPERSEDED, credentials/rule/check и SENT notifications.
+Локальный профиль pilot/all с штатным inline outbox fallback; go_live/Redis
+подтверждается только последующим CI. Первая подготовка через весь search-commerce
+не подошла к сокращённой fixture (нужны три поставщика перчаток); вместо расширения
+каталога создан только синтетический order, после SQL ownership proof. Вторая
+попытка PASS; оба API/PG процесса остановлены и кластеры удалены.
+Receipts/logs: `document-verifier-run/` (первая попытка) и
+`document-verifier-run-2/` (PASS) в `artifacts/security-ci-dependencies-20261028/`.
+Неизменённые dependency/build/types/full-unit/SQL gates не повторялись.

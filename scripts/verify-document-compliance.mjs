@@ -4,30 +4,33 @@ import { waitForSentNotifications } from "./lib/ci-verification.mjs";
 const base = process.env.API_URL ?? "http://127.0.0.1:4012/api";
 const actorId = "00000000-0000-4000-8000-000000000002";
 const operatorOrganizationId = "00000000-0000-4000-8000-000000000001";
-const supplierOrganizationId = "00000000-0000-4000-8000-000000000025";
+const supplierOrganizationId = "00000000-0000-4000-8000-000000000020";
+const supplierUserId = "00000000-0000-4000-8000-000000000510";
 const buyerOrganizationId = "00000000-0000-4000-8000-000000000030";
 const headers = {
   "content-type": "application/json",
   "x-user-id": actorId,
   "x-organization-id": operatorOrganizationId,
 };
+const supplierHeaders = { ...headers, "x-user-id": supplierUserId, "x-organization-id": supplierOrganizationId };
 
-async function request(path, options = {}) {
+async function request(path, { expectedStatus, ...options } = {}) {
   const response = await fetch(`${base}${path}`, {
     ...options,
     headers: { ...headers, ...options.headers },
   });
-  if (!response.ok)
+  if (expectedStatus === undefined ? !response.ok : response.status !== expectedStatus)
     throw new Error(
       `${options.method ?? "GET"} ${path} failed (${response.status}): ${await response.text()}`,
     );
   return response;
 }
 
-async function json(path, method = "GET", body) {
+async function json(path, method = "GET", body, identityHeaders = headers) {
   return (
     await request(path, {
       method,
+      headers: identityHeaders,
       body: body === undefined ? undefined : JSON.stringify(body),
     })
   ).json();
@@ -65,6 +68,12 @@ const document = await json("/documents/generate", "POST", {
     buyer: { name: "Стоматология Алматы" },
   },
 });
+// Operator read/generation permission must not allow supplier impersonation.
+await request(`/documents/${document.id}/signature-sessions`, {
+  method: "POST",
+  expectedStatus: 403,
+  body: JSON.stringify({ method: "MOCK", signerOrganizationId: supplierOrganizationId }),
+});
 const session = await json(
   `/documents/${document.id}/signature-sessions`,
   "POST",
@@ -73,7 +82,15 @@ const session = await json(
     signerOrganizationId: supplierOrganizationId,
     signerName: "Директор поставщика",
   },
+  supplierHeaders,
 );
+if (session.signature.signerOrganizationId !== supplierOrganizationId || session.signature.signerUserId !== supplierUserId)
+  throw new Error("Signature session is not bound to the authenticated supplier");
+await request(`/documents/signatures/${session.signature.id}/complete`, {
+  method: "POST",
+  expectedStatus: 403,
+  body: JSON.stringify({ status: "SIGNED" }),
+});
 const signature = await json(
   `/documents/signatures/${session.signature.id}/complete`,
   "POST",
@@ -82,7 +99,9 @@ const signature = await json(
     externalSignatureId: `mock-${suffix}`,
     evidence: { verified: true },
   },
+  supplierHeaders,
 );
+if (signature.document.status !== "SIGNED") throw new Error("Own supplier signature did not complete the document");
 const download = await request(`/documents/${document.id}/download`);
 const pdf = Buffer.from(await download.arrayBuffer());
 await mkdir(".tmp/e2e", { recursive: true });
