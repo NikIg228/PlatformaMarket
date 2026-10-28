@@ -1,5 +1,30 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+## 29.10 — синхронизация требований, без новой runtime-приёмки
+
+Прямое поручение: roadmap и связанные документы согласовать с Desktop unified ТЗ,
+принятые ответы перенести, подготовку сохранить отдельно, устаревшие Market статусы
+в ТЗ обновить. База main@89a8df9; чужой WIP API/client/checkpoint сохранён.
+Риск: смешать решения/проекты/код/evidence или включить чужие файлы. План/gates:
+сверка исходного hash,180 Q/Т/П, late answers/AC/AT, links/anchors, неизменность
+checkbox-статусов, staged diff hygiene и явные paths; app/DB/browser не требуются.
+
+[Действующий scope](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#unified-sync),
+[требования](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md), [открытые вопросы](ROADMAP-QUESTIONS-AND-DECISIONS.md#unified-open).
+Ни один открытый R-result не получил DONE. Desktop/mobile/авто-допуск/B2C/P1–P7
+требуют новых контрактов и приёмки; старые scoped PASS сохраняют свои границы.
+Read-only GitHub Actions29.10 повторно подтвердил completed/success CI40742163553
+и Security40742163648 на5be8417. Это не сертификат текущего dirty дерева.
+Docs gates29.10 PASS: `node .tmp/roadmap-sync-20261029/check-docs.mjs` —27 файлов,
+180 исходных Q/Т/П без изменений,108 R-checkbox IDs/статусов сохранены,42 AT
+и восемь поздних принятых ответов Market покрыты;72 новых локальных ссылки/якоря
+проверены. Market-статусы в Desktop-ТЗ обновлены отдельно; CRM-разделы вне scope
+сохранены. `git diff --check` — PASS. Runtime/DB/build/browser не запускались
+для Markdown; прежний CI привязан к5be8417, docs-коммит использует `[skip ci]`.
+
+Применены AGENTS/Workflow docs-only и Git Workflow Master: отдельный логический
+docs-коммит, явный staging, без чужого WIP. Полный аудит/провайдеры/deploy не запускались.
+
 28.10 — **Опубликованный код5be8417: CI / Security SUCCESS.**
 При docs-only актуализации roadmap read-only запрос GitHub Actions подтвердил
 `head_sha=5be841759b03046a6c3bb27293c93829355355ca`, completed/success:

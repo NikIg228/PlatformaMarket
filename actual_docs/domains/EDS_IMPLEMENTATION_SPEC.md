@@ -1,5 +1,18 @@
 # Подписание документов ЭЦП НУЦ РК в Platforma Market
 
+## Действующая граница 29.10.2026
+
+[Новое ТЗ](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md#spec-25) включает mobile EDS и web/iOS/Android в цель27.11
+с ориентиром подачи около10.11. Прежний mobile POST_PILOT не действует для новой
+цели; desktop NCALayer/реальный prototype и identity/admission остаются scoped
+evidence. Legacy signingUrl/gateway — задел, не принятый mobile provider/runtime.
+Стратегия native, mobile provider/договор/API, device/auth/deeplink/offline/unknown
+и real crypto receipts требуют приёмки. Desktop390/mock enum не mobile PASS.
+Binary employee sign right и один первый руководитель финансов заданы новым scope;
+legal grounds/forms и authority на каждом commit обязательны. Подробности —
+[DWF](MARKET_DOCUMENT_WORKFLOW.md) и R7.6/R7.1/R9. Исторические ограничения ниже
+относятся к своим датированным пакетам, не разрешают выпустить новый scope без mobile.
+
 Создано: 15.10.2026. Актуализировано: 19.10.2026 после получения SDK владельцем.
 Статус: техническая спецификация; SDK доступен, desktop-прототип SCOPED PASS,
 пользовательская интеграция не принята. Единственный реестр исполнения — roadmap.

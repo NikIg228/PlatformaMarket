@@ -1,5 +1,11 @@
 # Реестр документации PlatformaMarket
 
+Дополнение29.10: [требования Market из объединённого ТЗ](UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md) — профильный
+срез сценариев/проектных контрактов/AC/AT и180 исходных Q/Т/П, с приоритетом поздних
+принятых ответов. Это не новый execution backlog: статусы/checklist только в
+[R0–R9](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#unified-sync), открытые вопросы —
+[существующий журнал](governance/ROADMAP-QUESTIONS-AND-DECISIONS.md#unified-open).
+
 Актуализировано 8 октября 2026. Начать с приоритетной
 [функциональной карты](FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md), затем
 [описания](PROJECT_OVERVIEW.md) и выбранного R-ID

@@ -1,5 +1,17 @@
 # Live provider and infrastructure readiness
 
+## Новый обязательный scope 29.10.2026
+
+[Требования Market](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md#spec-30) расширяют применимую матрицу R9:
+семь P1–P7 с отдельными bank/fiscal/refund/reconciliation receipts, СДЭК/Жанапост/
+supplier delivery/pickup, служебные внешние уведомления, источник актуального
+директора, ERP self-service, desktop/mobile EDS, web/iOS/Android/device и RU/KK.
+Цель27.11/ориентир подачи около10.11 не подтверждают capability или готовность.
+Single-charge/split не обязательны для принятых отдельных платежей26А; недоступный
+метод не объявляется работающим. Права/формы/legal/data/retention и target restore
+RTO≤2ч/RPO обычных≤5мин имеют собственные receipts. Существующие профили/guards
+не ослабляются; исторические desktop-only/POST_PILOT manifest не принимают новый scope.
+
 ## Место в production roadmap — 2026-10-06
 
 Цель и состав запуска определяются [описанием проекта](../PROJECT_OVERVIEW.md)
