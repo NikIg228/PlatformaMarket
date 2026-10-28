@@ -1,4 +1,5 @@
-import { BadRequestException, Body, Controller, Get, Headers, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Headers, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { ApiCoreBody, ApiCoreErrors, ApiCoreProtected, ApiCoreResponse, ApiUuidParam } from "../../platform/openapi/core-openapi";
 import { ApiTags } from "@nestjs/swagger";
 import { createOrderCommentSchema, createProductGapSchema, createTrustAppealSchema, createVerifiedReviewSchema, decideTrustAppealSchema, moderateVerifiedReviewSchema, recordTrustMetricSchema, respondVerifiedReviewSchema, updateOrderCommentSchema, updateProductGapSchema, updateVerifiedReviewSchema } from "@marketplace/schemas";
 import { PermissionsGuard } from "../access-control/permissions.guard";
@@ -31,8 +32,12 @@ export class TrustCommerceController {
   @Patch("trust/comments/:commentId") @RequirePermissions("trust.comment.manage")
   updateComment(@Param("commentId") commentId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { return this.trust.updateOrderComment(commentId, this.parse(updateOrderCommentSchema, body), this.context(actorId, organizationId)); }
 
+  @Get("trust/orders/:orderId/review-state") @RequirePermissions("trust.review.create")
+  @ApiCoreProtected() @ApiCoreErrors() @ApiUuidParam("orderId", "Owned supplier order") @ApiCoreResponse("OrderReviewStateResponse")
+  reviewState(@Param("orderId", new ParseUUIDPipe()) orderId: string, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { return this.trust.orderReviewState(orderId, this.context(actorId, organizationId)); }
   @Post("trust/orders/:orderId/reviews") @RequirePermissions("trust.review.create")
-  createReview(@Param("orderId") orderId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { return this.trust.createReview(orderId, this.parse(createVerifiedReviewSchema, body), this.context(actorId, organizationId)); }
+  @ApiCoreProtected() @ApiCoreErrors() @ApiUuidParam("orderId", "Owned supplier order") @ApiCoreBody("CreateVerifiedReviewRequest") @ApiCoreResponse("VerifiedOrderReviewResponse", 201)
+  createReview(@Param("orderId", new ParseUUIDPipe()) orderId: string, @Body() body: unknown, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { return this.trust.createReview(orderId, this.parse(createVerifiedReviewSchema, body), this.context(actorId, organizationId)); }
   @Get("trust/suppliers/:supplierOrganizationId/reviews") @RequirePermissions("trust.review.view")
   reviews(@Param("supplierOrganizationId") supplierOrganizationId: string, @Headers("x-user-id") actorId: string, @Headers("x-organization-id") organizationId: string) { return this.trust.supplierReviews(supplierOrganizationId, this.context(actorId, organizationId)); }
   @Get("trust/products/:productId/reviews") @RequirePermissions("trust.review.view")

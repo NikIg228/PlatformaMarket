@@ -173,7 +173,7 @@ export function BuyerOrders({
                           </td>
                         </tr>
                       ) : null}
-                      {frontendFeatures.trust && isOrderReviewable(order.status) ? (
+                      {frontendFeatures.trust && isOrderReviewable(order) ? (
                         <tr className={styles.detailRow}>
                           <td colSpan={6}>
                             <div className={styles.reviewForm}>

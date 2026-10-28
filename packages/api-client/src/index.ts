@@ -1,4 +1,4 @@
-import type { OrderDiscrepanciesResponse, OrderDiscrepancyCommand, OrderDiscrepancyResult } from "@marketplace/schemas";
+import type { OrderDiscrepanciesResponse, OrderDiscrepancyCommand, OrderDiscrepancyResult, OrderReviewState, CreateVerifiedReviewInput, VerifiedOrderReview } from "@marketplace/schemas";
 import type { PrepareShipmentWaybillInput, ShipmentWaybillView, ShipmentWaybillsResponse } from "@marketplace/schemas";
 import type { PrepareResupplyDocumentInput, ResupplyDocumentView, ResupplyDocumentsResponse } from "@marketplace/schemas";
 import type { PrepareOrderInvoiceInput, OrderInvoiceView, OrderInvoicesResponse } from "@marketplace/schemas";
@@ -620,6 +620,12 @@ export class MarketplaceApiClient {
 
   getOrderWorkflow(orderId: string) {
     return this.get<OrderWorkflowResponse>(`/supplier-orders/${orderId}/workflow`);
+  }
+  getOrderReviewState(orderId: string) {
+    return this.get<OrderReviewState>(`/trust/orders/${encodeURIComponent(orderId)}/review-state`);
+  }
+  createOrderReview(orderId: string, input: CreateVerifiedReviewInput) {
+    return this.post<VerifiedOrderReview>(`/trust/orders/${encodeURIComponent(orderId)}/reviews`, input);
   }
 
   getSupplierPaymentPolicy() {

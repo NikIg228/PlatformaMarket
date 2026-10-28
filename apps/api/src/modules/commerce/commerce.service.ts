@@ -1,3 +1,4 @@
+import { fullyReceived } from "../trust-commerce/order-review-eligibility";
 import { waybillPreviewVisibility } from "../documents/shipment-waybill.rules";
 import { createActiveCart } from "./create-active-cart";
 import { metricFact, recordCheckoutMetrics } from "./commerce-metric-facts";
@@ -1089,7 +1090,7 @@ export class CommerceService {
       },
       orderBy: { createdAt: "desc" },
     });
-    return orders.map((order) => ({ ...order, documents: order.documents.filter(hasConsistentDocumentReferences).map(withoutReferenceRelations) }));
+    return orders.map((order) => ({ ...order, reviewEligible: fullyReceived(order), documents: order.documents.filter(hasConsistentDocumentReferences).map(withoutReferenceRelations) }));
   }
 
   async confirmSupplierOrder(

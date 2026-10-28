@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import type { SessionHandoffEnvelope } from "@marketplace/api-client";
+import { useBuyerMode } from "./buyer-context";
 
 // Keep authenticated API/schema code outside the public catalog's initial bundle.
 export function useBuyerSession() {
+  const mode = useBuyerMode();
   const [snapshot, setSnapshot] = useState<{ ready: boolean; session: SessionHandoffEnvelope | null }>({ ready: false, session: null });
   useEffect(() => {
     let active = true;
@@ -15,5 +17,5 @@ export function useBuyerSession() {
     }).catch(() => { if (active) setSnapshot({ ready: true, session: null }); });
     return () => { active = false; unsubscribe?.(); };
   }, []);
-  return snapshot;
+  return { ready: snapshot.ready && mode !== "loading" && mode !== "switching", session: mode === "organization" ? snapshot.session : null };
 }

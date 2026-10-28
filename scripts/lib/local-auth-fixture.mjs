@@ -9,10 +9,12 @@ import path from 'node:path';
 import { PrismaClient } from '@prisma/client';
 import { auditEnvironment, root } from './registration-resume-fixture.mjs';
 
-export async function startLocalAuthFixture({ web = false, operator = true, webApps = ['landing', 'admin'], publicCatalog = false, apiPort } = {}) {
+export async function startLocalAuthFixture({ web = false, operator = true, webApps = ['landing', 'admin'], publicCatalog = false, apiPort, deploymentProfile = 'pilot' } = {}) {
   const webPorts = { landing: 3103, admin: 3100, buyer: 3101, supplier: 3102 };
   assert.ok(webApps.every(name => Object.hasOwn(webPorts, name)) && new Set(webApps).size === webApps.length, 'Known distinct owned applications only');
   const env = auditEnvironment();
+  assert.ok(['pilot', 'go_live'].includes(deploymentProfile), 'Known deployment profile only');
+  env.DEPLOYMENT_PROFILE = deploymentProfile;
   const db = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
   const [identity] = await db.$queryRaw`SELECT current_database() AS database`;
   assert.equal(identity.database, 'dentmarket_audit_20260914');

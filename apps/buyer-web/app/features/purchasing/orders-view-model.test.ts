@@ -63,8 +63,9 @@ describe("buyer orders view model", () => {
     expect(hasPartialDecision(order({ status: "SHIPPED" }))).toBe(true);
   });
 
-  it("only enables reviews for terminal buyer-visible states", () => {
-    expect(isOrderReviewable("DELIVERED")).toBe(true);
-    expect(isOrderReviewable("CONFIRMED")).toBe(false);
+  it("only enables reviews with authoritative full-receipt eligibility", () => {
+    expect(isOrderReviewable({ reviewEligible: true })).toBe(true);
+    expect(isOrderReviewable({ reviewEligible: false })).toBe(false);
+    expect(isOrderReviewable({})).toBe(false);
   });
 });

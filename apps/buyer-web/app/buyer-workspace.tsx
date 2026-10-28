@@ -796,8 +796,9 @@ export default function BuyerWorkspace({
     const draft = reviewDraft(orderId);
     setBusy(`review:${orderId}`);
     try {
-      await api.post(`/trust/orders/${orderId}/reviews`, {
+      await api.createOrderReview(orderId, {
         overallRating: draft.rating,
+        dimensions: {},
         comment: draft.comment.trim() || null,
         idempotencyKey: `buyer-review:${orderId}`,
       });
@@ -1215,6 +1216,7 @@ export default function BuyerWorkspace({
       onBrowseCatalog={browseCatalog}
       onAcceptChanges={() => void acceptCartChanges()}
       onCheckout={() => void checkout()}
+      buyerOrganization={handoff?.organizationId ? { id: handoff.organizationId, name: handoff.organizationDisplayName ?? "Организация" } : undefined}
     />
   );
 

@@ -705,6 +705,7 @@ export const documentArchiveSummaryResponseSchema = z.object({
 
 export const supplierOrderResponseSchema = z
   .object({
+    reviewEligible: z.boolean().optional(),
     id: z.uuid(),
     checkoutId: z.uuid(),
     supplierOrganizationId: z.uuid(),

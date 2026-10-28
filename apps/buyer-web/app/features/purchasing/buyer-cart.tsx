@@ -2,7 +2,7 @@
 import { ActionFeedback, useToast, VatLineAmount, VatBreakdown } from "@marketplace/ui";
 import { cartChangeNotice } from "./cart-notice";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Spinner } from "@fluentui/react-components";
 import { Alert24Regular } from "@fluentui/react-icons/svg/alert";
 import { ArrowSync24Regular } from "@fluentui/react-icons/svg/arrow-sync";
@@ -11,6 +11,7 @@ import { CheckmarkCircle24Regular } from "@fluentui/react-icons/svg/checkmark-ci
 import { ShoppingBag24Regular } from "@fluentui/react-icons/svg/shopping-bag";
 import {
   DmButton,
+  DmCheckbox,
   DmConflictState,
   DmTable,
   EmptyState,
@@ -30,6 +31,7 @@ import { useCartAutoRefresh } from "./use-cart-auto-refresh";
 import { cartCommercialChanges } from "./cart-commercial-changes";
 
 type BuyerCartProps = {
+  buyerOrganization?: { id: string; name: string };
   hideHeading?: boolean;
   api: MarketplaceApiClient;
   onCartChanged: (cart: Cart) => void;
@@ -58,6 +60,7 @@ function ValidationIcon({
 }
 
 export function BuyerCart({
+  buyerOrganization,
   hideHeading = false,
   api, onCartChanged, onValidated,
   cart,
@@ -69,6 +72,9 @@ export function BuyerCart({
   onAcceptChanges,
   onCheckout,
 }: BuyerCartProps) {
+  const [confirmedBuyer, setConfirmedBuyer] = useState<string | null>(null);
+  const confirmationKey = `${buyerOrganization?.id}:${cart?.id}:${cart?.version}`;
+  const buyerConfirmed = Boolean(buyerOrganization?.id && buyerOrganization.id === cart?.buyerOrganizationId && confirmedBuyer === confirmationKey);
   const editor = useCartCorrection({ cart, api, onChanged: onCartChanged, onValidated });
   const notify = useToast();
   const lastChange = useRef<string | null>(null);
@@ -276,6 +282,9 @@ export function BuyerCart({
               <small>Финальная сумма фиксируется после успешного резерва.</small>
             </div>
             <div className={styles.checkoutActions}>
+              <DmCheckbox checked={buyerConfirmed} disabled={locked || !buyerOrganization}
+                label={`Подтверждаю покупку от организации: ${buyerOrganization?.name ?? "организация не подтверждена"}`}
+                onChange={event => setConfirmedBuyer(event.target.checked ? confirmationKey : null)} />
               {editor.hasDrafts ? <p role="status">Сохраните или отмените введённое количество перед оформлением.</p> : null}
               {checkedValidation?.hasChanges ? (
                 <DmButton
@@ -295,9 +304,9 @@ export function BuyerCart({
                 appearance="primary"
                 size="large"
                 icon={<ShoppingBag24Regular />}
-                onClick={onCheckout}
+                onClick={() => { if (buyerConfirmed) onCheckout(); }}
                 disabled={
-                  locked || editor.hasDrafts ||
+                  !buyerConfirmed || locked || editor.hasDrafts ||
                   validationLoading ||
                   !checkedValidation?.canCheckout
                 }

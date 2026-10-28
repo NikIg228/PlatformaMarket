@@ -1,15 +1,7 @@
 import type { SupplierOrder } from "./types";
 
-const REVIEWABLE_STATUSES = new Set([
-  "DELIVERED",
-  "PARTIALLY_FULFILLED",
-  "RETURN_DISPUTE",
-  "REJECTED",
-  "CANCELLED",
-]);
-
-export function isOrderReviewable(status: string) {
-  return REVIEWABLE_STATUSES.has(status);
+export function isOrderReviewable(order: Pick<SupplierOrder, "reviewEligible">) {
+  return order.reviewEligible === true;
 }
 
 type DecisionOrder = Pick<SupplierOrder, "status" | "items">;

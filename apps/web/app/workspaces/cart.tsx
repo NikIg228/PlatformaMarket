@@ -17,7 +17,7 @@ import { CartRecovery } from "./cart-recovery";
 import { PageNavigation, usePageNavigation } from "./page-navigation";
 
 export default function Cart() {
-  const { api, organizationId } = useWorkspace();
+  const { api, organizationId, session } = useWorkspace();
   const router = useRouter();
   const [validation, setValidation] = useState<CartValidation | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -110,6 +110,7 @@ export default function Cart() {
       }} />
       <PageNavigation navigation={navigation} nextCursor={resource.data.cursor === navigation.cursor ? resource.data.nextCursor : null} loading={resource.loading} onRefresh={() => { navigation.reset(); if (!navigation.cursor) void resource.refresh(); }} />
       <BuyerCart
+        buyerOrganization={{ id: organizationId, name: session.organizationDisplayName ?? "Организация" }}
         hideHeading
         api={api}
         cart={cart}

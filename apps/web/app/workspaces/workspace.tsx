@@ -39,6 +39,8 @@ import styles from "./workspace.module.css";
 import { WorkspacePermissions } from "./workspace-permissions";
 import { MessageHeader } from "./message-header";
 import { WorkspaceFooter } from "./workspace-footer";
+import { useBuyerMode, personalPurchaseMessage } from "../../../buyer-web/app/buyer-context";
+import { BuyerContextBar } from "../../../buyer-web/app/features/marketplace-header/buyer-context-bar";
 
 export type WorkspaceRole = "clinic" | "supplier";
 type WorkspaceContext = {
@@ -111,7 +113,11 @@ export function Workspace({
     return () => mobile.removeEventListener("change", resize);
   }, []);
   const adapter = role === "clinic" ? clinic : supplier;
-  const { session, ready, error } = useWorkspaceSession(adapter.sessionStore);
+  const { session: rawSession, ready: sessionReady, error } = useWorkspaceSession(adapter.sessionStore);
+  const buyerMode = useBuyerMode();
+  const ready = sessionReady && (role !== "clinic" || (buyerMode !== "loading" && buyerMode !== "switching"));
+  const personal = role === "clinic" && buyerMode === "personal";
+  const session = personal ? null : rawSession;
   const pathname = usePathname();
   const query = useSearchParams().toString();
   const api = useMemo(
@@ -204,11 +210,13 @@ export function Workspace({
         </aside>
       ) : null}
       <main id="workspace-content" className={styles.main}>
+        {ready && session?.organizationId && !(role === "supplier" && pathname.startsWith("/supplier/legal/")) ? <MessageHeader /> : null}
+        {role === "clinic" ? <BuyerContextBar /> : null}
         {role === "supplier" && pathname.startsWith("/supplier/legal/") ? (
           children
         ) : !ready ? (
           <LoadingState label="Проверяем вход" />
-        ) : !session?.organizationId ? (
+        ) : personal ? <ActionFeedback tone="info" description={personalPurchaseMessage} /> : !session?.organizationId ? (
           <ErrorState presentation="inline"
             title={
               error
@@ -236,7 +244,7 @@ export function Workspace({
             }
           />
         ) : (
-          <><MessageHeader />{logout.logoutError ? <ActionFeedback tone="error" description={logout.logoutError} /> : null}{pageContent}</>
+          <>{logout.logoutError ? <ActionFeedback tone="error" description={logout.logoutError} /> : null}{pageContent}</>
         )}
       </main>
     </div>

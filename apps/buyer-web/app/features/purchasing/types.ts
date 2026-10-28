@@ -53,6 +53,7 @@ export type CartValidation = {
 };
 
 export type SupplierOrder = {
+  reviewEligible?: boolean;
   id: string;
   buyerOrganizationId: string;
   orderNumber: string;

@@ -6,6 +6,68 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+## BUYER-CONTEXT-REVIEW-20261029 — LOCAL PASS, PUBLICATION PENDING
+
+Поручение: проверить существующее, доделать контекст покупателя и право на отзыв,
+обновить roadmap. База main@8805498, tracked clean; output/security-remediation-20261028
+сохранён. Уточнение владельца: личный контекст сейчас только просмотр; полноценный
+B2C checkout отдельным этапом. Организационные корзины/заказы не превращаются в личные.
+Найдено: session organization switch и tenant guards существуют; personal buyer model
+отсутствует. Review допускается по статусам, включая partial/cancel/reject, вместо receipt.
+План: явный контекст в header, проверенный switch с полной сменой страницы/сбросом
+локальных форм, запрет покупок в personal, подтверждение организации в checkout;
+затем общий receipt predicate API/UI, право после полного получения без document gate,
+сохранение существующих отзывов и replay. Без изменения рейтинговой формулы.
+Риски: tenant/session/cache и checkout, точное количество/частичные партии/возвраты.
+Gates: focused contracts/client/UI/API tests после связного backend поведения;
+affected types, API/unified web build, core-contract, isolated verify:postgres,
+runtime-split, targeted browser desktop/mobile/keyboard со screenshots/computed styles;
+diff review, scoped commit/push и CI. Не запускать release/full E2E без нового основания.
+UI: существующие header-account/LoginWorkspaceChoice и BuyerCart; DmField/Select,
+DmCheckbox/Feedback/Button, Manrope/44px/8px и semantic tokens без overrides.
+DoD ограничен этим этапом: B2C payment/ассортимент/legal и полный R7 не закрываются.
+
+Текущее состояние29.10: реализация контекста/header, подтверждения buyer в checkout,
+receipt predicate/transaction review и формы в unified order detail записана, не опубликована.
+Focused API17 PASS после исправления unit fixture (attempt2); schema2 PASS;
+client review1 PASS attempt3 (profile fixture, затем новый Response на каждый запрос).
+Types API/buyer/web PASS; client types PASS после исправления конструктора теста.
+Dependent API115 PASS/1 opt-in skip, client18 PASS, buyer21 PASS; scoped ESLint PASS.
+Schemas build и API build PASS; Prisma generation переиспользована с8805498:
+schema/lock/client inputs неизменны, dev API держит DLL, build выполнен с
+npm_config_ignore_scripts=true. Unified web go_live isolated build PASS;
+повтор после уточнения error/retry формы выполняется (.tmp/buyer-context-review-20261029).
+verify:postgres underlying script через db:test PASS (первая попытка): exact DB
+dentmarket_audit_20260914,53 migrations; tenant/rollback/concurrency/cart checkout.
+core-contract underlying --contract-only через db:test PASS; runtime-split PASS.
+Prerequisites aliases (schemas/API build) выполнены и переиспользованы без повторов.
+Новый verifier scripts/verify-buyer-context-review.mjs ещё NOT_RUN: real HTTP/SQL
+receipt/review и браузер1440/390, own API4412/web3103, go_live module profile,
+NODE_ENV=test API и production-built frontend. Helper local-auth-fixture добавляет
+явный optional deploymentProfile с прежним pilot default. Test DB read-only preflight PASS.
+Dev API4012/PID15848 и web3000/PID1384 чужие, не останавливать. Собственные процессы
+verifier закрываются finally; fixtures synthetic, сессии отзываются. Далее: завершить
+browser/SQL gate, review, docs/roadmap, scoped commit/push и CI. Full release не запускался.
+
+Verifier cycle1: attempt1 fixture без cartItemId нарушила SupplierOrderItem_gift_check;
+attempt2 API/SQL receipt/denial/concurrent replay/audit rollback PASS, далее отсутствовал
+fresh catalog fixture; attempt3 собственный offer/lot/price/agreement создан, тот же
+API/SQL PASS, далее неверное ожидание201 вместо документированного200 validate.
+Процессы завершены; собственное опубликованное предложение скрыто/архивировано.
+Лимит остановил запуск; владелец явно разрешил новый цикл «Да, исправить тест и
+продолжить». В cycle2 меняется только ожидание validate200; остаётся browser1440/390.
+Final web build после error/retry PASS; bundle PASS22 files/1176164 raw/359691 gzip.
+
+Финал local: cycle2/1 выявил scoped handoff membership — перед switch добавлен
+штатный refresh (6 tests/types PASS); /2 синхронный checkbox assertion заменён
+auto-wait; /3 browser PASS1440/390. После header layout affected build/browser
+PASS повторно; screenshot/computed styles приняты (44px/8px/Manrope14px, no overflow).
+Source fingerprint `.tmp/buyer-context-review-20261029/inputs.json` совпадает;
+финальный bundle gate PASS. API/SQL, types/unit/runtime PASS переиспользованы
+при неизменённых входах. Docs/roadmap обновлены без закрытия всего R7/B2C.
+Далее: scoped37 files review/staging, commit/push main и CI; output/security
+не включать. Новых продуктовых этапов не начинать.
+
 ### 28.10 — актуализация roadmap по запросу владельца
 
 Scope: сверить локальный roadmap, перечислить остаток и актуализировать связанные

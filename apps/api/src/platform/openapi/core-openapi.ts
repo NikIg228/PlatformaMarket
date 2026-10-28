@@ -31,7 +31,7 @@ import { saveSupplierPaymentPolicySchema, supplierPaymentPolicyResponseSchema } 
 import { workspaceOfferQuerySchema, workspaceInventoryQuerySchema, workspacePageQuerySchema, workspaceOrderQuerySchema, workspaceOrderPageSchema, workspaceOfferSchema, workspaceOfferPageSchema, workspaceCartPageSchema, workspaceSummarySchema } from "@marketplace/schemas";
 import { saveOfferCommercialSchema, saveOfferStockSchema, saveOfferPriceSchema, offerCommercialStateSchema } from "@marketplace/schemas";
 import { updateProductSchema, updatedCatalogProductSchema } from "@marketplace/schemas";
-import { pilotSigningHttpSchemas } from "@marketplace/schemas";
+import { pilotSigningHttpSchemas, createVerifiedReviewSchema, verifiedOrderReviewSchema, orderReviewStateSchema } from "@marketplace/schemas";
 import { applyDecorators } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
@@ -134,6 +134,9 @@ const authenticatedCompareOffersQuerySchema = compareOffersSchema.omit({
 const supplierOrdersQuerySchema = z.object({ checkoutId: z.uuid().optional() });
 
 const coreZodSchemas = {
+  CreateVerifiedReviewRequest: createVerifiedReviewSchema,
+  VerifiedOrderReviewResponse: verifiedOrderReviewSchema,
+  OrderReviewStateResponse: orderReviewStateSchema,
   SigningIdentity: pilotSigningHttpSchemas.Identity,
   SigningIdentityChallengeRequest: pilotSigningHttpSchemas.IdentityChallengeRequest,
   IdentitySigningSession: pilotSigningHttpSchemas.IdentitySession,

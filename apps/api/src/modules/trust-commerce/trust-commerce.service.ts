@@ -3,10 +3,11 @@ import type { CreateProductGapInput, CreateTrustAppealInput, CreateVerifiedRevie
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import type { SupplierActorContext } from "../suppliers/supplier-access.service";
+import { fullyReceived } from "./order-review-eligibility";
 import { calculateSupplierTrust } from "./trust-score.engine";
 
 const json = (value: unknown) => value == null ? Prisma.JsonNull : value as Prisma.InputJsonValue;
-const reviewEligibleStatuses = ["DELIVERED", "PARTIALLY_FULFILLED", "RETURN_DISPUTE", "REJECTED", "CANCELLED"] as const;
+
 
 @Injectable()
 export class TrustCommerceService {
@@ -122,21 +123,31 @@ export class TrustCommerceService {
     return flags;
   }
 
+  async orderReviewState(orderId: string, context: SupplierActorContext) {
+    const order = await this.prisma.supplierOrder.findFirst({ where: { id: orderId, buyerOrganizationId: context.organizationId }, include: { items: true, shipments: { include: { items: true } } } });
+    if (!order) throw new NotFoundException("Supplier order not found");
+    const review = await this.prisma.verifiedReview.findUnique({ where: { supplierOrderId_reviewerOrganizationId_targetKey: { supplierOrderId: orderId, reviewerOrganizationId: context.organizationId, targetKey: "SUPPLIER" } }, select: { id: true, overallRating: true, comment: true, status: true } });
+    return { orderId, eligible: fullyReceived(order), review };
+  }
+
   async createReview(orderId: string, input: CreateVerifiedReviewInput, context: SupplierActorContext) {
-    const order = await this.requireOrderParticipant(orderId, context);
-    if (order.buyerOrganizationId !== context.organizationId) throw new ForbiddenException("Only the buyer organization may review an order");
-    if (!(reviewEligibleStatuses as readonly string[]).includes(order.status)) throw new ConflictException("Review becomes available only after a completed, cancelled or disputed order");
-    if (input.productVariantId && !order.items.some(({ productVariantId }) => productVariantId === input.productVariantId)) throw new NotFoundException("Purchased product variant not found in this order");
-    const targetKey = input.productVariantId ? `PRODUCT:${input.productVariantId}` : "SUPPLIER";
-    const existing = await this.prisma.verifiedReview.findUnique({ where: { idempotencyKey: input.idempotencyKey } });
-    if (existing) {
-      if (existing.supplierOrderId !== order.id || existing.reviewerOrganizationId !== context.organizationId || existing.targetKey !== targetKey) throw new ConflictException("Review idempotency key is already used");
-      return existing;
-    }
-    if (await this.prisma.verifiedReview.findUnique({ where: { supplierOrderId_reviewerOrganizationId_targetKey: { supplierOrderId: order.id, reviewerOrganizationId: context.organizationId, targetKey } } })) throw new ConflictException("This organization already reviewed this order execution");
-    const recentCount = await this.prisma.verifiedReview.count({ where: { reviewerOrganizationId: context.organizationId, supplierOrganizationId: order.supplierOrganizationId, createdAt: { gte: new Date(Date.now() - 60 * 60_000) } } });
-    const anomalyFlags = this.reviewAnomalies(input.comment, recentCount);
     return this.prisma.$transaction(async (tx) => {
+      // Serialize with receipt/composition commands and concurrent review submissions.
+      const rows = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`SELECT "id" FROM "SupplierOrder" WHERE "id" = ${orderId}::uuid AND "buyerOrganizationId" = ${context.organizationId}::uuid FOR UPDATE`);
+      if (!rows.length) throw new NotFoundException("Supplier order not found");
+      const order = await tx.supplierOrder.findUniqueOrThrow({ where: { id: orderId }, include: { items: true, shipments: { include: { items: true } } } });
+      if (input.productVariantId && !order.items.some(({ productVariantId }) => productVariantId === input.productVariantId)) throw new NotFoundException("Purchased product variant not found in this order");
+      const targetKey = input.productVariantId ? `PRODUCT:${input.productVariantId}` : "SUPPLIER";
+      const existing = await tx.verifiedReview.findUnique({ where: { idempotencyKey: input.idempotencyKey } });
+      if (existing) {
+        if (existing.supplierOrderId !== order.id || existing.reviewerOrganizationId !== context.organizationId || existing.targetKey !== targetKey) throw new ConflictException("Review idempotency key is already used");
+        return existing;
+      }
+      if (!fullyReceived(order)) throw new ConflictException("Отзыв доступен после полного фактического получения заказа. Подписание документов не требуется.");
+      if (input.productVariantId && !order.items.some(item => item.productVariantId === input.productVariantId && item.acceptedQuantity.gt(0))) throw new NotFoundException("Received product variant not found in this order");
+      if (await tx.verifiedReview.findUnique({ where: { supplierOrderId_reviewerOrganizationId_targetKey: { supplierOrderId: order.id, reviewerOrganizationId: context.organizationId, targetKey } } })) throw new ConflictException("This organization already reviewed this order execution");
+      const recentCount = await tx.verifiedReview.count({ where: { reviewerOrganizationId: context.organizationId, supplierOrganizationId: order.supplierOrganizationId, createdAt: { gte: new Date(Date.now() - 60 * 60_000) } } });
+      const anomalyFlags = this.reviewAnomalies(input.comment, recentCount);
       const review = await tx.verifiedReview.create({ data: { supplierOrderId: order.id, reviewerOrganizationId: context.organizationId, reviewerUserId: context.actorId, supplierOrganizationId: order.supplierOrganizationId, productVariantId: input.productVariantId, targetKey, overallRating: input.overallRating, dimensions: input.dimensions, comment: input.comment, status: anomalyFlags.length ? "PENDING" : "PUBLISHED", anomalyFlags, editDeadline: new Date(Date.now() + 14 * 86_400_000), idempotencyKey: input.idempotencyKey } });
       await tx.verifiedReviewRevision.create({ data: { reviewId: review.id, version: 1, snapshot: { overallRating: review.overallRating, dimensions: review.dimensions, comment: review.comment, status: review.status }, changedById: context.actorId, reason: "initial_verified_review" } });
       await tx.auditLog.create({ data: { ...context, action: "trust.review.created", entityType: "VerifiedReview", entityId: review.id, after: { supplierOrderId: order.id, supplierOrganizationId: order.supplierOrganizationId, targetKey, status: review.status, anomalyFlags } } });

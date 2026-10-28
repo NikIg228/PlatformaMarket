@@ -8,6 +8,8 @@ import {
 } from "../../../supplier-web/app/shipment-panel";
 import { useWorkspace } from "./workspace";
 import styles from "./workspace.module.css";
+import { frontendFeatures } from "@marketplace/api-client";
+import { OrderReview } from "./order-review";
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -87,6 +89,7 @@ export default function OrderDetail() {
             : undefined
         }
       />
+      {role === "clinic" && frontendFeatures.trust ? <PermissionFields required={["trust.review.create"]}><OrderReview key={`${organizationId}:${id}`} api={api} orderId={id} /></PermissionFields> : null}
     </div>
   );
 }

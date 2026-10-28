@@ -70,10 +70,22 @@ const reviewDimensionsSchema = z.object({
 export const createVerifiedReviewSchema = z.object({
   productVariantId: z.uuid().nullable().optional(),
   overallRating: z.number().int().min(1).max(5),
-  dimensions: reviewDimensionsSchema,
+  // A receipt can precede documents or optional services. Do not force the
+  // buyer to invent scores for aspects they have not observed yet.
+  dimensions: reviewDimensionsSchema.partial(),
   comment: z.string().trim().max(4_000).nullable().optional(),
   idempotencyKey,
 });
+
+export const verifiedOrderReviewSchema = z.object({
+  id: z.uuid(), overallRating: z.number().int().min(1).max(5), comment: z.string().nullable(),
+  status: z.enum(["PENDING", "PUBLISHED", "HIDDEN", "DISPUTED"]),
+});
+export const orderReviewStateSchema = z.object({
+  orderId: z.uuid(), eligible: z.boolean(), review: verifiedOrderReviewSchema.nullable(),
+});
+export type OrderReviewState = z.infer<typeof orderReviewStateSchema>;
+export type VerifiedOrderReview = z.infer<typeof verifiedOrderReviewSchema>;
 
 export const updateVerifiedReviewSchema = createVerifiedReviewSchema.omit({ idempotencyKey: true, productVariantId: true }).extend({ version, reason: z.string().trim().min(3).max(500).optional() });
 export const respondVerifiedReviewSchema = z.object({ response: z.string().trim().min(2).max(4_000), version });

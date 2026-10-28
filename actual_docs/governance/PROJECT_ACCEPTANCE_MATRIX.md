@@ -1,5 +1,55 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+<a id="buyer-context-review-20261029"></a>
+
+## 29.10 — buyer context и право на отзыв: LOCAL PASS, CI pending
+
+База main@8805498 + scoped diff. Только canonical source; несвязанный
+output/security-remediation-20261028 сохранён. Граница24А/33А: личный режим
+просмотра, организационное оформление, receipt-based review в unified UI;
+полный B2C checkout, формула рейтинга, native/KK и весь R7 вне этой приёмки.
+
+PASS: schemas build и2 contract tests; API types/build; client types и18 tests;
+buyer/web types, buyer21 tests и затем6 context tests после refresh fix;
+API trust/commerce/auth115 PASS,1 opt-in skip; scoped ESLint.
+`verify-postgres-integration.mjs` через `npm run db:test -- exec -- node` PASS:
+tenant isolation, rollback, concurrent idempotency, scarce stock и cart race.
+Тем же wrapper выполнен `verify-pilot-backend.mjs --contract-only` PASS;
+`node scripts/verify-runtime-split.mjs` PASS. Prerequisites schemas/API build
+выполнены отдельно и переиспользованы, это не сокращение alias coverage.
+DB identity dentmarket_audit_20260914/PG17.10/53 migrations проверена.
+Schema/lock/Prisma client не менялись; API build с npm_config_ignore_scripts=true
+переиспользует существующий generated client, не обходит изменение schema.
+
+Real HTTP/SQL verifier PASS: role denial403, foreign order404, invalid input400,
+два receipt с replay, partial409/full eligible при pending installation и без
+документов; concurrent review один id/ревизия/audit, второй ключ409; принудительный
+сбой audit откатывает review/revision в настоящей Prisma transaction.
+Браузер1440/390 PASS: вход, контекст A, checkbox/keyboard и checkout enable,
+personal блокировка/сохранность обеих корзин; switch A→B→A, сброс подтверждения,
+отказ403 чужой корзине; review load error/retry и восстановление после неизвестного
+результата отправки без второго отзыва. Финальная isolated go_live сборка PASS.
+
+Попытки verifier: cycle1/1 — cartItemId отсутствовал в fixture; /2 — нет fresh
+предложения; /3 — ожидание201 вместо документированного validate200. Лимит
+остановлен; владелец явно разрешил новый цикл. Cycle2/1: выявлена одноорганизационная
+handoff session; перед switch добавлен штатный refresh текущих членств, действия
+покупателя блокируются до его завершения. Целевые6 tests и buyer types PASS;
+пересборка изменённого frontend PASS. Cycle2/2: синхронная проверка checkbox
+до завершения rendering; заменена штатным auto-wait assertion. Cycle2/3 browser
+PASS. После композиционной правки header повтор affected build/browser PASS.
+Правила не ослаблены; backend PASS переиспользован на неизменённых исходниках.
+
+Artifacts: `.tmp/buyer-context-review-20261029/`,
+`output/playwright/buyer-context-review-20261029/`; snapshots/computed styles
+приняты: controls44px/radius8px/Manrope14px, overflow=false1440/390; просмотрены
+desktop/mobile снимки. Source fingerprint совпадает с `inputs.json`, финальный
+bundle budget PASS. Собственные API4412/web3103 закрываются finally, тестовые сессии
+отзываются, свой опубликованный offer скрывается/архивируется. Dev4012/3000
+и рабочая БД не затронуты. Commit/push/CI pending; full release не запускался.
+Применены development-toolkit (backend/frontend/review/verification), Playwright
+и React checklist; проверки выполняет тот же исполнитель без делегирования.
+
 ## 29.10 — три security fixes, LOCAL PASS; remote CI pending
 
 По явному поручению исправлены ZIP actual expansion, browser-bound handoff и
