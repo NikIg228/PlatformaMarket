@@ -33,7 +33,8 @@ function findEndOfCentralDirectory(body: Buffer) {
   ) {
     if (body.readUInt32LE(offset) === END_OF_CENTRAL_DIRECTORY_SIGNATURE) {
       const commentLength = body.readUInt16LE(offset + 20);
-      if (offset + END_OF_CENTRAL_DIRECTORY_LENGTH + commentLength <= body.length)
+      if (offset + END_OF_CENTRAL_DIRECTORY_LENGTH + commentLength === body.length &&
+        body.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06])) === offset)
         return offset;
     }
   }
@@ -62,6 +63,10 @@ export async function assertSafeZipPackage(
     reject("central directory is outside the package");
   if (centralDirectoryOffset + centralDirectorySize > body.length)
     reject("central directory is truncated");
+  // JSZip shifts its reader origin when this gap is non-zero. Reject that
+  // representation so preflight and ExcelJS inspect exactly the same entries.
+  if (centralDirectoryOffset + centralDirectorySize !== endOffset)
+    reject("central directory origin is ambiguous");
 
   let totalUncompressedBytes = 0;
   const entries: Array<{ start: number; end: number; dataStart: number; method: number; size: number }> = [];

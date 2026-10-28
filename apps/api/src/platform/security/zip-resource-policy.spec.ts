@@ -60,4 +60,21 @@ describe("ZIP resource policy", () => {
     body.writeUInt32LE(body.length, directory + 20);
     await expect(assertSafeZipPackage(body)).rejects.toThrow(/truncated/);
   });
+  it("rejects concatenated packages that shift the downstream reader origin", async () => {
+    const second = zip([{ body: Buffer.alloc(1024 * 1024), size: 1 }]);
+    const compressedSize = second.readUInt32LE(18);
+    const first = zip([{ body: Buffer.alloc(compressedSize), method: 0 }]);
+    // Both directories have the same relative offset, but JSZip would select
+    // the second package while an unshifted preflight sees only the safe first.
+    expect(first.readUInt32LE(first.length - 6)).toBe(second.readUInt32LE(second.length - 6));
+    await expect(assertSafeZipPackage(Buffer.concat([first.subarray(0, -22), second]))).rejects.toThrow(/origin is ambiguous/);
+  });
+  it("rejects a later end signature hidden in a ZIP comment", async () => {
+    const body = zip([{ body: Buffer.from("normal") }]);
+    body.writeUInt16LE(22, body.length - 2);
+    const comment = Buffer.alloc(22);
+    comment.writeUInt32LE(0x06054b50);
+    comment.writeUInt16LE(0xffff, 20);
+    await expect(assertSafeZipPackage(Buffer.concat([body, comment]))).rejects.toThrow(/end of central directory/);
+  });
 });

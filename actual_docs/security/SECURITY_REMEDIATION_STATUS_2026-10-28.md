@@ -270,6 +270,9 @@ Medium ZIP actual expansion; Low browser handoff/login CSRF; Low billing authori
 
 - ZIP: перед ExcelJS проверяются local payload и фактический поток распаковки;
   превышение advertised/entry/total budget, alias и усечённый поток отклоняются.
+  Финальная сверка JSZip обнаружила origin-shift при concatenated ZIP: неоднозначный
+  gap перед EOCD и скрытый последний EOCD в comment также запрещены. Два новых
+  regression cases плюс parser controls —27/27 PASS; scoped ESLint PASS.
 - Handoff: одноразовый код требует capability-specific host-only HttpOnly proof
   cookie; в production используется Secure `__Host-` cookie без Domain. В БД
   хранится hash. Неверный proof не расходует код; TTL/CAS/revocation сохранены.
@@ -305,3 +308,14 @@ next-env; пользовательская .next сохранена. Следу�
 на точном SHA. До remote SUCCESS результат не считается полностью verified.
 Workbench metadata не переводилась в verified: remediation actionToken не выдан;
 прежний token другого scan не используется. Оставшийся audit кода пока не начат.
+
+Первая публикация `8f4468a3d4a706ecde4f6a0e3d0b32636b0472c6`: remote SHA совпал;
+CI40755337317 / Security40755337263 запущены. До их завершения обнаружено уточнение
+ZIP parser boundary выше; финальная приёмка должна ссылаться на дополненный SHA,
+а не на этот промежуточный запуск. Handoff/billing suites и PG PASS переиспользуются:
+их входы не менялись; ZIP tests/types/API build проверяются после уточнения.
+API typecheck PASS. Повторный обычный build остановлен в Prisma prebuild из-за
+EPERM rename занятой Windows DLL; schema неизменна, ранее generated client
+переиспользуется через npm_config_ignore_scripts=true, без остановки чужих процессов.
+Clean install/generation остаётся обязательным CI gate.
+Повторный API build с reuse generated client — PASS.

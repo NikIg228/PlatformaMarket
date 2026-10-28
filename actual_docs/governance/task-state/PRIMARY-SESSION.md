@@ -4368,3 +4368,12 @@ remote CI/Security ещё не запускались. Managed evidence security
 Concurrent docs-only commit5c5d5ba уже опубликован другим writer; наш source diff
 сохранён, чужая документация не включается в security commit. Оставшийся audit
 не начинать до завершения этого пакета и нового поручения.
+
+Промежуточная публикация8f4468a, CI40755337317/Security40755337263 ещё running.
+Финальная сверка JSZip выявила reader-origin shift для concatenated ZIP и разный
+выбор EOCD в comment. Shared guard теперь требует однозначный EOCD/central end;
+ZIP/parser27 и scoped lint PASS. Это уточнение первого finding, не новый scope.
+API types/build повторяются; final CI должен проверить дополненный SHA.
+ZIP уточнение: API types PASS, обычный build prebuild EPERM занятой Prisma DLL;
+повторный build с npm_config_ignore_scripts=true PASS, schema/client inputs
+не менялись. Clean generation проверяет CI; чужие процессы не остановлены.
