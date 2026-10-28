@@ -380,7 +380,8 @@ export class AuthSessionsService {
     return this.prisma.authSession.findMany({ where: { userId, status: "ACTIVE", expiresAt: { gt: new Date() } }, select: { id: true, activeOrganizationId: true, authMethods: true, ipAddress: true, userAgent: true, lastUsedAt: true, expiresAt: true, createdAt: true }, orderBy: { lastUsedAt: "desc" } });
   }
 
-  async createHandoff(userId: string, organizationId: string, capability: "BUYER" | "SUPPLIER", sessionId?: string) {
+  async createHandoff(userId: string, organizationId: string, capability: "BUYER" | "SUPPLIER", sessionId: string | undefined, browserProof: string) {
+    if (!/^[A-Za-z0-9_-]{43}$/.test(browserProof)) throw new UnauthorizedException("Browser handoff proof is required");
     const now = new Date();
     const session = sessionId
       ? await this.prisma.authSession.findFirst({ where: { id: sessionId, userId, status: "ACTIVE", expiresAt: { gt: now }, organizationIds: { has: organizationId } } })
@@ -391,18 +392,21 @@ export class AuthSessionsService {
     if (!membership) throw new UnauthorizedException("Organization capability is not available for handoff");
     const code = randomBytes(32).toString("base64url");
     const expiresAt = new Date(Date.now() + 120_000);
-    await this.prisma.idempotencyRecord.create({ data: { scope: "session-handoff", key: hash(code), requestHash: hash(`${userId}:${organizationId}:${capability}`), responseCode: 200, responseBody: { sessionId: session.id, userId, organizationId, capability } as Prisma.InputJsonValue, expiresAt } });
+    await this.prisma.idempotencyRecord.create({ data: { scope: "session-handoff", key: hash(code), requestHash: hash(`${userId}:${organizationId}:${capability}`), responseCode: 200, responseBody: { sessionId: session.id, userId, organizationId, capability, browserProofHash: hash(browserProof) } as Prisma.InputJsonValue, expiresAt } });
     return { handoffCode: code, expiresAt, organizationId, organizationDisplayName: membership.organization.displayName, capability };
   }
 
-  async exchangeHandoff(code: string, metadata: RequestMetadata = {}) {
+  async exchangeHandoff(code: string, browserProofs: Partial<Record<"BUYER" | "SUPPLIER", string>>, metadata: RequestMetadata = {}) {
     return this.prisma.$transaction(async tx => {
     const record = await tx.idempotencyRecord.findUnique({ where: { scope_key: { scope: "session-handoff", key: hash(code) } } });
     if (!record || record.expiresAt <= new Date() || record.responseCode !== 200) throw new UnauthorizedException("Session handoff is invalid or expired");
+    const payload = record.responseBody && typeof record.responseBody === "object" && !Array.isArray(record.responseBody) ? record.responseBody as { sessionId?: string; userId?: string; organizationId?: string; capability?: "BUYER" | "SUPPLIER"; browserProofHash?: string } : {};
+    if (!payload.sessionId || !payload.userId || !payload.organizationId || !payload.capability) throw new UnauthorizedException("Session handoff payload is invalid");
+    const proof = browserProofs[payload.capability];
+    if (!proof || !/^[A-Za-z0-9_-]{43}$/.test(proof) || !payload.browserProofHash || !secureEqual(hash(proof), payload.browserProofHash))
+      throw new UnauthorizedException("Session handoff belongs to another browser");
     const consumed = await tx.idempotencyRecord.updateMany({ where: { id: record.id, responseCode: 200, expiresAt: { gt: new Date() } }, data: { responseCode: 410 } });
     if (consumed.count !== 1) throw new UnauthorizedException("Session handoff has already been used");
-    const payload = record.responseBody && typeof record.responseBody === "object" && !Array.isArray(record.responseBody) ? record.responseBody as { sessionId?: string; userId?: string; organizationId?: string; capability?: "BUYER" | "SUPPLIER" } : {};
-    if (!payload.sessionId || !payload.userId || !payload.organizationId || !payload.capability) throw new UnauthorizedException("Session handoff payload is invalid");
     const source = await tx.authSession.findUnique({ where: { id: payload.sessionId } });
     if (!source || source.userId !== payload.userId) throw new UnauthorizedException("Authentication session is revoked or expired");
     await lockSessionRows(tx, [source.id, ...(source.originLoginSessionId ? [source.originLoginSessionId] : [])]);

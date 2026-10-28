@@ -261,3 +261,47 @@ rules/14 synthetic vectors PASS. Lockfile, types и продуктовый ко�
 и [Security40742163648](https://github.com/NikIg228/PlatformaMarket/actions/runs/40742163648)
 completed/success. Ожидание финального CI снято; прежние ошибки выше сохранены
 как история попыток. Общий code audit и production-приёмка этим не закрываются.
+
+## Три исправления code audit — 29.10.2026
+
+Scope: три finding завершённого scan `59e803b8-0bc7-4a64-9181-5553a2f09969`.
+Medium ZIP actual expansion; Low browser handoff/login CSRF; Low billing authority
+в non-production FULL_ACCESS. Исходный sealed report и severity сохранены.
+
+- ZIP: перед ExcelJS проверяются local payload и фактический поток распаковки;
+  превышение advertised/entry/total budget, alias и усечённый поток отклоняются.
+- Handoff: одноразовый код требует capability-specific host-only HttpOnly proof
+  cookie; в production используется Secure `__Host-` cookie без Domain. В БД
+  хранится hash. Неверный proof не расходует код; TTL/CAS/revocation сохранены.
+  Bearer credentials из URL отклоняются; восстановление sessionStorage работает.
+- Billing: createPlan/subscribe/setFeature требуют MARKETPLACE_OPERATOR до чтения
+  или записи, независимо от FULL_ACCESS; операторские действия сохранены.
+  Prisma schema и migration не менялись. API OpenAPI описывает cookie protocol.
+
+Совместимые synthetic fixtures перенесены из bearer URL в storage либо получают
+выданный сервером proof cookie; proof не включается в navigable URL. В canonical
+CI добавлены два buyer/supplier browser regression cases с отдельным browser context.
+
+Локальные gates: focused ZIP/parser25, billing/policy13, auth13/client14 и cookie2
+PASS; owning suites API1024/client96 PASS (7 opt-in PG cases skipped здесь).
+`npm run typecheck -- --concurrency=1` —13/13 PASS; финальный E2E typecheck/scoped
+ESLint PASS. Scoped lint всех изменённых TS/MJS, Node CI tests6/6 и node --check
+fixture scripts PASS. `npm run verify:postgres` — PASS на owned disposable PG17;
+27 дополнительных real HTTP/SQL assertions PASS: отсутствующий/чужой proof401,
+затем нормальный exchange201/replay401; member billing403 без эффектов,
+operator writes201/200 с проверкой persistence. `node scripts/verify-runtime-split.mjs`
+после API build — PASS для трёх ролей и entrypoint/production guards.
+
+История: первые API build/typecheck выявили неверный тип только нового test input,
+исправлен string→number. Подготовка PG:1 — pg_ctl inherited-pipe hang,2 — штатный
+dev/test alias guard;3 — исправленная подготовка, SQL gate и HTTP/SQL PASS.
+Own PG/API остановлены, рабочая БД и чужие процессы не затронуты; temp cluster
+не объявляется удалённым. Повторных неизменённых owning suites не требовалось.
+
+Managed evidence: `artifacts/security-three-fixes-20261029/` standalone collection.
+Отдельные security/compatibility и bypass/regression passes выполнены без агентов.
+Unified Next build PASS с isolated generated output и точным восстановлением
+next-env; пользовательская .next сохранена. Следующий gate — scoped commit/push и CI/Security
+на точном SHA. До remote SUCCESS результат не считается полностью verified.
+Workbench metadata не переводилась в verified: remediation actionToken не выдан;
+прежний token другого scan не используется. Оставшийся audit кода пока не начат.

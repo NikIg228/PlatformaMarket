@@ -18,9 +18,14 @@ try {
   const login = person => request('/auth/login', { email: person.email, password: person.password });
   const rootA = await login(buyer);
   assert.equal((await db.authSession.findUniqueOrThrow({ where: { id: rootA.sessionId } })).originLoginSessionId, rootA.sessionId);
-  const issue = (root, capability) => request('/auth/handoff', { capability }, 201, root.accessToken);
+  const proofs = new Map();
+  const issue = async (root, capability) => {
+    const result = await request('/auth/handoff', { capability }, 201, root.accessToken);
+    proofs.set(result.handoffCode, result.browserProofCookie);
+    return result;
+  };
   async function exchange(code, expected = 201) {
-    const response = await fetch(apiUrl + '/auth/handoff/exchange', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ handoffCode: code }) });
+    const response = await fetch(apiUrl + '/auth/handoff/exchange', { method: 'POST', headers: { 'content-type': 'application/json', cookie: proofs.get(code) ?? '' }, body: JSON.stringify({ handoffCode: code }) });
     assert.equal(response.status, expected, 'handoff exchange status');
     const payload = await response.json();
     return { ...payload, cookie: response.headers.getSetCookie().map(value => value.split(';')[0]).join('; ') };
@@ -75,7 +80,7 @@ try {
   assert.equal(await db.securityEvent.count({ where: { sessionId: rollbackRoot.sessionId, type: 'auth.session.logout' } }), 1);
   const raceRoot = await login(buyer);
   const handoff = await issue(raceRoot, 'BUYER');
-  const race = await Promise.all([logout(raceRoot), fetch(apiUrl + '/auth/handoff/exchange', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ handoffCode: handoff.handoffCode }) })]);
+  const race = await Promise.all([logout(raceRoot), fetch(apiUrl + '/auth/handoff/exchange', { method: 'POST', headers: { 'content-type': 'application/json', cookie: handoff.browserProofCookie }, body: JSON.stringify({ handoffCode: handoff.handoffCode }) })]);
   assert.ok([201, 401].includes(race[1].status), 'handoff serializes before or after revoke');
   assert.equal((await db.authSession.findUniqueOrThrow({ where: { id: raceRoot.sessionId } })).status, 'REVOKED');
   const racePayload = await race[1].json();

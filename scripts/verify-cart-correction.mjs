@@ -32,7 +32,7 @@ async function createCase(index) {
   const item = await fixture.request(`/carts/${cart.id}/items`, { offerId: offer.id, quantity: 4 }, 201, session.accessToken);
   const handoff = await fixture.request('/auth/handoff', { capability: 'BUYER' }, 201, session.accessToken);
   cases.set(index, { user, offerId: offer.id, cartId: cart.id, itemId: item.id, accessToken: session.accessToken });
-  return { name, cartId: cart.id, itemId: item.id, handoff: { capability: 'BUYER', organizationId: user.organizationId, handoffCode: handoff.handoffCode } };
+  return { name, cartId: cart.id, itemId: item.id, handoff: { capability: 'BUYER', organizationId: user.organizationId, handoffCode: handoff.handoffCode, browserProofCookie: handoff.browserProofCookie } };
 }
 async function readback(entry) {
   const cart = await db.cart.findUniqueOrThrow({ where: { id: entry.cartId }, include: { items: true } });

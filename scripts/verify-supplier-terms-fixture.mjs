@@ -39,7 +39,12 @@ let count=0,stopping=false;
 async function request(route,body,account,expected=200,headers={}) {
   const response=await fetch(`http://127.0.0.1:${apiPort}/api`+route,{method:body===undefined?'GET':'POST',headers:{'content-type':'application/json',...(account?{authorization:`Bearer ${account.session.accessToken}`} : {}),...headers},body:body===undefined?undefined:JSON.stringify(body)});
   assert.equal(response.status,expected,`${route}: ${response.status}, expected ${expected}; body omitted`);
-  return response.headers.get('content-type')?.includes('application/json')?response.json():response.text();
+  const payload = response.headers.get('content-type')?.includes('application/json') ? await response.json() : await response.text();
+  if (route === '/auth/handoff' && response.ok) {
+    payload.browserProofCookie = response.headers.getSetCookie().find(value => value.startsWith('mp_handoff_'))?.split(';')[0];
+    assert.ok(payload.browserProofCookie, 'Server-issued browser proof');
+  }
+  return payload;
 }
 async function account(key,capability='SUPPLIER') {
   if(accounts.has(key)) return accounts.get(key);

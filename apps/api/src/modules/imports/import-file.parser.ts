@@ -84,7 +84,7 @@ export class ImportFileParser {
 
     if (input.fileType === "EXCEL") {
       try {
-        assertSafeZipPackage(buffer);
+        await assertSafeZipPackage(buffer);
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.load(buffer as unknown as Parameters<typeof workbook.xlsx.load>[0]);
         const sheet = workbook.worksheets[0];

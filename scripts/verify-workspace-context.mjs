@@ -57,7 +57,7 @@ if (serve) {
     await request('/auth/handoff', { capability: 'SUPPLIER' }, 401, buyerSession.accessToken);
     for (const [entry, session, capability] of [[buyer,buyerSession,'BUYER'],[supplier,supplierSession,'SUPPLIER']]) {
       const handoff = await request('/auth/handoff', { capability }, 201, session.accessToken);
-      const exchangeResponse = await fetch(apiUrl + '/auth/handoff/exchange', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ handoffCode: handoff.handoffCode }) });
+      const exchangeResponse = await fetch(apiUrl + '/auth/handoff/exchange', { method: 'POST', headers: { 'content-type': 'application/json', cookie: handoff.browserProofCookie }, body: JSON.stringify({ handoffCode: handoff.handoffCode }) });
       assert.equal(exchangeResponse.status, 201);
       const exchanged = await exchangeResponse.json();
       assert.equal(exchanged.organizationId, entry.organizationId); assert.equal(exchanged.capability, capability);

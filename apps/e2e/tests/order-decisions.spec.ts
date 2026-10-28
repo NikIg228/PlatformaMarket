@@ -1,4 +1,5 @@
 import {test,expect,type Page} from '@playwright/test';
+import { openFixtureHandoff } from '../fixtures/browser-handoff';
 import {spawn,type ChildProcess} from 'node:child_process';
 import path from 'node:path';
 import {writeFile} from 'node:fs/promises';
@@ -26,7 +27,7 @@ test.afterAll(async()=>{if(!child||child.exitCode!==null)return;await new Promis
 test.afterEach(async({page},info)=>{if(info.status!==info.expectedStatus)await page.screenshot({path:info.outputPath('failure.png'),fullPage:true}).catch(()=>undefined);await page.goto('about:blank');});
 async function openRole(page:Page,role:'buyer'|'supplier',handoff:object){
  const origin=`http://127.0.0.1:${role==='buyer'?3101:3102}`;
- await page.goto(`${origin}/#session=${encodeURIComponent(JSON.stringify(handoff))}`);await expect(page).toHaveURL(origin+'/');
+ await openFixtureHandoff(page,`${origin}/`,handoff);await expect(page).toHaveURL(origin+'/');
  if((page.viewportSize()?.width??1440)<650)await page.getByRole('button',{name:'Открыть меню',exact:true}).click();
  await page.getByRole('navigation').getByRole('button',{name:'Заказы',exact:true}).click();
  await expect(page.getByRole('heading',{name:role==='buyer'?'Заказы':'Заказы покупателей',exact:true})).toBeVisible();

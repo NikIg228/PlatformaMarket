@@ -1,4 +1,5 @@
 import {test,expect,type Page} from '@playwright/test';
+import { openFixtureHandoff } from '../fixtures/browser-handoff';
 import {spawn,type ChildProcess} from 'node:child_process';
 import path from 'node:path';
 import {writeFile} from 'node:fs/promises';
@@ -10,7 +11,7 @@ test.afterAll(async()=>{if(!child||child.exitCode!==null)return;await new Promis
 test.afterEach(async({page},info)=>{if(info.status!==info.expectedStatus){await page.screenshot({path:info.outputPath('failure.png'),fullPage:true}).catch(()=>undefined);await writeFile(info.outputPath('failure-aria.txt'),await page.locator('body').ariaSnapshot()).catch(()=>undefined);}await page.goto('about:blank');});
 type Setup={runId:string;number:string;pdf:string;organizationId:string;handoff:object};
 type Readback={organizationId:string;documents:{id:string;amountMinor:string;currency:string;documentNumber:string;checksumSha256:string;byteSize:number;status:string;requiredSignatureCount:number;audit:number;outbox:number}[]};
-async function open(page:Page,key:string){const data=await fixture<Setup>('setup',{key});const port=key==='supplier'?3102:3101;await page.goto(`http://127.0.0.1:${port}/documents#session=${encodeURIComponent(JSON.stringify(data.handoff))}`);await expect(page).toHaveURL(`http://127.0.0.1:${port}/documents`);await expect(page.getByRole('heading',{name:'Документы',exact:true})).toBeVisible();return data;}
+async function open(page:Page,key:string){const data=await fixture<Setup>('setup',{key});const port=key==='supplier'?3102:3101;await openFixtureHandoff(page,`http://127.0.0.1:${port}/documents`,data.handoff);await expect(page).toHaveURL(`http://127.0.0.1:${port}/documents`);await expect(page.getByRole('heading',{name:'Документы',exact:true})).toBeVisible();return data;}
 async function fill(page:Page,data:Setup){await page.getByRole('button',{name:'Загрузить документ',exact:true}).click();const dialog=page.getByRole('dialog');await dialog.getByLabel(/^Тип документа\s*\*?$/).selectOption('OTHER');await dialog.getByLabel(/^Название\s*\*?$/).fill('AUD07 Тестовый файл');await dialog.getByLabel(/^Номер\s*\*?$/).fill(data.number);await dialog.getByLabel('Файл PDF или DOCX',{exact:true}).setInputFiles({name:'audit07.pdf',mimeType:'application/pdf',buffer:Buffer.from(data.pdf,'base64')});return dialog;}
 async function readback(key:string,name:string){const result=await fixture<Readback>('readback',{key});await writeFile(test.info().outputPath(name+'.json'),JSON.stringify(result,null,2));return result;}
 

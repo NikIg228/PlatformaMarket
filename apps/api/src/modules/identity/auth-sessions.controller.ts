@@ -2,7 +2,7 @@ import { BadRequestException, Body, Controller, Delete, Get, Header, Headers, Pa
 import { currentSessionQuerySchema, localOperatorLoginSchema, operatorLoginSchema, workspaceHandoffRequestSchema, workspaceExchangeRequestSchema } from "@marketplace/schemas";
 import { ApiCoreBody, ApiCoreErrors, ApiCoreProtected, ApiCoreResponse } from "../../platform/openapi/core-openapi";
 import { demoSessionSchema, emailForgotPasswordSchema, emailLoginSchema, emailRegisterSchema, emailResetPasswordSchema, emailTokenSchema, refreshSessionSchema, revokeSessionSchema, socialExchangeSchema, switchSessionOrganizationSchema, unlinkExternalIdentitySchema } from "@marketplace/schemas";
-import { ApiQuery, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import type { Request, Response } from "express";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { environment } from "../../platform/config/environment";
@@ -12,6 +12,11 @@ import { sessionLogoutRequestSchema } from "@marketplace/schemas";
 
 const cookies = (header: string | undefined) => Object.fromEntries((header ?? "").split(";").map((part) => part.trim().split("=")).filter(([key, value]) => key && value).map(([key, value]) => [key, decodeURIComponent(value)]));
 const equal = (left: string, right: string) => { const a = Buffer.from(left); const b = Buffer.from(right); return a.length === b.length && timingSafeEqual(a, b); };
+const handoffCookie = (workspace: "BUYER" | "SUPPLIER") => {
+  const secure = environment().NODE_ENV === "production";
+  return { name: `${secure ? "__Host-" : ""}mp_handoff_${workspace.toLowerCase()}`,
+    options: { secure, sameSite: "lax" as const, httpOnly: true, path: secure ? "/" : "/api/auth/handoff" } };
+};
 
 @ApiTags("auth-sessions")
 @Throttle({ ip: { limit: 20, ttl: 60_000 }, user: { limit: 30, ttl: 60_000 }, tenant: { limit: 60, ttl: 60_000 } })
@@ -131,22 +136,32 @@ export class AuthSessionsController {
   }
 
   @Post("handoff")
+  @ApiOperation({ description: "Issues a one-use code and host-only HttpOnly browser proof cookie. Send credentials with issuance and exchange; code alone cannot authenticate another browser." })
   @Header("Cache-Control", "no-store") @ApiCoreProtected()
   @ApiCoreBody("WorkspaceHandoffRequest") @ApiCoreResponse("WorkspaceHandoffResponse", 201)
-  createHandoff(@Headers("x-user-id") userId: string, @Headers("x-organization-id") organizationId: string, @Headers("x-session-id") sessionId: string, @Body() body: unknown) {
+  async createHandoff(@Headers("x-user-id") userId: string, @Headers("x-organization-id") organizationId: string, @Headers("x-session-id") sessionId: string, @Body() body: unknown, @Res({ passthrough: true }) response: Response) {
     const parsed = workspaceHandoffRequestSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException("Выберите кабинет клиники или поставщика");
     if (!userId || !organizationId || !sessionId) throw new UnauthorizedException("Authenticated session and organization are required");
-    return this.sessions.createHandoff(userId, organizationId, parsed.data.capability, sessionId);
+    const proof = randomBytes(32).toString("base64url");
+    const result = await this.sessions.createHandoff(userId, organizationId, parsed.data.capability, sessionId, proof);
+    const cookie = handoffCookie(parsed.data.capability);
+    response.cookie(cookie.name, proof, { ...cookie.options, expires: new Date(result.expiresAt) });
+    return result;
   }
 
   @Post("handoff/exchange")
+  @ApiOperation({ description: "Requires the capability-specific browser proof cookie set by /auth/handoff. Invalid/missing proof returns401 without consuming the code; success clears it and sets workspace cookies." })
   @Header("Cache-Control", "no-store")
   @ApiCoreBody("WorkspaceExchangeRequest") @ApiCoreResponse("WorkspaceSessionResponse", 201)
   async exchangeHandoff(@Body() body: unknown, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
     const parsed = workspaceExchangeRequestSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException("handoffCode is required");
-    const result = await this.sessions.exchangeHandoff(parsed.data.handoffCode, this.metadata(request));
+    const cookie = cookies(request.header("cookie"));
+    const result = await this.sessions.exchangeHandoff(parsed.data.handoffCode,
+      { BUYER: cookie[handoffCookie("BUYER").name], SUPPLIER: cookie[handoffCookie("SUPPLIER").name] }, this.metadata(request));
+    const proofCookie = handoffCookie(result.capability);
+    response.clearCookie(proofCookie.name, proofCookie.options);
     const csrfToken = randomBytes(32).toString("base64url");
     this.setCookies(response, result.refreshToken, csrfToken, result.refreshTokenExpiresAt, result.capability);
     return { ...result, refreshToken: undefined, csrfToken };

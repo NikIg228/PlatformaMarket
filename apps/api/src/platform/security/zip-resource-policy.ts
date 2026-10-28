@@ -1,3 +1,7 @@
+import { createInflateRaw } from "node:zlib";
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
+
 export const XLSX_ZIP_RESOURCE_LIMITS = {
   maxEntries: 2_000,
   maxEntryUncompressedBytes: 16 * 1024 * 1024,
@@ -11,7 +15,7 @@ const CENTRAL_DIRECTORY_SIGNATURE = 0x02014b50;
 const END_OF_CENTRAL_DIRECTORY_LENGTH = 22;
 const MAX_ZIP_COMMENT_BYTES = 0xffff;
 
-export type ZipResourceLimits = typeof XLSX_ZIP_RESOURCE_LIMITS;
+export type ZipResourceLimits = { [K in keyof typeof XLSX_ZIP_RESOURCE_LIMITS]: number };
 
 function reject(message: string): never {
   throw new Error(`ZIP resource limits exceeded: ${message}`);
@@ -36,7 +40,7 @@ function findEndOfCentralDirectory(body: Buffer) {
   reject("end of central directory is missing");
 }
 
-export function assertSafeZipPackage(
+export async function assertSafeZipPackage(
   body: Buffer,
   limits: ZipResourceLimits = XLSX_ZIP_RESOURCE_LIMITS,
 ) {
@@ -60,6 +64,7 @@ export function assertSafeZipPackage(
     reject("central directory is truncated");
 
   let totalUncompressedBytes = 0;
+  const entries: Array<{ start: number; end: number; dataStart: number; method: number; size: number }> = [];
   let offset = centralDirectoryOffset;
   for (let index = 0; index < entryCount; index += 1) {
     if (offset + 46 > body.length || body.readUInt32LE(offset) !== CENTRAL_DIRECTORY_SIGNATURE)
@@ -85,10 +90,49 @@ export function assertSafeZipPackage(
       uncompressedSize > limits.ratioCheckThresholdBytes &&
       uncompressedSize / compressedSize > limits.maxCompressionRatio
     ) reject(`entry ${index} compression ratio is too high`);
+    const method = body.readUInt16LE(offset + 10);
+    const flags = body.readUInt16LE(offset + 8);
+    const start = body.readUInt32LE(offset + 42);
+    // Bind the directory to the bytes the downstream ZIP reader will inflate.
+    if ((flags & 1) || ![0, 8].includes(method)) reject("unsupported ZIP encoding");
+    if (start + 30 > centralDirectoryOffset || body.readUInt32LE(start) !== 0x04034b50)
+      reject("local header is outside the payload");
+    if (body.readUInt16LE(start + 8) !== method || (body.readUInt16LE(start + 6) & 1))
+      reject("local encoding differs from directory");
+    const dataStart = start + 30 + body.readUInt16LE(start + 26) + body.readUInt16LE(start + 28);
+    const end = dataStart + compressedSize;
+    if (dataStart > centralDirectoryOffset || end > centralDirectoryOffset) reject("compressed payload is truncated");
+    entries.push({ start, end, dataStart, method, size: uncompressedSize });
     offset += 46 + nameLength + extraLength + commentLength;
     if (offset > centralDirectoryOffset + centralDirectorySize)
       reject("central directory entry exceeds its declared bounds");
   }
   if (offset !== centralDirectoryOffset + centralDirectorySize)
     reject("central directory contains trailing or missing entries");
+  // Aliases must not repeatedly inflate the same compressed input.
+  entries.sort((a, b) => a.start - b.start);
+  for (let index = 1; index < entries.length; index++) {
+    if (entries[index]!.start < entries[index - 1]!.end) reject("overlapping ZIP entries");
+  }
+  let actualTotal = 0;
+  for (const entry of entries) {
+    const payload = body.subarray(entry.dataStart, entry.end);
+    if (entry.method === 0) {
+      if (payload.length !== entry.size) reject("stored size mismatch");
+      actualTotal += payload.length;
+      continue;
+    }
+    const inflater = createInflateRaw({ chunkSize: 16 * 1024 });
+    let actualSize = 0;
+    inflater.on("data", (chunk: Buffer) => {
+      actualSize += chunk.length;
+      actualTotal += chunk.length;
+      if (actualSize > entry.size || actualSize > limits.maxEntryUncompressedBytes || actualTotal > limits.maxTotalUncompressedBytes)
+        inflater.destroy(new Error("actual ZIP expansion exceeds limits"));
+    });
+    try { await pipeline(Readable.from([payload]), inflater); }
+    catch { reject("invalid or excessive actual expansion"); }
+    if (actualSize !== entry.size || inflater.bytesWritten !== payload.length)
+      reject("inflated size or compressed stream mismatch");
+  }
 }

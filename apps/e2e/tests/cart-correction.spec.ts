@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { openFixtureHandoff } from '../fixtures/browser-handoff';
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
 test.skip(process.env.E2E_CART_CORRECTION_LIVE !== 'true', 'Explicit approved audit DB and production buyer artifact required');
@@ -38,7 +39,7 @@ async function open(page: Page, index: number) {
   const entry = await fixture<Case>('create', index);
   // Genuine one-use handoff obtained via password login + actual local email proof.
   // No injected JWT/sessionStorage and no credential-bearing trace.
-  await page.goto(`http://127.0.0.1:3101/#session=${encodeURIComponent(JSON.stringify(entry.handoff))}`);
+  await openFixtureHandoff(page, 'http://127.0.0.1:3101/', entry.handoff);
   await expect(page).toHaveURL('http://127.0.0.1:3101/');
   if (!(await page.getByRole('button', { name: 'Корзина', exact: true }).isVisible())) await page.getByRole('button', { name: 'Открыть меню', exact: true }).click();
   await page.getByRole('button', { name: 'Корзина', exact: true }).click();

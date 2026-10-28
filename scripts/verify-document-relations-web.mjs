@@ -9,7 +9,7 @@ process.on('message',async message=>{try {
   else if(message.type==='setup') {
     const account=data.accounts[message.key];assert.ok(['buyer','supplier'].includes(message.key));
     const handoff=await fixture.request('/auth/handoff',{capability:account.capability},201,account.session.accessToken);
-    value={runId:fixture.runId,number:`AUD072-WEB-${message.key}-${fixture.runId}`,pdf:data.pdf,orderId:data.ownOrder.id,orderNumber:data.ownOrder.orderNumber,baseId:data.ownBase.id,baseNumber:data.ownBase.documentNumber,foreignOrderId:data.foreignOrder.id,foreignBaseId:data.foreignBase.id,handoff:{capability:account.capability,organizationId:account.organizationId,handoffCode:handoff.handoffCode}};
+    value={runId:fixture.runId,number:`AUD072-WEB-${message.key}-${fixture.runId}`,pdf:data.pdf,orderId:data.ownOrder.id,orderNumber:data.ownOrder.orderNumber,baseId:data.ownBase.id,baseNumber:data.ownBase.documentNumber,foreignOrderId:data.foreignOrder.id,foreignBaseId:data.foreignBase.id,handoff:{capability:account.capability,organizationId:account.organizationId,handoffCode:handoff.handoffCode,browserProofCookie:handoff.browserProofCookie}};
   } else if(message.type==='readback') {
     const account=data.accounts[message.key];assert.ok(account);
     const records=await fixture.db.document.findMany({where:{ownerOrganizationId:account.organizationId,documentNumber:{startsWith:'AUD072-WEB-'}},select:{id:true,supplierOrderId:true,baseAgreementDocumentId:true,documentNumber:true,status:true,participants:{select:{organizationId:true}}}});

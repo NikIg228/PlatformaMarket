@@ -1,3 +1,4 @@
+import { openFixtureHandoff } from "../fixtures/browser-handoff";
 import type { OrderWorkflowResponse, OrderWorkflowResult, ShipmentResponse } from "@marketplace/schemas";
 import { workspaceFixture } from "../fixtures/workspace-session";
 import { completeFixtureOrganization } from "../../../scripts/lib/organization-profile-fixture.mjs";
@@ -419,10 +420,7 @@ async function openNavigationIfCollapsed(page: Page) {
 }
 
 async function openSupplierOrder(page: Page, orderNumber: string) {
-  const handoff = encodeURIComponent(
-    JSON.stringify(await workspaceFixture(prisma, "SUPPLIER", supplier)),
-  );
-  await page.goto(`${SUPPLIER_URL}/#session=${handoff}`);
+  await openFixtureHandoff(page, `${SUPPLIER_URL}/`, await workspaceFixture(prisma, "SUPPLIER", supplier));
   const organization = await prisma.organization.findUniqueOrThrow({ where: { id: supplier.organizationId }, select: { displayName: true } });
   await expect(
     page.getByRole("heading", { name: `Добрый день, ${organization.displayName}` }),
@@ -462,10 +460,7 @@ async function assertDecisionEvidence(orderId: string) {
 }
 
 async function openBuyerOrders(page: Page) {
-  const handoff = encodeURIComponent(
-    JSON.stringify(await workspaceFixture(prisma, "BUYER", buyer)),
-  );
-  await page.goto(`${BUYER_URL}/#session=${handoff}`);
+  await openFixtureHandoff(page, `${BUYER_URL}/`, await workspaceFixture(prisma, "BUYER", buyer));
   await openNavigationIfCollapsed(page);
   await page
     .getByRole("navigation")
@@ -1119,8 +1114,7 @@ test.describe.serial("@flow-b2 supplier order confirmation", () => {
     await expect(page.getByRole("dialog")).toContainText(order.orderNumber);
     await page.getByRole("dialog").getByRole("button", { name: "Закрыть" }).last().click();
 
-    const supplierHandoff = encodeURIComponent(JSON.stringify(await workspaceFixture(prisma, "SUPPLIER", supplier)));
-    await page.goto(`${SUPPLIER_URL}/documents#session=${supplierHandoff}`);
+    await openFixtureHandoff(page, `${SUPPLIER_URL}/documents`, await workspaceFixture(prisma, "SUPPLIER", supplier));
     await expect(page.getByRole("heading", { name: "Документы", exact: true })).toBeVisible();
     const supplierArchiveRow = page.getByRole("row").filter({ hasText: order.orderNumber }).filter({ hasText: "Счёт" }).first();
     await expect(supplierArchiveRow).toContainText(buyer.displayName);

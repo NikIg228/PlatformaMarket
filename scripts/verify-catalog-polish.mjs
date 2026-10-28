@@ -51,8 +51,8 @@ async function prepare(){
  const result=await fetch(`${apiUrl}/catalog/search?q=${keyword}&sort=NAME_ASC&limit=24`);
  assert.equal(result.status,200);const page=await result.json();assert.equal(page.total,26);assert.equal(page.items.length,24);
  return {keyword,categoryId:category.id,categoryName:category.nameRu,productId:products[0],offerId:offers[0],legacyProductName:`${keyword} Материал 01`,unit:reference.saleUnit.symbol,runId,
-  handoff:{capability:'SUPPLIER',organizationId:supplierOrganizationId,handoffCode:handoff.handoffCode},
-  buyerHandoff:{capability:'BUYER',organizationId:buyer.organizationId,handoffCode:buyerHandoff.handoffCode},publicPage:page};
+  handoff:{capability:'SUPPLIER',organizationId:supplierOrganizationId,handoffCode:handoff.handoffCode,browserProofCookie:handoff.browserProofCookie},
+  buyerHandoff:{capability:'BUYER',organizationId:buyer.organizationId,handoffCode:buyerHandoff.handoffCode,browserProofCookie:buyerHandoff.browserProofCookie},publicPage:page};
 }
 process.on('message',async message=>{
  try {

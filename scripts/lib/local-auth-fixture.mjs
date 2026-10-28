@@ -78,7 +78,13 @@ export async function startLocalAuthFixture({ web = false, operator = true, webA
   async function request(route, body, status = 201, accessToken) {
     const response = await fetch(apiUrl + route, { method: body === undefined ? 'GET' : 'POST', headers: { 'content-type': 'application/json', ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
     assert.equal(response.status, status, `${route}: expected ${status}, got ${response.status}; body omitted`);
-    return response.json();
+    const payload = await response.json();
+    if (route === '/auth/handoff' && response.ok) {
+      // Synthetic fixture transport only; never put this HttpOnly proof in a URL.
+      payload.browserProofCookie = response.headers.getSetCookie().find(value => value.startsWith('mp_handoff_'))?.split(';')[0];
+      assert.ok(payload.browserProofCookie, 'Server-issued handoff cookie is required');
+    }
+    return payload;
   }
   async function account(index, capability = 'MARKETPLACE_OPERATOR') {
     const email = `${runId}-${index}@example.invalid`, password = randomBytes(24).toString('base64url');

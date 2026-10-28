@@ -19,6 +19,15 @@ function browser(value?: object, hash = "") {
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 describe("verified workspace session", () => {
+  it("rejects a token-bearing URL without authenticating it or replacing stored credentials", async () => {
+    const saved = { ...response, accessToken: "existing-token", accessTokenExpiresAt: Date.now() + 900000 };
+    const data = browser(saved, "#session=" + encodeURIComponent(JSON.stringify({ ...response, accessToken: "attacker-token" })));
+    const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
+    const store = createWorkspaceSession("/api", "SUPPLIER"); await store.start();
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(store.getSnapshot()).toMatchObject({ ready: true, session: null, error: expect.stringContaining("не подтверждён") });
+    expect(JSON.parse(data.get(store.sessionKey)!)).toMatchObject({ accessToken: "existing-token" });
+  });
   it("ignores a delayed response body after a newer login is verified", async () => {
     const data = browser({ ...response, accessTokenExpiresAt: Date.now() + 900000 });
     let complete!: (value: unknown) => void;

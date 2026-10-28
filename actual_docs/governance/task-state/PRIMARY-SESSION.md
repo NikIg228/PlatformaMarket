@@ -4338,3 +4338,33 @@ Vitest вызов пропустил source-only discovery и захватил d
 данного blocker. Исправление ограничено четырьмя direct root verifier-командами:
 `vitest run --dir src` с прежними filters/assertions. Проверить source cases
 при наличии dist, alerts, diff; повторный full CI после scoped publication.
+
+## SECURITY-THREE-FIXES-20261028 — IN PROGRESS
+
+Явное поручение: исправить три finding scan59e803b8-0bc7-4a64-9181-5553a2f09969,
+проверить регрессии и CI; оставшийся code audit после пакета. База main@89a8df9,
+tracked clean, исторический output не трогать. Только canonical checkout.
+План до реализации: считать реальные expanded bytes ZIP до ExcelJS с bounded
+inflation/проверкой local payload; browser-bound HttpOnly proof для handoff,
+запрет bearer credentials из URL при сохранении stored-session restoration;
+независимый MARKETPLACE_OPERATOR check на global billing writes даже FULL_ACCESS.
+Риск: parsing/resource budgets, cross-host login/cookie/session lifecycle,
+tenant authority и совместимость fixtures. Новый UI не нужен: сохраняются
+существующие login/import/billing действия и feedback; cookie — internal protocol.
+Gates: целевые adversarial+legitimate parser/auth/billing unit после каждого
+пакета, owning/dependent suites, types/build API и client/web, scoped lint,
+real HTTP browser binding и targeted buyer/supplier login flow, обязательный
+verify:postgres на disposable DB, runtime split, diff review и scoped publication
+main с remote SHA и CI/Security SUCCESS. Попытки считать по gate; максимум3.
+Security/compatibility и bypass/regression passes выполняет тот же исполнитель,
+без запрещённой делегации. Sealed scan не менять; actionToken для metadata нет.
+
+29.10: implemented three boundaries и совместимые fixtures; focused suites PASS,
+owning API1024/client96 PASS, types13/13, scoped lint/Node checks PASS. verify:postgres
+и27 HTTP/SQL assertions PASS на owned PG17; runtime split PASS. API build/typecheck
+attempt1 test input исправлен; PG prep1 pipe hang,2 alias guard,3 PASS; лимит
+подготовки не превышен, own PG/API остановлены. Unified isolated build PASS,
+remote CI/Security ещё не запускались. Managed evidence security-three-fixes-20261029.
+Concurrent docs-only commit5c5d5ba уже опубликован другим writer; наш source diff
+сохранён, чужая документация не включается в security commit. Оставшийся audit
+не начинать до завершения этого пакета и нового поручения.

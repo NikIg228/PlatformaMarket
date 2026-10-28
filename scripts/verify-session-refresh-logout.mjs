@@ -8,7 +8,7 @@ try {
   async function session() {
     const root = await request('/auth/login', { email: account.email, password: account.password });
     const handoff = await request('/auth/handoff', { capability: 'BUYER' }, 201, root.accessToken);
-    const response = await fetch(apiUrl + '/auth/handoff/exchange', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ handoffCode: handoff.handoffCode }) });
+    const response = await fetch(apiUrl + '/auth/handoff/exchange', { method: 'POST', headers: { 'content-type': 'application/json', cookie: handoff.browserProofCookie }, body: JSON.stringify({ handoffCode: handoff.handoffCode }) });
     assert.equal(response.status, 201);
     return { ...await response.json(), cookie: response.headers.getSetCookie().map(value => value.split(';')[0]).join('; ') };
   }

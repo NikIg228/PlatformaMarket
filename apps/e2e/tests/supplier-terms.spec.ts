@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { openFixtureHandoff } from "../fixtures/browser-handoff";
 import { spawn, type ChildProcess } from "node:child_process";
 import path from "node:path";
 
@@ -22,7 +23,7 @@ test.afterAll(async () => { if (!child || child.exitCode !== null) return; const
 type Setup = { organizationId: string; name: string; session: object };
 async function openSupplier(page: Page, key: string) {
   const setup = await fixture<Setup>("setup", { key });
-  await page.goto(`http://127.0.0.1:3102/documents#session=${encodeURIComponent(JSON.stringify(setup.session))}`);
+  await openFixtureHandoff(page, 'http://127.0.0.1:3102/documents', setup.session);
   await expect(page.getByRole("heading", { name: "Договор с площадкой", exact: true })).toBeVisible();
   return setup;
 }

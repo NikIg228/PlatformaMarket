@@ -1,5 +1,16 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+## 29.10 — три security fixes, LOCAL PASS; remote CI pending
+
+По явному поручению исправлены ZIP actual expansion, browser-bound handoff и
+billing operator boundary из scan59e803b8. Focused adversarial/legitimate tests,
+owning API1024/client96, types13/13, scoped lint, API/unified build, runtime split,
+`verify:postgres` и27 дополнительных real HTTP/SQL assertions PASS. PostgreSQL
+только disposable, own API/PG остановлены. Два buyer/supplier browser cases
+добавлены в canonical CI; remote conclusions фиксируются после scoped push.
+[Изменения, попытки и ограничения](../security/SECURITY_REMEDIATION_STATUS_2026-10-28.md#три-исправления-code-audit--29102026).
+Это не завершение оставшегося audit кода и не production-приёмка.
+
 ## 29.10 — синхронизация требований, без новой runtime-приёмки
 
 Прямое поручение: roadmap и связанные документы согласовать с Desktop unified ТЗ,

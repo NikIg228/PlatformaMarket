@@ -70,7 +70,11 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
     try {
       const fromHash = window.location.hash.startsWith("#session=");
       const serialized = fromHash ? decodeURIComponent(window.location.hash.slice(9)) : window.sessionStorage.getItem(key);
-      let session = parseSessionHandoff(serialized, capability);
+      let session = parseSessionHandoff(serialized, capability, fromHash ? "url" : "storage");
+      if (fromHash && !session) {
+        window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+        throw new Error("Переход в кабинет не подтверждён. Вернитесь на страницу входа и войдите заново.");
+      }
       if (!session && !fromHash) {
         const response = await call(`/auth/current?workspace=${capability}`, { credentials: "include" });
         if (started !== generation) return;

@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import { openFixtureHandoff } from '../fixtures/browser-handoff';
 import {spawn,type ChildProcess} from 'node:child_process';import path from 'node:path';import {writeFile} from 'node:fs/promises';
 test.skip(process.env.E2E_DOCUMENT_UPLOAD_LIVE!=='true','Approved isolated audit environment required');
 let child:ChildProcess,counter=0;
@@ -12,7 +13,7 @@ type Stored={id:string;supplierOrderId:string|null;baseAgreementDocumentId:strin
 for(const key of ['buyer','supplier'])test(`real ${key} selects readable document relations and persists only chosen IDs`,async({page})=>{
   await page.setViewportSize(key==='buyer'?{width:1440,height:900}:{width:390,height:844});
   const data=await fixture<Setup>('setup',{key}),port=key==='buyer'?3101:3102;
-  await page.goto(`http://127.0.0.1:${port}/documents#session=${encodeURIComponent(JSON.stringify(data.handoff))}`);
+  await openFixtureHandoff(page, `http://127.0.0.1:${port}/documents`, data.handoff);
   await expect(page).toHaveURL(`http://127.0.0.1:${port}/documents`);
   const trigger=page.getByRole('button',{name:'Загрузить документ',exact:true});await trigger.click();
   const dialog=page.getByRole('dialog');await dialog.getByLabel(/^Тип документа\s*\*?$/).selectOption('CONTRACT_ADDENDUM');

@@ -1,17 +1,24 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import type { CreateBillingPlanInput } from "@marketplace/schemas";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import type { SupplierActorContext } from "../suppliers/supplier-access.service";
 import { EntitlementsService } from "./entitlements.service";
+import { PlatformAuthorityPolicy } from "../access-control/platform-authority.policy";
 
 @Injectable()
 export class BillingService {
-  constructor(private readonly prisma: PrismaService, private readonly entitlements: EntitlementsService) {}
+  constructor(private readonly prisma: PrismaService, private readonly entitlements: EntitlementsService, private readonly authority: PlatformAuthorityPolicy) {}
+
+  private async authorize(context: SupplierActorContext) {
+    if (!context.actorId || !context.organizationId) throw new ForbiddenException("Active organization membership is required");
+    await this.authority.assertPlatformOperator(context);
+  }
 
   plans() { return this.prisma.billingPlan.findMany({ where: { status: "ACTIVE" }, orderBy: { monthlyPriceMinor: "asc" } }); }
 
   async createPlan(input: CreateBillingPlanInput, context: SupplierActorContext) {
+    await this.authorize(context);
     try {
       return await this.prisma.$transaction(async (tx) => {
         const plan = await tx.billingPlan.create({ data: { code: input.code, name: input.name, description: input.description, monthlyPriceMinor: input.monthlyPriceMinor, currency: input.currency, trialDays: input.trialDays, graceDays: input.graceDays } });
@@ -23,6 +30,7 @@ export class BillingService {
   }
 
   async subscribe(input: { organizationId: string; planId: string; startsAt?: string }, context: SupplierActorContext) {
+    await this.authorize(context);
     const plan = await this.prisma.billingPlan.findFirst({ where: { id: input.planId, status: "ACTIVE" } });
     if (!plan) throw new NotFoundException("Billing plan not found");
     const startsAt = input.startsAt ? new Date(input.startsAt) : new Date();
@@ -44,6 +52,7 @@ export class BillingService {
   }
 
   async setFeature(organizationId: string, featureKey: string, input: { enabled: boolean; limits?: Record<string, unknown> | null; expiresAt?: string | null }, context: SupplierActorContext) {
+    await this.authorize(context);
     const feature = await this.prisma.featureFlag.findUnique({ where: { key: featureKey } });
     if (!feature) throw new NotFoundException("Feature flag not found");
     const result = await this.prisma.organizationFeature.upsert({ where: { organizationId_featureKey: { organizationId, featureKey } }, update: { enabled: input.enabled, limits: input.limits as Prisma.InputJsonValue | undefined, expiresAt: input.expiresAt ? new Date(input.expiresAt) : null, source: "MANUAL" }, create: { organizationId, featureKey, enabled: input.enabled, limits: input.limits as Prisma.InputJsonValue | undefined, expiresAt: input.expiresAt ? new Date(input.expiresAt) : null, source: "MANUAL" } });

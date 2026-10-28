@@ -18,7 +18,7 @@ async function prepare(){
  buyerSession=await fixture.request('/auth/login',{email:buyer.email,password:buyer.password});
  return {runId};
 }
-async function handoff(capability){const session=capability==='BUYER'?buyerSession:supplierSession;const response=await fixture.request('/auth/handoff',{capability},201,session.accessToken);return {capability,organizationId:capability==='BUYER'?buyer.organizationId:supplierOrganizationId,handoffCode:response.handoffCode};}
+async function handoff(capability){const session=capability==='BUYER'?buyerSession:supplierSession;const response=await fixture.request('/auth/handoff',{capability},201,session.accessToken);return {capability,organizationId:capability==='BUYER'?buyer.organizationId:supplierOrganizationId,handoffCode:response.handoffCode,browserProofCookie:response.browserProofCookie};}
 async function create(index){
  assert.ok(!cases.has(index)&&Number.isInteger(index)&&index>0&&index<10);
  const key=`${runId}-decision-${index}`,name=`AUD06 Материал ${index}`;

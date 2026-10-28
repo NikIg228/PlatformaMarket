@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { openFixtureHandoff } from '../fixtures/browser-handoff';
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
@@ -106,7 +107,7 @@ test('delayed old request cannot overwrite a newer real result (transport schedu
 
 test('supplier JWT offer view explains actual sale-unit fallback for a published offer',async({page})=>{
  await page.setViewportSize({width:1440,height:900});
- await page.goto(`http://127.0.0.1:3102/#session=${encodeURIComponent(JSON.stringify(data.handoff))}`);
+ await openFixtureHandoff(page, 'http://127.0.0.1:3102/', data.handoff);
  await expect(page).toHaveURL('http://127.0.0.1:3102/');
  await page.getByRole('button',{name:'Предложения',exact:true}).click();
  const row=page.getByRole('row').filter({hasText:data.legacyProductName});
@@ -116,7 +117,7 @@ test('supplier JWT offer view explains actual sale-unit fallback for a published
 });
 
 test('buyer JWT catalog shows a sale-unit price with its own packaging, and stored prices unchanged',async({page})=>{
- await page.goto(`http://127.0.0.1:3101/#session=${encodeURIComponent(JSON.stringify(data.buyerHandoff))}`);
+ await openFixtureHandoff(page, 'http://127.0.0.1:3101/', data.buyerHandoff);
  await expect(page).toHaveURL('http://127.0.0.1:3101/');
  const query=data.keyword+' Материал 00';
  const result=page.waitForResponse(response=>response.url().includes('/marketplace/search?')&&new URL(response.url()).searchParams.get('q')===query);

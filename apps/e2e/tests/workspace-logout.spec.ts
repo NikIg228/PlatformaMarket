@@ -107,6 +107,7 @@ test.describe("real isolated JWT session logout", () => {
         const handoffResponse = await client.post(`${apiUrl}/auth/handoff`, { headers: { authorization }, data: { capability: app.role } });
         expect(handoffResponse.status()).toBe(201);
         const handoff = await handoffResponse.json();
+        await page.context().addCookies((await client.storageState()).cookies);
         const width = index === 0 ? 1440 : 390;
         await page.setViewportSize({ width, height: 900 });
         await page.goto(`${app.url}/documents#session=${encodeURIComponent(JSON.stringify({ organizationId: handoff.organizationId, capability: app.role, handoffCode: handoff.handoffCode }))}`);
