@@ -867,6 +867,7 @@ test("checkout requires accepted current version and preserves idempotency on re
     page.getByRole("button", { name: "Оформить заказ", exact: true }),
   ).toBeDisabled();
   await page.getByRole("button", { name: /Принять.*изменения/ }).click();
+  await page.getByRole("checkbox", { name: /^Подтверждаю покупку от организации:/ }).check();
   await expect(
     page.getByRole("button", { name: "Оформить заказ", exact: true }),
   ).toBeEnabled();

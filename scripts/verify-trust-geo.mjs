@@ -254,6 +254,27 @@ try {
     comment: "Цена и количество совпали, документы получены корректно.",
     idempotencyKey: `verify-review-${run}`,
   };
+  // A terminal status alone is not receipt evidence. Prepare only this run's
+  // paid shipment, then use the buyer command to record the actual receipt.
+  await post(`/trust/orders/${order.id}/reviews`, reviewInput, buyerHeaders, 409);
+  const receiptOrder = await prisma.supplierOrder.findUniqueOrThrow({ where: { id: order.id }, include: { items: true } });
+  const warehouse = await prisma.warehouse.findFirstOrThrow({ where: { supplierOrganizationId } });
+  await prisma.$transaction(async tx => {
+    await tx.supplierOrder.update({ where: { id: order.id }, data: { status: "IN_TRANSIT", paymentStatus: "PAID" } });
+    for (const item of receiptOrder.items) await tx.supplierOrderItem.update({ where: { id: item.id }, data: { acceptedQuantity: item.quantity } });
+  });
+  const shipment = await prisma.shipment.create({ data: {
+    supplierOrderId: order.id, warehouseId: warehouse.id, shipmentNumber: `TRUST-RECEIPT-${run}`,
+    method: "SUPPLIER_CITY", status: "IN_TRANSIT", recipientName: "Trust verification buyer",
+    items: { create: receiptOrder.items.map(item => ({ supplierOrderItemId: item.id, quantity: item.quantity })) },
+  }, include: { items: true } });
+  await post(`/supplier-orders/${order.id}/workflow`, {
+    action: "RECEIVE_SHIPMENT", expectedVersion: receiptOrder.version, shipmentId: shipment.id,
+    items: shipment.items.map(item => ({ shipmentItemId: item.id, deliveredQuantity: item.quantity.toString() })),
+    idempotencyKey: `verify-review-receipt-${run}`,
+  }, buyerHeaders);
+  const reviewState = await request(`/trust/orders/${order.id}/review-state`, { headers: buyerHeaders });
+  if (!reviewState.eligible) throw new Error("Full buyer receipt did not grant review eligibility");
   const review = await post(
     `/trust/orders/${order.id}/reviews`,
     reviewInput,

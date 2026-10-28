@@ -82,6 +82,7 @@ for (const width of [1440, 390]) {
       const accepted = page.waitForResponse(response => response.url().endsWith(`/carts/${cart.id}/reprice`));
       await accept.click();
       expect((await accepted).status()).toBe(201);
+      await page.getByRole("checkbox", { name: /^Подтверждаю покупку от организации:/ }).check();
       await expect(checkout).toBeEnabled();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       await checkout.click();

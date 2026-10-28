@@ -432,6 +432,7 @@ async function completeFlow(page: Page, supplierCount: number) {
       response.request().method() === "POST" &&
       response.url().endsWith(`/carts/${cartId}/checkout`),
   );
+  await page.getByRole("checkbox", { name: /^Подтверждаю покупку от организации:/ }).check();
   await page.getByRole("button", { name: "Оформить заказ" }).click();
   const checkout = (await (await checkoutResponse).json()) as CheckoutPayload;
   expect(checkout.status).toBe("COMPLETED");

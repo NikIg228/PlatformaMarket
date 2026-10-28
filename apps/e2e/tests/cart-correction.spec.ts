@@ -70,10 +70,13 @@ test('desktop explicit correction preserves price diff and requires fresh accept
   await expect(quantity).toBeFocused();
   await page.screenshot({ path: test.info().outputPath('buyer-cart-corrected-reprice-desktop-1440.png'), fullPage: true });
   await page.getByRole('button', { name: 'Принять изменения', exact: true }).click();
+  await page.getByRole('checkbox', { name: /^Подтверждаю покупку от организации:/ }).check();
   await expect(page.getByRole('button', { name: 'Оформить заказ', exact: true })).toBeEnabled();
   expect((await evidence(1, 'accepted-price')).items[0].price).toBe('150000');
   await page.reload(); await page.getByRole('button', { name: 'Корзина', exact: true }).click();
   await expect(quantity).toHaveValue('2');
+  await expect(page.getByRole('button', { name: 'Оформить заказ', exact: true })).toBeDisabled();
+  await page.getByRole('checkbox', { name: /^Подтверждаю покупку от организации:/ }).check();
   await expect(page.getByRole('button', { name: 'Оформить заказ', exact: true })).toBeEnabled();
   const checkoutResponse = page.waitForResponse(response => response.url().endsWith(`/carts/${entry.cartId}/checkout`) && response.request().method() === 'POST');
   await page.getByRole('button', { name: 'Оформить заказ', exact: true }).click();

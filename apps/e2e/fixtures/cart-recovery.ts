@@ -49,6 +49,7 @@ export async function verifyCartRecoveryUI({ db, page, request, buyerId, token, 
   await expect(accept).toBeEnabled();
   await expect(page.getByRole("button", { name: "Оформить заказ", exact: true })).toBeDisabled();
   await accept.click();
+  await page.getByRole("checkbox", { name: /^Подтверждаю покупку от организации:/ }).check();
   await expect(page.getByRole("button", { name: "Оформить заказ", exact: true })).toBeEnabled();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await verifyReservationExpiryUI({ db, page, request, cartId: current.id, token, key, width });

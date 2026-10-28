@@ -58,6 +58,15 @@ items/shipments. Исправлены только fixture; profile провер
 DELIVERED. Buyer130 tests PASS, API45 PASS; runtime source не менялся.
 Следующий CI должен проверить дополненный SHA; прежний failure сохраняется.
 
+bd87918: Security40766691270 SUCCESS; CI40766691252 attempt2 прошёл полный unit,
+types/lint/build, PG/backup/containers и системные gates до extended API.
+`verify:trust-geo` FAIL409: старый verifier выставлял DELIVERED без receipt.
+Исправлен fixture: отрицательная проверка статусного shortcut, затем собственная
+paid shipment и настоящий RECEIVE_SHIPMENT перед отзывом. Checkout browser consumers
+обновлены для обязательного подтверждения организации; после reload подтверждение
+снова требуется. Product runtime неизменен. Node syntax и E2E types PASS;
+полное исполнение этих зависимых сценариев — следующий CI attempt3.
+
 ## 29.10 — три security fixes, LOCAL PASS; remote CI pending
 
 По явному поручению исправлены ZIP actual expansion, browser-bound handoff и

@@ -70,6 +70,7 @@ for (const width of [1366, 390]) test(`real promotion moderation and gift checko
     expect(line.status()).toBe(201);
     await page.goto("/clinic/cart");
     await expect(page.getByText(new RegExp(`Подарок: ${gift.name} × 4`))).toBeVisible();
+    await page.getByRole("checkbox", { name: /^Подтверждаю покупку от организации:/ }).check();
     await page.getByRole("button", { name: "Оформить заказ", exact: true }).click();
     await expect(page).toHaveURL(/\/clinic\/orders$/);
     const order = await db.supplierOrder.findFirstOrThrow({ where: { buyerOrganizationId: buyer.organizationId }, include: { items: true } });

@@ -102,7 +102,9 @@ for (const width of [1440, 390]) test(`VAT buyer consent and immutable order bre
   const dismiss = page.getByRole("button", { name: "Закрыть уведомление", exact: true });
   if (await dismiss.isVisible()) await dismiss.click();
   await noOverflow(page); await page.screenshot({ path: info.outputPath(`vat-cart-${width}.png`), fullPage: true });
-  await page.getByRole("button", { name: "Принять изменения", exact: true }).focus(); await page.keyboard.press("Enter"); await expect(page.getByRole("button", { name: "Оформить заказ", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "Принять изменения", exact: true }).focus(); await page.keyboard.press("Enter");
+  await page.getByRole("checkbox", { name: /^Подтверждаю покупку от организации:/ }).check();
+  await expect(page.getByRole("button", { name: "Оформить заказ", exact: true })).toBeEnabled();
   expect(writes).toEqual([expect.objectContaining({ acceptedItems: [expect.objectContaining({ snapshot: expect.objectContaining({ tax: current.tax }) })] })]);
   const orderId = id(103), order = { id: orderId, orderNumber: "VAT-TEST", version: 1, supplierOrganizationId: id(104), buyerOrganizationId: organizationId, status: "AWAITING_CONFIRMATION", paymentStatus: "UNPAID", currency: "KZT", subtotalAmountMinor: "20000", shipments: [],
     items: [{ ...item, acceptedQuantity: null, offerSnapshot: { pricing: previous } }, { ...item, id: id(105), offer: { productVariant: { product: { canonicalName: "Старая позиция без декларации" } } }, offerSnapshot: {} }] };

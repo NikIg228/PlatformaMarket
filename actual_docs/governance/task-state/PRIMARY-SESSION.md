@@ -75,6 +75,15 @@ document-consolidation items/shipments. Buyer130/API45 PASS, buyer/API types PAS
 scoped lint/diff PASS. Только test/docs diff, runtime/build/browser reused.
 Далее: scoped follow-up commit/push и CI attempt2.
 
+bd87918 опубликован, remote совпал. Security40766691270 SUCCESS.
+CI40766691252 attempt2: полный unit/types/lint/build/PG/containers PASS;
+extended API trust-geo FAIL409 из-за прежнего fixture DELIVERED без receipt.
+Текущий test-only diff: scripts/verify-trust-geo.mjs готовит paid shipment и
+RECEIVE_SHIPMENT; семь checkout browser consumers подтверждают организацию.
+Node syntax/E2E types PASS; runtime исходники не менялись. Следующий CI — attempt3;
+при третьем fail остановить затронутую фазу с точным blocker. Local canonical
+E2E не запускать на чужих4012/3000; acceptance buyer4412/web3103 остаётся PASS.
+
 ### 28.10 — актуализация roadmap по запросу владельца
 
 Scope: сверить локальный roadmap, перечислить остаток и актуализировать связанные
