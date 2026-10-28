@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import express, { type ErrorRequestHandler, type Request } from "express";
 import { request as httpRequest, type Server } from "node:http";
-import { gzipSync } from "node:zlib";
+import { deflateSync, gzipSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import { AVATAR_MAX_BYTES, AVATAR_MAX_JSON_BYTES, DOCUMENT_UPLOAD_MAX_BYTES, IMPORT_UPLOAD_MAX_BYTES } from "@marketplace/schemas";
 import { DEFAULT_JSON_MAX_BYTES, DOCUMENT_JSON_MAX_BYTES, IMPORT_JSON_MAX_BYTES, marketplaceBodyParser, requestBodyPolicy } from "./request-body-policy";
@@ -92,6 +92,24 @@ describe("HTTP request body resource boundary", () => {
     expect(invalid.status).toBe(400);
     expect(invalid.body).toMatchObject({ code: "BAD_REQUEST", message: "Invalid request body" });
     expect(JSON.stringify(invalid.body)).not.toContain("private-marker");
+  });
+
+  it.each([
+    ["gzip", gzipSync, 400],
+    ["deflate", deflateSync, 200],
+  ] as const)("survives trailing bytes after a %s body and preserves valid compressed requests", async (encoding, compress, expectedStatus) => {
+    const body = JSON.stringify({ contentBase64: "YWJj" });
+    const malformed = Buffer.concat([compress(body), Buffer.from("private-marker-invalid-frame")]);
+    const rejected = await send("/api/auth/login", malformed, { encoding, chunked: true });
+    expect(rejected.status).toBe(expectedStatus);
+    // zlib ignores bytes after a completed deflate stream; gzip rejects them.
+    // Both paths must keep the server alive without reflecting trailing input.
+    if (expectedStatus === 400) expect(rejected.body).toMatchObject({ code: "BAD_REQUEST", message: "Invalid request body" });
+    else expect(rejected.body.length).toBe(4);
+    expect(JSON.stringify(rejected.body)).not.toContain("private-marker");
+    const valid = await send("/api/auth/login", compress(body), { encoding });
+    expect(valid.status).toBe(200);
+    expect(valid.body.length).toBe(4);
   });
 
   it("accepts the bounded CMS envelope only on its exact POST route", async () => {

@@ -1,5 +1,13 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+28.10 — **Security CI dependencies: LOCAL PASS; remote CI проверяется после push.**
+По явному выбору владельца исправлены production dependencies и устаревший
+admin lazy-import regression. Audit15→0, npm test1832, types13tasks,
+fresh owned PostgreSQL/API build, API client/unified web build16.4.3,
+runtime split/actual OTel smoke/scoped lint PASS.
+[Команды, история попыток и ограничения](../security/SECURITY_REMEDIATION_STATUS_2026-10-28.md#дополнение-зависимости-и-блокеры-ci).
+Полного аудита или production/provider acceptance это не означает.
+
 28.10 — **Security remediation: LOCAL SCOPED PASS.** Четыре исторических finding,
 три дополнительных пакета и три WAVE1 инварианта сопоставлены с кодом и evidence.
 Полный PostgreSQL gate, focused SQL117/74, HTTP42, unit150 и reset-token5 PASS;

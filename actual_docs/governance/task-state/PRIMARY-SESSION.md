@@ -4193,3 +4193,43 @@ node --check обоих изменённых MJS PASS. Общий PG/build150uni
 В Git включаются только проверенные исходники/тесты/runner и текущие governance
 документы; output/security-remediation-20261028 остаётся локальной историей.
 Фактические SHA, push и CI сообщаются в отчёте публикации. Release/tag/deploy нет.
+
+## SECURITY-CI-DEPENDENCIES-20261028 — IN PROGRESS
+
+Явный выбор владельца: исправить зависимости и оба блокера CI.
+База main@ffddb740c24c140cfe8301214f741099ea2526ba; tracked tree clean,
+output/security-remediation-20261028 остаётся несвязанной локальной историей.
+CI40717419649: postgres/container API+web PASS, verify FAIL на admin test25/26.
+Security40717419514: CodeQL PASS, production audit15 (10moderate/4high/1critical).
+Локально admin performance-boundaries:3 PASS/1 FAIL, то же ожидание25 при26.
+
+План до реализации: согласованные security updates Next/Zod, parser/Multer и
+OTel без смены Nest major; все Next consumers сохраняют одну версию.
+Устаревший тест учитывает существующий lazy SigningAdmissions, без ослабления
+performance boundary. Риск: общий parser/schema/runtime и frontend framework.
+Границы: без UI/redesign/schema/data/deploy; изменения manifests/lock и одного
+теста. Проверки: production audit, dependency resolution, targeted admin/parser/
+instrumentation/schema tests; types и builds затронутых consumers, runtime split,
+изолированный PostgreSQL и итоговый CI. После PASS review, commit/FF push,
+remote SHA и CI. Прежний PASS при изменённом lockfile не переиспользуется.
+Независимая перспектива prepatch выполнена отдельным проходом того же исполнителя:
+parser bootstrap/direct callers, OTEL API+worker startup, все6 Next manifests,
+Zod consumers проверены; делегирование запрещено AGENTS.
+
+Результат локальной проверки: audit production15→0; dependency tree exit0;
+npm test12tasks/1832 PASS (API1007, schemas366, admin39;7 opt-in SQL skips).
+Types13tasks PASS, свежий own-cluster PostgreSQL17.10 PASS вместе со schemas/API
+build; остановка и удаление кластера подтверждены. API client build PASS.
+Unified Next16.4.3 webpack build PASS с отдельными generated output/tsconfig
+через NEXT_ADAPTER_PATH; исходный next-env.d.ts побайтно восстановлен.
+Runtime split, actual OTel SDK/instrumentations/exporter start/shutdown,
+scoped ESLint, dependency-security3 PASS. Production DB/deploy не затронуты.
+HTTP regression17 PASS в полном прогоне: gzip trailing bytes400 и живой сервер,
+deflate trailing bytes допускается zlib с200, затем оба normal requests200.
+Первое завышенное ожидание400 для deflate дало16/17; уточнён только тест,
+не parser guard. Npm install exit0, старую занятую SWC DLL не удаляли вручную.
+Подробности/источники/попытки — дополнение к текущей security status сводке.
+Retained evidence: managed collection artifacts-affe45ff7ccd29c6dcc081e3663d70823b8eb944c926fa85525cc861cc3acd8e,
+artifacts/security-ci-dependencies-20261028/. Review тем же исполнителем выполнен
+отдельным проходом по direct callers, resolution и bypass/regression; agents нет.
+Следующий шаг: review staged scope, commit/FF push, remote SHA и CI.

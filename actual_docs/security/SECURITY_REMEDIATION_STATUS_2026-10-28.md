@@ -89,8 +89,71 @@ EDS строки WAVE1 синтетические; криптография не
 
 ## Публикация
 
-Проверенный scope подготовлен к обычному commit/push в origin/main по AGENTS §8.
+Первый проверенный scope опубликован в origin/main: `ffddb740c24c140cfe8301214f741099ea2526ba`.
 Временные кластеры, локальные логи и output receipts в Git не включаются.
 Фактические commit/remote SHA и CI сообщаются в отчёте публикации; pending CI
 не означает PASS. Применены прочитанные Code Reviewer и Git Workflow Master:
 проверка bypass/race/контрактов, состава diff и безопасного fast-forward push.
+
+## Дополнение: зависимости и блокеры CI
+
+После первого push [CI40717419649](https://github.com/NikIg228/PlatformaMarket/actions/runs/40717419649)
+завершился FAIL на устаревшем admin-тесте (25 imports вместо 26);
+PostgreSQL и контейнеры API/web прошли. [Security40717419514](https://github.com/NikIg228/PlatformaMarket/actions/runs/40717419514)
+прошёл CodeQL, но production npm audit обнаружил15 записей:10 moderate,
+4 high,1 critical. Владелец явно поручил исправить оба блокера.
+
+Изменены manifests и lock: Next16.4.3 одинаков во всех6 объявлениях;
+Zod4.6.7 (minimum4.6.6), Multer2.5.0 и body-parser2.4.0 через существующий
+override-подход; qs6.17.0 разрешён обновлённым parser dependency tree.
+OTel auto-instrumentations0.79.0 обновлён совместно с SDK/exporter0.221.0.
+Nest остаётся на прежнем major11. Адресованы ranges из advisories
+[Next](https://github.com/advisories/GHSA-2464-fhr4-w9xw),
+[Multer](https://github.com/advisories/GHSA-q7qp-rjg7-q26m),
+[body-parser](https://github.com/advisories/GHSA-27r3-jxmh-p828),
+[Zod](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5),
+[OTel](https://github.com/advisories/GHSA-qqmp-wf37-98f9) и
+[qs](https://github.com/advisories/GHSA-6pq8-jhm2-2vcw).
+Исходный sharp override уже обеспечивал workaround для SVG; обновление Next
+также устраняет остальные отмеченные audit advisories. Эксплуатация production
+и достижимость каждого стороннего sink отдельно не утверждаются.
+
+Admin-тест сохраняет точное число lazy imports и теперь явно требует
+существующий `SigningAdmissions`. Два HTTP regression case проверяют gzip
+и deflate с trailing bytes, отсутствие отражения мусора и нормальный запрос
+после них. Gzip даёт безопасный400; zlib допускает хвост deflate с200,
+при сохранении корректно разобранного тела и живого сервера.
+
+Новые проверки после изменения lockfile:
+
+- `npm audit --omit=dev --audit-level=high --json` — **0 уязвимостей**, exit0.
+- `npm ls next zod multer body-parser qs @opentelemetry/auto-instrumentations-node @opentelemetry/sdk-node --all --omit=dev` — PASS.
+- `npm test` —12 успешных workspace tasks,1832 теста PASS; API1007, schemas366,
+  admin39.7 opt-in API PostgreSQL tests skipped; их skip не выдаётся за PASS.
+- `npm run typecheck` —13/13 tasks PASS.
+- `npm run verify:postgres` — свежий PASS вместе с schemas/API build,
+  на новом task-owned PostgreSQL17.10 с SQL data_directory/port proof;
+  сервер остановлен, кластер удалён. Прежний SQL PASS после смены lock не reused.
+- API client build и unified web build (`next build --webpack`) на16.4.3 — PASS.
+  Поддерживаемый `NEXT_ADAPTER_PATH` изолировал generated output/tsconfig в
+  `.tmp/security-ci-dependencies-20261028`; точный next-env backup восстановлен,
+  пользовательский dev-процесс и его `.next` сохранены.
+- `node scripts/verify-runtime-split.mjs`, scoped ESLint двух изменённых test-файлов,
+  `node --test scripts/dependency-security.test.mjs` (3 теста) — PASS.
+- Реальные установленный OTel SDK, auto-instrumentations и HTTP exporter прошли
+  start/shutdown с resourceDetectors=[], без внешнего коллектора/запросов.
+
+Первое ожидание400 для deflate в новом тесте было неверно;16/17 PASS сохранено
+как неуспешная попытка. Ожидание уточнено по нормальному поведению zlib;
+финальный полный `npm test` включает17/17 parser cases. `npm install
+--ignore-scripts --no-audit --no-fund` прошёл; остался cleanup warning о старой
+SWC DLL, удерживаемой dev-процессом. Процесс/ACL не менялись, удаление не обходили.
+
+Новые logs/runner/receipts сохранены в той же managed artifact collection,
+`artifacts/security-ci-dependencies-20261028/`: `npm-test.log`, `typecheck.log`,
+`dependency-tree.log`, `build-web.log`, `security-ci-run/postgres-run.json` и
+`security-ci-run/verify-postgres.log`; исходные failed CI job logs также сохранены.
+Отдельные self-review проходы проверили dependency resolution, все Next/Zod
+consumers, parser bootstrap, API/worker instrumentation и окончательный diff.
+Это не независимая делегация. Новая публикация и итоговый CI — в отчёте коммита;
+Workbench metadata и неполное покрытие сканов остаются отдельными границами.
