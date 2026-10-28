@@ -6,6 +6,7 @@ import type { ConnectorCatalogResult, ConnectorInventoryResult, ConnectorPriceRe
 import { createHash } from "node:crypto";
 import {
   Prisma,
+  type IntegrationConnection,
   type IntegrationDataBinding,
   type IntegrationReconciliationKind,
   type IntegrationReconciliationStatus,
@@ -28,6 +29,7 @@ import {
 } from "./adapters/integration-adapter";
 import { IntegrationJobsService } from "./integration-jobs.service";
 import { MarketplaceAgreementsService } from "../agreements/marketplace-agreements.service";
+import { reservationJobScope } from "./reservation-job-scope";
 
 @Injectable()
 export class IntegrationExecutionService {
@@ -120,9 +122,9 @@ export class IntegrationExecutionService {
         return { externalOrderId: result.externalId, ...result.data };
       }
       case "RESERVATION_CREATE":
-        return this.createReservation(payload, context, adapter);
+        return this.createReservation(payload, connection, context, adapter);
       case "RESERVATION_RELEASE":
-        return this.releaseReservation(payload, context, adapter);
+        return this.releaseReservation(payload, connection, context, adapter);
       case "WEBHOOK_PROCESS":
         return this.processWebhook(connection.id, payload);
       case "RECONCILIATION":
@@ -1132,17 +1134,15 @@ export class IntegrationExecutionService {
 
   private async createReservation(
     payload: Record<string, unknown>,
+    connection: Pick<IntegrationConnection, "id" | "supplierOrganizationId">,
     context: IntegrationAdapterContext,
     adapter: IntegrationAdapter,
   ) {
-    const recordId =
-      typeof payload.externalReservationRecordId === "string"
-        ? payload.externalReservationRecordId
-        : undefined;
+    const scope = await reservationJobScope(this.prisma, connection, payload);
     const result = await adapter.createReservation(context, payload);
-    if (recordId)
+    if (scope)
       await this.prisma.externalReservation.update({
-        where: { id: recordId },
+        where: scope,
         data: {
           status: "ACTIVE",
           externalReservationId: result.externalId,
@@ -1156,17 +1156,15 @@ export class IntegrationExecutionService {
 
   private async releaseReservation(
     payload: Record<string, unknown>,
+    connection: Pick<IntegrationConnection, "id" | "supplierOrganizationId">,
     context: IntegrationAdapterContext,
     adapter: IntegrationAdapter,
   ) {
-    const recordId =
-      typeof payload.externalReservationRecordId === "string"
-        ? payload.externalReservationRecordId
-        : undefined;
+    const scope = await reservationJobScope(this.prisma, connection, payload);
     const result = await adapter.releaseReservation(context, payload);
-    if (recordId)
+    if (scope)
       await this.prisma.externalReservation.update({
-        where: { id: recordId },
+        where: scope,
         data: {
           status: "RELEASED",
           responsePayload: result.data as Prisma.InputJsonValue,

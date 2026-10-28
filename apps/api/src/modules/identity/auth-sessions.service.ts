@@ -455,7 +455,8 @@ export class AuthSessionsService {
     return { accessToken: this.issueAccessToken(userId, updated.organizationIds, organizationId, authMethods, updated.id), accessTokenExpiresIn: environment().AUTH_ACCESS_TOKEN_TTL_SECONDS, activeOrganizationId: organizationId, authenticationMethods: authMethods };
   }
 
-  async unlink(userId: string, provider: "GOOGLE" | "APPLE") {
+  async unlink(userId: string | undefined, provider: "GOOGLE" | "APPLE") {
+    if (typeof userId !== "string" || !userId.trim()) throw new UnauthorizedException("Войдите в аккаунт");
     const identities = await this.prisma.externalIdentity.findMany({ where: { userId } });
     if (identities.length <= 1) throw new ConflictException("The only sign-in method cannot be unlinked");
     const identity = identities.find((item) => item.provider === provider);

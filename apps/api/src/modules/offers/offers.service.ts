@@ -8,6 +8,7 @@ import { MarketplaceAgreementsService } from "../agreements/marketplace-agreemen
 import { SearchProjectionService } from "../search/search-projection.service";
 import { vatLegacyFields } from "@marketplace/schemas";
 import { resolvePriceVat, vatConflict } from "../vat/vat-rules";
+import { isCatalogSerializationConflict, lockCatalogVariantForAdoption } from "../catalog/catalog-adoption";
 
 @Injectable()
 export class OffersService {
@@ -46,6 +47,7 @@ export class OffersService {
     if (existing) throw new ConflictException("Supplier offer already exists for this variant and sale unit");
     try {
       return await this.prisma.$transaction(async (tx) => {
+        await lockCatalogVariantForAdoption(tx, input.productVariantId);
         const offer = await tx.supplierOffer.create({
         data: {
           supplierOrganizationId,
@@ -70,6 +72,7 @@ export class OffersService {
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new ConflictException("Supplier offer already exists for this variant and sale unit");
+      if (isCatalogSerializationConflict(error)) throw new ConflictException("Catalog changed concurrently; retry with current data");
       throw error;
     }
   }

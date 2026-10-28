@@ -4078,3 +4078,118 @@ canonical dev bundler Turbopack; separate output/API/DB unchanged, no lock bypas
 Concurrent owner-supplied auth-session-navigation.md and two R7.2.1 roadmap hunks
 appeared; UI confirms direct owner instruction to read them and remains read-only.
 These new docs/hunks are preserved, not owned by this CI change or staged with it.
+
+
+## WAVE1-SECURITY-20261027
+
+Explicit user delegation: ledger tenant isolation and signature ownership/required
+parties, negative regression proof. Base2752c872e79be28274ef8fdf8c2cf54f1480acd5,
+main, initially clean. Sole sequential author/integrator; canonical checkout only.
+Owned files: payments.service.ts + payments.ledger.spec.ts; documents.service.ts
++ existing tests, signature callbacks only if a confirmed ownership bypass needs it.
+Shared auth/schema/migrations/lockfiles are reserved to this sole author; no planned
+change. DoD: failing reproduction, focused tests, API types/build, applicable tenant
+PostgreSQL gate only after inspecting disposable-target safety, diff review.
+Existing API/UI remain; security enforcement requires no new screen or public DTO.
+No push/merge/deploy, live payment/signature or shared DB mutation. No 2%/10% or
+monthly-finance changes. Integration order: CRM then ledger then signing, review
+each focused slice; local PASS is not production acceptance. Unknown required-party
+policy will be reported rather than guessed.
+
+Checkpoint requested by parent at safe handoff. Confirmed and fixed: ledger
+reference filters were overwritten and a supplier could see another allocation
+in the same intent; another document participant could complete the signer's
+session; repeated/foreign/MOCK signatures could prematurely mark linked agreement
+documents SIGNED. Agreement refresh now requires actual supplier+operator or
+supplier+buyer EDS parties. New sessions default to authenticated actor/org and
+operator read access does not confer signer impersonation.
+BEFORE: initial20 tests =>6 FAIL/14 PASS; parties16 =>2 FAIL/14 PASS.
+AFTER: 23 files/155 tests PASS, API build PASS. API typecheck PASS before final
+party patch; final build includes it. Diff hygiene PASS. No commit/push/deploy.
+Required PostgreSQL gate pending session33302, task-5/market-postgres-approved-name.log.
+Uses new task-owned PostgreSQL17 native cluster under Temp on unique loopback
+port, approved fixture database name; no shared test/dev DB. Runner stops owned
+cluster in finally. First attempt with DB name wave1 stopped by fixture name guard
+after migrations/upgrade checks; unchanged guard retained, rerun new cluster with
+approved name. Never stop unrelated PostgreSQL processes.
+Generic document required-party policy and principal-authority integration remain
+separate unresolved boundaries; no blanket legal signing/production acceptance.
+Parent handoff stops new work; poll gate, inspect exact failures, finish evidence.
+Task-5/checkpoint.json and scripts/logs retain reproducible execution context.
+
+## SECURITY-REMEDIATION-CONTINUATION-20261028 — LOCAL SQL PASS
+
+Прямое поручение владельца: продолжить исправления найденных уязвимостей.
+Canonical main@2752c872e79be28274ef8fdf8c2cf54f1480acd5; существующие dirty
+patches сохранены. Дополнительная правка продуктового кода не потребовалась:
+16 source/test hashes четырёх предыдущих remediation-пакетов совпадают.
+
+Снят прежний PostgreSQL verification blocker двух пакетов: foreign reservation
+job isolation и shared catalog import rollback. Текущий host выполняет команды
+под komputer/user; штатный PostgreSQL17.10 работает без изменения прав/ACL/auth.
+Использованы только task-owned временные кластеры, случайные SCRAM credentials,
+отдельные loopback ports, SQL data_directory/port и ownership markers.
+
+Фактические результаты на текущем коде:
+- npm run verify:postgres PASS, включая schemas/API build, upgrade, tenant,
+  rollback, idempotency/stock concurrency, accepted-price и lot eligibility.
+  npm_config_ignore_scripts=true пропускает только lifecycle hooks при явном
+  npm run: неизменный generated Prisma client переиспользован после сверки
+  schema modulo whitespace; чужая занятая engine DLL не заменялась.
+- Reservation job predicates:117 assertions/20 scenarios PASS на реальном SQL;
+  CREATE/RELEASE, foreign tenant/connection, misbound supplier/payload, retry,
+  agent finalizer, actual binding-change SELECT/UPDATE race, legitimate states.
+- Import rollback/adoption:74 assertions/20 scenarios PASS на реальном SQL;
+ 12 shared dependency shapes и полный rollback durable effects, exclusive
+  archive/replay/raw evidence/search, manual/automatic matching, Product logical
+  version/updatedAt, оба порядка настоящей row-lock race и безопасный409 retry.
+- WAVE1 HTTP/PostgreSQL:42 assertions PASS, ledger allocation/tenant/role/query
+  boundaries, signer binding, missing party, duplicates и replay. EDS rows
+  synthetic; криптография/внешний provider этим не принимаются.
+- Свежий combined Vitest:150/150 PASS,8 files; git diff --check PASS.
+
+Full PG PASS переиспользован без повторного запуска; focused SQL suite выполнил
+собственные migrations/test seed на новом проверенном disposable-кластере.
+Успешные кластеры штатно остановлены и удалены. Сохранены preparatory failures:
+pg_ctl stdout inheritance, cmd invocation, Prisma prebuild EPERM и ошибочное
+ожидание seeded variant в fixture; исправлялись runner/fixture, не продукт.
+Первый кластер уже остановлен; автоматическая проверка отклонила Remove-Item
+остаточного каталога с blocked by policy. Обход не выполнялся; read-only
+pg_ctl status подтвердил no server running, каталог оставлен.
+
+Доказательства сохранены через Codex Security artifact storage:
+C:/Users/user/.codex/state/plugins/codex-security/scans/dentmarket-kz-main/
+artifacts-affe45ff7ccd29c6dcc081e3663d70823b8eb944c926fa85525cc861cc3acd8e/
+artifacts/remediation-continuation-20261028-1502/FINAL-VERIFICATION.md
+и verification-summary.json; рядом62 retained runner/test/result/log artifacts.
+Прежние blocked receipts остаются историей. Два указанных пакета теперь
+verified fixed locally. Sealed scans и finding open/idle metadata не изменены:
+remediation action identity из workbench не предоставлялась. Полное покрытие
+аудита, production и юридические полномочия остаются отдельными границами.
+Ничего не staged/committed/pushed/deployed; чужие процессы/данные не тронуты.
+
+## SECURITY-REMEDIATION-CONSOLIDATION-20261028
+
+Владелец поручил свести актуальные статусы и опубликовать проверенный scope.
+Изменение этой задачи — evidence/документация и доставка существующих исправлений;
+новых продуктовых исправлений не потребовалось. Риск: устаревший PASS или чужой
+scope; план проверок: hashes, reset-token regression, scoped lint/types, review,
+ссылки/diff hygiene, ordinary FF push и проверка remote/CI.
+
+Текущая сводка: actual_docs/security/SECURITY_REMEDIATION_STATUS_2026-10-28.md.
+Она сопоставляет4 finding плагина,3 дополнительных пакета,3 WAVE1 инварианта.
+Старый pending PostgreSQL gate WAVE1 и blocked двух remediation-пакетов выше
+заменены успешными SQL результатами предыдущего раздела; история сохранена.
+Повторная SHA-256 сверка27 входов:0 расхождений. Reset-token5/5 PASS;
+scoped ESLint всех изменённых TS/MJS PASS; e2e typecheck PASS;
+node scripts/verify-runtime-split.mjs PASS на неизменённом собранном API,
+node --check обоих изменённых MJS PASS. Общий PG/build150unit evidence REUSED_PASS.
+
+Штатный finding remediation API требует Workbench actionToken; handoff token
+не заменяет его. Plugin open/idle и sealed reports сохранены. Полное покрытие,
+внешние провайдеры и юридическая/криптографическая приёмка вне этого результата.
+Прочитаны и применены Code Reviewer (bypass/race/contracts) и Git Workflow Master
+(review outgoing scope, conventional commit, FF push). Новые чаты/агенты не запускались.
+В Git включаются только проверенные исходники/тесты/runner и текущие governance
+документы; output/security-remediation-20261028 остаётся локальной историей.
+Фактические SHA, push и CI сообщаются в отчёте публикации. Release/tag/deploy нет.

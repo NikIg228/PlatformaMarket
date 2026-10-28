@@ -1,5 +1,12 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+28.10 — **Security remediation: LOCAL SCOPED PASS.** Четыре исторических finding,
+три дополнительных пакета и три WAVE1 инварианта сопоставлены с кодом и evidence.
+Полный PostgreSQL gate, focused SQL117/74, HTTP42, unit150 и reset-token5 PASS;
+27 входных hashes совпадают. [Текущая сводка и ограничения](../security/SECURITY_REMEDIATION_STATUS_2026-10-28.md).
+Workbench open/idle не изменены; полного аудита/production/криптографической
+приёмки нет. Статус публикации и CI — в отчёте соответствующего коммита.
+
 16.10 — **R7.6.5 операционный довоз: SCOPED PASS.**
 На main/3aa1c0b + локальный scope: API unit21, supplier/E2E types, scoped lint и
 изолированный unified build PASS. Browser4 неизменённых +2 affected PASS после

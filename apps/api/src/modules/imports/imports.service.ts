@@ -39,6 +39,7 @@ import { BackgroundQueueService } from "../../platform/jobs/background-queue.ser
 import { FileUploadPolicyService } from "../../platform/security/file-upload-policy.service";
 import { SearchProjectionService } from "../search/search-projection.service";
 import { SupplierTermsService } from "../agreements/supplier-terms.service";
+import { isCatalogSerializationConflict, lockCatalogVariantForAdoption } from "../catalog/catalog-adoption";
 
 import { normalizeRow, mappingKey, lineComplianceStatus, rowFormatError, type RawRow } from "./import-row";
 
@@ -696,6 +697,7 @@ export class ImportsService implements OnModuleInit {
             if (expectedTax && expectedTax.variantId !== (exactMatch && best ? best.variant.id : null))
               throw new ConflictException("Сопоставление изменилось после предпросмотра. Проверьте строку повторно");
             if (exactMatch && best) {
+              await lockCatalogVariantForAdoption(tx, best.variant.id);
               await tx.supplierItemMatchCandidate.updateMany({
                 where: { externalItemId: item.id, status: "CONFIRMED" },
                 data: { status: "REJECTED" },
@@ -1056,6 +1058,42 @@ export class ImportsService implements OnModuleInit {
           return !metadata || typeof metadata !== "object" || Array.isArray(metadata) || metadata.batchId !== batchId;
         })) throw new ConflictException("Rollback cannot archive a canonical product that is not owned by this batch");
 
+        if (candidateProductIds.length > 0) {
+          // Offer adoption touches the same parent row before creating its offer.
+          // A stale Serializable rollback must conflict rather than miss that adoption.
+          await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Product" WHERE "id" IN (${Prisma.join(candidateProductIds.map((id) => Prisma.sql`${id}::uuid`))}) ORDER BY "id" FOR UPDATE`);
+        }
+        const offerIds = offers.map(({ id }) => id);
+        if (candidateProductIds.length > 0 || candidateVariantIds.length > 0) {
+          const foreignSupplier = { supplierOrganizationId: { not: supplierOrganizationId } };
+          const dependentVariant = await tx.productVariant.findFirst({
+            where: { AND: [
+              { OR: [{ id: { in: candidateVariantIds } }, { productId: { in: candidateProductIds } }] },
+              { OR: [
+                { id: { notIn: candidateVariantIds } },
+                { productId: { notIn: candidateProductIds } },
+                { supplierOffers: { some: { id: { notIn: offerIds } } } },
+                { inventoryBalances: { some: foreignSupplier } },
+                { inventoryLots: { some: foreignSupplier } },
+                { inventoryReservations: { some: foreignSupplier } },
+                { supplierItems: { some: foreignSupplier } },
+                { mappingMemories: { some: foreignSupplier } },
+                { approvedCandidates: { some: { id: { notIn: candidateIds } } } },
+                { contractPrices: { some: foreignSupplier } },
+              ] },
+            ] }, select: { id: true },
+          });
+          const dependentProduct = await tx.product.findFirst({
+            where: { id: { in: candidateProductIds }, OR: [
+              { approvedCandidates: { some: { id: { notIn: candidateIds } } } },
+              { contentSources: { some: foreignSupplier } },
+              { correctionRequests: { some: foreignSupplier } },
+            ] }, select: { id: true },
+          });
+          if (dependentVariant || dependentProduct)
+            throw new ConflictException("Rollback cannot archive catalog data used outside this import batch");
+        }
+
         const mappings = externalIds.length === 0 ? [] : await tx.supplierMappingMemory.findMany({
           where: { supplierOrganizationId, sourceId: batch.sourceId, externalId: { in: externalIds }, status: "ACTIVE" },
           include: { supersedes: true },
@@ -1066,7 +1104,6 @@ export class ImportsService implements OnModuleInit {
           select: { id: true },
         }));
         const now = new Date();
-        const offerIds = offers.map(({ id }) => id);
         const productIds = [...new Set([
           ...products.map(({ id }) => id),
           ...offers.map(({ productVariant }) => productVariant.productId),
@@ -1162,7 +1199,7 @@ export class ImportsService implements OnModuleInit {
       for (const productId of result.productIds) await this.searchProjection.rebuildProduct(productId);
       return result.response;
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034")
+      if (isCatalogSerializationConflict(error))
         throw new ConflictException("Import batch changed concurrently; retry with current data");
       throw error;
     }
@@ -1213,6 +1250,7 @@ export class ImportsService implements OnModuleInit {
     if (!item) throw new NotFoundException("Supplier external item not found");
     if (!variant) throw new NotFoundException("Product variant not found");
     return this.prisma.$transaction(async (tx) => {
+      await lockCatalogVariantForAdoption(tx, input.productVariantId);
       await tx.supplierItemMatchCandidate.updateMany({
         where: { externalItemId },
         data: { status: "REJECTED" },

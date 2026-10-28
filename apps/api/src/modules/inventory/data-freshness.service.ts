@@ -5,10 +5,17 @@ import { resolvePriceVat } from "../vat/vat-rules";
 import { Prisma, type FreshnessDataType, type OfferSourceType } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import { SupplierAccessService, type SupplierActorContext } from "../suppliers/supplier-access.service";
+import { AccessControlService } from "../access-control/access-control.service";
 
 @Injectable()
 export class DataFreshnessService {
-  constructor(private readonly prisma: PrismaService, private readonly access: SupplierAccessService) {}
+  constructor(private readonly prisma: PrismaService, private readonly access: SupplierAccessService, private readonly permissions: AccessControlService) {}
+
+  private async assertCanOverride(target: "PRICE" | "INVENTORY", context: SupplierActorContext) {
+    const required = target === "PRICE" ? ["inventory.adjust", "pricing.manage"] : ["inventory.adjust"];
+    if (!await this.permissions.hasAll(context.actorId, context.organizationId, required))
+      throw new ForbiddenException("Недостаточно прав для изменения выбранных данных");
+  }
 
   async policies(supplierOrganizationId: string, context: SupplierActorContext) {
     await this.access.assertCanManage(supplierOrganizationId, context);
@@ -42,6 +49,7 @@ export class DataFreshnessService {
   async createOverride(supplierOrganizationId: string, input: CreateDataOverrideInput, context: SupplierActorContext) {
     if (input.tax && supplierOrganizationId !== context.organizationId) throw new ForbiddenException("Налоговые условия подтверждает представитель поставщика");
     await this.access.assertCanManage(supplierOrganizationId, context);
+    await this.assertCanOverride(input.target, context);
     const now = new Date();
     const validUntil = input.validUntil ? new Date(input.validUntil) : null;
     if (validUntil && validUntil <= now) throw new BadRequestException("Override validUntil must be in the future");
@@ -94,6 +102,7 @@ export class DataFreshnessService {
     await this.access.assertCanManage(supplierOrganizationId, context);
     const current = await this.prisma.dataOverride.findFirst({ where: { id: overrideId, supplierOrganizationId } });
     if (!current) throw new NotFoundException("Data override not found");
+    await this.assertCanOverride(current.target, context);
     if (current.status !== "ACTIVE") throw new ConflictException("Only an active override can be cancelled");
     const cancelled = await this.prisma.dataOverride.update({ where: { id: overrideId }, data: { status: "CANCELLED", cancelledAt: new Date() } });
     await this.prisma.auditLog.create({ data: { ...context, action: "data.override.cancelled", entityType: "DataOverride", entityId: overrideId, before: current, after: cancelled } });

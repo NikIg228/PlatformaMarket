@@ -12,7 +12,7 @@ describe("VAT declarations belong to the supplier", () => {
     const offers = new OffersService(dependency, dependency, dependency, dependency, dependency);
     const commercial = new OfferCommercialService(dependency, dependency, dependency, dependency, dependency);
     const imports = new ImportsService(dependency, dependency, dependency, dependency, dependency, dependency, dependency);
-    const overrides = new DataFreshnessService(dependency, dependency);
+    const overrides = new DataFreshnessService(dependency, dependency, dependency);
     const integrations = new IntegrationsService(dependency, dependency, dependency);
     for (const result of [offers.setPrice("supplier", "offer", { tax } as never, context),
       commercial.savePrice("supplier", "offer", { tax } as never, context),

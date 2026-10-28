@@ -1,5 +1,8 @@
 # Модель безопасности
 
+Текущее evidence исправлений: [сводка Codex Security 28.10.2026](SECURITY_REMEDIATION_STATUS_2026-10-28.md).
+Локальная проверка исправлений и статусы findings в Workbench разделены явно.
+
 Проверки выбираются для конкретного изменения по
 [Development Workflow](../governance/DEVELOPMENT_WORKFLOW.md); чтение этой модели
 не запускает полный security scan, live-аудит БД или внешние действия.

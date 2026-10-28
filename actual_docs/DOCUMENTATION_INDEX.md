@@ -82,6 +82,7 @@
 | [runbooks/LOCAL-DEV-DATABASE.md](runbooks/LOCAL-DEV-DATABASE.md) | REFERENCE | Профильная справка |
 | [runbooks/UNIFIED-FRONTEND.md](runbooks/UNIFIED-FRONTEND.md) | REFERENCE | Профильная справка |
 | [security/security.md](security/security.md) | REFERENCE | Профильная справка |
+| [security/SECURITY_REMEDIATION_STATUS_2026-10-28.md](security/SECURITY_REMEDIATION_STATUS_2026-10-28.md) | EVIDENCE | Текущая сводка исправлений Codex Security и границы проверки |
 | [ui-ux/DESIGN_SYSTEM.md](ui-ux/DESIGN_SYSTEM.md) | REFERENCE | Единый нормативный вход: компоненты, токены, тема, визуальная приёмка |
 | [ui-ux/SHARED_SEMANTIC_THEME.md](ui-ux/SHARED_SEMANTIC_THEME.md) | REFERENCE | Переход и исторический аудит |
 | [ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md](ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md) | REFERENCE | UI-инварианты и общая тема |

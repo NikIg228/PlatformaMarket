@@ -775,9 +775,14 @@ export class DocumentsService {
     if (document.externalId?.startsWith(RESUPPLY_PREVIEW)) throw new ConflictException("Форма и полномочия подписантов не утверждены. Подписание рабочего черновика недоступно");
     if (document.externalId?.startsWith(WAYBILL_PREVIEW)) throw new ConflictException("Подписание предпросмотра накладной ещё недоступно");
     if (document.invoicePreparation) throw new ConflictException("Выставление этого счёта подтверждается в заказе, без ЭЦП");
-    const operator = await this.isOperator(context.organizationId);
-    if (input.signerOrganizationId && input.signerOrganizationId !== context.organizationId && !operator) throw new ForbiddenException("Signer organization must be the active organization");
-    if (input.signerUserId && input.signerUserId !== context.actorId && !operator) throw new ForbiddenException("Signer user must be the authenticated user");
+    if (input.signerOrganizationId && input.signerOrganizationId !== context.organizationId) throw new ForbiddenException("Signer organization must be the active organization");
+    if (input.signerUserId && input.signerUserId !== context.actorId) throw new ForbiddenException("Signer user must be the authenticated user");
+    const parties = document.marketplaceAgreement
+      ? [document.marketplaceAgreement.supplierOrganizationId, document.marketplaceAgreement.operatorOrganizationId]
+      : document.buyerSupplierAgreement
+        ? [document.buyerSupplierAgreement.supplierOrganizationId, document.buyerSupplierAgreement.buyerOrganizationId]
+        : null;
+    if (parties && !parties.includes(context.organizationId)) throw new ForbiddenException("Only an agreement party can sign it");
     if (!document.checksumSha256 || !document.storageKey) throw new ConflictException("Document content is not ready for signature");
     if (!["GENERATED", "AWAITING_SIGNATURE", "PARTIALLY_SIGNED"].includes(document.status)) throw new ConflictException("Document cannot be signed in its current state");
     const adapter = this.signatures.resolve(input.method);
@@ -786,8 +791,8 @@ export class DocumentsService {
     const signatureHash = result.status === "SIGNED" ? createHash("sha256").update(`${document.checksumSha256}:${result.externalSessionId}`).digest("hex") : null;
     const signature = await this.prisma.documentSignature.create({ data: {
       documentId,
-      signerOrganizationId: input.signerOrganizationId,
-      signerUserId: input.signerUserId,
+      signerOrganizationId: input.signerOrganizationId ?? context.organizationId,
+      signerUserId: input.signerUserId ?? context.actorId,
       signerName: input.signerName,
       method: input.method,
       status: result.status,
@@ -806,17 +811,22 @@ export class DocumentsService {
     const document = await this.get(documentId, context);
     if (document.externalId?.startsWith(RESUPPLY_PREVIEW)) throw new ConflictException("Форма и полномочия подписантов не утверждены. Подписание рабочего черновика недоступно");
     if (document.externalId?.startsWith(WAYBILL_PREVIEW)) throw new ConflictException("Подписание предпросмотра накладной ещё недоступно");
-    const operator = await this.isOperator(context.organizationId);
-    if (input.signerOrganizationId && input.signerOrganizationId !== context.organizationId && !operator) throw new ForbiddenException("Signer organization must be the active organization");
-    if (input.signerUserId && input.signerUserId !== context.actorId && !operator) throw new ForbiddenException("Signer user must be the authenticated user");
+    if (input.signerOrganizationId && input.signerOrganizationId !== context.organizationId) throw new ForbiddenException("Signer organization must be the active organization");
+    if (input.signerUserId && input.signerUserId !== context.actorId) throw new ForbiddenException("Signer user must be the authenticated user");
+    const parties = document.marketplaceAgreement
+      ? [document.marketplaceAgreement.supplierOrganizationId, document.marketplaceAgreement.operatorOrganizationId]
+      : document.buyerSupplierAgreement
+        ? [document.buyerSupplierAgreement.supplierOrganizationId, document.buyerSupplierAgreement.buyerOrganizationId]
+        : null;
+    if (parties && !parties.includes(context.organizationId)) throw new ForbiddenException("Only an agreement party can sign it");
     if (!document.checksumSha256 || !document.storageKey) throw new ConflictException("Document content is not ready for signature");
     if (!["GENERATED", "AWAITING_SIGNATURE", "PARTIALLY_SIGNED"].includes(document.status)) throw new ConflictException("Document cannot be signed in its current state");
     const externalSessionId = `ncalayer-${randomUUID()}`;
     const expiresAt = new Date(Date.now() + input.expiresInMinutes * 60_000);
     const signature = await this.prisma.documentSignature.create({ data: {
       documentId,
-      signerOrganizationId: input.signerOrganizationId,
-      signerUserId: input.signerUserId,
+      signerOrganizationId: input.signerOrganizationId ?? context.organizationId,
+      signerUserId: input.signerUserId ?? context.actorId,
       signerName: input.signerName,
       method: "EDS",
       status: "SESSION_CREATED",
@@ -833,6 +843,10 @@ export class DocumentsService {
     const signature = await this.prisma.documentSignature.findUnique({ where: { id: signatureId }, include: { document: { include: { supplierOrder: true } } } });
     if (!signature) throw new NotFoundException("Document signature not found");
     await this.get(signature.documentId, context);
+    // Reading a document as a participant does not authorize completing another
+    // participant's signature. Verified callbacks retain the recorded signer.
+    if (signature.signerOrganizationId !== context.organizationId) throw new ForbiddenException("Signer organization must be the active organization");
+    if (signature.signerUserId && signature.signerUserId !== context.actorId) throw new ForbiddenException("Signer user must be the authenticated user");
     if (["EDS", "EGOV_QR", "EXTERNAL"].includes(signature.method) && !trustedExternalCallback) throw new ForbiddenException("External signature status is accepted only through a verified gateway callback");
     if (!["PENDING", "SESSION_CREATED"].includes(signature.status)) throw new ConflictException("Signature session is already final");
     if (signature.expiresAt && signature.expiresAt < new Date()) throw new ConflictException("Signature session has expired");
@@ -859,10 +873,18 @@ export class DocumentsService {
   }
 
   private async refreshDocumentSignatureStatus(documentId: string) {
-    const document = await this.prisma.document.findUniqueOrThrow({ where: { id: documentId }, include: { signatures: true } });
+    const document = await this.prisma.document.findUniqueOrThrow({ where: { id: documentId }, include: { signatures: true, marketplaceAgreement: true, buyerSupplierAgreement: true } });
+    const parties = document.marketplaceAgreement
+      ? [document.marketplaceAgreement.supplierOrganizationId, document.marketplaceAgreement.operatorOrganizationId]
+      : document.buyerSupplierAgreement
+        ? [document.buyerSupplierAgreement.supplierOrganizationId, document.buyerSupplierAgreement.buyerOrganizationId]
+        : null;
+    const signedOrganizations = new Set(document.signatures.filter(signature => signature.status === "SIGNED" && signature.method === "EDS").map(signature => signature.signerOrganizationId));
     const signedCount = document.signatures.filter(({ status }) => status === "SIGNED").length;
-    const required = Math.max(1, document.requiredSignatureCount);
-    await this.prisma.document.updateMany({ where: { id: documentId, status: { not: "SIGNED" } }, data: { status: signedCount >= required ? "SIGNED" : "PARTIALLY_SIGNED", immutableAt: document.immutableAt ?? new Date() } });
+    const complete = parties
+      ? parties.every(organizationId => signedOrganizations.has(organizationId))
+      : signedCount >= Math.max(1, document.requiredSignatureCount);
+    await this.prisma.document.updateMany({ where: { id: documentId, status: { not: "SIGNED" } }, data: { status: complete ? "SIGNED" : "PARTIALLY_SIGNED", immutableAt: document.immutableAt ?? new Date() } });
     return this.prisma.document.findUniqueOrThrow({ where: { id: documentId } });
   }
 

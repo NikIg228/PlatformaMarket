@@ -44,7 +44,8 @@ describe("DataFreshnessService manual price override", () => {
       $transaction: vi.fn(async (callback: (client: typeof tx) => Promise<unknown>) => callback(tx)),
     };
     const access = { assertCanManage: vi.fn().mockResolvedValue(undefined) };
-    const service = new DataFreshnessService(prisma as never, access as never);
+    const permissions = { hasAll: vi.fn().mockResolvedValue(true) };
+    const service = new DataFreshnessService(prisma as never, access as never, permissions as never);
 
     await service.createOverride("supplier-1", input, {
       actorId: "user-1",

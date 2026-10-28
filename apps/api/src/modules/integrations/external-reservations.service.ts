@@ -4,6 +4,7 @@ import { PrismaService } from "../../platform/prisma/prisma.service";
 import { IntegrationAdapterRegistry } from "./adapters/adapter-registry.service";
 import { asRecord } from "./adapters/integration-adapter";
 import { IntegrationJobsService } from "./integration-jobs.service";
+import { reservationJobScope } from "./reservation-job-scope";
 
 @Injectable()
 export class ExternalReservationsService {
@@ -81,15 +82,15 @@ export class ExternalReservationsService {
   }
 
   async finalizeAgentJob(jobId: string, result: Record<string, unknown> | null | undefined) {
-    const job = await this.prisma.integrationSyncJob.findUnique({ where: { id: jobId } });
+    const job = await this.prisma.integrationSyncJob.findUnique({ where: { id: jobId }, include: { connection: true } });
     if (!job || (job.type !== "RESERVATION_CREATE" && job.type !== "RESERVATION_RELEASE")) return;
     const payload = asRecord(job.payload);
-    const recordId = typeof payload.externalReservationRecordId === "string" ? payload.externalReservationRecordId : undefined;
-    if (!recordId) return;
+    const scope = await reservationJobScope(this.prisma, job.connection, payload);
+    if (!scope) return;
     const data = result ?? {};
     const externalId = typeof data.externalReservationId === "string" ? data.externalReservationId : typeof data.externalId === "string" ? data.externalId : undefined;
     await this.prisma.externalReservation.update({
-      where: { id: recordId },
+      where: scope,
       data: { status: job.type === "RESERVATION_CREATE" ? "ACTIVE" : Number(payload.remainingQuantity ?? 0) > 0 ? "ACTIVE" : "RELEASED", externalReservationId: externalId, responsePayload: data as Prisma.InputJsonValue, lastAttemptAt: new Date(), lastError: null },
     });
   }

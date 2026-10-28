@@ -1,3 +1,4 @@
+import { verifyWave1Security } from "./lib/verify-wave1-security.mjs";
 import { verifyOrderInvoices } from "./lib/verify-order-invoices.mjs";
 import { spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -596,6 +597,7 @@ try {
   );
   runNpm(["run", "db:seed:test"], testEnvironment);
   await prisma.$connect();
+  const wave1SecurityOnly = process.argv.includes("--wave1-security-only");
   const commercialOnly = process.argv.includes("--commercial-only");
   const requisitesOnly = process.argv.includes("--requisites-only");
   const waybillOnly = process.argv.includes("--waybill-only");
@@ -603,14 +605,14 @@ try {
   const resupplyOnly = process.argv.includes("--resupply-only");
   const invoiceOnly = process.argv.includes("--invoice-only") || waybillOnly || discrepanciesOnly || resupplyOnly;
   const vatOnly = process.argv.includes("--vat-only");
-  if (!commercialOnly && !requisitesOnly && !vatOnly && !invoiceOnly) {
+  if (!wave1SecurityOnly && !commercialOnly && !requisitesOnly && !vatOnly && !invoiceOnly) {
     await verifyManualPaymentUpgrade(prisma, assert);
     await verifyPromotionUpgrade(prisma, assert);
     await verifyCommerceMetricUpgrade(prisma, assert);
   }
-  if (!commercialOnly && !vatOnly && !invoiceOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
+  if (!wave1SecurityOnly && !commercialOnly && !vatOnly && !invoiceOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
   const [rollbackOffer, idempotencyOffer, concurrencyOffer, correctionOffer, snapshotOffer, ...lotOffers] =
-    requisitesOnly ? [] : await createFixtureCatalog();
+    (requisitesOnly || wave1SecurityOnly) ? [] : await createFixtureCatalog();
   const [
     tenantOwner,
     foreignTenant,
@@ -629,7 +631,9 @@ try {
   api.stderr.on("data", rememberLog);
   await waitUntilReady();
 
-  if (invoiceOnly) {
+  if (wave1SecurityOnly) {
+    await verifyWave1Security({ prisma, createBuyer, request, runId });
+  } else if (invoiceOnly) {
     await verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer], storageRoot, waybills: !invoiceOnly || waybillOnly, discrepancies: discrepanciesOnly, resupply: resupplyOnly });
     console.log(resupplyOnly ? "Focused PostgreSQL resupply verification PASS" : discrepanciesOnly ? "Focused PostgreSQL discrepancy verification PASS" : "Focused PostgreSQL invoice verification PASS");
   } else if (vatOnly) {

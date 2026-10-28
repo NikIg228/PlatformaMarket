@@ -168,3 +168,101 @@ describe("DocumentsService archive", () => {
     }, { actorId: "buyer-user", organizationId: "buyer" })).rejects.toThrow("Document was changed by another user");
   });
 });
+
+
+describe("DocumentsService signature completion ownership", () => {
+  it.each([
+    [{ actorId: "other-user", organizationId: "signer-org" }, "Signer user must be the authenticated user"],
+    [{ actorId: "signer-user", organizationId: "other-org" }, "Signer organization must be the active organization"],
+  ])("rejects a readable document's signature owned by another actor: %j", async (context, message) => {
+    const signature = { id: "signature", documentId: "document", signerOrganizationId: "signer-org", signerUserId: "signer-user", method: "MOCK", status: "SESSION_CREATED", document: { checksumSha256: "a".repeat(64), ownerOrganizationId: "signer-org" } };
+    const prisma = {
+      documentSignature: { findUnique: vi.fn().mockResolvedValue(signature), updateMany: vi.fn().mockResolvedValue({ count: 1 }), findUniqueOrThrow: vi.fn().mockResolvedValue({ ...signature, status: "REJECTED" }) },
+      document: { update: vi.fn().mockResolvedValue({ id: "document", status: "REJECTED" }) },
+      auditLog: { create: vi.fn() }, outboxEvent: { create: vi.fn() }, $transaction: vi.fn(),
+    };
+    const service = new DocumentsService(prisma as never, {} as never, {} as never, {} as never, {} as never);
+    vi.spyOn(service, "get").mockResolvedValue({ id: "document" } as never);
+    await expect(service.completeSignature("signature", { status: "REJECTED" }, context)).rejects.toThrow(message);
+    expect(prisma.documentSignature.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("agreement documents require the actual signing parties", () => {
+  it.each(["marketplace", "buyer-supplier"])("does not count duplicate/foreign/mock signatures as the missing %s party", async kind => {
+    const signatures = [
+      { status: "SIGNED", method: "EDS", signerOrganizationId: "supplier" },
+      { status: "SIGNED", method: "EDS", signerOrganizationId: "supplier" },
+      { status: "SIGNED", method: "EDS", signerOrganizationId: "outsider" },
+      { status: "SIGNED", method: "MOCK", signerOrganizationId: "counterparty" },
+    ];
+    const prisma = { document: {
+      findUniqueOrThrow: vi.fn().mockResolvedValue({ id: "document", requiredSignatureCount: 2, immutableAt: null, signatures,
+        marketplaceAgreement: kind === "marketplace" ? { supplierOrganizationId: "supplier", operatorOrganizationId: "counterparty" } : null,
+        buyerSupplierAgreement: kind === "buyer-supplier" ? { supplierOrganizationId: "supplier", buyerOrganizationId: "counterparty" } : null }),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+    } };
+    const service = new DocumentsService(prisma as never, {} as never, {} as never, {} as never, {} as never);
+    await (service as any).refreshDocumentSignatureStatus("document");
+    expect(prisma.document.updateMany).toHaveBeenLastCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: "PARTIALLY_SIGNED" }) }));
+    signatures.push({ status: "SIGNED", method: "EDS", signerOrganizationId: "counterparty" });
+    await (service as any).refreshDocumentSignatureStatus("document");
+    expect(prisma.document.updateMany).toHaveBeenLastCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: "SIGNED" }) }));
+  });
+});
+
+
+describe("signature session actor binding", () => {
+  function fixture() {
+    const prisma = {
+      documentSignature: { create: vi.fn(async ({ data }) => ({ id: "session", ...data })) },
+      document: { update: vi.fn().mockResolvedValue({ id: "document", status: "AWAITING_SIGNATURE" }) },
+      auditLog: { create: vi.fn() },
+    };
+    const registry = { resolve: vi.fn().mockReturnValue({ createSession: vi.fn().mockResolvedValue({ status: "SESSION_CREATED", externalSessionId: "external", signingUrl: null }) }) };
+    const service = new DocumentsService(prisma as never, {} as never, {} as never, registry as never, {} as never);
+    const document = { id: "document", checksumSha256: "a".repeat(64), storageKey: "document.pdf", status: "GENERATED", marketplaceAgreement: null, buyerSupplierAgreement: null };
+    vi.spyOn(service, "get").mockResolvedValue(document as never);
+    return { service, prisma, document };
+  }
+  it.each([false, true])("binds omitted signer fields to the authenticated actor, local EDS=%s", async local => {
+    const { service, prisma } = fixture();
+    const context = { actorId: "actor", organizationId: "org" };
+    if (local) await service.createLocalEdsSignatureSession("document", { method: "EDS", expiresInMinutes: 60 }, context);
+    else await service.createSignatureSession("document", { method: "MOCK", expiresInMinutes: 60 }, context);
+    expect(prisma.documentSignature.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ signerOrganizationId: "org", signerUserId: "actor" }) }));
+  });
+  it.each([false, true])("rejects impersonation even with document read access, local EDS=%s", async local => {
+    const { service, prisma } = fixture();
+    const context = { actorId: "operator", organizationId: "operator-org" };
+    vi.spyOn(service as any, "isOperator").mockResolvedValue(true);
+    const input = { signerOrganizationId: "foreign-org", signerUserId: "foreign-user", expiresInMinutes: 60 };
+    const promise = local ? service.createLocalEdsSignatureSession("document", { ...input, method: "EDS" }, context) : service.createSignatureSession("document", { ...input, method: "MOCK" }, context);
+    await expect(promise).rejects.toThrow("Signer organization must be the active organization");
+    expect(prisma.documentSignature.create).not.toHaveBeenCalled();
+  });
+  it.each([false, true])("does not grant a readable agreement to a non-party signer, local EDS=%s", async local => {
+    const { service, prisma, document } = fixture();
+    vi.mocked(service.get).mockResolvedValue({ ...document, marketplaceAgreement: { supplierOrganizationId: "supplier", operatorOrganizationId: "operator" } } as never);
+    const context = { actorId: "outsider", organizationId: "outsider-org" };
+    const promise = local ? service.createLocalEdsSignatureSession("document", { method: "EDS", expiresInMinutes: 60 }, context) : service.createSignatureSession("document", { method: "MOCK", expiresInMinutes: 60 }, context);
+    await expect(promise).rejects.toThrow("Only an agreement party can sign it");
+    expect(prisma.documentSignature.create).not.toHaveBeenCalled();
+  });
+  it("allows the recorded signer to reject its session once and refuses replay", async () => {
+    const signature = { id: "signature", documentId: "document", signerOrganizationId: "org", signerUserId: "actor", method: "MOCK", status: "SESSION_CREATED", document: { ownerOrganizationId: "org" } };
+    const prisma = {
+      documentSignature: { findUnique: vi.fn().mockResolvedValue(signature), updateMany: vi.fn().mockResolvedValue({ count: 1 }), findUniqueOrThrow: vi.fn().mockResolvedValue({ ...signature, status: "REJECTED" }) },
+      document: { update: vi.fn().mockResolvedValue({ id: "document", status: "REJECTED" }) },
+      auditLog: { create: vi.fn() }, outboxEvent: { create: vi.fn() }, $transaction: vi.fn(),
+    };
+    const service = new DocumentsService(prisma as never, {} as never, {} as never, {} as never, {} as never);
+    vi.spyOn(service, "get").mockResolvedValue({ id: "document" } as never);
+    const context = { actorId: "actor", organizationId: "org" };
+    await expect(service.completeSignature("signature", { status: "REJECTED" }, context)).resolves.toMatchObject({ signature: { status: "REJECTED" } });
+    signature.status = "REJECTED";
+    await expect(service.completeSignature("signature", { status: "REJECTED" }, context)).rejects.toThrow("Signature session is already final");
+    expect(prisma.documentSignature.updateMany).toHaveBeenCalledTimes(1);
+  });
+});

@@ -86,17 +86,31 @@ export class PaymentsService {
 
   async ledger(query: LedgerQueryInput, context: SupplierActorContext) {
     const operator = await this.isOperator(context.organizationId);
-    let permittedIntentIds: string[] | undefined;
+    const filters: Prisma.FinancialLedgerEntryWhereInput = {
+      ...(query.referenceType ? { referenceType: query.referenceType } : {}),
+      ...(query.referenceId ? { referenceId: query.referenceId } : {}),
+    };
+    let visibility: Prisma.FinancialLedgerEntryWhereInput = {};
     if (!operator) {
-      const intents = await this.prisma.paymentIntent.findMany({ where: { OR: [{ buyerOrganizationId: context.organizationId }, { allocations: { some: { recipientOrganizationId: context.organizationId } } }] }, select: { id: true } });
-      permittedIntentIds = intents.map(({ id }) => id);
+      const intents = await this.prisma.paymentIntent.findMany({
+        where: { OR: [{ buyerOrganizationId: context.organizationId }, { allocations: { some: { recipientOrganizationId: context.organizationId } } }] },
+        select: { id: true, buyerOrganizationId: true, allocations: { where: { recipientOrganizationId: context.organizationId }, select: { id: true } } },
+      });
+      // A supplier's allocation does not grant access to the other suppliers in
+      // the same checkout. Intersect visibility with the caller's filters.
+      visibility = {
+        referenceType: "PaymentIntent",
+        OR: [
+          { referenceId: { in: intents.filter(intent => intent.buyerOrganizationId === context.organizationId).map(intent => intent.id) } },
+          ...intents.flatMap(intent => intent.allocations.map(allocation => ({
+            referenceId: intent.id,
+            metadata: { path: ["paymentAllocationId"], equals: allocation.id },
+          }))),
+        ],
+      };
     }
     return this.prisma.financialLedgerEntry.findMany({
-      where: {
-        ...(query.referenceType ? { referenceType: query.referenceType } : {}),
-        ...(query.referenceId ? { referenceId: query.referenceId } : {}),
-        ...(permittedIntentIds ? { referenceType: "PaymentIntent", referenceId: { in: permittedIntentIds } } : {}),
-      },
+      where: { AND: [filters, visibility] },
       orderBy: { createdAt: "desc" },
       take: query.limit,
     });

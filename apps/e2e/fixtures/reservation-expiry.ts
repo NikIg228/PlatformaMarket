@@ -18,11 +18,12 @@ export async function verifyReservationExpiryUI({ db, page, request, cartId, tok
   await expect(page.getByText(/Локальный резерв действует до/)).toBeVisible();
   const require = createRequire(path.resolve(process.cwd(), "../api/package.json"));
   const { SupplierAccessService } = require("./dist/src/modules/suppliers/supplier-access.service.js");
+  const { AccessControlService } = require("./dist/src/modules/access-control/access-control.service.js");
   const { DataFreshnessService } = require("./dist/src/modules/inventory/data-freshness.service.js");
   const { InventoryService } = require("./dist/src/modules/inventory/inventory.service.js");
   const { ReservationExpiryService } = require("./dist/src/modules/inventory/reservation-expiry.service.js");
   const access = new SupplierAccessService(db);
-  const inventory = new InventoryService(db, access, new DataFreshnessService(db, access));
+  const inventory = new InventoryService(db, access, new DataFreshnessService(db, access, new AccessControlService(db)));
   const worker = new ReservationExpiryService(db, inventory, {});
   const deadline = new Date(Date.now() - 1000);
   await db.inventoryReservation.update({ where: { id: reservation.id }, data: { expiresAt: deadline } });
