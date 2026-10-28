@@ -6,7 +6,7 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
-## BUYER-CONTEXT-REVIEW-20261029 — LOCAL PASS, PUBLICATION PENDING
+## BUYER-CONTEXT-REVIEW-20261029 — PUBLISHED, CI FIX IN PROGRESS
 
 Поручение: проверить существующее, доделать контекст покупателя и право на отзыв,
 обновить roadmap. База main@8805498, tracked clean; output/security-remediation-20261028
@@ -67,6 +67,13 @@ Source fingerprint `.tmp/buyer-context-review-20261029/inputs.json` совпад
 при неизменённых входах. Docs/roadmap обновлены без закрытия всего R7/B2C.
 Далее: scoped37 files review/staging, commit/push main и CI; output/security
 не включать. Новых продуктовых этапов не начинать.
+
+Опубликован e36189a; remote совпал. Security40765215681 SUCCESS;
+CI40765215678 FAIL npm test (attempt1), containers/types/PG/backup PASS.
+Два dependent test fixture обновлены: order-profile reviewEligible true/false,
+document-consolidation items/shipments. Buyer130/API45 PASS, buyer/API types PASS,
+scoped lint/diff PASS. Только test/docs diff, runtime/build/browser reused.
+Далее: scoped follow-up commit/push и CI attempt2.
 
 ### 28.10 — актуализация roadmap по запросу владельца
 

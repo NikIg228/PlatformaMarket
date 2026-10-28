@@ -32,6 +32,7 @@ const delivered: SupplierOrder = {
   buyerOrganizationId: "profile-buyer",
   orderNumber: "PROFILE-001",
   status: "DELIVERED",
+  reviewEligible: true,
   subtotalAmountMinor: "120000",
   currency: "KZT",
   createdAt: "2026-09-13T00:00:00.000Z",
@@ -57,10 +58,10 @@ describe.each(["pilot", "go_live"])(
       ({ BuyerOrders } = await import("./buyer-orders"));
     });
 
-    it("keeps order details and gates the review form", () => {
+    it.each([true, false])("keeps order details and gates review by server receipt eligibility %s", (reviewEligible) => {
       const html = renderToStaticMarkup(
         createElement(BuyerOrders, {
-          orders: [delivered],
+          orders: [{ ...delivered, reviewEligible }],
           api: new MarketplaceApiClient("http://localhost/api", {}),
           busy: null,
           submittedReviews: [],
@@ -71,7 +72,7 @@ describe.each(["pilot", "go_live"])(
       );
       expect(html).toContain("PROFILE-001");
       expect(html).toContain("Profile Supplier");
-      expect(html.includes("Оставить отзыв")).toBe(profile === "go_live");
+      expect(html.includes("Оставить отзыв")).toBe(profile === "go_live" && reviewEligible);
     });
   },
 );

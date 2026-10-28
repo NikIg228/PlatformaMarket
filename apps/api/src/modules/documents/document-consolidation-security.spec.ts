@@ -167,7 +167,7 @@ describe("Independent consolidation review regressions", () => {
   it.each(["getCheckout", "supplierOrders", "buyerOrders"] as const)("filters inconsistent embedded documents in %s", async (method) => {
     const good = { id: "good", ownerOrganizationId: "supplier-a", supplierOrderId: "order-a", supplierOrder: ownOrder };
     const bad = { id: "bad", ownerOrganizationId: "supplier-b", supplierOrderId: "order-a", supplierOrder: ownOrder, dataSnapshot: { confidential: "foreign" } };
-    const order = { ...ownOrder, documents: [bad, good] };
+    const order = { ...ownOrder, items: [], shipments: [], documents: [bad, good] };
     const prisma = { organization: { findUnique: vi.fn().mockResolvedValue({ capabilities: [{ capability: "BUYER" }] }) }, organizationCapability: { findUnique: vi.fn().mockResolvedValue(null) }, checkout: { findUnique: vi.fn().mockResolvedValue({ buyerOrganizationId: "buyer-a", supplierOrders: [order] }) }, supplierOrder: { findMany: vi.fn().mockResolvedValue([order]) } };
     const service = new CommerceService(prisma as never, {} as never, {} as never, {} as never, {} as never, {} as never);
     const result = method === "getCheckout" ? (await service.getCheckout("checkout-a", context)).supplierOrders : method === "buyerOrders" ? await service.buyerOrders("buyer-a", context) : await service.supplierOrders(context);

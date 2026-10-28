@@ -50,6 +50,14 @@ bundle budget PASS. Собственные API4412/web3103 закрываютс�
 Применены development-toolkit (backend/frontend/review/verification), Playwright
 и React checklist; проверки выполняет тот же исполнитель без делегирования.
 
+Публикация e36189a выполнена, remote SHA совпал. Security40765215681 SUCCESS;
+CI40765215678: containers, types и postgres/authority/backup-restore PASS,
+`npm test` FAIL (attempt1). Два зависимых fixture не отражали новый receipt
+контракт: order-profile без reviewEligible и document-consolidation order без
+items/shipments. Исправлены только fixture; profile проверяет также false при
+DELIVERED. Buyer130 tests PASS, API45 PASS; runtime source не менялся.
+Следующий CI должен проверить дополненный SHA; прежний failure сохраняется.
+
 ## 29.10 — три security fixes, LOCAL PASS; remote CI pending
 
 По явному поручению исправлены ZIP actual expansion, browser-bound handoff и
