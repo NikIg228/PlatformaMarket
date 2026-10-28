@@ -10,6 +10,10 @@ node verification9 PASS. Все1832 unit cases прошли по workspace; root
 Security40729017814 на7bd4e2db SUCCESS, включая go_live document verifier.
 [Изменения, команды и история попыток](../security/SECURITY_REMEDIATION_STATUS_2026-10-28.md#дополнение-devbuild-зависимости).
 Оставшийся code audit и прежние границы покрытия сохраняются.
+Публикация2f473de: Security40740022052 SUCCESS; CI40740021988 — containers/PG/
+root unit/types/lint/build PASS, затем FAIL direct observability discovery dist.
+Source-only fix четырёх direct verifier-команд:62 cases/14 files и alert vectors14
+PASS при существующих5 compiled specs. Полный corrected CI — следующий gate.
 
 28.10 — **Security CI dependencies: LOCAL PASS; remote CI проверяется после push.**
 По явному выбору владельца исправлены production dependencies и устаревший

@@ -4305,3 +4305,10 @@ next-env. Node dependency+CI tests9/9, diff hygiene PASS. Никаких DB/depl
 Evidence и честная история попыток — текущая security status §dev/build и managed
 artifacts/security-dev-build-20261028/. Следующий шаг: scoped commit/push main,
 remote SHA и полный CI/Security на новом коммите; не начинать code audit.
+
+Публикация2f473de: Security40740022052 SUCCESS (audit0), containers/PG/root unit/
+types/lint/build PASS. CI40740021988 остановлен на verify:observability: прямой
+Vitest вызов пропустил source-only discovery и захватил dist specs. Это attempt1
+данного blocker. Исправление ограничено четырьмя direct root verifier-командами:
+`vitest run --dir src` с прежними filters/assertions. Проверить source cases
+при наличии dist, alerts, diff; повторный full CI после scoped publication.

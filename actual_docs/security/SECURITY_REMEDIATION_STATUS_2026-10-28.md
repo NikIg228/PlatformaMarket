@@ -238,3 +238,19 @@ compiler/runtime resolution, discovery и сохранность guards/assertio
 не было. Изменения transitive production resolution при hoisting не выдаются
 за dev-only lock diff; runtime/build PASS и clean CI проверяют совместимость.
 Публикация и точные CI conclusions фиксируются в итоговом receipt этого пакета.
+
+Первая публикация `2f473de33e10745facb0e0d49ad3edf4d0271c6c`: remote SHA совпал;
+[Security40740022052](https://github.com/NikIg228/PlatformaMarket/actions/runs/40740022052)
+SUCCESS (clean install, audit0, storage, CodeQL). В
+[CI40740021988](https://github.com/NikIg228/PlatformaMarket/actions/runs/40740021988)
+оба containers и PostgreSQL job SUCCESS, root npm test/types/lint/build PASS.
+Verify остановлен на прямом Vitest вызове observability: substring filter
+захватил также compiled CommonJS specs из dist. Это пропущенная совместимость
+нового runner, а не падение source assertions. Во всех четырёх прямых root
+Vitest verifier-командах добавлен тот же `--dir src`; filters/assertions сохранены.
+Проверка выполняется при существующем dist; runtime/DB часть observability
+остаётся полным CI gate, без записи в пользовательскую БД.
+После исправления объединённый source-only набор четырёх verifiers прошёл
+62 tests/14 files при наличии5 compiled observability specs; alert catalog7
+rules/14 synthetic vectors PASS. Lockfile, types и продуктовый код не менялись;
+их прежние PASS переиспользованы. Финальный CI проверяет полный orchestrated gate.
