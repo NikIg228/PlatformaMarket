@@ -6,6 +6,21 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+## B2C-SHARED-CATALOG — COMPLETE (existing behavior + docs)
+
+Поручение: физлицо видит тот же каталог всех опубликованных товаров, что клиника;
+разделение по типу покупателя/категориям отложить до выявления потребности.
+База619696a, tracked clean, чужой output сохранён. План: проверить общий route,
+query/proxy/API и фильтры; если outcome есть, не переписывать; адресные tests,
+согласованность/ссылки/diff. Личный checkout отдельно.
+Найдено: clinic/catalog redirect→catalog→PublicCatalog/usePublicCatalog; запрос
+publicCatalogQuery не содержит buyer context; proxy не передаёт сессию; API
+PublicCatalogController задаёт один public context. Персональной фильтрации нет.
+Существующие публикационные/географические/непубличные ограничения не отменены.
+Команда npm run test --workspace=@marketplace/buyer-web -- app/catalog/public-catalog-query.test.ts app/catalog/live-search.test.ts app/buyer-context.test.ts: PASS3 files/14 tests.
+Runtime исходники неизменны; build/types/browser не запускались, это не live PASS.
+ТЗ/roadmap/overview/функциональная карта/реестр обновлены, новая реализация не нужна.
+
 ## B2C-REGISTRATION — решение владельца, docs-only
 
 Ответ А: короткая регистрация выбранным способом входа без полного профиля;
