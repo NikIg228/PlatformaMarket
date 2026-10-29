@@ -6,6 +6,28 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+## B2C-FLOW-FIRST-PACKAGE-20261030 — COMPLETE (preparation only)
+
+Поручение: собрать единый процесс B2C и определить первый пакет реализации,
+отделить независимую работу от внешних подтверждений. База2c6eed0, main=origin/main,
+tracked clean; output сохранён. Scope: domains/orders.md + ссылка R7.1.1 + checkpoint.
+План до правок: read-only contract/code/scripts → process/negative/recovery matrix →
+пакет с owner/API/UI/fixtures/gates. Риск: назвать подготовку реализацией, снять
+organization guard или отложить необходимый UI. Gates сейчас docs-only: ссылки,
+существование code/test paths/scripts, неизменность R-checkbox, diff hygiene.
+Первый пакет предложен: личная корзина без организации с server ownership и UI,
+без checkout/order/payment/reserve. Личная проверенная сессия — обязательная часть,
+фиктивное ЮЛ запрещено. Подготовлены data migration/consumer границы, будущие
+focused/PG/core/runtime/types/build/browser проверки, не запущенные сейчас.
+Карточка находится в существующем orders.md#b2c-first-package; нет нового backlog.
+Полный B2C —16 стадий от входа до повторной покупки с R/dependencies и negative paths.
+SMS/bank/carrier/legal facts отдельно. Применена практика Technical Writer:
+сценарий→вход→наблюдаемый результат, актуальные prerequisites, NOT_RUN future checks.
+Реализация не начата; следующий шаг — первый пакет по отдельному поручению.
+PASS: ссылки источников и два новых anchors существуют, R-checkbox неизменны,
+git diff --check. Команды будущей реализации сверены с scripts; новый personal-cart
+browser test явно помечен планируемым, не существующим или прошедшим.
+
 ## B2C-RECIPIENT-APPROVERS-20261030 — COMPLETE (docs-only)
 
 Владелец принял B2: поставщик до передачи/при собственной доставке, оператор Market
