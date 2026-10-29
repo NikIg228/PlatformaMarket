@@ -16,7 +16,9 @@ refresh членств и session switch, сброс страницы/форм, 
 рейтинга не менялась. Trust остаётся в прежнем профиле go_live.
 
 Статус: LOCAL PASS — backend/контракты, браузер1440/390, keyboard,
-screenshots/computed styles и финальная сборка. Публикация/CI ещё не выполнены.
+screenshots/computed styles и финальная сборка. Опубликован1f0b923; Security PASS.
+После3 неудач владелец разрешил новый цикл: UUID receipt fixture исправлен.
+Новый CI pending; полная CI-приёмка пока не заявляется.
 [Evidence и попытки](governance/PROJECT_ACCEPTANCE_MATRIX.md#buyer-context-review-20261029).
 R7.1/R7.5 и новый B2C scope целиком не закрываются; checkbox-статусы сохранены.
 

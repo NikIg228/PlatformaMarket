@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { randomUUID } from "node:crypto";
 
 const base = process.env.API_URL ?? "http://127.0.0.1:4012/api";
 const prisma = new PrismaClient();
@@ -271,7 +272,7 @@ try {
   await post(`/supplier-orders/${order.id}/workflow`, {
     action: "RECEIVE_SHIPMENT", expectedVersion: receiptOrder.version, shipmentId: shipment.id,
     items: shipment.items.map(item => ({ shipmentItemId: item.id, deliveredQuantity: item.quantity.toString() })),
-    idempotencyKey: `verify-review-receipt-${run}`,
+    idempotencyKey: randomUUID(),
   }, buyerHeaders);
   const reviewState = await request(`/trust/orders/${order.id}/review-state`, { headers: buyerHeaders });
   if (!reviewState.eligible) throw new Error("Full buyer receipt did not grant review eligibility");

@@ -6,7 +6,35 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
-## BUYER-CONTEXT-REVIEW-20261029 — PUBLISHED, CI FIX IN PROGRESS
+## BUYER-CONTEXT-REVIEW-20261029 — NEW CI CYCLE AUTHORIZED
+
+Новое явное поручение владельца29.10: исправить idempotencyKey на randomUUID(),
+проверить сценарий и довести CI до зелёного. Новый цикл, limit3; предыдущие
+failure сохраняются ниже. База1f0b923; dirty только собственные blocker docs,
+несвязанный output сохранён. План: только fixture UUID, targeted реальный
+HTTP receipt/review/replay на approved disposable DB с own API4412; syntax/lint/diff,
+затем scoped publish и CI. Runtime/lock/schema не меняются, прежний PASS reused.
+
+UUID исправлен. Exact command extraction + orderWorkflowCommandSchema PASS:
+новый UUID принимается, прежняя строка отвергается. Syntax/ESLint/diff PASS.
+Локальный HTTP harness:1 syntax collision до API;2 readiness timeout60s,
+процесс остановлен, сценарий NOT_RUN. Полное исполнение — штатный disposable CI,
+новый cycle attempt1. Параллельные security edits documents/recommendation/outbound
+не принадлежат этой задаче и не включаются в staging. Дальше publish UUID+own docs,
+проверить CI, обновить финальные статусы только по фактическому результату.
+
+Последнее состояние: main@1f0b923998efecbecb9b8e1be86edf7de10e3355 опубликован,
+remote совпал. Security40768990396 SUCCESS. CI40768990348 attempt3 FAIL в
+Extended API verification: verify-trust-geo.mjs отправляет RECEIVE_SHIPMENT
+с idempotencyKey `verify-review-receipt-${run}`, но workflow требует UUID;
+ответ400 Invalid UUID. До этого unit/types/lint/build, PG/authority/backup,
+containers, runtime/profile/core/security gates PASS. Browser CI NOT_RUN.
+Локальная buyer1440/390 acceptance остаётся PASS на неизменённом runtime.
+Лимит3 остановил фазу: код после failure не исправлялся и новый CI не запускался.
+Один следующий шаг при новом явном решении владельца: заменить ключ команды
+получения на randomUUID(), проверить именно receipt fixture и повторить CI.
+Незакоммиченные изменения после1f0b923 — только docs с этим blocker;
+output/security-remediation-20261028 по-прежнему не тронут. Owned servers закрыты.
 
 Поручение: проверить существующее, доделать контекст покупателя и право на отзыв,
 обновить roadmap. База main@8805498, tracked clean; output/security-remediation-20261028

@@ -2,7 +2,7 @@
 
 <a id="buyer-context-review-20261029"></a>
 
-## 29.10 — buyer context и право на отзыв: LOCAL PASS, CI pending
+## 29.10 — buyer context и право на отзыв: LOCAL PASS, новый CI pending
 
 База main@8805498 + scoped diff. Только canonical source; несвязанный
 output/security-remediation-20261028 сохранён. Граница24А/33А: личный режим
@@ -66,6 +66,22 @@ paid shipment и настоящий RECEIVE_SHIPMENT перед отзывом. 
 обновлены для обязательного подтверждения организации; после reload подтверждение
 снова требуется. Product runtime неизменен. Node syntax и E2E types PASS;
 полное исполнение этих зависимых сценариев — следующий CI attempt3.
+
+1f0b923 опубликован; Security40768990396 SUCCESS. CI40768990348 attempt3
+снова остановлен в extended API: новый RECEIVE_SHIPMENT fixture использовал
+строковый idempotencyKey вместо UUID →400 Invalid UUID. Unit/types/lint/build,
+PG/authority/backup, containers и предшествующие system gates PASS; browser CI
+NOT_RUN. Лимит попыток исчерпан, исправление/повтор не выполнялись. Следующий
+точный шаг после нового решения владельца: randomUUID() для receipt command,
+проверка fixture и новый CI. Product runtime и local acceptance не менялись.
+
+Владелец явно разрешил новый цикл29.10. Исправлен только receipt idempotencyKey
+на randomUUID(). Node syntax, scoped ESLint и diff hygiene PASS. Локальный
+extracted-fragment harness: подготовка1 syntax collision до API;2 startup timeout
+60s без готовности API4412. Owned процесс остановлен; сценарий NOT_RUN локально.
+Проверка полного verify:trust-geo перенесена в штатную disposable CI среду;
+guards/assertions не ослаблены. Несвязанные параллельные API security edits
+не входят в публикацию. Новый CI cycle attempt1 должен проверить UUID/receipt/review.
 
 ## 29.10 — три security fixes, LOCAL PASS; remote CI pending
 
