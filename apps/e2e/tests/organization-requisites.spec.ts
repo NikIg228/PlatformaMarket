@@ -29,6 +29,7 @@ async function fixture(page: Page, role: "clinic" | "supplier", canEdit = true) 
     if (path === "/organizations/current/requisites") return state.failRead ? route.fulfill({ status: 503, json: { message: "Не удалось загрузить реквизиты" } }) : route.fulfill({ json: state.current });
     if (path === "/organizations/current/requisites/history") return route.fulfill({ json: { items: state.revisions, nextBeforeVersion: null } });
     if (path === "/auth/workspace-context") return route.fulfill({ json: { organizationId, organizationDisplayName: "Тестовые реквизиты", capabilities: [capability] } });
+    if (request.method() === "GET" && path === "/auth/workspaces") return route.fulfill({ json: [{ organizationId, organizationDisplayName: "Тестовые реквизиты", capabilities: [capability] }] });
     if (path === "/access-control/policy") return route.fulfill({ json: { mode: "ROLE_BASED", permissions: ["organization.view", "notification.view", "document.view", ...(canEdit ? ["organization.members.manage"] : [])] } });
     if (path === "/auth/current") return route.fulfill({ json: { sessionId: actorId, user: { id: actorId, displayName: "Тестовый сотрудник", email: contact.email, phone: contact.phone, avatarAssetId: null, version: 1 } } });
     if (path === "/conversations") return route.fulfill({ json: { items: [], hasMore: false, unreadCount: 0 } });

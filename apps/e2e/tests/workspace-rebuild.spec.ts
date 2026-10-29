@@ -449,6 +449,7 @@ async function fixture(
         organizationDisplayName: "Тестовая организация",
         capabilities: [capability],
       };
+    else if (route.request().method() === "GET" && path === "/auth/workspaces") body = [{ organizationId, organizationDisplayName: "Тестовая организация", capabilities: [capability] }];
     else if (path === "/access-control/permissions") body = ["catalog.product.view", "catalog.offer.edit", "catalog.offer.publish", "import.manage", "inventory.view", "inventory.adjust", "inventory.freshness.manage", "pricing.manage", "order.create", "order.approve", "order.confirm", "payment.transfer.confirm", "document.view", "document.upload", "document.sign", "document.accounting.review", "compliance.view", "compliance.credential.manage", "shipment.manage", "delivery.view", "delivery.manage", "supplier.warehouse.manage"];
     else if (path === "/access-control/policy") body = { mode: "ROLE_BASED", permissions: ["organization.view", "organization.members.manage", "catalog.product.view", "catalog.offer.edit", "catalog.offer.publish", "import.manage", "inventory.view", "inventory.adjust", "inventory.freshness.manage", "pricing.manage", "order.create", "order.approve", "order.confirm", "payment.transfer.confirm", "document.view", "document.upload", "document.sign", "document.accounting.review", "compliance.view", "compliance.credential.manage", "shipment.manage", "delivery.view", "delivery.manage", "supplier.warehouse.manage"] };
     else if (path === "/auth/sessions") body = [];

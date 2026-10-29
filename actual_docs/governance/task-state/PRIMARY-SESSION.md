@@ -8,6 +8,15 @@
 
 ## BUYER-CONTEXT-REVIEW-20261029 — NEW CI CYCLE AUTHORIZED
 
+Текущий шаг:6d6a5f7 опубликован; Security40821415844 SUCCESS.
+CI40821415842 нового цикла attempt1: extended API полностью PASS, включая
+receipt/review/replay с UUID; canonical import PASS. Browser113 PASS/10 FAIL:
+три UI fixture не знали новый GET /auth/workspaces. Добавлен точный GET response
+со списком текущей организации, unexpected-request assertions сохранены.
+E2E types/scoped lint PASS. За время CI сторонние security commits1850c59/7df253b
+уже опубликованы в main; текущая база7df253b совпадает origin. Их исходники
+не редактируются. Следующий шаг — scoped test/docs publication и CI attempt2.
+
 Новое явное поручение владельца29.10: исправить idempotencyKey на randomUUID(),
 проверить сценарий и довести CI до зелёного. Новый цикл, limit3; предыдущие
 failure сохраняются ниже. База1f0b923; dirty только собственные blocker docs,

@@ -22,6 +22,7 @@ async function fixture(page: Page, role: "clinic" | "supplier", canEdit = true) 
       if (path.endsWith("/revoke")) { const id=path.split("/")[3]; state.sessions=state.sessions.filter(item => item.id !== id); return route.fulfill({ json: { id, status:"REVOKED" } }); }
     }
     if(path === "/auth/workspace-context") return route.fulfill({ json:{ organizationId, organizationDisplayName:"Демо организация", capabilities:[capability] } });
+    if(req.method() === "GET" && path === "/auth/workspaces") return route.fulfill({ json:[{ organizationId, organizationDisplayName:"Демо организация", capabilities:[capability] }] });
     if(path === "/access-control/policy") return route.fulfill({ json:{ mode:"ROLE_BASED", permissions:["organization.view", ...(canEdit ? ["organization.members.manage"] : []), "inventory.view", "import.manage", "supplier.warehouse.manage", "support.ticket.view", "support.ticket.create", "notification.view"] } });
     if(path === "/auth/current") return route.fulfill({ json:url.searchParams.has("workspace") ? { sessionId,user:state.personal } : null });
     if(path === "/auth/profile") return route.fulfill({ json:state.personal });

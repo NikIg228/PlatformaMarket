@@ -83,6 +83,13 @@ extracted-fragment harness: подготовка1 syntax collision до API;2 st
 guards/assertions не ослаблены. Несвязанные параллельные API security edits
 не входят в публикацию. Новый CI cycle attempt1 должен проверить UUID/receipt/review.
 
+6d6a5f7: Security40821415844 SUCCESS. Новый CI40821415842 attempt1 подтвердил
+полный extended API (receipt UUID, review/replay) и canonical import. Canonical
+browser113 PASS/10 FAIL: только неожиданный GET /auth/workspaces в трёх старых
+UI fixture (requisites/settings/workspace). Точные GET responses добавлены,
+assertions неожиданных запросов не изменены. E2E typecheck/scoped ESLint PASS;
+повторное browser исполнение проверяется следующим CI attempt2. Runtime без правок.
+
 ## 29.10 — три security fixes, LOCAL PASS; remote CI pending
 
 По явному поручению исправлены ZIP actual expansion, browser-bound handoff и
