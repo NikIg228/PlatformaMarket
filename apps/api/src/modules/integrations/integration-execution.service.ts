@@ -30,6 +30,7 @@ import {
 import { IntegrationJobsService } from "./integration-jobs.service";
 import { MarketplaceAgreementsService } from "../agreements/marketplace-agreements.service";
 import { reservationJobScope } from "./reservation-job-scope";
+import { writeSyncedInventory } from "./integration-inventory";
 
 @Injectable()
 export class IntegrationExecutionService {
@@ -789,15 +790,8 @@ export class IntegrationExecutionService {
         now.getTime() + freshnessPolicy.staleAfterMinutes * 60_000,
       );
       const balance = await this.prisma.$transaction(async (tx) => {
-        const changed = await tx.inventoryBalance.upsert({
-          where: {
-            supplierOrganizationId_warehouseId_productVariantId: {
-              supplierOrganizationId,
-              warehouseId,
-              productVariantId: target.variantId!,
-            },
-          },
-          update: {
+        const changed = await writeSyncedInventory(tx, existing,
+          { supplierOrganizationId, warehouseId, productVariantId: target.variantId! }, {
             offerId: target.offer?.id ?? null,
             quantityOnHand: item.stock,
             quantityAvailable,
@@ -807,25 +801,7 @@ export class IntegrationExecutionService {
             source: "API",
             externalUpdatedAt: now,
             lastSuccessfulSyncAt: now,
-            version: { increment: 1 },
-          },
-          create: {
-            supplierOrganizationId,
-            warehouseId,
-            productVariantId: target.variantId!,
-            offerId: target.offer?.id ?? null,
-            quantityOnHand: item.stock,
-            quantityReserved: 0,
-            safetyStock,
-            quantityAvailable,
-            availabilityStatus: this.availability(quantityAvailable),
-            freshnessStatus: "FRESH",
-            freshnessExpiresAt,
-            source: "API",
-            externalUpdatedAt: now,
-            lastSuccessfulSyncAt: now,
-          },
-        });
+          }, safetyStock);
         await tx.outboxEvent.create({
           data: {
             aggregateType: "InventoryBalance",

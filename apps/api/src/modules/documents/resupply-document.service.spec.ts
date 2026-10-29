@@ -65,7 +65,7 @@ describe("resupply working draft service", () => {
   });
   it("blocks generic regeneration, mock/EDS signing and local EDS signing", async () => {
     const s = new DocumentsService({} as never, {} as never, {} as never, {} as never, {} as never);
-    vi.spyOn(s, "get").mockResolvedValue({ externalId: "RESUPPLY_DOCUMENT_PREVIEW:test", status: "DRAFT" } as never);
+    vi.spyOn(s, "get").mockResolvedValue({ ownerOrganizationId: context.organizationId, externalId: "RESUPPLY_DOCUMENT_PREVIEW:test", status: "DRAFT" } as never);
     await expect(s.createVersion(id(3), { reason: "change", data: {} }, context)).rejects.toThrow("только из заявления");
     for (const method of ["MOCK", "EDS"] as const) await expect(s.createSignatureSession(id(3), { method, expiresInMinutes: 60 }, context)).rejects.toThrow("не утверждены");
     await expect(s.createLocalEdsSignatureSession(id(3), { method: "EDS", expiresInMinutes: 60 }, context)).rejects.toThrow("не утверждены");

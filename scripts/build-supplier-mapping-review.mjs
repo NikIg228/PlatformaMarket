@@ -1,10 +1,10 @@
 import fs from "node:fs/promises";
 import pg from "../apps/api/node_modules/pg/lib/index.js";
+import { verifiedPostgresOptions } from "./lib/verified-postgres.mjs";
 
 const { Client } = pg;
 const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ...verifiedPostgresOptions(process.env.DATABASE_URL),
 });
 const csv = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
 await client.connect();

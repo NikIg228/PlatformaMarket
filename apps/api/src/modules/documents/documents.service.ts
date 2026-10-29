@@ -694,6 +694,7 @@ export class DocumentsService {
 
   async createVersion(documentId: string, input: CreateDocumentVersionInput, context: SupplierActorContext) {
     const current = await this.get(documentId, context);
+    await this.assertMutationAccess(current.ownerOrganizationId, context);
     if (current.externalId?.startsWith(RESUPPLY_PREVIEW)) throw new ConflictException("Рабочий черновик допоставки формируется только из заявления");
     if (current.externalId?.startsWith(WAYBILL_PREVIEW)) throw new ConflictException("Новая версия предпросмотра формируется из актуальной партии");
     if (current.invoicePreparation) throw new ConflictException("Новая версия счёта формируется в заказе поставщика");
@@ -890,6 +891,7 @@ export class DocumentsService {
 
   async archive(documentId: string, context: SupplierActorContext) {
     const document = await this.get(documentId, context);
+    await this.assertMutationAccess(document.ownerOrganizationId, context);
     if (["GENERATING", "DRAFT"].includes(document.status)) throw new ConflictException("Unfinished document cannot be archived");
     const archived = await this.prisma.document.update({ where: { id: documentId }, data: { status: "ARCHIVED" } });
     await this.prisma.auditLog.create({ data: { ...context, action: "document.archived", entityType: "Document", entityId: document.id, before: { status: document.status }, after: { status: archived.status } } });
@@ -905,6 +907,11 @@ export class DocumentsService {
   }
 
   capabilities() { return this.signatures.capabilities(); }
+
+  private async assertMutationAccess(ownerOrganizationId: string, context: SupplierActorContext) {
+    if (ownerOrganizationId !== context.organizationId && !await this.isOperator(context.organizationId))
+      throw new ForbiddenException("Only the document owner or marketplace operator may change its lifecycle");
+  }
 
   private async assertCreationAccess(ownerOrganizationId: string, context: SupplierActorContext, participants: DocumentParty[], allowParticipantOwner: boolean) {
     if (!(await this.prisma.organization.findUnique({ where: { id: ownerOrganizationId }, select: { id: true } }))) throw new NotFoundException("Organization not found");

@@ -1,8 +1,8 @@
 import pg from "../apps/api/node_modules/pg/lib/index.js";
+import { verifiedPostgresOptions } from "./lib/verified-postgres.mjs";
 
 const client = new pg.Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ...verifiedPostgresOptions(process.env.DATABASE_URL),
 });
 await client.connect();
 try {

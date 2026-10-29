@@ -319,3 +319,55 @@ EPERM rename занятой Windows DLL; schema неизменна, ранее g
 переиспользуется через npm_config_ignore_scripts=true, без остановки чужих процессов.
 Clean install/generation остаётся обязательным CI gate.
 Повторный API build с reuse generated client — PASS.
+
+## Девять находок оставшегося аудита — 29.10.2026
+
+Явное поручение владельца: исправить все9 находок на текущей ревизии,
+сохранить чужие изменения и проверить регрессии/CI. Источники: sealed scans
+`a628957e-3bd7-4983-9acc-a400623cd39d` (3 Medium) и
+`2a3fec51-705a-4391-9836-efb801e6d227` (4 Medium,2 Low).
+Работа только в canonical checkout; исходная база1f0b923, параллельный
+fixture commit6d6a5f7 сохранён. Чужие документы не переписывались.
+
+| Находка | Изменённая граница и доказательство |
+| --- | --- |
+| Recommendation audience | Фильтрация buyer/city до pricing/ranking и при replay сохранённого результата; fresh/revoked/allowed regression PASS |
+| Document participant mutation | Version/archive требуют owner/operator; participant read не становится правом глобальной записи; разрешённые действия PASS |
+| Outbound rejected response | Отклонённые encoding/length немедленно закрывают response/request; chunked limit и нормальный ответ PASS |
+| PSP refund race | PROCESSING не захватывается новым запросом; CAS проверяет снимок intent и текущий refund budget; durable success восстанавливается без второго вызова провайдера; SQL PASS |
+| ERP reservation overwrite | Version CAS вместо unconditional upsert; первая вставка не перезаписывает конкурентный balance; SQL conflict/control PASS |
+| Compliance preview mutation | Buyer/hypothetical evaluation не меняет глобальную публикацию; authoritative marker сохраняется для review, lot привязан к offer/variant; seller/current control PASS |
+| Reconciliation projection | Supplier читает только entry собственного transaction/allocation, без parent totals/provider payload; SQL tenant/control PASS |
+| MOCK external admission | Единый guard на intent/session/adapter запрещает MOCK при production/external; isolated mock и настоящий external adapter PASS |
+| Legacy PostgreSQL TLS | Все6 клиентов используют verified TLS, URI не отменяет проверку; custom CA поддержан, untrusted/wrong-host TLS отвергаются;5 Node tests PASS |
+
+План/границы записаны до реализации в managed collection,
+`artifacts/security-nine-fixes-20261029/PLAN.md`. Отдельные security/compatibility
+и bypass/regression passes выполнил тот же исполнитель: делегирование запрещено
+владельцем. Новый UI и новые HTTP-поля не требуются: сохраняются существующие
+действия, ошибки и envelope; закрываются authority/lifecycle/transport boundaries.
+
+Локальная проверка: API1068 PASS/7 opt-in skips; API typecheck PASS,
+schemas build PASS, API build PASS с прежним generated client (обычный prebuild
+получил EPERM занятой DLL; схема не менялась, чужой API не остановлен).
+Scoped ESLint PASS. `node scripts/verify-outbound-security.mjs`,
+`node scripts/verify-production-config.mjs`, `node scripts/verify-runtime-split.mjs`
+PASS. Все prerequisites `verify:postgres` выполнены: schemas/API build, затем
+`npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs` PASS
+на штатной отдельной БД `dentmarket_audit_20260914`. Дополнительный SQL scenario
+откатывает свои synthetic fixtures вместе с immutable ledger; проверены pending,
+exclusive claim, replay, recovery, sequential refunds, stale budget, tenant
+projection и ERP snapshot fence. Основной PostgreSQL/API набор также PASS.
+
+История ошибок сохранена: неверные типы новых тестов исправлены; owner добавлен
+в две document fixtures; первая SQL fixture не содержала обязательные legalName/
+bin, после сверки Prisma schema исправлена; SQL attempt2 PASS. Guards не ослаблены.
+Повторные неизменённые suites не запускаются ради docs/commit. TLS regression
+добавлен в Security CI; SQL regression входит в существующий PostgreSQL gate.
+
+Локальные исходники исправлены; публикация/remote SHA/CI подтверждаются отдельно
+на точном commit. Managed evidence: `artifacts/security-nine-fixes-20261029/`
+в прежней standalone collection. Sealed scans и Workbench open/idle не изменены:
+remediation actionToken не предоставлен. Нельзя подменять его старым handoff token.
+Рабочая БД, реальные PSP, Kalkan и production CA/CRL/TSP не использовались;
+последняя cryptographic/deployment assurance остаётся отдельной задачей владельца.

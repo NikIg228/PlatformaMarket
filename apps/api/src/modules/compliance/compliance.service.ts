@@ -122,7 +122,8 @@ export class ComplianceService {
 
   async evaluate(input: ComplianceEvaluationInput, context: SupplierActorContext) {
     if (input.sellerOrganizationId !== context.organizationId && input.buyerOrganizationId !== context.organizationId && !(await this.isOperator(context.organizationId))) throw new ForbiddenException("Compliance check belongs to another organization");
-    return this.evaluateInternal(input, context);
+    const authoritative = input.at === undefined && (input.sellerOrganizationId === context.organizationId || await this.isOperator(context.organizationId));
+    return this.evaluateInternal(input, context, authoritative);
   }
 
   async assertOfferAllowed(buyerOrganizationId: string, offerId: string, warehouseId: string, inventoryLotId: string | null, context: SupplierActorContext) {
@@ -141,13 +142,13 @@ export class ComplianceService {
       orderBy: { quantityAvailable: "desc" },
     });
     if (!balance) throw new BadRequestException("Compliance check requires fresh available inventory");
-    const check = await this.evaluateInternal({ sellerOrganizationId: supplierOrganizationId, offerId, warehouseId: balance.warehouseId, inventoryLotId: balance.lots[0]?.id ?? null }, context);
+    const check = await this.evaluateInternal({ sellerOrganizationId: supplierOrganizationId, offerId, warehouseId: balance.warehouseId, inventoryLotId: balance.lots[0]?.id ?? null }, context, true);
     if (check.status === "BLOCKED") throw new ForbiddenException("Compliance rules prohibit publication of this offer");
     if (check.status === "REVIEW_REQUIRED") throw new ConflictException("Offer requires compliance review before publication");
     return check;
   }
 
-  private async evaluateInternal(input: ComplianceEvaluationInput, context: SupplierActorContext) {
+  private async evaluateInternal(input: ComplianceEvaluationInput, context: SupplierActorContext, authoritative = false) {
     const at = input.at ? new Date(input.at) : new Date();
     const seller = await this.prisma.organization.findUnique({ where: { id: input.sellerOrganizationId }, include: { capabilities: true, supplierProfile: true, credentials: true } });
     if (!seller) throw new NotFoundException("Seller organization not found");
@@ -159,6 +160,7 @@ export class ComplianceService {
     if (input.warehouseId && (!warehouse || warehouse.supplierOrganizationId !== seller.id)) throw new BadRequestException("Warehouse does not belong to the seller");
     const lot = input.inventoryLotId ? await this.prisma.inventoryLot.findUnique({ where: { id: input.inventoryLotId } }) : null;
     if (input.inventoryLotId && (!lot || lot.supplierOrganizationId !== seller.id || (warehouse && lot.warehouseId !== warehouse.id))) throw new BadRequestException("Inventory lot does not belong to the seller warehouse");
+    if (lot && offer && (lot.productVariantId !== offer.productVariantId || (lot.offerId && lot.offerId !== offer.id))) throw new BadRequestException("Inventory lot does not belong to this offer variant");
     if (input.supplierOrderId) {
       const order = await this.prisma.supplierOrder.findUnique({ where: { id: input.supplierOrderId } });
       if (!order || order.supplierOrganizationId !== seller.id || (buyer && order.buyerOrganizationId !== buyer.id)) throw new BadRequestException("Supplier order does not match compliance parties");
@@ -205,13 +207,13 @@ export class ComplianceService {
         riskLevel: result.riskLevel,
         evaluatedAt: at,
         validUntil: new Date(at.getTime() + 24 * 60 * 60 * 1_000),
-        inputSnapshot: snapshot,
+        inputSnapshot: { ...snapshot, authoritative },
         ruleSnapshot: result.matchedRules.map(({ id, code, version, riskLevel, decision, priority }) => ({ id, code, version, riskLevel, decision, priority })),
         reasons: result.reasons,
         missingCredentials: result.missingCredentials,
       } });
-      if (offer?.publication && result.status === "BLOCKED") await tx.offerPublication.update({ where: { offerId: offer.id }, data: { status: "BLOCKED", marketplaceVisible: false, blockedReason: result.reasons.join("; ") } });
-      if (offer?.publication && result.status === "REVIEW_REQUIRED" && offer.publication.status !== "BLOCKED") await tx.offerPublication.update({ where: { offerId: offer.id }, data: { status: "UNDER_REVIEW", marketplaceVisible: false, blockedReason: result.reasons.join("; ") } });
+      if (authoritative && offer?.publication && result.status === "BLOCKED") await tx.offerPublication.update({ where: { offerId: offer.id }, data: { status: "BLOCKED", marketplaceVisible: false, blockedReason: result.reasons.join("; ") } });
+      if (authoritative && offer?.publication && result.status === "REVIEW_REQUIRED" && offer.publication.status !== "BLOCKED") await tx.offerPublication.update({ where: { offerId: offer.id }, data: { status: "UNDER_REVIEW", marketplaceVisible: false, blockedReason: result.reasons.join("; ") } });
       await tx.auditLog.create({ data: { ...context, action: "compliance.evaluated", entityType: "ComplianceCheck", entityId: created.id, after: { ...snapshot, status: created.status, decision: created.decision, riskLevel: created.riskLevel, reasons: result.reasons } } });
       await tx.outboxEvent.create({ data: { aggregateType: "ComplianceCheck", aggregateId: created.id, eventType: result.status === "BLOCKED" ? "ComplianceBlocked" : result.status === "REVIEW_REQUIRED" ? "ComplianceReviewRequired" : "CompliancePassed", payload: { complianceCheckId: created.id, sellerOrganizationId: seller.id, buyerOrganizationId: buyer?.id ?? null, offerId: offer?.id ?? null, status: result.status, riskLevel: result.riskLevel, reasons: result.reasons } } });
       return created;
@@ -227,7 +229,7 @@ export class ComplianceService {
     const status = input.decision === "BLOCKED" ? "BLOCKED" : "PASSED";
     return this.prisma.$transaction(async (tx) => {
       const reviewed = await tx.complianceCheck.update({ where: { id: check.id }, data: { decision: input.decision, status, reviewedById: context.actorId, reviewedAt: new Date(), reviewComment: input.comment } });
-      if (check.offer?.publication) await tx.offerPublication.update({ where: { offerId: check.offer.id }, data: status === "BLOCKED" ? { status: "BLOCKED", marketplaceVisible: false, blockedReason: input.comment } : { status: "PUBLISHED", marketplaceVisible: true, blockedReason: null, publishedAt: check.offer.publication.publishedAt ?? new Date() } });
+      if ((check.inputSnapshot as { authoritative?: boolean } | null)?.authoritative === true && check.offer?.publication) await tx.offerPublication.update({ where: { offerId: check.offer.id }, data: status === "BLOCKED" ? { status: "BLOCKED", marketplaceVisible: false, blockedReason: input.comment } : { status: "PUBLISHED", marketplaceVisible: true, blockedReason: null, publishedAt: check.offer.publication.publishedAt ?? new Date() } });
       await tx.auditLog.create({ data: { ...context, action: "compliance.reviewed", entityType: "ComplianceCheck", entityId: check.id, before: { status: check.status, decision: check.decision }, after: { status: reviewed.status, decision: reviewed.decision, comment: input.comment } } });
       await tx.outboxEvent.create({ data: { aggregateType: "ComplianceCheck", aggregateId: check.id, eventType: status === "BLOCKED" ? "ComplianceBlocked" : "CompliancePassed", payload: { complianceCheckId: check.id, sellerOrganizationId: check.sellerOrganizationId, buyerOrganizationId: check.buyerOrganizationId, offerId: check.offerId, status, manuallyReviewed: true } } });
       return reviewed;
@@ -248,7 +250,7 @@ export class ComplianceService {
     let reviewRequired = 0;
     for (const offer of offers) {
       const balance = offer.inventoryBalances[0];
-      const check = await this.evaluateInternal({ sellerOrganizationId: offer.supplierOrganizationId, offerId: offer.id, warehouseId: balance?.warehouseId, inventoryLotId: balance?.lots[0]?.id }, context);
+      const check = await this.evaluateInternal({ sellerOrganizationId: offer.supplierOrganizationId, offerId: offer.id, warehouseId: balance?.warehouseId, inventoryLotId: balance?.lots[0]?.id }, context, true);
       if (check.status === "BLOCKED") blocked += 1;
       if (check.status === "REVIEW_REQUIRED") reviewRequired += 1;
     }

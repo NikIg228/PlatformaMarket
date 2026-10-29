@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import type { SupplierActorContext } from "../suppliers/supplier-access.service";
 import { PaymentAdapterRegistry } from "./adapters/payment-adapter-registry.service";
+import { assertPaymentProviderAdmitted } from "./adapters/payment-provider-admission";
 
 @Injectable()
 export class PaymentMerchantService {
@@ -85,6 +86,7 @@ export class PaymentMerchantService {
     const intent = await this.prisma.paymentIntent.findUnique({ where: { id: paymentIntentId }, include: { provider: true, allocations: true, sessions: true } });
     if (!intent) throw new NotFoundException("Payment intent not found");
     await this.assertOrganizationAccess(intent.buyerOrganizationId, context);
+    assertPaymentProviderAdmitted(intent.provider.code);
     const existing = intent.sessions.find(({ idempotencyKey }) => idempotencyKey === input.idempotencyKey);
     if (existing) return existing;
     if (!["PENDING", "AUTHORIZED", "PARTIALLY_CAPTURED"].includes(intent.status)) throw new ConflictException("Payment intent cannot create a payment session in its current state");

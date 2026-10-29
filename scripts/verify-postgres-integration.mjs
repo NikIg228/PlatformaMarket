@@ -1,4 +1,5 @@
 import { verifyWave1Security } from "./lib/verify-wave1-security.mjs";
+import { verifyNineSecurity } from "./lib/verify-nine-security.mjs";
 import { verifyOrderInvoices } from "./lib/verify-order-invoices.mjs";
 import { spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -597,6 +598,7 @@ try {
   );
   runNpm(["run", "db:seed:test"], testEnvironment);
   await prisma.$connect();
+  await verifyNineSecurity(prisma);
   const wave1SecurityOnly = process.argv.includes("--wave1-security-only");
   const commercialOnly = process.argv.includes("--commercial-only");
   const requisitesOnly = process.argv.includes("--requisites-only");

@@ -278,7 +278,8 @@ export class OutboundRequestGateway {
             response.headers["content-encoding"] ?? "identity",
           ).toLowerCase();
           if (encoding !== "identity") {
-            response.resume();
+            response.destroy();
+            request.destroy();
             finishReject(
               new OutboundRequestPolicyError(
                 "Compressed outbound responses are not accepted",
@@ -291,7 +292,8 @@ export class OutboundRequestGateway {
             Number.isFinite(contentLength) &&
             contentLength > maxResponseBytes
           ) {
-            response.resume();
+            response.destroy();
+            request.destroy();
             finishReject(new OutboundResponseLimitError());
             return;
           }

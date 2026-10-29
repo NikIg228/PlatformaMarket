@@ -1,4 +1,5 @@
 import pg from "../apps/api/node_modules/pg/lib/index.js";
+import { verifiedPostgresOptions } from "./lib/verified-postgres.mjs";
 
 const { Client } = pg;
 const categories = [
@@ -28,8 +29,7 @@ const categoryCase = `CASE
   WHEN lower(p."canonicalName") ~ '(перчат|маск|салфет|нагруд|ватн|слюноотсос|аспирац|картридж|пакет|дезинф|стерилиз)' THEN 'auto-consumables'
   ELSE 'auto-consumables' END`;
 const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ...verifiedPostgresOptions(process.env.DATABASE_URL),
 });
 await client.connect();
 try {

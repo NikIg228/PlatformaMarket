@@ -5,6 +5,7 @@ import { PrismaService } from "../../platform/prisma/prisma.service";
 import type { SupplierActorContext } from "../suppliers/supplier-access.service";
 import { calculateAllocation } from "../commerce/commerce-rules";
 import { PaymentSettlementService } from "./payment-settlement.service";
+import { assertPaymentProviderAdmitted } from "./adapters/payment-provider-admission";
 
 @Injectable()
 export class PaymentsService {
@@ -23,6 +24,7 @@ export class PaymentsService {
   }
 
   async createIntent(checkoutId: string, input: CreatePaymentIntentInput, context: SupplierActorContext) {
+    assertPaymentProviderAdmitted(input.providerCode);
     const checkout = await this.prisma.checkout.findUnique({ where: { id: checkoutId }, include: { supplierOrders: true, paymentIntent: { include: this.intentInclude() } } });
     if (!checkout) throw new NotFoundException("Checkout not found");
     await this.assertBuyerAccess(checkout.buyerOrganizationId, context);

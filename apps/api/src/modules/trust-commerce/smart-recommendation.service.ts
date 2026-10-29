@@ -21,13 +21,13 @@ export class SmartRecommendationService {
   async recommend(input: SmartRecommendationInput, context: SupplierActorContext) {
     const address = await this.assertBuyer(input, context);
     const existing = await this.prisma.recommendationDecision.findUnique({ where: { idempotencyKey: input.idempotencyKey } });
-    if (existing && existing.buyerOrganizationId === input.buyerOrganizationId) return existing.result;
     const now = new Date();
     const product = await this.prisma.product.findFirst({ where: { id: input.productId, status: "ACTIVE" }, include: {
       categories: true,
       variants: { where: { status: "ACTIVE" }, include: { supplierOffers: { where: { status: "ACTIVE", publication: { is: { marketplaceVisible: true, status: { in: ["PUBLISHED", "RESTRICTED"] } } } }, include: {
         supplier: { include: { organization: true } },
         packaging: true,
+        publication: true,
         prices: { where: { status: "ACTIVE", validFrom: { lte: now }, OR: [{ validTo: null }, { validTo: { gte: now } }] }, orderBy: { validFrom: "desc" }, take: 1 },
         priceTiers: { where: { minimumQuantity: { lte: input.quantity }, validFrom: { lte: now }, OR: [{ maximumQuantity: null }, { maximumQuantity: { gte: input.quantity } }], AND: [{ OR: [{ validTo: null }, { validTo: { gte: now } }] }] } },
         contractPrices: { where: { buyerOrganizationId: input.buyerOrganizationId, status: "ACTIVE", minimumQuantity: { lte: input.quantity }, validFrom: { lte: now }, OR: [{ validTo: null }, { validTo: { gte: now } }] } },
@@ -36,7 +36,20 @@ export class SmartRecommendationService {
       } } } },
     } });
     if (!product) throw new NotFoundException("Marketplace product not found");
-    const offers = product.variants.flatMap(({ supplierOffers }) => supplierOffers);
+    const offers = product.variants.flatMap(({ supplierOffers }) => supplierOffers).filter(offer => {
+      const buyers = offer.publication?.allowedBuyerIds;
+      const cities = offer.publication?.allowedCityIds;
+      return (!Array.isArray(buyers) || buyers.length === 0 || buyers.includes(input.buyerOrganizationId))
+        && (!Array.isArray(cities) || cities.length === 0 || cities.includes(address.cityId));
+    });
+    // Replays must not retain access after the supplier changes its audience.
+    if (existing && existing.buyerOrganizationId === input.buyerOrganizationId) {
+      const allowed = new Set(offers.map(offer => offer.id));
+      const saved = existing.result as Prisma.JsonObject;
+      const visible = (value: Prisma.JsonValue | undefined) => Array.isArray(value) ? value.filter(item => item && typeof item === "object" && !Array.isArray(item) && typeof item.offerId === "string" && allowed.has(item.offerId)) : [];
+      const scenarios = visible(saved.scenarios), promoted = visible(saved.promoted);
+      return { ...saved, scenarios, promoted, organicBestOfferId: typeof saved.organicBestOfferId === "string" && allowed.has(saved.organicBestOfferId) ? saved.organicBestOfferId : null };
+    }
     const supplierIds = [...new Set(offers.map(({ supplierOrganizationId }) => supplierOrganizationId))];
     const offerIds = offers.map(({ id }) => id);
     const warehouseIds = offers.flatMap(({ inventoryBalances }) => inventoryBalances.map(({ warehouseId }) => warehouseId));
