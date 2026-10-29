@@ -15,10 +15,11 @@ refresh членств и session switch, сброс страницы/форм, 
 Существующие отзывы сохранены, дополнительные оценки необязательны; формула
 рейтинга не менялась. Trust остаётся в прежнем профиле go_live.
 
-Статус: LOCAL PASS — backend/контракты, браузер1440/390, keyboard,
-screenshots/computed styles и финальная сборка. Опубликован1f0b923; Security PASS.
-После3 неудач владелец разрешил новый цикл: UUID receipt fixture исправлен.
-Новый CI pending; полная CI-приёмка пока не заявляется.
+Статус: scoped PASS — backend/контракты, браузер1440/390, keyboard,
+screenshots/computed styles и сборка. На опубликованном8e6eb79 CI40823718196
+и Security40823718285 SUCCESS: extended API с UUID receipt/review/replay,
+canonical browser123, import7, full-access3 и promotion4 PASS.
+Новый разрешённый владельцем цикл завершён со второй CI-попытки.
 [Evidence и попытки](governance/PROJECT_ACCEPTANCE_MATRIX.md#buyer-context-review-20261029).
 R7.1/R7.5 и новый B2C scope целиком не закрываются; checkbox-статусы сохранены.
 

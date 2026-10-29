@@ -2,7 +2,17 @@
 
 <a id="buyer-context-review-20261029"></a>
 
-## 29.10 — buyer context и право на отзыв: LOCAL PASS, новый CI pending
+## 29.10 — buyer context и право на отзыв: PASS (scoped), CI GREEN
+
+Финальное evidence: [CI40823718196](https://github.com/NikIg228/PlatformaMarket/actions/runs/40823718196)
+и [Security40823718285](https://github.com/NikIg228/PlatformaMarket/actions/runs/40823718285)
+completed/success на8e6eb79fcc08e29e6609d41995740db5cf455ef2. UUID receipt command,
+получение/review/replay проверены полным extended API. Canonical import7,
+browser123, full-access3 и promotion4 PASS; types/unit/lint/build, PostgreSQL,
+authority/backup-restore, containers, runtime/profile/core/production contract gates,
+dependencies и CodeQL PASS. Новый разрешённый цикл завершён со второй CI-попытки.
+Финальная docs-only запись не меняет проверенные runtime inputs. Предыдущие
+failure и локальный startup timeout ниже сохранены, их результат не переписан.
 
 База main@8805498 + scoped diff. Только canonical source; несвязанный
 output/security-remediation-20261028 сохранён. Граница24А/33А: личный режим

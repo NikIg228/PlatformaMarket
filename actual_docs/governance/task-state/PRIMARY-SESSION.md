@@ -6,7 +6,20 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
-## BUYER-CONTEXT-REVIEW-20261029 — NEW CI CYCLE AUTHORIZED
+## BUYER-CONTEXT-REVIEW-20261029 — COMPLETE (scoped), CI GREEN
+
+Итог нового разрешённого цикла: UUID исправлен в6d6a5f7; три зависимых UI fixture
+обновлены в8e6eb79. На точном8e6eb79fcc08e29e6609d41995740db5cf455ef2
+CI40823718196 и Security40823718285 completed/success. Полный extended API
+receipt/review/replay PASS; canonical import7, browser123, full-access3,
+promotion4 PASS. Types/unit/lint/build, runtime/profile/core gates, PostgreSQL,
+backup/restore, containers и dependency/CodeQL PASS. Новый CI cycle:2 попытки.
+DoD достигнут; новый этап не начинать. Личный режим остаётся просмотром, полный
+B2C checkout и R7 целиком не закрыты. Финальная docs-only публикация переиспользует
+этот PASS без повторных runtime suites. История неуспешных запусков сохранена ниже.
+Несвязанный output/security-remediation-20261028 сохранён; чужие коммиты не менялись.
+
+Ход предыдущих проверок (история, не следующий план):
 
 Текущий шаг:6d6a5f7 опубликован; Security40821415844 SUCCESS.
 CI40821415842 нового цикла attempt1: extended API полностью PASS, включая
