@@ -1,0 +1,27 @@
+# Overlay compose.production.yaml. Existing API/web ports remain internal only.
+services:
+  stand-access:
+    build: ./deploy/stand-access
+    restart: unless-stopped
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [marketplace]
+    environment:
+      STAND_ORIGIN: ${STAND_ORIGIN:?Set HTTPS stand origin}
+      STAND_PASSWORD_HASH: ${STAND_PASSWORD_HASH:?Generate stand credentials}
+      STAND_SIGNING_KEY: ${STAND_SIGNING_KEY:?Generate stand credentials}
+      STAND_WEBHOOK_PATHS: ${STAND_WEBHOOK_PATHS:-[]}
+      STAND_PRODUCT: Market
+      STAND_STATE_FILE: /state/attempts.json
+    volumes: [stand-access-state:/state]
+    mem_limit: 192m
+    cpus: 0.5
+  caddy:
+    volumes:
+      - ./deploy/stand-access/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      stand-access: { condition: service_started }
+volumes:
+  stand-access-state:

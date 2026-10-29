@@ -85,3 +85,87 @@ URLs, set `NODE_ENV=production`, `CHECK_EXTERNAL_CONNECTORS=1` and run
 does not guess `/health` paths and exits non-zero when the production contract or
 reachability check fails. Then run `npm run verify:live-evidence` against an
 external evidence manifest; reachability alone never becomes `LIVE_VERIFIED`.
+
+## STAND-ACCESS-20261029 — пароль доступа к сетевому стенду
+
+Для закрытого стенда обязателен `compose.stand.yaml` поверх базового Compose.
+Обычная локальная конфигурация не включает эту защиту. Это дополнительный вход
+перед приложением, не замена аккаунтов, MFA или tenant permissions.
+
+`deploy/stand-access` — автономный Node24 сервис без npm-зависимостей. Caddy
+проверяет каждую страницу, API и статический файл через forward_auth до upstream.
+Форма `/_stand/access` содержит только пароль, RU/KK/EN, показ/скрытие, состояния
+проверки и ошибки. Использует снимок semantic tokens проекта в brand.json;
+изменения исходных tokens нужно синхронизировать в этот адаптер.
+
+Пароль хранится как scrypt salt/hash. Cookie HttpOnly/Secure/SameSite=Lax,
+без Domain, действует8 часов. Смена hash или signing key с пересозданием gate
+отзывает все старые сеансы. `/_stand/access` после входа позволяет закрыть доступ
+на текущем устройстве (очистка cookie); это не отзыв украденной копии токена.
+CSRF проверяется подписью cookie/token и точным Origin. Referrer-Policy должна
+оставаться strict-origin-when-cross-origin: no-referrer делает Origin:null при
+отправке формы Chromium. Нет session/query secrets, пароля в HTML или логах.
+
+Не более10 проверок пароля/IP и120 суммарно за15 минут. Счётчики сохраняются
+в named volume `/state`; gate не масштабируется несколькими экземплярами с этим
+локальным файлом. Перезапуск не сбрасывает лимит; удаление volume сбросит его.
+Ключ IP берётся из перезаписанного Caddy X-Stand-Client, а не входного XFF.
+За внешним CDN/reverse proxy потребуется отдельная проверка trusted-proxy/IP
+настройки; текущий контракт — прямой публичный Caddy на VM.
+
+На каждом сервере оператор запускает из корня проекта:
+
+```text
+node deploy/stand-access/setup.mjs https://REAL_STAND_DOMAIN
+```
+
+Интерактивный ввод скрыт; пароль минимум16 символов, отдельный для каждого
+проекта. Скрипт создаёт игнорируемый `.env.stand.local` (не перезаписывает),
+содержит STAND_ORIGIN, WEB_DOMAIN, STAND_PASSWORD_HASH, STAND_SIGNING_KEY,
+STAND_WEBHOOK_PATHS. Это секретный server-only файл: не коммитить/публиковать.
+STAND_ORIGIN должен совпадать с HTTPS origin публичного домена. Рабочие пароли
+этой задачей не заданы. Для ротации новый файл генерируется оператором в закрытом
+каталоге, затем безопасно заменяет серверную конфигурацию и пересоздаётся gate.
+
+По умолчанию webhook-исключений нет. STAND_WEBHOOK_PATHS — JSON-массив точных
+API paths; исключается только POST, не GET/OPTIONS или подмаршруты. Добавлять
+только реально используемые входящие endpoints с собственной проверкой подписи,
+секрета и повтора в backend. Не разрешать целиком /api/, login, files, health.
+Gate не подтверждает подлинность webhook: это обязанность действующего адаптера.
+Нативные тестовые приложения должны пройти тот же form/CSRF flow с cookie jar
+и Origin; их токен обычного входа не заменяет допуск к стенду. Cross-site OAuth
+POST callbacks и внешние виджеты требуют отдельной проверки перед активацией.
+
+Публичны только80/443; остальные контейнеры/БД/gate не имеют published ports.
+Проверить firewall и отсутствие альтернативных origin/IP перед приёмкой сервера.
+Объектное хранилище остаётся приватным: gate не может закрыть публичный S3 URL
+или отозвать уже выданный presigned URL. Резервные копии/бакеты отдельно защищены.
+Отказ gate даёт502/503 и не открывает приложение. No-store/noindex не заменяют
+контроль доступа и не удаляют ранее скачанные файлы/кэш на устройствах.
+
+Проверки (без рабочей БД и реальных провайдеров):
+
+```text
+node --test deploy/stand-access/gate.test.mjs
+node deploy/stand-access/verify-compose.mjs
+node deploy/stand-access/verify-edge.mjs
+```
+
+Для verify-edge задать CADDY_BIN (Caddy2.10.2); для standalone Compose можно
+задать COMPOSE_BIN, иначе используется docker compose. CI stand-access.yml
+повторяет HTTP/Compose/реальный Caddy boundary. Docker image build и реальная
+HTTPS/cloud/provider приёмка остаются этапом серверного развёртывания.
+
+Market stand activation (после выполнения production prerequisites выше;
+команды здесь не выполнялись):
+
+```text
+docker compose --env-file .env.production --env-file .env.stand.local -f compose.production.yaml -f compose.stand.yaml config --quiet
+docker compose --env-file .env.production --env-file .env.stand.local -f compose.production.yaml -f compose.stand.yaml up -d --build
+```
+
+Overlay заменяет только входной Caddyfile и добавляет gate с private volume;
+production guards, immutable APP_RELEASE, API/web/worker, TLS БД/Redis и провайдеры
+сохраняются. Hoster/self-managed DB профиль ещё не реализован этой задачей.
+Для integrations webhook допускается только точный настроенный
+/api/integrations/webhooks/ENDPOINT_ID после проверки подписи адаптера.

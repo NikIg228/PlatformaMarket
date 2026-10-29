@@ -1,0 +1,37 @@
+{
+  email ops@{$WEB_DOMAIN}
+}
+
+{$WEB_DOMAIN} {
+  encode zstd gzip
+  header {
+    X-Robots-Tag "noindex, nofollow, noarchive"
+    Cache-Control "no-store, private"
+    X-Content-Type-Options nosniff
+    X-Frame-Options DENY
+    Referrer-Policy strict-origin-when-cross-origin
+    Strict-Transport-Security "max-age=31536000"
+    Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    -Server
+  }
+  route {
+    @gate path /_stand/access /_stand/logout
+    handle @gate {
+      reverse_proxy stand-access:8080 {
+        header_up X-Stand-Client {remote_host}
+      }
+    }
+    forward_auth stand-access:8080 {
+      uri /verify
+    }
+    handle /api/* {
+      request_body {
+        max_size 25MB
+      }
+      reverse_proxy api:4000
+    }
+    handle {
+      reverse_proxy web:3000
+    }
+  }
+}
