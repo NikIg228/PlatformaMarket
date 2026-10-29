@@ -123,8 +123,7 @@ node deploy/stand-access/setup.mjs https://REAL_STAND_DOMAIN
 проекта. Скрипт создаёт игнорируемый `.env.stand.local` (не перезаписывает),
 содержит STAND_ORIGIN, WEB_DOMAIN, STAND_PASSWORD_HASH, STAND_SIGNING_KEY,
 STAND_WEBHOOK_PATHS. Это секретный server-only файл: не коммитить/публиковать.
-STAND_ORIGIN должен совпадать с HTTPS origin публичного домена. Рабочие пароли
-этой задачей не заданы. Для ротации новый файл генерируется оператором в закрытом
+STAND_ORIGIN должен совпадать с HTTPS origin публичного домена. Локальные тестовые пароли заданы в игнорируемых ENV; публичный сервер ещё не настроен. Для ротации новый файл генерируется оператором в закрытом
 каталоге, затем безопасно заменяет серверную конфигурацию и пересоздаётся gate.
 
 По умолчанию webhook-исключений нет. STAND_WEBHOOK_PATHS — JSON-массив точных
@@ -169,3 +168,23 @@ production guards, immutable APP_RELEASE, API/web/worker, TLS БД/Redis и пр
 сохраняются. Hoster/self-managed DB профиль ещё не реализован этой задачей.
 Для integrations webhook допускается только точный настроенный
 /api/integrations/webhooks/ENDPOINT_ID после проверки подписи адаптера.
+
+
+### Local password-gate preview (29.10.2026)
+
+Start normal dev servers first, then run from the canonical root:
+
+```text
+node deploy/stand-access/dev.mjs Market
+```
+
+Requires Node and Caddy; set CADDY_BIN in ignored .env.stand.local or process
+environment. That file holds STAND_ORIGIN, password hash and signing key.
+Local entry: http://127.0.0.1:3080 (upstream3000).
+Cookies are namespaced per product so both gates coexist on localhost.
+Direct development ports remain loopback-only and bypass this preview entry.
+For deployment securely provision the file on the server, replace STAND_ORIGIN
+with its exact HTTPS origin and WEB_DOMAIN with the real host, and use the
+compose.stand.yaml activation commands above. Local HTTP URLs are not production
+configuration. Test credentials are not committed; choose a private server password
+before real user data. Public HTTPS/container acceptance remains unperformed.
