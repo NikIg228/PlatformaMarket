@@ -6,6 +6,27 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+## ROADMAP-EXECUTION-DETAILS-20261030 — COMPLETE (docs-only)
+
+Поручение владельца: приступить к точечной редакции roadmap по проверке полноты,
+сохранить принятые решения и evidence. База main91e2b6c, origin совпадает;
+tracked clean до правок, четыре несвязанных/аналитических output-пути сохранены.
+Scope: основной roadmap и этот checkpoint; код/данные/внешние сообщения не менялись.
+План до правок: уточнить результаты/зависимости/DoD и устаревший текст; риск —
+повторно открыть принятое или повысить scoped PASS. Проверки только docs:
+ссылки/anchors, уникальные R-ID, неизменность старых checkbox, review и diff hygiene.
+Добавлены30 открытых R-пунктов внутри единственного roadmap: B2C/получатель,
+auth/организации/каталог/аналитика, допуск/CRM/промо, деньги/доставка/комиссия,
+native/mobile EDS, data requests, manifest/запуск/store lifecycle. Уточнены сроки
+комиссии, старый mobile defer, scoped review result и исторический auth CI.
+Сохранены109 прежних R-ID/статусов, дублей нет, новых checked нет;10 новых
+ссылок/anchors PASS, git diff --check PASS. ТЗ/180 Q/Т/П не редактировались.
+Применена практика Technical Writer (engineering-technical-writer.md Agency):
+точность версии, явные prerequisites и наблюдаемый конец; без запуска агентов.
+Runtime suites не нужны для этого diff; автоматический CI публикации учитывается
+отдельно, новый runtime/live PASS не заявляется. Следующая реализация не начата;
+бизнес/банковские/правовые остатки остаются в существующем реестре решений.
+
 ## MARKET-IMPLEMENTATION-QUESTIONNAIRE-20261029 — COMPLETE (docs-only draft)
 
 Поручение: по всем18 вопросам подготовить анкету с вариантами и рекомендацией,
