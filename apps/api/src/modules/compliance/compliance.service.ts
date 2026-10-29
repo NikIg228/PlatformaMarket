@@ -149,6 +149,7 @@ export class ComplianceService {
   }
 
   private async evaluateInternal(input: ComplianceEvaluationInput, context: SupplierActorContext, authoritative = false) {
+    if (authoritative && input.sellerOrganizationId !== context.organizationId && !await this.isOperator(context.organizationId)) throw new ForbiddenException("Only the seller or marketplace operator may change publication");
     const at = input.at ? new Date(input.at) : new Date();
     const seller = await this.prisma.organization.findUnique({ where: { id: input.sellerOrganizationId }, include: { capabilities: true, supplierProfile: true, credentials: true } });
     if (!seller) throw new NotFoundException("Seller organization not found");
@@ -237,6 +238,7 @@ export class ComplianceService {
   }
 
   async recheckRule(ruleId: string, context: SupplierActorContext) {
+    if (!await this.isOperator(context.organizationId)) throw new ForbiddenException("Only compliance operators can recheck rules");
     const rule = await this.prisma.complianceRule.findUnique({ where: { id: ruleId } });
     if (!rule) throw new NotFoundException("Compliance rule not found");
     const offers = await this.prisma.supplierOffer.findMany({

@@ -17,6 +17,12 @@ describe("compliance evaluation versus publication authority", () => {
     return { service: new ComplianceService(prisma as never, {} as never), publication, tx };
   }
   const input = { sellerOrganizationId: "seller", buyerOrganizationId: "buyer", offerId: "offer", inventoryLotId: "lot" };
+  it("denies the sibling global rule-recheck entry before inspecting any foreign data", async () => {
+    const f = fixture();
+    await expect(f.service.recheckRule("rule", { actorId: "actor", organizationId: "buyer" })).rejects.toThrow(/operators/);
+    expect(f.publication.update).not.toHaveBeenCalled();
+    expect(f.tx.complianceCheck.create).not.toHaveBeenCalled();
+  });
   it("buyer future-date evaluation can deny its check but never hide seller publication", async () => {
     const f = fixture();
     await expect(f.service.evaluate({ ...input, at: "2099-01-01T00:00:00Z" }, { actorId: "actor", organizationId: "buyer" })).resolves.toMatchObject({ status: "BLOCKED", inputSnapshot: { authoritative: false } });
