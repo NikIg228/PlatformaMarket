@@ -101,9 +101,11 @@ preview/manual fallback, all-units29А и настроенные compatible comb
 подписи/оригиналы и внешние события сверяются без тихой потери/дубля. Legal retention
 и data requests не заменяются придуманными сроками. Цена даты не снижает DoD.
 
-На кодовом5be8417 CI/Security SUCCESS; существующие счёт/черновик/довоз,
-identity/admission и Admin scoped PASS сохраняются. Полный новый scope, code audit,
-провайдеры, устройства и production этим не приняты; чужой WIP не сертифицируется.
+Пакет buyer-context/review8e6eb79 имеет CI40823718196/Security40823718285 SUCCESS;
+согласования до b1b22c3 — docs-only. Исторический5be8417 и существующие
+счёт/черновик/довоз, identity/admission и Admin сохраняют scoped evidence.
+Полный новый scope, провайдеры, устройства и production этим не приняты;
+статус полного code audit проверяется по его отдельному evidence.
 Документ не запускает реализацию, рабочие миграции, магазины или deploy.
 
 ## Историческая карта и evidence до синхронизации29.10
