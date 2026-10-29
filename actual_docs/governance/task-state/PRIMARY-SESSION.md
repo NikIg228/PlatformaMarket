@@ -6,6 +6,21 @@
 
 # PRIMARY-SESSION — PlatformaMarket
 
+## CLINIC-PERSONAL-PAYER-20261029 — COMPLETE (docs-only)
+
+Поручение: собрать существующий процесс оплаты закупки клиники физлицом;
+только эквайринг, перевод физлица исключён; пробелы отдельно в roadmap.
+База main@5ad89d5, tracked clean; несвязанный output/security-remediation-20261028
+сохранён. План: синтез ТЗ §2/9/14.6–14.8 и R4/R7.6; явно разделить buyer/payer,
+товарные и банковские документы; без выдуманных legal/bank решений и кода.
+Добавлен R4.1.1: восемь шагов процесса, PP-01–08, источники и будущий DoD.
+ТЗ, функциональная карта и overview согласованы с уточнением владельца.
+Проверки docs-only: ссылки/anchors, согласованность/история, diff hygiene и
+scoped publication; runtime suites не требуются, live acceptance не объявляется.
+Ссылки/anchors и согласованность PASS; git diff --check PASS. Первичная попытка
+редактирования через отсутствующий Python не меняла файлов; apply_patch выполнен.
+Самостоятельный B2C checkout этой задачей не реализуется; R4/R7 не закрыты.
+
 ## BUYER-CONTEXT-REVIEW-20261029 — COMPLETE (scoped), CI GREEN
 
 Итог нового разрешённого цикла: UUID исправлен в6d6a5f7; три зависимых UI fixture
