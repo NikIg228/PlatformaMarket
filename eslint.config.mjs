@@ -17,7 +17,7 @@ export default [
       }] }],
     },
   },
-  { ignores: ["**/node_modules/**", "**/.next*/**", "**/dist/**", "**/coverage/**", "**/.turbo/**", "**/test-results/**", "**/playwright-report/**", "**/blob-report/**", "**/generated/**", "outputs/**", "output/**", ".tmp/**", "tmp/**", "actual_docs/**", "**/next-env.d.ts"] },
+  { ignores: ["**/node_modules/**", "**/.next*/**", "**/dist/**", "**/coverage/**", "**/.turbo/**", "**/test-results/**", "**/playwright-report/**", "**/blob-report/**", "**/generated/**", "outputs/**", "output/**", ".tmp/**", "apps/api/.tmp/**", "tmp/**", "actual_docs/**", "**/next-env.d.ts"] },
   {
     files: ["**/*.{js,mjs,cjs,ts,tsx}"],
     languageOptions: { parser: tseslint.parser, ecmaVersion: "latest", parserOptions: { ecmaFeatures: { jsx: true } } },
