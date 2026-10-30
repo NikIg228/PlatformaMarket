@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
-import { controlStyleProperties, declarationIssues, inlineIssues, targetsBoxedControl, controlDeclarationIssue } from "./lib/ui-contract-policy.mjs";
+import { controlStyleProperties, declarationIssues, inlineIssues, targetsBoxedControl, controlDeclarationIssue, isSharedStylesheet } from "./lib/ui-contract-policy.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
@@ -58,12 +58,13 @@ let declarations = 0, components = 0;
 for (const { file, text } of sources) {
   for (const match of text.matchAll(/var\(\s*(--dm-[\w-]+)/g)) if (!definitions.has(match[1])) add(file, text.slice(0, match.index).split("\n").length, `Undefined token ${match[1]}`);
   if (file.endsWith(".css")) {
+    const shared = isSharedStylesheet(file);
     const css = postcss.parse(text, { from: file });
     css.walkDecls(decl => {
       declarations++;
-      for (const message of declarationIssues({ prop: decl.prop, value: decl.value, selector: decl.parent.selector, shared: file === "packages/ui/src/styles.css" })) add(file, decl.source.start.line, `${message} (${decl.prop})`);
-      if (decl.prop.startsWith("--dm-") && file !== "packages/ui/src/styles.css") add(file, decl.source.start.line, "Define Market tokens in the shared contract only.");
-      if (file !== "packages/ui/src/styles.css" && targetsBoxedControl(decl.parent.selector ?? "", new Set([...globalClasses, ...(controlClasses.get(file) ?? [])])) && controlDeclarationIssue(decl.prop))
+      for (const message of declarationIssues({ prop: decl.prop, value: decl.value, selector: decl.parent.selector, shared })) add(file, decl.source.start.line, `${message} (${decl.prop})`);
+      if (decl.prop.startsWith("--dm-") && !shared) add(file, decl.source.start.line, "Define Market tokens in the shared contract only.");
+      if (!shared && targetsBoxedControl(decl.parent.selector ?? "", new Set([...globalClasses, ...(controlClasses.get(file) ?? [])])) && controlDeclarationIssue(decl.prop))
         add(file, decl.source.start.line, `Move ${decl.prop} into the shared control variant (${decl.parent.selector}).`);
     });
     continue;

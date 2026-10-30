@@ -1,6 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { declarationIssues, inlineIssues, targetsBoxedControl, controlDeclarationIssue } from "./ui-contract-policy.mjs";
+import { declarationIssues, inlineIssues, targetsBoxedControl, controlDeclarationIssue, isSharedStylesheet } from "./ui-contract-policy.mjs";
+
+test("extracted contract modules retain ownership without exempting page or arbitrary package CSS", () => {
+  for (const file of ["packages/ui/src/styles.css", "packages/ui/src/styles/controls.css", "packages/ui/src/styles/tokens-base.css"])
+    assert.equal(isSharedStylesheet(file), true, file);
+  for (const file of ["apps/web/styles.css", "apps/web/styles/controls.css", "packages/ui/src/styles/custom.css", "packages/ui/src/styles/../custom.css"])
+    assert.equal(isSharedStylesheet(file), false, file);
+  const focus = { prop: "outline", value: "1px solid var(--dm-focus-ring)", selector: ".dm-button:focus-visible" };
+  assert.deepEqual(declarationIssues({ ...focus, shared: isSharedStylesheet("packages/ui/src/styles/controls.css") }), []);
+  assert.ok(declarationIssues({ ...focus, shared: isSharedStylesheet("apps/web/styles/controls.css") }).length);
+  assert.ok(declarationIssues({ prop: "color", value: "#ff0000", shared: true }).length);
+});
 
 test("local control geometry is blocked even with valid tokens; descendant layout is allowed", () => {
   const classes = new Set(["save"]);

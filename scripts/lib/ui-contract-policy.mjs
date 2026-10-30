@@ -1,4 +1,16 @@
 // Pure checks shared by the repository guard and its regression cases.
+// Exact shared-contract modules extracted from styles.css. Other CSS, even
+// elsewhere in packages/ui, keeps the page-level ownership restrictions.
+const sharedStylesheets = new Set([
+  "packages/ui/src/styles.css",
+  ...["tokens-base", "workspace-shell", "controls", "document-archive",
+    "select-adapter", "conversations", "order-workspace", "interaction-adapters"]
+    .map(name => `packages/ui/src/styles/${name}.css`),
+]);
+export function isSharedStylesheet(file) {
+  return sharedStylesheets.has(file);
+}
+
 export function declarationIssues({ prop, value, selector = "", shared = false }) {
   if (prop.startsWith("--")) return [];
   const issues = [];
