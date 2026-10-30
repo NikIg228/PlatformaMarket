@@ -11,9 +11,18 @@ const INTERNAL_API_URL = (
 
 export async function GET(request: NextRequest) {
   try {
-    const query = request.nextUrl.searchParams.toString();
+    const params = new URLSearchParams(request.nextUrl.searchParams);
+    const supplierId = params.get("storefrontSupplierId");
+    params.delete("storefrontSupplierId");
+    if (supplierId !== null && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(supplierId)) {
+      return NextResponse.json({ message: "Invalid supplier identifier" }, { status: 400 });
+    }
+    // Keep the storefront endpoint authoritative for scope and availability;
+    // reuse only the same exact-identity photo enrichment as the public catalogue.
+    const path = supplierId ? `/catalog/suppliers/${supplierId}/search` : "/catalog/search";
+    const query = params.toString();
     const response = await fetch(
-      `${INTERNAL_API_URL}/catalog/search${query ? `?${query}` : ""}`,
+      `${INTERNAL_API_URL}${path}${query ? `?${query}` : ""}`,
       {
         cache: "no-store",
         signal: AbortSignal.timeout(3_500),

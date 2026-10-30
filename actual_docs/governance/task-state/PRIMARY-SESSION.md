@@ -1,3 +1,13 @@
+## SUPPLIER-STOREFRONT-REFERENCE-20261031 — scoped local PASS
+
+Approved reference implemented: compact supplier identity/details dialog, scoped
+search and exact product photos, five desktop cards with Details, global personal
+strip removed by owner request. Shared controls/tokens preserved; B2C WIP untouched.
+Types, focused regressions, lint/UI-contract and buyer/web builds PASS. Final
+visual comparison1505/1440 and mobile390 PASS; dev restored and left running.
+Evidence: ../evidence/supplier-storefront-reference-20261031.md; root design-qa.md.
+No backend/DB/deploy change in this UI task. Publication and CI tracked separately.
+
 > Решение владельца 14.10.2026: межчатовая координация, роли primary/UI,
 > назначения writer, ожидание других чатов, автоматическая передача и связанные
 > ограничения отменены. Применять актуальный AGENTS.md. Ниже сохранены сведения

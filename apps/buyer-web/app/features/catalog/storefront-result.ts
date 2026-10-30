@@ -1,10 +1,11 @@
-import { MarketplaceApiClient } from "@marketplace/api-client";
-import type { CatalogSearchResponse, SupplierStorefrontQuery } from "@marketplace/schemas";
+import type { CatalogSearchResponse } from "@marketplace/schemas";
 import type { SearchResult, SearchMedia } from "../../catalog-search-types";
+import { fetchLiveCatalog } from "../../catalog/live-search";
 
-const api = new MarketplaceApiClient(process.env.NEXT_PUBLIC_API_URL ?? "/api", {});
 export async function fetchStorefrontResult(supplierId: string, params: URLSearchParams, signal: AbortSignal): Promise<SearchResult> {
-  const value = await api.searchSupplierStorefront(supplierId, Object.fromEntries(params) as SupplierStorefrontQuery, signal);
+  const query = new URLSearchParams(params);
+  query.set("storefrontSupplierId", supplierId);
+  const value = await fetchLiveCatalog<CatalogSearchResponse>(query, signal);
   return storefrontResult(value);
 }
 

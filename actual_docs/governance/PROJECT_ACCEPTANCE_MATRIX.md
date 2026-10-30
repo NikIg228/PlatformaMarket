@@ -1,3 +1,11 @@
+## 31.10 — витрина по одобренному референсу
+
+Компактная шапка/диалог, карточки с Подробнее, точные существующие фото и отсутствие
+глобального личного режима. Types/builds/focused tests/lint/UI-contract PASS;
+[scope и evidence](evidence/supplier-storefront-reference-20261031.md).
+Финальная visual-приёмка PASS, dev восстановлен; публикация/CI учитываются отдельно.
+Общий R7/B2C не закрыты; данные реальны, геометрия controls соответствует DESIGN_SYSTEM.
+
 # PlatformaMarket — актуальная матрица приёмки
 
 ## 30.10 — публичная витрина поставщика: PASS (scoped), CI GREEN

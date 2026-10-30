@@ -66,8 +66,8 @@ export function CompactCatalog({ result, state, returnUrl, loading, error, loadi
   const reset = () => change({ ...emptyFilters });
 
   return <section ref={catalogRef} className={styles.catalog} aria-label="Каталог товаров">
-    <div className={filtersStyles.toolbar} aria-label="Поиск и фильтрация">
-      <CatalogFilterToolbar filters={filters} options={options} count={active.length}
+    <div className={filtersStyles.toolbar} data-storefront={storefront || undefined} aria-label="Поиск и фильтрация">
+      <CatalogFilterToolbar storefront={storefront} filters={filters} options={options} count={active.length}
         showPromotions={frontendFeatures.promotions}
         onChange={change} onOpenAll={openAll} />
     </div>
@@ -87,7 +87,7 @@ export function CompactCatalog({ result, state, returnUrl, loading, error, loadi
       </div> : null}
       {error && !result?.items.length ? <div className={styles.message}><h2>Не удалось загрузить каталог</h2><p>{error}</p><DmButton onClick={onRetry}>Повторить загрузку</DmButton></div>
         : loading ? <div role="status" className={styles.message}>Загружаем актуальные предложения…</div>
-        : result?.items.length ? <CatalogProductGrid products={result.items} state={state} returnUrl={returnUrl} imageSource={imageSource} />
+        : result?.items.length ? <CatalogProductGrid storefront={storefront} products={result.items} state={state} returnUrl={returnUrl} imageSource={imageSource} />
         : <div className={styles.message}><h2>Ничего не найдено</h2><p>Измените запрос или условия поиска. Город доставки меняется в шапке.</p><DmButton onClick={reset}>Сбросить фильтры</DmButton><DmButton onClick={openAll}>Все фильтры</DmButton></div>}
       {!loading && result && (result.nextOffset ?? result.items.length) < result.total ? <div className={styles.more}>
         {error ? <p>Не удалось загрузить следующую страницу. Уже загруженные товары сохранены.</p> : null}

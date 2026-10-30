@@ -6,7 +6,7 @@ import { catalogContext, searchDestination } from "./navigation";
 import { isStorefrontPath } from "../../catalog/marketplace-url";
 import styles from "./header.module.css";
 type Suggestion = { id: string; name: string; brand: string | null };
-export function HeaderSearch() {
+export function HeaderSearch({ placeholder = "Найти товар", fullWidth = false }: { placeholder?: string; fullWidth?: boolean }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Suggestion[]>([]);
@@ -49,8 +49,8 @@ export function HeaderSearch() {
     window.location.assign(item ? `/products/${encodeURIComponent(item.id)}?${new URLSearchParams({ returnTo: results })}` : results);
   };
   return <form ref={root} role="search" className={styles.search} onSubmit={e => { e.preventDefault(); navigate(); }} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false); }}>
-    <DmSearch className={styles.input} aria-label="Поиск по каталогу" role="combobox" aria-autocomplete="list" aria-expanded={open && query.trim().length >= 2} aria-controls={listId} aria-activedescendant={selected >= 0 ? `${listId}-${selected}` : undefined}
-      placeholder="Найти товар" value={query} maxLength={240}
+    <DmSearch fullWidth={fullWidth} className={styles.input} aria-label="Поиск по каталогу" role="combobox" aria-autocomplete="list" aria-expanded={open && query.trim().length >= 2} aria-controls={listId} aria-activedescendant={selected >= 0 ? `${listId}-${selected}` : undefined}
+      placeholder={placeholder} value={query} maxLength={240}
       onFocus={() => setOpen(true)} onChange={value => { generation.current++; request.current?.abort(); setQuery(value); setOpen(true); }}
       onKeyDown={e => { if (e.key === "Enter" && open && selected >= 0 && items[selected]) { e.preventDefault(); navigate(items[selected]); } if (e.key === "Escape") { e.preventDefault(); setOpen(false); } if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); setOpen(true); setSelected(n => items.length ? (n + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length : -1); } }}
       onClear={() => { generation.current++; request.current?.abort(); setOpen(false); root.current?.querySelector("input")?.focus(); }} />

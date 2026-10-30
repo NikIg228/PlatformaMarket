@@ -11,14 +11,16 @@ type Props = Omit<InputProps, "value" | "defaultValue" | "onChange" | "contentBe
   onSearch?: (value: string) => void;
   onClear?: () => void;
   pending?: boolean;
+  /** Fill a catalogue toolbar while preserving the default compact field width. */
+  fullWidth?: boolean;
 };
 
 /** One search field for workspaces, including autocomplete and nested forms. */
-export function DmSearch({ value, onChange, onSearch, onClear, pending = false, disabled, className, onKeyDown, ...props }: Props) {
+export function DmSearch({ value, onChange, onSearch, onClear, pending = false, fullWidth = false, disabled, className, onKeyDown, ...props }: Props) {
   const root = useRef<HTMLInputElement>(null);
   const search = () => { if (!disabled && !pending) onSearch?.(value.trim()); };
-  return <Input {...props} ref={root} value={value} disabled={disabled}
-    className={`dm-control dm-input ${styles.search} ${className ?? ""}`}
+  return <Input {...props} ref={root} value={value} disabled={disabled} data-dm-search-full-width={fullWidth || undefined}
+    className={`dm-control dm-input ${styles.search} ${fullWidth ? styles.fullWidth : ""} ${className ?? ""}`}
     onChange={(_, data) => { onChange(data.value); if (!data.value) onSearch?.(""); }}
     onKeyDown={event => {
       if (event.key === "Enter" && event.nativeEvent.isComposing) { event.preventDefault(); return; }

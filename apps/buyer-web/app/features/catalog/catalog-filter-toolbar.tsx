@@ -7,13 +7,14 @@ import { HeaderSearch } from "../marketplace-header/header-search";
 import { FilterChoice } from "./catalog-filter-controls";
 import { categoryChoices, categoryPatch, type CatalogFilters, type FilterOptions, type FilterPatch } from "./catalog-filter-model";
 import styles from "./catalog-filters.module.css";
-export function CatalogFilterToolbar({ filters, options, count, showPromotions, onChange, onOpenAll }: {
+export function CatalogFilterToolbar({ filters, options, count, showPromotions, onChange, onOpenAll, storefront = false }: {
+  storefront?: boolean;
   showPromotions?: boolean;
   filters: CatalogFilters; options?: FilterOptions; count: number;
   onChange: (patch: FilterPatch) => void; onOpenAll: () => void;
 }) {
   return <>
-    <div className={styles.searchSlot}><HeaderSearch /></div>
+    <div className={styles.searchSlot}><HeaderSearch fullWidth={storefront} placeholder={storefront ? "Найти товар у поставщика" : undefined} /></div>
     <div className={styles.citySlot}><HeaderCity toolbar /></div>
     <div className={styles.categorySlot}>
       <FilterChoice label="Категория и подкатегория" hideLabel allLabel="Все категории" searchable={false}
