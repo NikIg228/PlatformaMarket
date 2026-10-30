@@ -14,7 +14,7 @@ import { Add24Regular } from "@fluentui/react-icons/svg/add";
 import { Subtract24Regular } from "@fluentui/react-icons/svg/subtract";
 import { SupplierQuestion } from "./supplier-question";
 import { SupplierIdentity } from "./supplier-identity";
-import { quantityRules, initialQuantity, validQuantity, MAX_SUPPLIER_QUANTITY } from "./supplier-quantity";
+import { quantityRules, initialQuantity, validQuantity, clampQuantityInput, MAX_SUPPLIER_QUANTITY } from "./supplier-quantity";
 
 export type SupplierOffer = {
   id: string; supplier: { id?: string; organizationId?: string; name: string; logoUrl?: string | null; publicContact?: OrganizationContact | null }; priceMinor: string | null;
@@ -100,10 +100,14 @@ export function SupplierOffers({ offers, loginHref, compact = false, productName
           {comparison ? <DmButton icon={<Subtract24Regular />} aria-label={`Уменьшить количество у ${offer.supplier.name}`} disabled={busy !== null || !offer.available || !valid || Number(quantity) <= Number(initialQuantity(offer))} onClick={() => changeQuantity(-1)} /> : null}
           <label>{comparison ? null : "Количество"}<DmInput quantity={comparison} className={comparison ? undefined : styles.quantity} type="number" min={min} step={step} max={MAX_SUPPLIER_QUANTITY} value={quantity} disabled={busy !== null || !offer.available}
             aria-label={`Количество у ${offer.supplier.name}`} aria-invalid={!valid}
-            onChange={e => setQuantities(current => ({ ...current, [offer.id]: e.target.value }))} /></label>
+            onChange={e => {
+              const value = clampQuantityInput(e.target.value);
+              e.target.value = value;
+              setQuantities(current => ({ ...current, [offer.id]: value }));
+            }} /></label>
           {comparison ? <DmButton icon={<Add24Regular />} aria-label={`Увеличить количество у ${offer.supplier.name}`} disabled={busy !== null || !offer.available || !valid || Number(quantity) + step > MAX_SUPPLIER_QUANTITY} onClick={() => changeQuantity(1)} /> : null}
           </div>
-          {!valid ? <small className={styles.quantityNote} role="alert">От {min}, кратно {step}, не более 100</small> : null}
+          {!valid ? <small className={styles.quantityNote} role="alert">от 1 до 100 штук</small> : null}
           {comparison && total ? <small className={styles.quantityNote}>Предварительно: {formatCatalogMoney(total, offer.currency)}. Скидки — в корзине.</small> : null}
           <DmButton className={comparison ? styles.buy : undefined} appearance="primary" disabled={!ready || busy !== null || !valid || !offer.available || offer.priceMinor == null} onClick={() => void add(offer)}>
             {!ready ? "Проверяем вход…" : busy === offer.id ? "Добавляем…" : !offer.available ? comparison ? "Недоступно" : "Под заказ" : offer.priceMinor == null ? "Нет цены" : session ? "В корзину" : "Войти и купить"}

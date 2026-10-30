@@ -2,12 +2,16 @@
 export const MAX_SUPPLIER_QUANTITY = 100;
 type QuantityOffer = { minimumOrderQuantity?: string; orderIncrement?: string };
 
+export function clampQuantityInput(value: string) {
+  return Number(value) > MAX_SUPPLIER_QUANTITY ? String(MAX_SUPPLIER_QUANTITY) : value;
+}
+
 export function quantityRules(offer: QuantityOffer) {
   return { min: Number(offer.minimumOrderQuantity ?? 1), step: Number(offer.orderIncrement ?? 1) };
 }
 export function initialQuantity(offer: QuantityOffer) {
   const { min, step } = quantityRules(offer);
-  return String(Number((Math.ceil(min / step - 1e-9) * step).toFixed(6)));
+  return clampQuantityInput(String(Number((Math.ceil(min / step - 1e-9) * step).toFixed(6))));
 }
 export function validQuantity(value: string, offer: QuantityOffer) {
   const n = Number(value);
