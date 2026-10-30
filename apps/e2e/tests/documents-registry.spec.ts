@@ -30,6 +30,8 @@ async function fixture(page: Page, role: "clinic" | "supplier", canReview = true
     if (path.startsWith("/documents/archive/")) return state.detailFail ? fail() : route.fulfill({ json: docs.find(doc => path.endsWith(doc.id)) ?? docs[0] });
     if (/\/documents\/[^/]+\/download$/.test(path)) return route.fulfill({ contentType: "application/pdf", headers: { "content-disposition": 'attachment; filename="document.pdf"' }, body: "%PDF-1.4 fixture" });
     if (path === "/auth/workspace-context") return route.fulfill({ json: { organizationId, organizationDisplayName: "Демо организация", capabilities: [capability] } });
+    if (request.method() === "GET" && path === "/auth/personal-current") return route.fulfill({ json: null });
+    if (request.method() === "GET" && path === "/auth/workspaces") return route.fulfill({ json: [{ organizationId, organizationDisplayName: "Демо организация", capabilities: [capability] }] });
     if (path === "/access-control/policy") return route.fulfill({ json: { mode: "ROLE_BASED", permissions: ["organization.view", "document.view", "document.upload", ...(canReview ? ["document.accounting.review"] : [])] } });
     if (path === "/auth/current") return route.fulfill({ json: url.searchParams.has("workspace") ? { sessionId: organizationId, user: { id: organizationId, displayName: "Тестовый сотрудник", email: "test@example.invalid" } } : null });
     if (path === "/auth/profile") return route.fulfill({ json: { id: organizationId, displayName: "Тестовый сотрудник", email: "test@example.invalid", phone: "+77000000000", avatarAssetId: null, version: 1 } });

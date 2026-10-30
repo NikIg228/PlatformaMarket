@@ -1,1 +1,1 @@
-export { default } from "../../../../buyer-web/app/about/page";
+export { default } from "../../../../buyer-web/app/about/about-screen";

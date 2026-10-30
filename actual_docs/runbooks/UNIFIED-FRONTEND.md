@@ -38,6 +38,17 @@ Caddy используют единый WEB_DOMAIN с /api на api4000. Эта 
 в `apps/web` не редактируются вручную и не коммитятся. Turbo учитывает исходные
 каталоги компонентов и assets при проверке cache.
 
+В самостоятельном срезе REFACTOR-20261030 публичные/auth/legal страницы используют
+соседние `*-screen.tsx`, а админская страница — `operations-workspace.tsx`.
+Unified и legacy `page.tsx` остаются адаптерами этих features. Product adapter
+сохраняет `generateMetadata`. Landing login пока сохраняет прежний импорт из-за
+активных B2C-изменений. Общие legacy URL defaults находятся в
+`packages/api-client/src/frontend-routes.ts`; unified env overrides сохраняются
+в `apps/web/next.config.ts`. Это не отключает legacy и не подтверждает live DNS.
+Локальные сборки и bundle-gates web/buyer/supplier/admin прошли без увеличения
+лимитов. Перенос login и разбиение общих schema/client index остаются отдельным
+публикационным срезом: они сохраняют ещё не опубликованные B2C-изменения.
+
 ## Откат
 
 Штатно остановить собственный unified launcher (`Ctrl+C`), убедиться, что его

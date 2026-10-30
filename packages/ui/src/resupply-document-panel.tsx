@@ -1,7 +1,10 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PrepareResupplyDocumentInput, ResupplyDocumentsResponse, ResupplyDocumentView } from "@marketplace/schemas";
-import { DmButton, DmFeedback, DmFormSections, DmTable, LoadingState, errorMessage, formatDate } from "./index";
+import { DmButton } from "./actions";
+import { DmFeedback, DmTable, LoadingState } from "./primitives";
+import { DmFormSections } from "./heading";
+import { errorMessage, formatDate } from "./format";
 
 export type ResupplyDocumentApi = {
   getResupplyDocuments(orderId: string, discrepancyId: string): Promise<ResupplyDocumentsResponse>;

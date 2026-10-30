@@ -8,6 +8,19 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@marketplace/ui", "@marketplace/api-client"],
   allowedDevOrigins: ["127.0.0.1", "localhost", "dentmarket.localhost", "marketplace.localhost", "buyer.localhost", "supplier.localhost", "admin.localhost"],
   reactStrictMode: true,
+  // Resolve shared UI named exports to their defining modules before bundling.
+  experimental: { optimizePackageImports: ["@marketplace/ui"] },
+  webpack(config, { isServer }) {
+    // Shared icon modules otherwise become several sub-kilobyte requests.
+    // Keep the same tree-shaken icons together without changing route loading.
+    if (!isServer && config.optimization?.splitChunks && typeof config.optimization.splitChunks === "object") {
+      config.optimization.splitChunks.cacheGroups = {
+        ...config.optimization.splitChunks.cacheGroups,
+        fluentIcons: { test: /[\\/]@fluentui[\\/]react-icons[\\/]/, name: "fluent-icons", chunks: "all", enforce: true, priority: 40, reuseExistingChunk: true },
+      };
+    }
+    return config;
+  },
   async rewrites() {
     if (process.env.NODE_ENV !== "development") return [];
     const api = (process.env.INTERNAL_API_URL ?? "http://127.0.0.1:4012/api").replace(/\/$/, "");

@@ -1,0 +1,4 @@
+/* Selectors share one outline; Fluent's extra bottom underline is not used. */
+:is(.fui-Dropdown, .fui-Combobox, .fui-Select)::after {
+  display: none;
+}

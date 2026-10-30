@@ -1,7 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import type { DiscrepancyStatement, OrderDiscrepancyCommand, OrderDiscrepancyResult, OrderDiscrepancyView, OrderWorkflowResponse } from "@marketplace/schemas";
-import { DmButton, DmDialog, DmDropdown, DmFeedback, DmField, DmFormSections, DmTable, DmTextarea, LoadingState, Section, errorMessage, formatDate } from "./index";
+import { DmButton } from "./actions";
+import { DmDialog, DmFeedback, DmTable, LoadingState, Section } from "./primitives";
+import { DmDropdown } from "./dm-dropdown";
+import { DmField, DmTextarea } from "./controls";
+import { DmFormSections } from "./heading";
+import { errorMessage, formatDate } from "./format";
 import { DiscrepancyForm, discrepancyKinds, discrepancyResolutions } from "./order-discrepancy-form";
 import { useOrderDiscrepancies, type OrderDiscrepancyApi } from "./order-discrepancy-resource";
 import { OrderResupplyPanel, discrepancyExecutionLabel } from "./order-resupply-panel";

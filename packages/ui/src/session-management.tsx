@@ -1,7 +1,9 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { IdentitySession } from "@marketplace/schemas";
-import { DmButton, DmFeedback, LoadingState, errorMessage } from "./index";
+import { DmButton } from "./actions";
+import { DmFeedback, LoadingState } from "./primitives";
+import { errorMessage } from "./format";
 
 export function SessionManagement({ api, currentSessionId, onCurrentRevoked }: {
   api: { listSessions(): Promise<IdentitySession[]>; revokeSession(id: string): Promise<unknown> };

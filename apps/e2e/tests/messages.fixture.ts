@@ -26,6 +26,8 @@ export async function messagesFixture(page: Page, role: "clinic" | "supplier" = 
     let body: unknown;
     if (path === "/auth/workspace-context") body = { organizationId, organizationDisplayName: role === "clinic" ? "Клиника" : "DentalPro", capabilities: [capability] };
     else if (path === "/auth/current") body = null;
+    else if (request.method() === "GET" && path === "/auth/personal-current") body = null;
+    else if (request.method() === "GET" && path === "/auth/workspaces") body = [{ organizationId, organizationDisplayName: role === "clinic" ? "Клиника" : "DentalPro", capabilities: [capability] }];
     else if (path === "/access-control/permissions") body = rights;
     else if (path === "/access-control/policy") body = { mode: "ROLE_BASED", permissions: rights };
     else if (path === "/catalog/cities") body = [{ id: id(5), nameRu: "Алматы", nameKk: "Алматы", isActive: true }];

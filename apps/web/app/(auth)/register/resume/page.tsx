@@ -1,1 +1,1 @@
-export { default } from "../../../../../landing-web/app/register/resume/page";
+export { default } from "../../../../../landing-web/app/register/resume/resume-screen";

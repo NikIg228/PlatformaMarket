@@ -1,7 +1,11 @@
 "use client";
 import { useState } from "react";
 import type { OrderDiscrepancyCommand, OrderDiscrepancyView, OrderWorkflowResponse } from "@marketplace/schemas";
-import { DmButton, DmFeedback, DmField, DmFormSections, DmInput, DmTable, formatDate, formatStatus } from "./index";
+import { DmButton } from "./actions";
+import { DmFeedback, DmTable } from "./primitives";
+import { DmField, DmInput } from "./controls";
+import { DmFormSections } from "./heading";
+import { formatDate, formatStatus } from "./format";
 import { DmCheckbox } from "./controls";
 
 export function discrepancyExecutionLabel(claim: OrderDiscrepancyView, fallback: string) {

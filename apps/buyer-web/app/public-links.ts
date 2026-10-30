@@ -1,24 +1,7 @@
+import { publicFrontendUrls, publicLoginUrl } from "@marketplace/api-client/frontend-routes";
 import { withProductReturn } from "@marketplace/schemas/product-navigation";
-
-const localLandingUrl = "http://127.0.0.1:3003";
-const localSupplierUrl = "http://127.0.0.1:3002";
-
-export const landingAppUrl =
-  process.env.NEXT_PUBLIC_LANDING_APP_URL ??
-  (process.env.NODE_ENV === "development"
-    ? localLandingUrl
-    : "https://dentmarket-kz.vercel.app");
-
-export const supplierAppUrl =
-  process.env.NEXT_PUBLIC_SUPPLIER_APP_URL ??
-  (process.env.NODE_ENV === "development"
-    ? localSupplierUrl
-    : "https://dentmarket-supplier.vercel.app");
-
-export const loginUrl =
-  process.env.NEXT_PUBLIC_LOGIN_URL ?? `${landingAppUrl}/login`;
-
+export const landingAppUrl = publicFrontendUrls.landing;
+export const supplierAppUrl = publicFrontendUrls.supplier;
+export const loginUrl = publicLoginUrl;
 export const productLoginUrl = (returnTo: string) => withProductReturn(loginUrl, returnTo);
-
-export const registrationUrl = (role: "buyer" | "supplier") =>
-  `${landingAppUrl}/register?role=${role}`;
+export const registrationUrl = (role: "buyer" | "supplier") => `${landingAppUrl}/register?role=${role}`;

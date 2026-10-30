@@ -1,4 +1,7 @@
 "use client";
+import workspaceListsStyles from "./features/workspace-lists.module.css";
+import publicShellStyles from "./features/public-shell.module.css";
+import productInspectorStyles from "./features/product-inspector.module.css";
 import { ActionFeedback, useToast } from "@marketplace/ui";
 import { DmSelect } from "@marketplace/ui/controls";
 import { workspacePath } from "@marketplace/api-client";
@@ -860,18 +863,18 @@ export default function BuyerWorkspace({
         loading={loading} error={error} loadingMore={busy === "load-more"} onMore={() => void loadMoreProducts()} onRetry={() => void submitSearch() } imageSource={mediaSource} />
       {selectedProduct ? (
         <div
-          className={styles.productModalBackdrop}
+          className={productInspectorStyles.productModalBackdrop}
           role="presentation"
           onClick={closeProduct}
         >
           <section
-            className={styles.productModal}
+            className={productInspectorStyles.productModal}
             role="dialog"
             aria-modal="true"
             aria-labelledby="product-detail-title"
             onClick={(event) => event.stopPropagation()}
           >
-            <header className={styles.productModalHeader}>
+            <header className={productInspectorStyles.productModalHeader}>
               <div>
                 <span className={styles.category}>
                   {selectedProduct.categories[0]?.name ?? "Стоматология"}
@@ -896,7 +899,7 @@ export default function BuyerWorkspace({
                 Закрыть
               </Button>
             </header>
-            <div className={styles.productModalBody}>
+            <div className={productInspectorStyles.productModalBody}>
               <div
                 className={styles.productModalVisual}
                 onContextMenu={(event) => event.preventDefault()}
@@ -911,7 +914,7 @@ export default function BuyerWorkspace({
                     draggable={false}
                   />
                 ) : (
-                  <div className={styles.productModalPhotoPending}>
+                  <div className={productInspectorStyles.productModalPhotoPending}>
                     Ищем точное фото товара
                   </div>
                 )}
@@ -921,10 +924,10 @@ export default function BuyerWorkspace({
                     : "Покажем фото только после проверки модели"}
                 </small>
               </div>
-              <div className={styles.productInfo}>
+              <div className={productInspectorStyles.productInfo}>
                 {selectedProduct.variants &&
                 selectedProduct.variants.length > 1 ? (
-                  <div className={styles.variantPicker}>
+                  <div className={productInspectorStyles.variantPicker}>
                     <div>
                       <span className={styles.category}>Вариант товара</span>
                       <strong>Выберите точную фасовку или REF</strong>
@@ -947,7 +950,7 @@ export default function BuyerWorkspace({
                     </DmSelect>
                   </div>
                 ) : null}
-                <div className={styles.productModalCopy}>
+                <div className={productInspectorStyles.productModalCopy}>
                   <h3>О товаре</h3>
                   <p>
                     {selectedProduct.description ||
@@ -958,7 +961,7 @@ export default function BuyerWorkspace({
                     указывает продавец.
                   </small>
                   {selectedProduct.attributes?.length ? (
-                    <dl className={styles.productAttributes}>
+                    <dl className={productInspectorStyles.productAttributes}>
                       {selectedProduct.attributes.map(([label, value]) => (
                         <div key={`${label}-${value}`}>
                           <dt>{label}</dt>
@@ -969,7 +972,7 @@ export default function BuyerWorkspace({
                   ) : null}
                   {selectedProduct.sourceUrl ? (
                     <a
-                      className={styles.productSourceLink}
+                      className={productInspectorStyles.productSourceLink}
                       href={selectedProduct.sourceUrl}
                       target="_blank"
                       rel="noreferrer"
@@ -979,7 +982,7 @@ export default function BuyerWorkspace({
                   ) : null}
                 </div>
                 <aside
-                  className={styles.productFacts}
+                  className={productInspectorStyles.productFacts}
                   aria-label="Сводка по товару"
                 >
                   <span>
@@ -1029,10 +1032,10 @@ export default function BuyerWorkspace({
                 </aside>
               </div>
               <section
-                className={styles.sellerSection}
+                className={productInspectorStyles.sellerSection}
                 aria-labelledby="seller-list-title"
               >
-                <div className={styles.sellerSectionHeader}>
+                <div className={productInspectorStyles.sellerSectionHeader}>
                   <div>
                     <span className={styles.category}>
                       Предложения поставщиков
@@ -1043,7 +1046,7 @@ export default function BuyerWorkspace({
                       итоговую цену.
                     </p>
                   </div>
-                  <span className={styles.rankingNote}>
+                  <span className={productInspectorStyles.rankingNote}>
                     Цена указана за фасовку
                   </span>
                 </div>
@@ -1056,8 +1059,8 @@ export default function BuyerWorkspace({
                     description="Оставьте товар открытым или повторите поиск позже."
                   />
                 ) : (
-                  <div className={styles.sellerList}>
-                    <div className={styles.sellerListHead} aria-hidden="true">
+                  <div className={productInspectorStyles.sellerList}>
+                    <div className={productInspectorStyles.sellerListHead} aria-hidden="true">
                       <span>Поставщик</span>
                       <span>Цена</span>
                       <span>Доставка и наличие</span>
@@ -1076,16 +1079,16 @@ export default function BuyerWorkspace({
                         <article
                           className={
                             recommended
-                              ? styles.sellerRowRecommended
-                              : styles.sellerRow
+                              ? productInspectorStyles.sellerRowRecommended
+                              : productInspectorStyles.sellerRow
                           }
                           key={offer.offerId}
                         >
-                          <div className={styles.sellerIdentity}>
-                            <div className={styles.sellerNameLine}>
+                          <div className={productInspectorStyles.sellerIdentity}>
+                            <div className={productInspectorStyles.sellerNameLine}>
                               <strong>{offer.supplier.name}</strong>
                               {recommended ? (
-                                <span className={styles.recommendedBadge}>
+                                <span className={productInspectorStyles.recommendedBadge}>
                                   Рекомендуем
                                 </span>
                               ) : null}
@@ -1093,7 +1096,7 @@ export default function BuyerWorkspace({
                             {offer.supplierSku ? (
                               <small>Артикул {offer.supplierSku}</small>
                             ) : null}
-                            <div className={styles.sellerMarkers}>
+                            <div className={productInspectorStyles.sellerMarkers}>
                               {offer.markers.verifiedDocuments ? (
                                 <StatusTag tone="success">
                                   Документы проверены
@@ -1113,7 +1116,7 @@ export default function BuyerWorkspace({
                               ) : null}
                             </div>
                           </div>
-                          <div className={styles.sellerPrice}>
+                          <div className={productInspectorStyles.sellerPrice}>
                             <strong>
                               {formatCatalogMoney(
                                 offer.price.amountMinor,
@@ -1129,12 +1132,12 @@ export default function BuyerWorkspace({
                             </small>
                             <small>{offer.packaging.name} · {offer.packaging.quantityInBaseUnit} {offer.packaging.unit}</small>
                           </div>
-                          <div className={styles.sellerDelivery}>
+                          <div className={productInspectorStyles.sellerDelivery}>
                             <strong
                               className={
                                 available
-                                  ? styles.availableText
-                                  : styles.pendingText
+                                  ? productInspectorStyles.availableText
+                                  : productInspectorStyles.pendingText
                               }
                             >
                               {available
@@ -1143,7 +1146,7 @@ export default function BuyerWorkspace({
                             </strong>
                             <OfferDeliverySummary options={offer.delivery} currency={offer.price.currency} />
                           </div>
-                          <div className={styles.sellerTrust}>
+                          <div className={productInspectorStyles.sellerTrust}>
                             {frontendFeatures.trust && <strong>
                               {trustScore != null
                                 ? `${Number(trustScore).toFixed(0)}/100`
@@ -1175,7 +1178,7 @@ export default function BuyerWorkspace({
                   </div>
                 )}
               </section>
-              {frontendFeatures.trust && <section className={styles.productReviews}>
+              {frontendFeatures.trust && <section className={productInspectorStyles.productReviews}>
                 <h4>Отзывы клиник</h4>
                 {!productReviews?.reviews.length ? (
                   <p>
@@ -1249,9 +1252,9 @@ export default function BuyerWorkspace({
             description="Документы появятся здесь после оформления заказа."
           />
         ) : (
-          <div className={styles.documentList}>
+          <div className={workspaceListsStyles.documentList}>
             {documents.map((document) => (
-              <article className={styles.document} key={document.id}>
+              <article className={workspaceListsStyles.document} key={document.id}>
                 <div>
                   <strong>{document.title}</strong>
                   <p>
@@ -1295,9 +1298,9 @@ export default function BuyerWorkspace({
             description="Важные события по закупкам появятся здесь."
           />
         ) : (
-          <div className={styles.notificationList}>
+          <div className={workspaceListsStyles.notificationList}>
             {notifications.map((notification) => (
-              <article className={styles.notification} key={notification.id}>
+              <article className={workspaceListsStyles.notification} key={notification.id}>
                 <div>
                   <strong>{notification.subject}</strong>
                   <p>{notification.body}</p>
@@ -1370,12 +1373,12 @@ export default function BuyerWorkspace({
 
   if (!handoff && active === "catalog") {
     return (
-      <div className={styles.publicStore}>
+      <div className={publicShellStyles.publicStore}>
         <MarketplaceHeader showCity={false} />
         <main className={styles.publicMain} id="catalog">
           {renderCatalog(true)}
         </main>
-        <footer className={styles.publicFooter}>
+        <footer className={publicShellStyles.publicFooter}>
           <span>© PlatformaMarket</span>
           <span>Закупки для клиник и поставщиков</span>
         </footer>

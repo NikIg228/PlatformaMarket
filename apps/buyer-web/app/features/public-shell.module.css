@@ -1,0 +1,26 @@
+
+
+.publicStore {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 0% 8%, color-mix(in srgb, var(--dm-brand-accent) 12%, transparent), transparent 36rem),
+    radial-gradient(ellipse at 100% 28%, color-mix(in srgb, var(--dm-brand-accent) 10%, transparent), transparent 40rem),
+    var(--dm-page-surface);
+  color: var(--dm-text-primary);
+}
+.publicFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--dm-space-6);
+  padding: var(--dm-space-6) clamp(var(--dm-space-6), 5vw, var(--dm-space-20));
+  border-top: 1px solid var(--dm-border);
+  color: var(--dm-text-muted);
+  font-size: var(--dm-font-size-caption);
+}
+@media (max-width: 650px) {
+  .publicFooter {
+    display: grid;
+    gap: var(--dm-space-2);
+    padding: var(--dm-space-4) var(--dm-space-4);
+  }
+}

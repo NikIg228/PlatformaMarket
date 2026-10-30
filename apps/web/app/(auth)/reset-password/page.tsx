@@ -1,1 +1,1 @@
-export { default } from "../../../../landing-web/app/reset-password/page";
+export { default } from "../../../../landing-web/app/reset-password/reset-password-screen";

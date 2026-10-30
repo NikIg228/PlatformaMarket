@@ -2,7 +2,7 @@
   margin: calc(-1 * var(--dm-space-2)) calc(-1 * var(--dm-space-6)) calc(-1 * var(--dm-space-6));
 }
 .workspace :global(.dm-conversations-layout) {
-  height: calc(100dvh - 81px);
+  height: var(--messages-available-height, calc(100dvh - 81px));
   min-height: 360px;
   align-items: stretch;
   gap: var(--dm-space-3);
@@ -34,5 +34,5 @@
 }
 @media (max-width: 760px) {
   .workspace { margin: calc(-1 * var(--dm-space-1)) calc(-1 * var(--dm-space-1)) calc(-1 * var(--dm-space-2)); }
-  .workspace :global(.dm-conversations-layout) { height: calc(100dvh - 154px); }
+  .workspace :global(.dm-conversations-layout) { height: var(--messages-available-height, calc(100dvh - 154px)); }
 }

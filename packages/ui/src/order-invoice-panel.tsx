@@ -3,7 +3,11 @@ import { dmLinkButtonProps } from "./link-button";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { OrderInvoicesResponse, OrderInvoiceView, PrepareOrderInvoiceInput, OrderWorkflowCommand, OrderWorkflowResult } from "@marketplace/schemas";
 import { vatLabel } from "@marketplace/schemas";
-import { DmButton, DmCheckbox, DmDialog, DmFeedback, DmTable, LoadingState, Section, formatMoney, formatDate, errorMessage } from "./index";
+import { DmButton } from "./actions";
+import { DmCheckbox } from "./controls";
+import { DmDialog, DmFeedback, DmTable, LoadingState, Section } from "./primitives";
+import { formatMoney } from "./money";
+import { formatDate, errorMessage } from "./format";
 import { WorkflowCommandTracker } from "./order-workflow-command";
 
 export type OrderInvoiceApi = {

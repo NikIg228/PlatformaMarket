@@ -1,1 +1,1 @@
-export { default } from "../../../../landing-web/app/verify-email/page";
+export { default } from "../../../../landing-web/app/verify-email/verify-email-screen";

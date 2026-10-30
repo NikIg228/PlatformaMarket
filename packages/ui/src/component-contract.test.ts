@@ -1,3 +1,4 @@
+import { readStyleSource } from "./read-style-source.test-helper";
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,7 +16,7 @@ function sources(directory: string): string[] {
 
 describe("Market component contract", () => {
   it("keeps geometry adapters synchronized with the versioned contract", () => {
-    const css = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
+    const css = readStyleSource(new URL("./styles.css", import.meta.url));
     for (const [name, value] of Object.entries(contract.tokens)) expect(css, name).toContain(`${name}: ${value};`);
   });
 

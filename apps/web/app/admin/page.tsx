@@ -1,1 +1,1 @@
-export { default } from "../../../admin-web/app/page";
+export { default } from "../../../admin-web/app/operations-workspace";

@@ -3,7 +3,10 @@ import { DmSelect, DmFileInput, DmCheckbox } from "./controls";
 import { useId, useRef, useState } from "react";
 import type { OrderReturn, OrderWorkflowResponse, UploadDocumentInput } from "@marketplace/schemas";
 import type { WorkflowAction } from "./order-workflow-command";
-import { DmButton, DmFeedback, DmField, DmInput, Section, formatMoney } from "./index";
+import { DmButton } from "./actions";
+import { DmFeedback, Section } from "./primitives";
+import { DmField, DmInput } from "./controls";
+import { formatMoney } from "./money";
 import { documentUploadFileError } from "./document-upload-model";
 
 type Props = { data: OrderWorkflowResponse; organizationId: string; busy: boolean; canAct: (action: WorkflowAction["action"]) => boolean;

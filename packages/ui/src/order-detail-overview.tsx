@@ -3,7 +3,9 @@ import type { ReactNode } from "react";
 import type { OrderWorkflowResponse } from "@marketplace/schemas";
 import { orderLineVat } from "@marketplace/schemas";
 import { VatLineAmount, VatBreakdown } from "./vat-breakdown";
-import { DmButton, formatDate, formatMoney } from "./index";
+import { DmButton } from "./actions";
+import { formatDate } from "./format";
+import { formatMoney } from "./money";
 import { orderItemCount, orderOverview, type OrderDetailTab } from "./order-presentation";
 
 export function OrderDetailOverview({ data, supplier, onTab, confirmation, conversation }: {

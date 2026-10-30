@@ -19,6 +19,8 @@ const config: NextConfig = {
     // Shared icon modules otherwise become several sub-kilobyte requests.
     // Keep the same tree-shaken icons together without changing route loading.
     if (!isServer && config.optimization?.splitChunks && typeof config.optimization.splitChunks === "object") {
+      // Leave room for Next bootstrap/route files inside the 24-request budget.
+      config.optimization.splitChunks.maxInitialRequests = 20;
       config.optimization.splitChunks.cacheGroups = {
         ...config.optimization.splitChunks.cacheGroups,
         fluentIcons: { test: /[\\/]@fluentui[\\/]react-icons[\\/]/, name: "fluent-icons", chunks: "all", enforce: true, priority: 40, reuseExistingChunk: true },
@@ -28,7 +30,7 @@ const config: NextConfig = {
   },
   // Keep bounded headroom for a streaming chunk beyond the API limit: Next drops
   // the entire chunk crossing its clone cap, so one extra byte is insufficient.
-  experimental: { proxyClientMaxBodySize: IMPORT_UPLOAD_MAX_JSON_BYTES + 1_048_576 },
+  experimental: { optimizePackageImports: ["@marketplace/ui"], proxyClientMaxBodySize: IMPORT_UPLOAD_MAX_JSON_BYTES + 1_048_576 },
   allowedDevOrigins: ["localhost", "127.0.0.1"],
   async rewrites() { return [{ source: "/api/:path*", destination: `${upstream.href.replace(/\/$/, "")}/:path*` }]; },
   async headers() { return [{ source: "/(.*)", headers: [

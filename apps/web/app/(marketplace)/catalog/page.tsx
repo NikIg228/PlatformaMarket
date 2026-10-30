@@ -1,1 +1,1 @@
-export { default } from "../page";
+export { default } from "../../../../buyer-web/app/features/catalog/public-catalog";

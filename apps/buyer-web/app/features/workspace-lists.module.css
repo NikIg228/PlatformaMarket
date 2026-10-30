@@ -1,0 +1,37 @@
+
+.notificationList,
+.documentList {
+  display: grid;
+}
+.notification,
+.document {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--dm-space-6);
+  align-items: center;
+  padding: var(--dm-space-4) var(--dm-space-4);
+  border-bottom: 1px solid var(--colorNeutralStroke3);
+}
+.notification:last-child,
+.document:last-child {
+  border-bottom: 0;
+}
+.notification strong,
+.document strong {
+  display: block;
+  margin-bottom: var(--dm-space-1);
+  font-size: var(--dm-font-size-body);
+}
+.notification p,
+.document p {
+  margin: 0;
+  color: var(--colorNeutralForeground3);
+  font-size: var(--dm-font-size-caption);
+  line-height: var(--dm-line-body);
+}
+@media (max-width: 650px) {
+  .notification,
+  .document {
+    grid-template-columns: 1fr;
+  }
+}

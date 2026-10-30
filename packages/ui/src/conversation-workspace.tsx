@@ -7,7 +7,12 @@ import { Option } from "@fluentui/react-components";
 import { DmFluentDropdown as Dropdown } from "./controls";
 import { conversationPages, conversationPageSize } from "./conversation-pages";
 import type { ConversationDetail, ConversationEscalation, ConversationMessageInput, ConversationPage, ConversationQuery, StartConversation, ConversationLookup, ConversationContextInfo } from "@marketplace/schemas";
-import { DmButton, DmField, DmSelect, EmptyState, errorMessage, actionFailure, dmDropdownPositioning } from "./index";
+import { DmButton } from "./actions";
+import { DmField } from "./controls";
+import { DmSelect } from "./native-select";
+import { EmptyState, dmDropdownPositioning } from "./primitives";
+import { errorMessage } from "./format";
+import { actionFailure } from "./feedback-error";
 
 export type ConversationApi = ConversationFilesApi & {
   conversations(query?: Partial<ConversationQuery>): Promise<ConversationPage>;

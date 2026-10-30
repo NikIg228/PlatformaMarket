@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { OrderDiscrepanciesResponse, OrderDiscrepancyCommand, OrderDiscrepancyResult } from "@marketplace/schemas";
-import { errorMessage } from "./index";
+import { errorMessage } from "./format";
 import type { ResupplyDocumentApi } from "./resupply-document-panel";
 export type OrderDiscrepancyApi = Partial<ResupplyDocumentApi> & {
   getOrderDiscrepancies(id: string): Promise<OrderDiscrepanciesResponse>;

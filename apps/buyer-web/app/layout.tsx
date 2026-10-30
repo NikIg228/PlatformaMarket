@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Manrope } from "next/font/google";
-import { MarketplaceProvider } from "@marketplace/ui";
+import { MarketplaceProvider } from "@marketplace/ui/provider";
 import "@marketplace/ui/styles.css";
 import "./globals.css";
 import { OrganizationGate } from "./organization-gate";

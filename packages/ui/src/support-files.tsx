@@ -9,7 +9,9 @@ import { Dismiss16Regular } from "@fluentui/react-icons/svg/dismiss";
 import { ArrowDownload20Regular } from "@fluentui/react-icons/svg/arrow-download";
 import { Image20Regular } from "@fluentui/react-icons/svg/image";
 import { CONVERSATION_FILE_ACCEPT, SUPPORT_FILE_ACCEPT, SUPPORT_FILE_MAX_BYTES, SUPPORT_FILE_MAX_COUNT, type SupportAttachment, type UploadedSupportAttachment, type UploadSupportAttachmentInput } from "@marketplace/schemas";
-import { DmButton, DmDialog, errorMessage } from "./index";
+import { DmButton } from "./actions";
+import { DmDialog } from "./primitives";
+import { errorMessage } from "./format";
 
 type FilesApi = {
   uploadSupportAttachment: (input: UploadSupportAttachmentInput) => Promise<UploadedSupportAttachment>;

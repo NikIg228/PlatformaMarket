@@ -1,7 +1,10 @@
 "use client";
 import { useState } from "react";
 import type { OrderWorkflowResponse } from "@marketplace/schemas";
-import { DmButton, DmField, DmInput, Section, formatStatus } from "./index";
+import { DmButton } from "./actions";
+import { DmField, DmInput } from "./controls";
+import { Section } from "./primitives";
+import { formatStatus } from "./format";
 type Shipment = NonNullable<OrderWorkflowResponse["order"]["shipments"]>[number];
 type Items = { shipmentItemId: string; deliveredQuantity: string }[];
 export function OrderShipmentReceipts({ shipments, busy, onReceive }: { shipments: Shipment[]; busy: boolean; onReceive: (shipmentId: string, items: Items) => Promise<void> }) {

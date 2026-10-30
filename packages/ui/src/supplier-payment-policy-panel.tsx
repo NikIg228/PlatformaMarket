@@ -1,7 +1,11 @@
 "use client";
 import { useRef, useState } from "react";
 import { supplierPaymentPolicyFieldsSchema, type SaveSupplierPaymentPolicy, type SupplierPaymentPolicyFields, type SupplierPaymentPolicyResponse } from "@marketplace/schemas";
-import { DmButton, DmField, DmInput, DmSelect, DmFeedback, Section, errorMessage } from "./index";
+import { DmButton } from "./actions";
+import { DmField, DmInput } from "./controls";
+import { DmSelect } from "./native-select";
+import { DmFeedback, Section } from "./primitives";
+import { errorMessage } from "./format";
 
 export type PaymentPolicyApi = {
   getSupplierPaymentPolicy(): Promise<SupplierPaymentPolicyResponse>;

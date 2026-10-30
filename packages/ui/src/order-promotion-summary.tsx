@@ -1,7 +1,8 @@
 "use client";
 import type { OrderWorkflowResponse } from "@marketplace/schemas";
 import { orderItemPromotion } from "@marketplace/schemas/promotion-snapshot";
-import { Section, formatMoney } from "./index";
+import { Section } from "./primitives";
+import { formatMoney } from "./money";
 
 export function OrderPromotionSummary({ data }: { data: OrderWorkflowResponse }) {
   const promoted = data.order.items.flatMap(item => { const promotion = orderItemPromotion(item.offerSnapshot); return promotion ? [{ item, promotion }] : []; });

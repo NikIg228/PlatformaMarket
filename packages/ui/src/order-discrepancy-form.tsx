@@ -1,7 +1,10 @@
 "use client";
 import { useId, useState } from "react";
 import { discrepancyStatementSchema, type DiscrepancyStatement, type OrderDiscrepanciesResponse, type OrderDiscrepancyView } from "@marketplace/schemas";
-import { DmButton, DmDropdown, DmField, DmFileInput, DmFormSections, DmInput, DmTextarea } from "./index";
+import { DmButton, DmFileInput } from "./actions";
+import { DmDropdown } from "./dm-dropdown";
+import { DmField, DmInput, DmTextarea } from "./controls";
+import { DmFormSections } from "./heading";
 export const discrepancyKinds: Record<DiscrepancyStatement["kind"], string> = { SHORTAGE: "Недостача", DAMAGED: "Повреждение", NOT_RECEIVED: "Ничего не получено", EXCESS: "Излишек", WRONG_GOODS: "Другой товар", RECEIPT_ERROR: "Ошибка записи получения" };
 export const discrepancyResolutions: Record<DiscrepancyStatement["requestedResolution"], string> = { RESUPPLY: "Допоставка", REDUCTION: "Уменьшение обязательства", RETURN: "Возврат", CORRECTION: "Исправление", OTHER: "Другой вариант" };
 type Shipment = OrderDiscrepanciesResponse["shipments"][number];

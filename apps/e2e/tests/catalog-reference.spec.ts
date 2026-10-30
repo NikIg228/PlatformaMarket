@@ -22,7 +22,8 @@ for (const width of [1440, 390]) test(`catalog reference layout and navigation $
   await page.route("**/catalog-search?**", route => route.fulfill({ status: failed ? 503 : 200, json: failed ? {} : { items: empty ? [] : items, total: empty ? 0 : 5, nextOffset: 5, facets: { categories: [], suppliers: [] }, filterOptions: { categories: [], brands: [], manufacturers: [], suppliers: [], packaging: [], attributes: [] } } }));
   await page.route("**/api/**", route => {
     const path = new URL(route.request().url()).pathname;
-    if (path.endsWith("/auth/current")) return route.fulfill({ json: null });
+    if (path.endsWith("/auth/current") || path.endsWith("/auth/personal-current")) return route.fulfill({ json: null });
+    if (path.endsWith("/auth/workspaces")) return route.fulfill({ json: [] });
     if (path.endsWith("/catalog/cities")) return route.fulfill({ json: [{ id: "33333333-3333-4333-8333-333333333333", nameRu: "Алматы" }] });
     if (path.endsWith("/compare")) return route.fulfill({ json: { offers: [] } });
     return route.fulfill({ json: { items: [], total: 0 } });
@@ -33,7 +34,12 @@ for (const width of [1440, 390]) test(`catalog reference layout and navigation $
   await expect(cards).toHaveCount(5);
   await expect(cards.first()).toContainText("3 поставщика");
   await expect(cards.first()).toContainText("В наличии");
-  await expect(page.getByRole("link", { name: "Все акции" })).toHaveAttribute("href", "/promotions");
+  const promotions = page.getByRole("link", { name: "Все акции" });
+  if (process.env.NEXT_PUBLIC_DEPLOYMENT_PROFILE === "go_live") {
+    await expect(promotions).toHaveAttribute("href", "/promotions");
+  } else {
+    await expect(promotions).toHaveCount(0);
+  }
   const city = page.locator('summary[aria-label="Выберите город"]');
   const toolbarControls = [
     page.getByRole("combobox", { name: "Поиск по каталогу" }).locator(".."),

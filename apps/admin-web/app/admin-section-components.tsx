@@ -105,3 +105,10 @@ export const TrustOperations = dynamic(
   { loading },
 );
 export const PromotionModeration = dynamic(() => import("./promotion-moderation").then(module => module.PromotionModeration), { loading });
+
+export const LiveMetrics = dynamic(
+  () => import("./live-metrics").then(module => module.LiveMetrics), { loading },
+);
+export const OperationQueue = dynamic(
+  () => import("./operation-queue").then(module => module.OperationQueue), { loading },
+);

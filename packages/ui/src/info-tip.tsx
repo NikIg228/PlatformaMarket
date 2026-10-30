@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Popover, PopoverSurface, PopoverTrigger } from "@fluentui/react-components";
 import { QuestionCircle20Regular } from "@fluentui/react-icons/svg/question-circle";
-import { DmButton } from "./controls";
+import { DmButton } from "./actions";
 
 /** The same help is available by hover, keyboard focus and touch. */
 export function DmInfoTip({ label, children }: { label: string; children: React.ReactNode }) {

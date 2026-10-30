@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readStyleSource } from "./read-style-source.test-helper";
 import { describe, expect, it, vi } from "vitest";
 // Use Fluent's real CJS export: Node's ESM loader cannot resolve the installed
 // Tabster CJS named exports, although the browser bundler can.
@@ -48,7 +48,7 @@ describe("shared semantic light contract", () => {
   });
 
   it("keeps CSS adapters synchronized with every approved value", () => {
-    const css = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
+    const css = readStyleSource(new URL("./styles.css", import.meta.url));
     for (const value of Object.values(contract.tokens)) expect(css).toContain(`: ${value};`);
     expect(css).toContain("--dm-brand-primary-hover: #00664B;");
     expect(css).toContain("--dm-brand-deep: #00543E;");

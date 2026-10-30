@@ -3,7 +3,11 @@
 import { DmCheckbox as Checkbox } from "./controls";
 import type { OrganizationProfileFields, OrganizationProfileResponse, SaveOrganizationProfileInput } from "@marketplace/schemas";
 import { useRef, useState, type FormEvent } from "react";
-import { DmButton, DmField, DmInput, DmSelect, DmFeedback, errorMessage } from "./index";
+import { DmButton } from "./actions";
+import { DmField, DmInput } from "./controls";
+import { DmSelect } from "./native-select";
+import { DmFeedback } from "./primitives";
+import { errorMessage } from "./format";
 
 type City = { id: string; nameRu: string; region?: { nameRu: string } };
 const blankAddress = { cityId: "", line1: "", postalCode: null };

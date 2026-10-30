@@ -1,1 +1,1 @@
-export { default } from "../../../../landing-web/app/invitation/page";
+export { default } from "../../../../landing-web/app/invitation/invitation-screen";

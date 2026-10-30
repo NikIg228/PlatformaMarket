@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { Menu, MenuItem, MenuList, MenuPopover, MenuTrigger } from "@fluentui/react-components";
 import { MoreHorizontal24Regular } from "@fluentui/react-icons/svg/more-horizontal";
 import type { ConversationSummary } from "@marketplace/schemas";
-import { DmButton, DmDialog, DmField, DmTextarea, StatusTag } from "./index";
+import { DmButton } from "./actions";
+import { DmDialog, StatusTag } from "./primitives";
+import { DmField, DmTextarea } from "./controls";
 import type { ConversationApi } from "./conversation-workspace";
 
 export function ConversationActions({ api, conversation, operator, canWrite, busy, run, refresh, feedback }: {
