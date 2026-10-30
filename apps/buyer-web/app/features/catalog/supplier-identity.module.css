@@ -1,0 +1,2 @@
+.identity { display: flex; align-items: center; gap: var(--dm-space-2); min-width: 0; overflow-wrap: anywhere; }
+.identity > :first-child { flex-shrink: 0; }

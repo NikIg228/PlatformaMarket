@@ -224,21 +224,13 @@ test("catalog return restores deep loaded window, query and card position with b
   });
   await page.goto("/catalog?q=Материал&sort=PRICE_ASC");
   const cards = page.getByTestId("product-card"); await expect(cards).toHaveCount(24);
-  await cards.first().getByRole("button", { name: /Выбрать поставщика/ }).click();
-  const quick = page.getByRole("dialog", { name: "Материал 0", exact: true });
-  const ask = quick.getByRole("button", { name: "Задать вопрос поставщику", exact: true }).first(); await ask.click();
-  const question = page.getByRole("dialog", { name: "Задать вопрос поставщику", exact: true });
-  await expect(question.getByRole("textbox", { name: "Ваш вопрос" })).toBeEnabled();
-  await page.keyboard.press("Escape"); await expect(question).toBeHidden(); await expect(ask).toBeFocused();
-  await page.keyboard.press("Escape"); await expect(quick).toBeHidden();
-  expect(await page.evaluate(() => sessionStorage.getItem("marketplace:catalog-position"))).toBeNull();
   await page.getByRole("button", { name: "Показать ещё", exact: true }).click(); await expect(cards).toHaveCount(48);
   const original = page.locator(`[data-catalog-product="${productId}"]`); await original.scrollIntoViewIfNeeded();
   const top = (await original.boundingBox())!.y;
-  await original.getByRole("link").click(); await expect(page.getByRole("button", { name: "Задать вопрос", exact: true }).first()).toBeVisible();
+  await original.getByRole("link", { name: /^Подробнее:/ }).click(); await expect(page.getByRole("button", { name: "Задать вопрос", exact: true }).first()).toBeVisible();
   await page.goBack(); await expect(cards).toHaveCount(48); await expect(page).toHaveURL(/count=48/); await expect(page).toHaveURL(/sort=PRICE_ASC/);
   await expect.poll(async () => Math.abs((await original.boundingBox())!.y - top)).toBeLessThan(5);
-  await original.getByRole("link").click(); await page.getByRole("link", { name: "← Каталог", exact: true }).click();
+  await original.getByRole("link", { name: /^Подробнее:/ }).click(); await page.getByRole("link", { name: "← Каталог", exact: true }).click();
   await expect(cards).toHaveCount(48); await expect(page).toHaveURL(/q=/); await expect.poll(async () => Math.abs((await original.boundingBox())!.y - top)).toBeLessThan(5);
 });
 

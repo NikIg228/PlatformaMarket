@@ -1,3 +1,13 @@
+## CATALOG-PRODUCT-CONTROLS-20261031 — scoped local PASS
+
+Owner screenshots: catalogue Details opens product directly; quantity compact with
+external +/- only and maximum100 (later annotation); supplier identity left aligned;
+sort dropdown with selected value/chevron, no caption. Shared opt-ins preserve defaults.
+Focused tests, types, buyer/web builds, lint/UI-contract, desktop/mobile CUA PASS.
+Evidence: ../evidence/catalog-product-controls-20261031.md. No DB/backend writes,
+no aggregate-cart/server cap claim. Foreign personal-cart hunks preserved.
+Dev launcher restored; publication/CI tracked separately. No new phase started.
+
 ## SUPPLIER-STOREFRONT-REFERENCE-20261031 — scoped local PASS
 
 Approved reference implemented: compact supplier identity/details dialog, scoped

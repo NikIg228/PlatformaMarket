@@ -14,6 +14,7 @@ import { Add24Regular } from "@fluentui/react-icons/svg/add";
 import { Subtract24Regular } from "@fluentui/react-icons/svg/subtract";
 import { SupplierQuestion } from "./supplier-question";
 import { SupplierIdentity } from "./supplier-identity";
+import { quantityRules, initialQuantity, validQuantity, MAX_SUPPLIER_QUANTITY } from "./supplier-quantity";
 
 export type SupplierOffer = {
   id: string; supplier: { id?: string; organizationId?: string; name: string; logoUrl?: string | null; publicContact?: OrganizationContact | null }; priceMinor: string | null;
@@ -23,20 +24,6 @@ export type SupplierOffer = {
   verifiedDocuments?: boolean; officialDistributor?: boolean;
   minimumOrderQuantity?: string; orderIncrement?: string;
 };
-
-function quantityRules(offer: SupplierOffer) {
-  return { min: Number(offer.minimumOrderQuantity ?? 1), step: Number(offer.orderIncrement ?? 1) };
-}
-function initialQuantity(offer: SupplierOffer) {
-  const { min, step } = quantityRules(offer);
-  return String(Number((Math.ceil(min / step - 1e-9) * step).toFixed(6)));
-}
-function validQuantity(value: string, offer: SupplierOffer) {
-  const n = Number(value);
-  const { min, step } = quantityRules(offer);
-  return value.trim() !== "" && Number.isFinite(n) && n > 0 && n >= min && n <= 1_000_000 && step > 0
-    && Math.abs(n / step - Math.round(n / step)) < 1e-7;
-}
 
 export function SupplierOffers({ offers, loginHref, compact = false, productName, comparison = false, imageUrl }: {
   offers: SupplierOffer[]; loginHref: string; compact?: boolean; productName?: string; comparison?: boolean; imageUrl?: string;
@@ -111,12 +98,12 @@ export function SupplierOffers({ offers, loginHref, compact = false, productName
           {session?.organizationId && !comparison ? <DmButton onClick={event => { questionTrigger.current = event.currentTarget; setQuestion(offer); }}>Задать вопрос поставщику</DmButton> : null}
           <div className={styles.quantityRow}>
           {comparison ? <DmButton icon={<Subtract24Regular />} aria-label={`Уменьшить количество у ${offer.supplier.name}`} disabled={busy !== null || !offer.available || !valid || Number(quantity) <= Number(initialQuantity(offer))} onClick={() => changeQuantity(-1)} /> : null}
-          <label>{comparison ? null : "Количество"}<DmInput className={styles.quantity} type="number" min={min} step={step} max="1000000" value={quantity} disabled={busy !== null || !offer.available}
+          <label>{comparison ? null : "Количество"}<DmInput quantity={comparison} className={comparison ? undefined : styles.quantity} type="number" min={min} step={step} max={MAX_SUPPLIER_QUANTITY} value={quantity} disabled={busy !== null || !offer.available}
             aria-label={`Количество у ${offer.supplier.name}`} aria-invalid={!valid}
             onChange={e => setQuantities(current => ({ ...current, [offer.id]: e.target.value }))} /></label>
-          {comparison ? <DmButton icon={<Add24Regular />} aria-label={`Увеличить количество у ${offer.supplier.name}`} disabled={busy !== null || !offer.available || !valid || Number(quantity) + step > 1_000_000} onClick={() => changeQuantity(1)} /> : null}
+          {comparison ? <DmButton icon={<Add24Regular />} aria-label={`Увеличить количество у ${offer.supplier.name}`} disabled={busy !== null || !offer.available || !valid || Number(quantity) + step > MAX_SUPPLIER_QUANTITY} onClick={() => changeQuantity(1)} /> : null}
           </div>
-          {!valid ? <small className={styles.quantityNote} role="alert">От {min}, кратно {step}, не более 1 000 000</small> : null}
+          {!valid ? <small className={styles.quantityNote} role="alert">От {min}, кратно {step}, не более 100</small> : null}
           {comparison && total ? <small className={styles.quantityNote}>Предварительно: {formatCatalogMoney(total, offer.currency)}. Скидки — в корзине.</small> : null}
           <DmButton className={comparison ? styles.buy : undefined} appearance="primary" disabled={!ready || busy !== null || !valid || !offer.available || offer.priceMinor == null} onClick={() => void add(offer)}>
             {!ready ? "Проверяем вход…" : busy === offer.id ? "Добавляем…" : !offer.available ? comparison ? "Недоступно" : "Под заказ" : offer.priceMinor == null ? "Нет цены" : session ? "В корзину" : "Войти и купить"}

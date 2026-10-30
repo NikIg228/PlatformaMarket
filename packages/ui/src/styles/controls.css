@@ -21,6 +21,11 @@
 .dm-control .fui-Textarea__textarea { min-height: 108px; padding: var(--dm-space-3) var(--dm-space-3); border: 0; outline: 0; background: transparent; color: inherit; line-height: var(--dm-line-body); resize: vertical; }
 .dm-control .fui-Input__input::placeholder,
 .dm-control .fui-Textarea__textarea::placeholder { color: var(--dm-text-muted); opacity: 1; }
+.dm-input.fui-Input.dm-input-quantity { min-width: 0; flex-shrink: 0; }
+.dm-input-quantity .fui-Input__input { min-width: 0; text-align: center; font-variant-numeric: tabular-nums; appearance: textfield; -moz-appearance: textfield; }
+.dm-input-quantity input::-webkit-inner-spin-button,
+.dm-input-quantity input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.dm-button.fui-Button[data-dm-layout="inline"] { justify-content: flex-start; text-align: left; padding-inline: 0; min-width: 0; }
 .dm-control.fui-Input:hover,
 .dm-control.fui-Select:hover,
 .dm-control.fui-Textarea:hover,

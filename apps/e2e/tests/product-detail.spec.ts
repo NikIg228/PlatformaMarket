@@ -47,7 +47,7 @@ for (const width of [1440, 390]) test(`product detail selection, purchase and ke
   await expect(page.locator("h1")).toHaveCSS("font-size", width === 390 ? "24px" : "32px");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: info.outputPath(`product-${width}.png`), fullPage: true });
-  await page.getByLabel("Сортировка предложений").selectOption("expensive"); await expect(rows.first()).toContainText("DentalPro");
+  await page.getByRole("combobox", { name: "Сортировка предложений" }).click(); await page.getByRole("option", { name: "Сначала дороже", exact: true }).click(); await expect(rows.first()).toContainText("DentalPro");
   await page.getByRole("button", { name: "A3", exact: true }).click(); await expect(rows).toHaveCount(1); await expect(rows).toContainText("Поставщик A3");
   await expect(page).toHaveURL(new RegExp(`variant=${variantB}`));
   await page.goBack(); await expect(page.getByRole("button", { name: "A2", exact: true })).toHaveAttribute("aria-pressed", "true");
@@ -56,6 +56,8 @@ for (const width of [1440, 390]) test(`product detail selection, purchase and ke
   const row = page.getByRole("article", { name: "Предложение: MedDent", exact: true });
   await row.getByRole("button", { name: "Увеличить количество у MedDent" }).click(); await expect(row.getByRole("spinbutton")).toHaveValue("4");
   await expect(row).toContainText("51 200 ₸");
+  await row.getByRole("spinbutton").fill("100"); await expect(row.getByRole("button", { name: "Увеличить количество у MedDent" })).toBeDisabled();
+  await row.getByRole("spinbutton").fill("102"); await expect(row.getByRole("button", { name: "В корзину", exact: true })).toBeDisabled();
   await row.getByRole("spinbutton").fill("3"); await expect(row.getByRole("button", { name: "В корзину", exact: true })).toBeDisabled();
   await row.getByRole("spinbutton").fill("4"); await row.getByRole("button", { name: "В корзину", exact: true }).click();
   await expect(page.locator(".dm-save-toast")).toContainText("Добавлено в корзину"); expect(state.writes).toEqual([{ offerId: "offer-a", quantity: 4 }]);

@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Tab } from "@fluentui/react-components";
+import { DmFluentDropdown } from "@marketplace/ui/controls";
+import { Option, Tab } from "@fluentui/react-components";
 import { MarketplaceApiClient, frontendFeatures } from "@marketplace/api-client";
 import { DmButton, DmSelect, DmSurface, DmTabList, EmptyState, ErrorState, LoadingState, StatusTag } from "@marketplace/ui";
 import { MarketplaceHeader } from "../marketplace-header/marketplace-header";
@@ -110,7 +111,7 @@ export function ProductDetail({ initial, returnTo, description, sourceUrl, image
         <DmSurface variant="section"><div className={styles.sectionInner}>
           <div className={styles.heading}>
             <div className={styles.headingCopy}><h2 id="suppliers-title">Предложения поставщиков</h2>{fresh ? <StatusTag tone="neutral">{offers.length}</StatusTag> : null}</div>
-            {fresh && offers.length > 1 ? <label className={styles.sort}>Сортировка<DmSelect aria-label="Сортировка предложений" value={sort} onChange={(_, data) => setSort(data.value)}><option value="cheapest">Сначала дешевле</option><option value="expensive">Сначала дороже</option><option value="supplier">По поставщику</option></DmSelect></label> : null}
+            {fresh && offers.length > 1 ? <div className={styles.sort}><DmFluentDropdown aria-label="Сортировка предложений" value={sort === "expensive" ? "Сначала дороже" : sort === "supplier" ? "По поставщику" : "Сначала дешевле"} selectedOptions={[sort]} onOptionSelect={(_, data) => { if (data.optionValue) setSort(data.optionValue); }}><Option value="cheapest">Сначала дешевле</Option><Option value="expensive">Сначала дороже</Option><Option value="supplier">По поставщику</Option></DmFluentDropdown></div> : null}
           </div>
           {fresh && offers[0] ? <p className={styles.muted}>{variant?.label} · {packageLabel(offers[0])}</p> : null}
           {status === "error" ? <ErrorState title="Не удалось загрузить предложения" description="Проверьте подключение и повторите попытку. Выбор товара сохранён." action={<DmButton onClick={() => setRevision(value => value + 1)}>Повторить загрузку</DmButton>} />

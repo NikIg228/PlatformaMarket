@@ -65,7 +65,7 @@ for (const width of [390, 1440]) test(`catalog comparison, login return and cart
       const source = comparison.offers[0];
       expect(source).toBeDefined();
       const availability = { warehouseId: "99999999-9999-4999-8999-999999999999", warehouse: "Тестовый склад", cityId: city.id, updatedAt: null, freshnessExpiresAt: null };
-      // The same endpoint feeds the dialog and the product page after login.
+      // The comparison endpoint feeds the product page before and after login.
       // Keep the complete contract while controlling stock, price and cart IDs.
       const offers = [
         { ...source, offerId, supplier: { ...source.supplier, name: "Поставщик А" },
@@ -81,15 +81,16 @@ for (const width of [390, 1440]) test(`catalog comparison, login return and cart
     const cards = browser.getByTestId("product-card");
     await expect(cards).toHaveCount(48);
     const productHref = await cards.first().getByRole("link", { name: /Открыть карточку/ }).getAttribute("href");
-    const open = cards.first().getByRole("button", { name: /Выбрать поставщика/ });
-    await test.step("Open guest supplier offers", () => open.click());
-    const dialog = browser.getByRole("dialog");
-    const offer = dialog.getByRole("article", { name: "Предложение: Поставщик А", exact: true });
-    await expect(dialog.getByRole("article")).toHaveCount(2);
+    const open = cards.first().getByRole("link", { name: /^Подробнее:/ });
+    await test.step("Open guest product details", () => open.click());
+    await expect(browser.getByRole("dialog")).toHaveCount(0);
+    const offersRegion = browser.locator("#supplier-offers");
+    const offer = offersRegion.getByRole("article", { name: "Предложение: Поставщик А", exact: true });
+    await expect(offersRegion.getByRole("article")).toHaveCount(2);
     await expect(offer.locator(".mp-status-success")).toHaveCSS("color", "rgb(35, 122, 74)");
     await expect(offer.locator(".mp-status-success")).toHaveCSS("background-color", "rgb(238, 248, 242)");
-    await expect(dialog.locator(".mp-status-warning")).toHaveCSS("color", "rgb(154, 90, 19)");
-    const disabledOffer = dialog.getByRole("article", { name: "Предложение: Поставщик Б", exact: true }).getByRole("button", { name: "Под заказ" });
+    await expect(offersRegion.locator(".mp-status-warning")).toHaveCSS("color", "rgb(154, 90, 19)");
+    const disabledOffer = offersRegion.getByRole("article", { name: "Предложение: Поставщик Б", exact: true }).getByRole("button", { name: "Недоступно" });
     await expect(disabledOffer).toBeDisabled();
     await expect(disabledOffer).toHaveCSS("background-color", "rgb(238, 241, 239)");
     await expect(disabledOffer).toHaveCSS("color", "rgb(114, 128, 120)");
@@ -142,12 +143,12 @@ for (const width of [390, 1440]) test(`catalog comparison, login return and cart
     await offer.getByRole("button", { name: "В корзину", exact: true }).click();
     await expect(feedback).toContainText("Результат пока неизвестен");
     await expect(feedback).toContainText("Проверьте корзину перед повторным добавлением");
-    await expect(dialog.getByRole("link", { name: "Перейти в корзину" })).toBeVisible();
-    await expect(dialog.getByRole("link", { name: "Перейти в корзину" })).toHaveAttribute("href", "/clinic/cart");
+    await expect(offersRegion.getByRole("link", { name: "Перейти в корзину" })).toBeVisible();
+    await expect(offersRegion.getByRole("link", { name: "Перейти в корзину" })).toHaveAttribute("href", "/clinic/cart");
     expect(writes).toEqual(Array.from({ length: 3 }, () => ({ offerId, quantity: 6 })));
     await expect(offer.getByRole("spinbutton")).toHaveValue("6");
-    await dialog.getByRole("button", { name: "Закрыть окно", exact: true }).press("Escape");
-    await expect(open).toBeFocused();
+    await browser.getByRole("link", { name: "← Каталог", exact: true }).click();
+    await expect(open).toBeVisible();
   } finally { releaseWrite?.(); await browser.close(); await fixture.dispose(); await db.$disconnect(); }
 });
 

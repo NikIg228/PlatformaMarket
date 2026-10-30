@@ -4,13 +4,14 @@ import type { ComponentPropsWithRef, HTMLAttributes } from "react";
 import { classes, densityFor, type Density } from "./control-utils";
 
 
-export type DmButtonProps = ComponentPropsWithRef<typeof Button> & Density & { intent?: "default" | "danger" | "brand"; fullWidth?: boolean };
+export type DmButtonProps = ComponentPropsWithRef<typeof Button> & Density & { intent?: "default" | "danger" | "brand"; fullWidth?: boolean; layout?: "default" | "inline" };
 
-export function DmButton({ className, density, intent = "default", fullWidth = false, ...props }: DmButtonProps) {
+export function DmButton({ className, density, intent = "default", fullWidth = false, layout = "default", ...props }: DmButtonProps) {
   const appearance = props.appearance ?? "secondary";
   return <Button {...props} appearance={appearance} data-dm-appearance={appearance}
     data-dm-density={densityFor(density, props.size)} data-dm-intent={intent}
     data-dm-full-width={fullWidth || undefined}
+    data-dm-layout={layout === "inline" ? "inline" : undefined}
     data-dm-icon-only={props.icon && (props.children == null || props.children === false) ? "true" : undefined}
     className={classes("dm-button", className)} />;
 }

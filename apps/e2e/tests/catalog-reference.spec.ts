@@ -77,10 +77,11 @@ for (const width of [1440, 390]) test(`catalog reference layout and navigation $
   expect(dimensions.toolbar).toBe("sticky"); expect(dimensions.header).toBe("relative");
   await page.evaluate(() => window.scrollTo(0, 500));
   expect(await page.locator('[aria-label="Поиск и фильтрация"]').evaluate(element => element.getBoundingClientRect().top)).toBeGreaterThanOrEqual(-1);
-  await cards.first().getByRole("button", { name: /Выбрать поставщика/ }).click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await page.getByRole("dialog").press("Escape");
-  await expect(cards.first().getByRole("button")).toBeFocused();
+  const details = cards.first().getByRole("link", { name: /^Подробнее:/ });
+  await expect(details).toHaveAttribute("href", /\/products\/reference-0\?returnTo=/);
+  await details.click(); await expect(page).toHaveURL(/\/products\/reference-0/);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.goBack(); await expect(cards).toHaveCount(5);
   empty = true;
   await page.getByRole("combobox", { name: "Сортировка товаров" }).click();
   await page.getByRole("option", { name: "По названию", exact: true }).click();

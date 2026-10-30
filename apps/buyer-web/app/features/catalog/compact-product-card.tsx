@@ -1,6 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
+import React, { useEffect, useState } from "react";
 import { DmButton } from "@marketplace/ui/actions";
 import { StatusTag } from "@marketplace/ui/primitives";
 import type { SearchMedia, SearchProduct } from "../../catalog-search-types";
@@ -10,11 +9,8 @@ import { compactProductTitle } from "../../catalog/product-title";
 import { catalogPromotionMark } from "./catalog-promotion-mark";
 import { rememberCatalogPosition } from "./catalog-position";
 import styles from "./compact-catalog.module.css";
-const ProductQuickOffers = dynamic(() => import("./product-quick-offers"), { ssr: false, loading: () => <span role="status">Открываем предложения…</span> });
 export function CompactProductCard({ product, returnUrl, imageSource }: { product: SearchProduct; returnUrl: string; imageSource: (media?: SearchMedia) => string | null }) {
   const [failed, setFailed] = useState(false);
-  const [quickOpen, setQuickOpen] = useState(false);
-  const trigger = useRef<HTMLButtonElement | null>(null);
   const href = `/products/${product.id}?returnTo=${encodeURIComponent(returnUrl)}`;
   const image = imageSource(product.media?.[0]);
   const offer = selectCatalogOffer(product);
@@ -37,11 +33,8 @@ export function CompactProductCard({ product, returnUrl, imageSource }: { produc
     {product.manufacturerSku ? <p className={styles.sku}>Артикул: {product.manufacturerSku}</p> : null}
     <div className={styles.priceLine}><strong className={styles.price}>{offer ? `${product.offers.length > 1 ? "от " : ""}${formatCatalogMoney(offer.priceMinor, offer.currency ?? "KZT")}` : "Цена уточняется"}</strong>{offer?.packaging.name ? <span> / {offer.packaging.name}</span> : null}</div>
   </a><div className={styles.stockLine}><span>{presentation.supplierLabel}</span><span data-available={presentation.available}>{presentation.available ? "В наличии" : "Нет в наличии"}</span></div><div className={styles.quickActions}>
-    <DmButton appearance="primary" aria-label={`Выбрать поставщика: ${title}`}
-      onClick={event => { trigger.current = event.currentTarget; setQuickOpen(true); }}>Выбрать поставщика</DmButton>
+    <DmButton as="a" href={href} appearance="primary" aria-label={`Подробнее: ${title}`}
+      onClick={event => { if (!event.metaKey && !event.ctrlKey && !event.shiftKey && event.button === 0) rememberCatalogPosition(returnUrl, product.id, event.currentTarget.closest("article")!); }}>Подробнее</DmButton>
   </div>
-  {quickOpen ? <ProductQuickOffers productId={product.id} name={title} href={href}
-    onProductNavigate={() => { const card = trigger.current?.closest("article"); if (card) rememberCatalogPosition(returnUrl, product.id, card); }}
-    onClose={() => { setQuickOpen(false); requestAnimationFrame(() => trigger.current?.focus({ preventScroll: true })); }} /> : null}
   </article>;
 }

@@ -5,6 +5,12 @@ import { CompactProductCard } from "./compact-product-card";
 import type { SearchProduct } from "../../catalog-search-types";
 const product: SearchProduct = { id: "test", name: "Бренд Модель очень длинное полное название оттенок A2 шприц 4 г", brand: null, manufacturer: null, categories: [{ id: "1", name: "Материалы" }, { id: "2", name: "Материалы" }], minNormalizedPriceMinor: null, isAvailable: false, offers: [] };
 describe("compact catalogue card", () => {
+  it("navigates directly to product details with the catalogue return context", () => {
+    const html = renderToStaticMarkup(<CompactProductCard product={product} returnUrl="/catalog?query=A2" imageSource={() => null} />);
+    expect(html).toMatch(/<a[^>]+href="\/products\/test\?returnTo=%2Fcatalog%3Fquery%3DA2"[^>]+aria-label="Подробнее:/);
+    expect(html).not.toContain("Выбрать поставщика");
+    expect(html).not.toContain('role="dialog"');
+  });
   it("retains the full original name and never substitutes missing SKU, media or price", () => {
     const html = renderToStaticMarkup(<CompactProductCard product={product} returnUrl="/?count=48" imageSource={() => null} />);
     expect(html).toContain(product.name); expect(html).toContain("Фото пока нет"); expect(html).toContain("Цена уточняется");

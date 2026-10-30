@@ -15,8 +15,9 @@ export function DmField({ className, ...props }: ComponentPropsWithRef<typeof Fi
   return <Field {...props} className={classes("dm-field", className)} />;
 }
 
-export function DmInput({ className, density, ...props }: ComponentPropsWithRef<typeof Input> & Density) {
-  return <Input {...props} data-dm-density={densityFor(density, props.size)} className={classes("dm-control", "dm-input", props.readOnly && props.appearance === "filled-darker" ? "dm-input-readonly" : undefined, className)} />;
+export function DmInput({ className, density, quantity = false, style, ...props }: ComponentPropsWithRef<typeof Input> & Density & { quantity?: boolean }) {
+  const digits = Math.max(1, Math.min(14, String(props.value ?? props.defaultValue ?? "").length));
+  return <Input {...props} style={quantity ? { ...style, width: `calc(${digits}ch + var(--dm-space-6) + 2px)` } : style} data-dm-quantity={quantity || undefined} data-dm-density={densityFor(density, props.size)} className={classes("dm-control", "dm-input", quantity ? "dm-input-quantity" : undefined, props.readOnly && props.appearance === "filled-darker" ? "dm-input-readonly" : undefined, className)} />;
 }
 
 export function DmTextarea({ className, density, variant = "default", autoGrow = false, ...props }: ComponentPropsWithRef<typeof Textarea> & Density & { variant?: "default" | "composer"; autoGrow?: boolean }) {
