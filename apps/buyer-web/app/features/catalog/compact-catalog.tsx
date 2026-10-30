@@ -1,6 +1,8 @@
 "use client";
 import { useRef, useState, type ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { ActionFeedback } from "@marketplace/ui/action-feedback";
+import { LoadingState } from "@marketplace/ui/primitives";
 import { DmButton } from "@marketplace/ui/actions";
 import type { SearchResult, SearchMedia } from "../../catalog-search-types";
 import { marketplaceCatalogUrl, type MarketplaceCatalogState } from "../../catalog/marketplace-url";
@@ -8,10 +10,14 @@ import { CatalogProductGrid } from "./catalog-product-grid";
 import { frontendFeatures } from "@marketplace/api-client";
 import { activeFilters, catalogFilters, emptyFilters, type FilterOptions, type FilterPatch } from "./catalog-filter-model";
 import { CatalogFilterToolbar } from "./catalog-filter-toolbar";
-import { CatalogFilterDialog, type LoadFilterOptions } from "./catalog-filter-dialog";
+import type { LoadFilterOptions } from "./catalog-filter-dialog";
 import { FilterChoice } from "./catalog-filter-controls";
 import styles from "./compact-catalog.module.css";
 import filtersStyles from "./catalog-filters.module.css";
+
+const CatalogFilterDialog = dynamic(() => import("./catalog-filter-dialog").then(module => module.CatalogFilterDialog), {
+  loading: () => <LoadingState label="Загружаем фильтры…" />,
+});
 
 const sortChoices = [
   { id: "RELEVANCE", name: "По умолчанию" }, { id: "PRICE_ASC", name: "Сначала дешевле" },
@@ -20,6 +26,7 @@ const sortChoices = [
 ];
 
 type Props = {
+  storefront?: boolean; heading?: ReactNode;
   promotions?: ReactNode;
   result: SearchResult | null; state: MarketplaceCatalogState; returnUrl: string;
   loading: boolean; error: string | null; loadingMore: boolean;
@@ -27,7 +34,7 @@ type Props = {
   imageSource: (media?: SearchMedia) => string | null;
 };
 
-export function CompactCatalog({ result, state, returnUrl, loading, error, loadingMore, onMore, onRetry, onLoadFilterOptions, imageSource, promotions }: Props) {
+export function CompactCatalog({ result, state, returnUrl, loading, error, loadingMore, onMore, onRetry, onLoadFilterOptions, imageSource, promotions, storefront = false, heading }: Props) {
   const [open, setOpen] = useState(false);
   const opener = useRef<HTMLElement | null>(null);
   const cachedOptions = useRef<{ categoryId: string; options: FilterOptions } | null>(null);
@@ -67,7 +74,7 @@ export function CompactCatalog({ result, state, returnUrl, loading, error, loadi
     {promotions}
     <div className={styles.results}>
       <div className={styles.resultsHeading}>
-        <div className={styles.resultsTitle}><h1>Каталог товаров</h1>{result && !loading ? <span>{new Intl.NumberFormat("ru-RU").format(result.total)} {productPlural === "one" ? "товар" : productPlural === "few" ? "товара" : "товаров"}</span> : null}</div>
+        <div className={styles.resultsTitle}>{heading ?? <h1>Каталог товаров</h1>}{result && !loading ? <span>{new Intl.NumberFormat("ru-RU").format(result.total)} {productPlural === "one" ? "товар" : productPlural === "few" ? "товара" : "товаров"}</span> : null}</div>
         <div className={styles.resultsSort}><FilterChoice label="Сортировка товаров" hideLabel searchable={false} includeAll={false}
           value={state.sort} items={sortChoices} allLabel="По умолчанию" onChange={sort => change({ sort: sort || "RELEVANCE" })} /></div>
       </div>
@@ -87,7 +94,7 @@ export function CompactCatalog({ result, state, returnUrl, loading, error, loadi
         <DmButton onClick={onMore} disabled={loadingMore}>{loadingMore ? "Загружаем…" : error ? "Повторить загрузку товаров" : "Показать ещё"}</DmButton>
       </div> : null}
     </div>
-    {open ? <CatalogFilterDialog initial={{ ...filters, sort: state.sort }} initialOptions={cachedOptions.current?.categoryId === filters.categoryId ? options : undefined}
+    {open ? <CatalogFilterDialog storefront={storefront} initial={{ ...filters, sort: state.sort }} initialOptions={cachedOptions.current?.categoryId === filters.categoryId ? options : undefined}
       onLoadOptions={onLoadFilterOptions} onClose={closeAll} onApply={draft => { closeAll(); change(draft); }} /> : null}
   </section>;
 }

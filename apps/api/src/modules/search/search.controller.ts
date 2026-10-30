@@ -1,5 +1,6 @@
-import { BadRequestException, Controller, Get, Headers, Param, Post, Query, UseGuards } from "@nestjs/common";
-import { compareOffersSchema, searchCatalogSchema } from "@marketplace/schemas";
+import { BadRequestException, Controller, Get, Header, Headers, Param, ParseUUIDPipe, Post, Query, UseGuards } from "@nestjs/common";
+import { compareOffersSchema, searchCatalogSchema, supplierStorefrontQuerySchema } from "@marketplace/schemas";
+import { SupplierStorefrontService } from "../suppliers/supplier-storefront.service";
 import { ApiTags } from "@nestjs/swagger";
 import { PermissionsGuard } from "../access-control/permissions.guard";
 import { RequirePermissions } from "../access-control/require-permissions.decorator";
@@ -57,7 +58,17 @@ export class SearchController {
 @ApiCoreValidationErrors()
 @Controller("catalog")
 export class PublicCatalogController {
-  constructor(private readonly searchService: SearchService) {}
+  constructor(private readonly searchService: SearchService, private readonly storefront: SupplierStorefrontService) {}
+  @Get("suppliers/:supplierId/search")
+  @Header("Cache-Control", "no-store")
+  @ApiUuidParam("supplierId", "Supplier organization")
+  @ApiCoreQuery("SupplierStorefrontQuery") @ApiCoreResponse("CatalogSearchResponse")
+  async supplierSearch(@Param("supplierId", ParseUUIDPipe) supplierId: string, @Query() query: Record<string, unknown>) {
+    const parsed = supplierStorefrontQuerySchema.safeParse(query); if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    await this.storefront.publicPage(supplierId);
+    const input = this.input({ ...parsed.data, supplierOrganizationId: supplierId, inStock: "true", priceBasis: "SALE_UNIT" });
+    return this.searchService.search(searchCatalogSchema.parse(input.query), input.context, true);
+  }
   @Get("cities")
   @ApiCoreResponse("PublicCityListResponse")
   cities() { return this.searchService.publicCities(); }

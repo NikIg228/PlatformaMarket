@@ -17,6 +17,9 @@ const nextConfig: NextConfig = {
       config.optimization.splitChunks.cacheGroups = {
         ...config.optimization.splitChunks.cacheGroups,
         fluentIcons: { test: /[\\/]@fluentui[\\/]react-icons[\\/]/, name: "fluent-icons", chunks: "all", enforce: true, priority: 40, reuseExistingChunk: true },
+        // Keep shared Fluent runtime modules together instead of adding a
+        // separate initial request for each small component package.
+        fluentComponents: { test: /[\\/]@fluentui[\\/]react-(?!icons[\\/])[^\\/]+[\\/]/, name: "fluent-components", chunks: "initial", enforce: true, priority: 30, reuseExistingChunk: true },
       };
     }
     return config;

@@ -71,6 +71,7 @@ describe("HTTP request body resource boundary", () => {
 
   it.each([
     ["/api/auth/profile/avatar", AVATAR_MAX_BYTES],
+    ["/api/suppliers/00000000-0000-4000-8000-000000000001/storefront/logo", AVATAR_MAX_BYTES],
     ["/api/documents/upload", DOCUMENT_UPLOAD_MAX_BYTES],
     ["/api/support/attachments", DOCUMENT_UPLOAD_MAX_BYTES],
     ["/api/conversations/attachments", DOCUMENT_UPLOAD_MAX_BYTES],

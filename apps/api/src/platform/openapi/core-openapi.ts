@@ -1,3 +1,4 @@
+import { supplierStorefrontSchema, supplierStorefrontSettingsSchema, saveSupplierStorefrontSchema, uploadSupplierLogoSchema, supplierStorefrontQuerySchema } from "@marketplace/schemas";
 import { operatorOrdersQuerySchema, operatorOrdersSchema, operatorOrderDetailSchema, operatorDocumentExceptionSchema, operatorExceptionReviewSchema, operatorExceptionReviewResultSchema } from "@marketplace/schemas";
 import { operatorAuditQuerySchema, operatorAuditPageSchema } from "@marketplace/schemas";
 import { operatorTechnicalSchema } from "@marketplace/schemas";
@@ -256,6 +257,11 @@ const coreZodSchemas = {
   IdentityMembers: identityMembersSchema,
   IdentitySessions: identitySessionsSchema,
   PersonalProfile: personalProfileSchema,
+  SupplierStorefront: supplierStorefrontSchema,
+  SupplierStorefrontSettings: supplierStorefrontSettingsSchema,
+  SaveSupplierStorefront: saveSupplierStorefrontSchema,
+  UploadSupplierLogo: uploadSupplierLogoSchema,
+  SupplierStorefrontQuery: supplierStorefrontQuerySchema,
   UpdatePersonalProfile: updatePersonalProfileSchema,
   RequestProfileEmail: requestProfileEmailSchema,
   ProfileEmailRequested: profileEmailRequestedSchema,

@@ -13,6 +13,7 @@ export function requestBodyPolicy(method: string, path: string) {
   if (method === "POST") {
     if (/^\/api\/signing\/sessions\/cms\/?$/i.test(path)) return { limit: PILOT_CMS_MAX_JSON_BYTES, rawBody };
     if (/^\/api\/auth\/profile\/avatar\/?$/i.test(path)) return { limit: AVATAR_MAX_JSON_BYTES, rawBody };
+    if (/^\/api\/suppliers\/[0-9a-f-]{36}\/storefront\/logo\/?$/i.test(path)) return { limit: AVATAR_MAX_JSON_BYTES, rawBody };
     if (/^\/api\/documents\/upload\/?$/i.test(path) || /^\/api\/(?:support|conversations)\/attachments\/?$/i.test(path) || /^\/api\/compliance\/organizations\/[^/]+\/credentials\/?$/i.test(path)) {
       return { limit: DOCUMENT_JSON_MAX_BYTES, rawBody };
     }

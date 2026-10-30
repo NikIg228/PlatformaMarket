@@ -1,14 +1,16 @@
 import { Prisma } from "@prisma/client";
 import type { SearchCatalogInput } from "@marketplace/schemas";
+import { storefrontAvailabilitySql } from "./storefront-availability";
 
 /** Same publication, price freshness and stock rules as toSearchItem. Bound parameters only. */
-export function catalogSaleJoin(input: SearchCatalogInput, admitted: string[]) {
+export function catalogSaleJoin(input: SearchCatalogInput, admitted: string[], storefront = false) {
   const where: Prisma.Sql[] = [
     Prisma.sql`v."productId" = p.id AND v.status = 'ACTIVE' AND o.status = 'ACTIVE'`,
     Prisma.sql`pub.status IN ('PUBLISHED', 'RESTRICTED') AND pub."marketplaceVisible"`,
     admitted.length ? Prisma.sql`o."supplierOrganizationId" IN (${Prisma.join(admitted.map(id => Prisma.sql`${id}::uuid`))})` : Prisma.sql`FALSE`,
     Prisma.sql`(pub."allowedBuyerIds" IS NULL OR pub."allowedBuyerIds" = 'null'::jsonb OR pub."allowedBuyerIds" = '[]'::jsonb OR pub."allowedBuyerIds" @> ${JSON.stringify([input.buyerOrganizationId])}::jsonb)`,
   ];
+  if (storefront) where.push(Prisma.sql`pub.status = 'PUBLISHED' AND (pub."allowedBuyerIds" IS NULL OR pub."allowedBuyerIds" = 'null'::jsonb OR pub."allowedBuyerIds" = '[]'::jsonb)`);
   if (input.supplierOrganizationId) where.push(Prisma.sql`o."supplierOrganizationId" = ${input.supplierOrganizationId}::uuid`);
   if (input.packaging) where.push(Prisma.sql`COALESCE(pack.name, unit."nameRu") = ${input.packaging}`);
   if (input.unit) where.push(Prisma.sql`COALESCE(pu.symbol, unit.symbol) = ${input.unit}`);
@@ -20,13 +22,14 @@ export function catalogSaleJoin(input: SearchCatalogInput, admitted: string[]) {
   }
   return Prisma.sql`JOIN LATERAL (
     SELECT COUNT(*) AS "offerCount", COALESCE(BOOL_OR(x.available), FALSE) AS available,
-      COALESCE(MIN(x.price) FILTER (WHERE x.available), MIN(x.price)) AS price
+      COALESCE(MIN(x.price) FILTER (WHERE x.available), MIN(x.price)) AS price,
+      ARRAY_AGG(x.id) AS "offerIds"
     FROM (
-      SELECT price."amountMinor" AS price,
-        COALESCE(price."amountMinor" > 0 AND price.currency = 'KZT' AND EXISTS (
+      SELECT o.id, price."amountMinor" AS price,
+        COALESCE(price."amountMinor" > 0 AND price.currency = 'KZT' AND ${storefront ? storefrontAvailabilitySql() : Prisma.sql`EXISTS (
           SELECT 1 FROM "InventoryBalance" ib WHERE ib."offerId" = o.id AND ib."freshnessStatus" = 'FRESH'
-          AND (ib."freshnessExpiresAt" IS NULL OR ib."freshnessExpiresAt" > NOW()) AND ib."quantityAvailable" > 0
-        ), FALSE) AS available
+          AND (ib."freshnessExpiresAt" IS NULL OR ib."freshnessExpiresAt" > timezone('UTC', NOW())) AND ib."quantityAvailable" > 0
+        )`}, FALSE) AS available
       FROM "ProductVariant" v JOIN "SupplierOffer" o ON o."productVariantId" = v.id
       JOIN "OfferPublication" pub ON pub."offerId" = o.id
       LEFT JOIN "ProductPackaging" pack ON pack.id = o."packagingId"
@@ -34,10 +37,10 @@ export function catalogSaleJoin(input: SearchCatalogInput, admitted: string[]) {
       LEFT JOIN "UnitOfMeasure" unit ON unit.id = o."saleUnitId"
       LEFT JOIN LATERAL (
         SELECT pr."amountMinor", pr.currency FROM "OfferPrice" pr WHERE pr."offerId" = o.id AND pr.status = 'ACTIVE'
-        AND pr."validFrom" <= NOW() AND (pr."validTo" IS NULL OR pr."validTo" >= NOW())
-        AND (pr."freshnessExpiresAt" IS NULL OR pr."freshnessExpiresAt" >= NOW())
+        AND pr."validFrom" <= timezone('UTC', NOW()) AND (pr."validTo" IS NULL OR pr."validTo" >= timezone('UTC', NOW()))
+        AND (pr."freshnessExpiresAt" IS NULL OR pr."freshnessExpiresAt" >= timezone('UTC', NOW()))
         ORDER BY pr."validFrom" DESC LIMIT 1
       ) price ON TRUE WHERE ${Prisma.join(where, " AND ")}
-    ) x
+    ) x ${storefront ? Prisma.sql`WHERE x.available` : Prisma.empty}
   ) sale ON TRUE`;
 }

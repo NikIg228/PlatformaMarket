@@ -13,9 +13,10 @@ import { saleTotal } from "../product-detail/model";
 import { Add24Regular } from "@fluentui/react-icons/svg/add";
 import { Subtract24Regular } from "@fluentui/react-icons/svg/subtract";
 import { SupplierQuestion } from "./supplier-question";
+import { SupplierIdentity } from "./supplier-identity";
 
 export type SupplierOffer = {
-  id: string; supplier: { name: string; publicContact?: OrganizationContact | null }; priceMinor: string | null;
+  id: string; supplier: { id?: string; organizationId?: string; name: string; logoUrl?: string | null; publicContact?: OrganizationContact | null }; priceMinor: string | null;
   normalizedPriceMinor?: string | null; currency: string;
   packaging?: { name: string; quantityInBaseUnit?: string; unit?: string | null };
   available: boolean; deliveryMethods?: string[]; delivery?: DeliverySummary[];
@@ -84,7 +85,7 @@ export function SupplierOffers({ offers, loginHref, compact = false, productName
       const total = valid && offer.priceMinor != null ? saleTotal(offer.priceMinor, quantity) : null;
       return <article className={styles.row} key={offer.id} aria-label={`Предложение: ${offer.supplier.name}`}>
         <div className={styles.supplier}>
-          <strong>{offer.supplier.name}</strong>
+          <SupplierIdentity supplier={offer.supplier} />
           {offer.supplier.publicContact ? <div className={styles.contact} aria-label="Официальный контакт поставщика">
             <span>{offer.supplier.publicContact.contactName}</span>
             <a href={`tel:${offer.supplier.publicContact.phone.replace(/[^+\d]/g, "")}`}>{offer.supplier.publicContact.phone}</a>

@@ -10,7 +10,8 @@ import styles from "./catalog-filters.module.css";
 
 export type LoadFilterOptions = (categoryId: string, signal: AbortSignal) => Promise<FilterOptions | undefined>;
 
-export function CatalogFilterDialog({ initial, initialOptions, onLoadOptions, onClose, onApply }: {
+export function CatalogFilterDialog({ initial, initialOptions, onLoadOptions, onClose, onApply, storefront = false }: {
+  storefront?: boolean;
   initial: CatalogFilters & { sort: string }; initialOptions?: FilterOptions; onLoadOptions: LoadFilterOptions;
   onClose: () => void; onApply: (filters: CatalogFilters & { sort: string }) => void;
 }) {
@@ -65,8 +66,8 @@ export function CatalogFilterDialog({ initial, initialOptions, onLoadOptions, on
                 <option value="UPDATED_DESC">По обновлению</option>
               </DmSelect>
             </DmField>
-            <DmCheckbox label="Только в наличии" checked={draft.stock === "true"}
-              onChange={(_, data) => change({ stock: data.checked ? "true" : "all" })} />
+            {storefront ? null : <DmCheckbox label="Только в наличии" checked={draft.stock === "true"}
+              onChange={(_, data) => change({ stock: data.checked ? "true" : "all" })} />}
             <PriceFields filters={draft} onChange={change} error={priceValidation} />
             <FilterChoice label="Бренд" value={draft.brandId} items={options?.brands ?? []}
               onChange={brandId => change({ brandId, brand: "" })} disabled={!options} />
@@ -78,10 +79,10 @@ export function CatalogFilterDialog({ initial, initialOptions, onLoadOptions, on
             </fieldset> : !loading && !error ? <p className={styles.hint}>{draft.categoryId ? "Для этой категории дополнительных характеристик нет." : "Выберите категорию в шапке каталога, чтобы уточнить характеристики."}</p> : null}
           </div>
           <details className={styles.group} open={Boolean(draft.supplierOrganizationId || draft.manufacturerId || draft.packaging)}>
-            <summary>Поставщик, производитель и фасовка</summary>
+            <summary>{storefront ? "Производитель и фасовка" : "Поставщик, производитель и фасовка"}</summary>
             <div className={styles.fields}>
-              <FilterChoice label="Поставщик" value={draft.supplierOrganizationId} items={options?.suppliers ?? []}
-                onChange={supplierOrganizationId => change({ supplierOrganizationId })} disabled={!options} />
+              {storefront ? null : <FilterChoice label="Поставщик" value={draft.supplierOrganizationId} items={options?.suppliers ?? []}
+                onChange={supplierOrganizationId => change({ supplierOrganizationId })} disabled={!options} />}
               <FilterChoice label="Производитель" value={draft.manufacturerId} items={options?.manufacturers ?? []}
                 onChange={manufacturerId => change({ manufacturerId })} disabled={!options} />
               <FilterChoice label="Фасовка / единица продажи" value={draft.packaging}

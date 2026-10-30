@@ -32,7 +32,7 @@ export const catalogMediaSchema = z.object({
 export const catalogSearchOfferSchema = z.object({
   id: z.uuid(),
   variantId: z.uuid(),
-  supplier: z.object({ id: z.uuid(), name: z.string(), publicContact: organizationContactSchema.nullable().optional() }),
+  supplier: z.object({ id: z.uuid(), name: z.string(), logoUrl: z.string().nullable().optional(), publicContact: organizationContactSchema.nullable().optional() }),
   priceMinor: decimalStringSchema.nullable(),
   currency: currencySchema.nullable(),
   normalizedPriceMinor: decimalStringSchema.nullable(),
@@ -127,7 +127,7 @@ export const catalogSearchResponseSchema = z.object({
 export const comparedOfferSchema = z.object({
   offerId: z.uuid(),
   variantId: z.uuid(),
-  supplier: z.object({ organizationId: z.uuid(), name: z.string(), publicContact: organizationContactSchema.nullable().optional() }),
+  supplier: z.object({ organizationId: z.uuid(), name: z.string(), logoUrl: z.string().nullable().optional(), publicContact: organizationContactSchema.nullable().optional() }),
   supplierSku: z.string().nullable(),
   price: z.object({
     amountMinor: decimalStringSchema,

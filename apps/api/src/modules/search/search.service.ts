@@ -22,7 +22,7 @@ import { visibleOfferSummary } from "./visible-offer-summary";
 import { catalogSaleJoin } from "./catalog-sale-query";
 import { publicContactSelect, publicOrganizationContact } from "../organizations/contact-projection";
 
-type SearchRow = { productId: string; rank: number };
+type SearchRow = { productId: string; rank: number; storefrontOfferIds?: string[] };
 type PublicSearchPromotion = {
   id: string;
   supplierOrganizationId: string;
@@ -112,12 +112,12 @@ export class SearchService {
       throw new NotFoundException("Buyer organization not found");
   }
 
-  async search(input: SearchCatalogInput, context: SupplierActorContext) {
+  async search(input: SearchCatalogInput, context: SupplierActorContext, storefront = false) {
     await this.assertBuyer(input.buyerOrganizationId, context);
     const admittedSuppliers = await this.terms.activeSupplierIds();
     const pilotProfile = environment().DEPLOYMENT_PROFILE === "pilot";
     const saleBasis = input.priceBasis === "SALE_UNIT";
-    const saleJoin = saleBasis ? catalogSaleJoin(input, admittedSuppliers) : Prisma.empty;
+    const saleJoin = saleBasis ? catalogSaleJoin(input, admittedSuppliers, storefront) : Prisma.empty;
     if (input.minSalePriceMinor && input.maxSalePriceMinor && BigInt(input.minSalePriceMinor) > BigInt(input.maxSalePriceMinor))
       throw new BadRequestException("Minimum price exceeds maximum price");
     const searchIntent = expandDentalSearchQuery(input.q);
@@ -219,7 +219,7 @@ export class SearchService {
     )[input.sort];
     const [rows, countRows] = await Promise.all([
       this.prisma.$queryRaw<SearchRow[]>(
-        Prisma.sql`SELECT d."productId", ${rank} AS rank FROM "ProductSearchDocument" d JOIN "Product" p ON p.id = d."productId" ${saleJoin} WHERE ${condition} ORDER BY ${sort}, p.id LIMIT ${input.limit} OFFSET ${input.offset}`,
+        Prisma.sql`SELECT d."productId", ${rank} AS rank ${storefront ? Prisma.sql`, sale."offerIds" AS "storefrontOfferIds"` : Prisma.empty} FROM "ProductSearchDocument" d JOIN "Product" p ON p.id = d."productId" ${saleJoin} WHERE ${condition} ORDER BY ${sort}, p.id LIMIT ${input.limit} OFFSET ${input.offset}`,
       ),
       this.prisma.$queryRaw<Array<{ count: bigint }>>(
         Prisma.sql`SELECT COUNT(*)::bigint AS count FROM "ProductSearchDocument" d JOIN "Product" p ON p.id = d."productId" ${saleJoin} WHERE ${condition}`,
@@ -275,7 +275,7 @@ export class SearchService {
     const rankById = new Map(
       rows.map((row, index) => [
         row.productId,
-        { rank: Number(row.rank), index },
+        { rank: Number(row.rank), index, storefrontOfferIds: row.storefrontOfferIds },
       ]),
     );
     const items = products
@@ -286,8 +286,10 @@ export class SearchService {
           rankById.get(product.id)?.rank ?? 0,
           reviewSummary,
           promotions,
+          rankById.get(product.id)?.storefrontOfferIds,
         ),
       )
+      .filter(item => !storefront || item.offers.length > 0)
       .sort(
         (left, right) =>
           (rankById.get(left.id)?.index ?? 0) -
@@ -305,7 +307,7 @@ export class SearchService {
       limit: input.limit,
       items,
       facets: this.aggregateFacets(items),
-      ...(input.includeFilterOptions === "true" ? { filterOptions: await this.filterOptions(input, admittedSuppliers, pilotProfile) } : {}),
+      ...(input.includeFilterOptions === "true" ? { filterOptions: await this.filterOptions(input, admittedSuppliers, pilotProfile, storefront) } : {}),
     };
   }
 
@@ -316,21 +318,22 @@ export class SearchService {
       .trim();
   }
 
-  private async filterOptions(input: SearchCatalogInput, admitted: string[], pilot: boolean) {
+  private async filterOptions(input: SearchCatalogInput, admitted: string[], pilot: boolean, storefront = false) {
     // Unpaginated reference options, restricted to the caller's visible catalogue.
     // Never derive filter choices from the currently loaded page.
-    const context = { ...input, supplierOrganizationId: undefined, packaging: undefined, unit: undefined, warehouseId: undefined, deliveryMethod: undefined };
-    const rows = await this.prisma.$queryRaw<Array<{ id: string; brandId: string | null; manufacturerId: string | null; categoryIds: string[]; facets: Prisma.JsonValue }>>(Prisma.sql`
-      SELECT p.id, p."brandId", p."manufacturerId", d."categoryIds", d.facets
+    const context = { ...input, supplierOrganizationId: storefront ? input.supplierOrganizationId : undefined, packaging: undefined, unit: undefined, warehouseId: undefined, deliveryMethod: undefined };
+    const rows = await this.prisma.$queryRaw<Array<{ id: string; brandId: string | null; manufacturerId: string | null; categoryIds: string[]; facets: Prisma.JsonValue; offerIds: string[] }>>(Prisma.sql`
+      SELECT p.id, p."brandId", p."manufacturerId", d."categoryIds", d.facets, sale."offerIds"
       FROM "Product" p JOIN "ProductSearchDocument" d ON d."productId" = p.id
-      ${catalogSaleJoin(context, admitted)} WHERE p.status = 'ACTIVE' AND sale."offerCount" > 0
+      ${catalogSaleJoin(context, admitted, storefront)} WHERE p.status = 'ACTIVE' AND sale."offerCount" > 0
       ${pilot ? Prisma.sql`AND p."externalMetadata" ->> 'importedAsCanonicalDraft' = 'true'` : Prisma.empty}`);
     const ids = rows.map(row => row.id);
+    const storefrontOffers = storefront ? { id: { in: rows.flatMap(row => row.offerIds) } } : {};
     const [categories, brands, manufacturers, offers, definitions] = await Promise.all([
       this.prisma.category.findMany({ where: { status: "ACTIVE" }, select: { id: true, nameRu: true, parentId: true }, orderBy: { nameRu: "asc" } }),
       this.prisma.brand.findMany({ where: { id: { in: rows.flatMap(row => row.brandId ? [row.brandId] : []) } }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
       this.prisma.manufacturer.findMany({ where: { id: { in: rows.flatMap(row => row.manufacturerId ? [row.manufacturerId] : []) } }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
-      this.prisma.supplierOffer.findMany({ where: { productVariant: { productId: { in: ids }, status: "ACTIVE" }, supplierOrganizationId: { in: admitted }, status: "ACTIVE", publication: { is: { marketplaceVisible: true, status: { in: ["PUBLISHED", "RESTRICTED"] } } } }, select: { supplierOrganizationId: true, supplier: { select: { organization: { select: { displayName: true } } } }, publication: { select: { allowedBuyerIds: true, allowedCityIds: true } }, packaging: { select: { name: true } }, saleUnit: { select: { nameRu: true } } } }),
+      this.prisma.supplierOffer.findMany({ where: { ...storefrontOffers, productVariant: { productId: { in: ids }, status: "ACTIVE" }, supplierOrganizationId: { in: admitted }, status: "ACTIVE", publication: { is: { marketplaceVisible: true, status: { in: ["PUBLISHED", "RESTRICTED"] } } } }, select: { supplierOrganizationId: true, supplier: { select: { organization: { select: { displayName: true } } } }, publication: { select: { allowedBuyerIds: true, allowedCityIds: true } }, packaging: { select: { name: true } }, saleUnit: { select: { nameRu: true } } } }),
       this.prisma.attributeDefinition.findMany({ where: { isFilterable: true }, select: { code: true, nameRu: true, options: { select: { code: true, labelRu: true } } } }),
     ]);
     const usedCategories = new Set(rows.flatMap(row => row.categoryIds));
@@ -447,6 +450,7 @@ export class SearchService {
             supplier: {
               organizationId: offer.supplierOrganizationId,
               name: offer.supplier.organization.displayName,
+              logoUrl: offer.supplier.storefrontLogoAssetId ? `/catalog/suppliers/${offer.supplierOrganizationId}/logo` : null,
               publicContact: publicOrganizationContact(offer.supplier.organization.profile),
             },
             supplierSku: offer.supplierSku,
@@ -650,6 +654,7 @@ export class SearchService {
                 confirmationMode: true,
                 supplier: {
                   select: {
+                    storefrontLogoAssetId: true,
                     organization: { select: { displayName: true, profile: { select: publicContactSelect } } },
                   },
                 },
@@ -813,12 +818,14 @@ export class SearchService {
       { count: number; averageRating: number | null }
     >,
     promotions: PublicSearchPromotion[] = [],
+    storefrontOfferIds?: string[],
   ) {
     const categoryIds = product.categories.map(({ categoryId }) => categoryId);
     const now = new Date();
     const offers = product.variants.flatMap((variant) =>
       variant.supplierOffers
         .filter((offer) => {
+          if (storefrontOfferIds && !storefrontOfferIds.includes(offer.id)) return false;
           const allowedBuyers = offer.publication?.allowedBuyerIds;
           if (
             Array.isArray(allowedBuyers) &&
@@ -904,6 +911,7 @@ export class SearchService {
             supplier: {
               id: offer.supplierOrganizationId,
               name: offer.supplier.organization.displayName,
+              logoUrl: offer.supplier.storefrontLogoAssetId ? `/catalog/suppliers/${offer.supplierOrganizationId}/logo` : null,
               publicContact: publicOrganizationContact(offer.supplier.organization.profile),
             },
             priceMinor: offer.prices[0]?.amountMinor.toString() ?? null,

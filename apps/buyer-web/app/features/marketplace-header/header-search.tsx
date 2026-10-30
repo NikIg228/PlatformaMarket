@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { DmButton as Button } from "@marketplace/ui/controls";
 import { DmSearch } from "@marketplace/ui/dm-search";
 import { catalogContext, searchDestination } from "./navigation";
+import { isStorefrontPath } from "../../catalog/marketplace-url";
 import styles from "./header.module.css";
 type Suggestion = { id: string; name: string; brand: string | null };
 export function HeaderSearch() {
@@ -31,7 +32,9 @@ export function HeaderSearch() {
     const controller = new AbortController(); request.current = controller; setStatus("loading");
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch(`/catalog-search?${new URLSearchParams({ q: query.trim(), limit: "6" })}`, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]), cache: "no-store" });
+        const path = new URL(context(), window.location.origin).pathname;
+        const endpoint = isStorefrontPath(path) ? `/api${path}/search` : "/catalog-search";
+        const response = await fetch(`${endpoint}?${new URLSearchParams({ q: query.trim(), limit: "6" })}`, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]), cache: "no-store" });
         if (!response.ok) throw Error();
         const result = await response.json();
         if (!Array.isArray(result.items)) throw Error();

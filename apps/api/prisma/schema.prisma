@@ -1789,6 +1789,9 @@ model ProductSearchDocument {
 
 model SupplierProfile {
   organizationId         String                  @id @db.Uuid
+  storefrontContent      Json?
+  storefrontVersion      Int                     @default(0)
+  storefrontLogoAssetId  String?                 @db.Uuid
   status                 RecordStatus            @default(ACTIVE)
   regulatoryDetails      Json?
   paymentReviewPolicy    Json?

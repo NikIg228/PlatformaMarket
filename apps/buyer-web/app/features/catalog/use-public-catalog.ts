@@ -8,7 +8,7 @@ import { publicCatalogQuery } from "../../catalog/public-catalog-query";
 import { useDeliveryContext } from "../marketplace-header/delivery-context";
 import { restoreCatalogPosition } from "./catalog-position";
 
-export function usePublicCatalog() {
+export function usePublicCatalog(supplierId?: string) {
   const delivery = useDeliveryContext();
   const [location, setLocation] = useState(() => ({ state: readMarketplaceCatalog(new URLSearchParams()), path: "/", ready: false }));
   const [result, setResult] = useState<SearchResult | null>(null);
@@ -29,8 +29,12 @@ export function usePublicCatalog() {
     return () => window.removeEventListener("popstate", restore);
   }, []);
   const state = useMemo(() => ({ ...location.state,
+    ...(supplierId ? { supplierOrganizationId: "", stock: "all" } : {}),
     ...(delivery.ready ? { deliveryCityId: delivery.city?.id, inCity: delivery.inCity } : {}),
-  }), [location.state, delivery.ready, delivery.city?.id, delivery.inCity]);
+  }), [location.state, delivery.ready, delivery.city?.id, delivery.inCity, supplierId]);
+  const fetchCatalog = useCallback((params: URLSearchParams, signal: AbortSignal): Promise<SearchResult> => supplierId
+    ? import("./storefront-result").then(module => module.fetchStorefrontResult(supplierId, params, signal))
+    : fetchLiveCatalog<SearchResult>(params, signal), [supplierId]);
   const query = publicCatalogQuery(state, delivery.inCity ? delivery.city?.id : undefined).toString();
   const reload = useCallback(async () => {
     flight.current?.abort();
@@ -41,13 +45,13 @@ export function usePublicCatalog() {
       const next = await loadCatalogWindow<SearchResult>((offset, limit) => {
         const params = new URLSearchParams(query);
         params.set("offset", String(offset)); params.set("limit", String(limit));
-        return fetchLiveCatalog<SearchResult>(params, controller.signal);
+        return fetchCatalog(params, controller.signal);
       }, count.current);
       if (!controller.signal.aborted) setResult(next);
     } catch (cause) {
       if (!controller.signal.aborted) { setResult(null); setError(errorMessage(cause)); }
     } finally { if (!controller.signal.aborted) setLoading(false); }
-  }, [query]);
+  }, [query, fetchCatalog]);
   useEffect(() => {
     if (location.ready && delivery.ready) void reload();
     return () => { flight.current?.abort(); };
@@ -71,7 +75,7 @@ export function usePublicCatalog() {
     setLoadingMore(true); setError(null);
     try {
       const params = new URLSearchParams(query); params.set("offset", String(offset));
-      const next = await fetchLiveCatalog<SearchResult>(params, controller.signal);
+      const next = await fetchCatalog(params, controller.signal);
       if (controller.signal.aborted) return;
       setResult(previous => {
         if (controller.signal.aborted || (previous?.nextOffset ?? previous?.items.length ?? 0) !== offset) return previous;
@@ -87,7 +91,7 @@ export function usePublicCatalog() {
     if (categoryId) params.set("categoryId", categoryId); else params.delete("categoryId");
     params.delete("categoryName"); params.delete("attributeFilters");
     params.set("offset", "0"); params.set("limit", "1");
-    return (await fetchLiveCatalog<SearchResult>(params, signal)).filterOptions;
+    return (await fetchCatalog(params, signal)).filterOptions;
   };
   return { result, state, returnUrl, loading, loadingMore, error, reload, more, loadFilterOptions };
 }

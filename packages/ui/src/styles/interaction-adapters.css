@@ -39,6 +39,7 @@ html[data-input-modality] .fui-Button:focus { box-shadow: none !important; }
 .dm-heading { display: flex; align-items: center; gap: var(--dm-space-2); min-width: 0; margin-bottom: var(--dm-space-4); }
 .dm-heading[data-dm-inline="true"] { margin-bottom: 0; }
 .dm-heading > .dm-heading-title { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.dm-heading[data-dm-heading-size="page"] > .dm-heading-title { font-size: var(--dm-font-size-page-sm); line-height: var(--dm-line-heading); font-weight: var(--dm-font-weight-bold); }
 .dm-heading > .dm-button { flex-shrink: 0; }
 .dm-form-sections { display: grid; gap: var(--dm-space-6); min-width: 0; }
 .dm-form-sections > * + * { border-top: 1px solid var(--dm-border); padding-top: var(--dm-space-6); }

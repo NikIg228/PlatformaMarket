@@ -1,4 +1,4 @@
-import { marketplaceCatalogUrl, readMarketplaceCatalog, safeCatalogReturn } from "../../catalog/marketplace-url";
+import { isStorefrontPath, marketplaceCatalogUrl, readMarketplaceCatalog, safeCatalogReturn } from "../../catalog/marketplace-url";
 
 export function catalogContext(pathname: string, search: string) {
   const params = new URLSearchParams(search);
@@ -8,7 +8,7 @@ export function catalogContext(pathname: string, search: string) {
 }
 export function searchDestination(context: string, query: string) {
   const url = new URL(context, "http://local.invalid");
-  if (process.env.NEXT_PUBLIC_UNIFIED_APP === "true") url.pathname = "/catalog";
+  if (process.env.NEXT_PUBLIC_UNIFIED_APP === "true" && !isStorefrontPath(url.pathname)) url.pathname = "/catalog";
   url.searchParams.set("q", query.trim().slice(0, 240));
   url.searchParams.delete("offset"); url.searchParams.delete("count");
   return url.pathname + url.search;

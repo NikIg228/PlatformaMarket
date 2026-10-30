@@ -14,6 +14,7 @@ import * as notificationsApi from "./domains/notifications";
 import * as supportApi from "./domains/support";
 import * as supplierApi from "./domains/supplier";
 import * as catalogApi from "./domains/catalog";
+import * as storefrontApi from "./domains/storefront";
 import type { OrderDiscrepanciesResponse, OrderDiscrepancyCommand, OrderDiscrepancyResult, OrderReviewState, CreateVerifiedReviewInput, VerifiedOrderReview } from "@marketplace/schemas";
 import type { PrepareShipmentWaybillInput, ShipmentWaybillView, ShipmentWaybillsResponse } from "@marketplace/schemas";
 import type { PrepareResupplyDocumentInput, ResupplyDocumentView, ResupplyDocumentsResponse } from "@marketplace/schemas";
@@ -132,6 +133,11 @@ export class MarketplaceApiError extends Error {
 }
 
 export class MarketplaceApiClient {
+  supplierStorefront(id: string, signal?: AbortSignal) { return storefrontApi.supplierStorefront(this, id, signal); }
+  searchSupplierStorefront(id: string, query: import("@marketplace/schemas").SupplierStorefrontQuery, signal?: AbortSignal) { return storefrontApi.searchSupplierStorefront(this, id, query, signal); }
+  supplierStorefrontSettings(id: string) { return storefrontApi.supplierStorefrontSettings(this, id); }
+  saveSupplierStorefront(id: string, input: import("@marketplace/schemas").SaveSupplierStorefront) { return storefrontApi.saveSupplierStorefront(this, id, input); }
+  uploadSupplierLogo(id: string, input: import("@marketplace/schemas").UploadSupplierLogo) { return storefrontApi.uploadSupplierLogo(this, id, input); }
   getSupplierVatSettings(supplierId: string) { return supplierApi.getSupplierVatSettings(this, supplierId); }
   saveSupplierVatSettings(supplierId: string, input: import("@marketplace/schemas").SaveSupplierVatSettingsInput) { return supplierApi.saveSupplierVatSettings(this, supplierId, input); }
   previewOfferVat(supplierId: string, input: import("@marketplace/schemas").PreviewOfferVatInput) { return supplierApi.previewOfferVat(this, supplierId, input); }

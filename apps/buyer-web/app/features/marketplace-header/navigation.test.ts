@@ -1,5 +1,11 @@
 import { expect, it } from "vitest";
 import { catalogContext, deliveryDestination, searchDestination } from "./navigation";
+it("searches and changes delivery inside the supplier storefront, including a return from a product", () => {
+  const path = "/catalog/suppliers/00000000-0000-4000-8000-000000000001";
+  const context = catalogContext("/products/example", `?${new URLSearchParams({ returnTo: `${path}?sort=PRICE_ASC&lang=kk&count=48` })}`);
+  expect(searchDestination(context, "A2")).toBe(`${path}?sort=PRICE_ASC&lang=kk&q=A2`);
+  expect(deliveryDestination(path, "?lang=kk", "50c0440e-7ed2-4b28-870c-02d587c6f17b", true)).toContain(path);
+});
 const city = "50c0440e-7ed2-4b28-870c-02d587c6f17b";
 it("preserves the selected variant and package when the product delivery city changes", () => {
   const search = new URLSearchParams({ returnTo: "/catalog?q=Filtek", variant: "A2", packaging: '["Шприц","4","г","KZT"]' });

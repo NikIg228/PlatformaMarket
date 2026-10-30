@@ -1,5 +1,16 @@
 # PlatformaMarket — актуальная матрица приёмки
 
+## 30.10 — публичная витрина поставщика: local PASS (scoped)
+
+Каталог → карточка → имя/логотип поставщика → `/catalog/suppliers/[supplierId]`.
+Шапка/логотип/RU-KK, только актуальные доступные публичные предложения,
+настройки поставщика с tenant/role/CAS и сохранением черновика при ошибке.
+Полный PostgreSQL, contracts/runtime, типы, API/web/buyer builds, focused tests,
+browser1440/390/keyboard/recovery, scoped lint/UI-contract PASS.
+[Evidence и сохранённые FAIL](evidence/supplier-storefront-20261030.md).
+Рабочая БД и deployment не менялись; личная корзина вне scoped результата.
+Публикация/CI ещё не подтверждены этой записью. Общий R7 не закрывается.
+
 <a id="buyer-context-review-20261029"></a>
 
 ## 29.10 — buyer context и право на отзыв: PASS (scoped), CI GREEN

@@ -12,6 +12,7 @@ import { verifyCheckoutSnapshot } from "./lib/verify-checkout-snapshot.mjs";
 import { verifyLotEligibility } from "./lib/verify-lot-eligibility.mjs";
 import { verifyOfferCommercial } from "./lib/verify-offer-commercial.mjs";
 import { verifyCartRecovery } from "./lib/verify-cart-recovery.mjs";
+import { verifySupplierStorefront, verifyStorefrontUpgrade } from "./lib/verify-supplier-storefront.mjs";
 import { verifyReservationExpiry } from "./lib/verify-reservation-expiry.mjs";
 import { verifyLocalPermissions } from "./lib/verify-local-permissions.mjs";
 import { verifyContractLifecycle } from "./lib/verify-contract-lifecycle.mjs";
@@ -586,6 +587,7 @@ try {
     PROCESS_ROLE: "api",
     DATABASE_URL: databaseUrl,
     AUTH_MODE: "development",
+    JWT_SECRET: process.env.JWT_SECRET ?? "synthetic-postgres-personal-cart-session-secret",
     BACKGROUND_QUEUE_ENABLED: "false",
     OBJECT_STORAGE_DRIVER: "local",
     LOCAL_STORAGE_PATH: storageRoot,
@@ -600,6 +602,8 @@ try {
   await prisma.$connect();
   await verifyNineSecurity(prisma);
   const wave1SecurityOnly = process.argv.includes("--wave1-security-only");
+  const storefrontPreview = process.argv.includes("--storefront-preview");
+  const storefrontOnly = process.argv.includes("--storefront-only") || storefrontPreview;
   const commercialOnly = process.argv.includes("--commercial-only");
   const requisitesOnly = process.argv.includes("--requisites-only");
   const waybillOnly = process.argv.includes("--waybill-only");
@@ -607,12 +611,12 @@ try {
   const resupplyOnly = process.argv.includes("--resupply-only");
   const invoiceOnly = process.argv.includes("--invoice-only") || waybillOnly || discrepanciesOnly || resupplyOnly;
   const vatOnly = process.argv.includes("--vat-only");
-  if (!wave1SecurityOnly && !commercialOnly && !requisitesOnly && !vatOnly && !invoiceOnly) {
+  if (!storefrontOnly && !wave1SecurityOnly && !commercialOnly && !requisitesOnly && !vatOnly && !invoiceOnly) {
     await verifyManualPaymentUpgrade(prisma, assert);
     await verifyPromotionUpgrade(prisma, assert);
     await verifyCommerceMetricUpgrade(prisma, assert);
   }
-  if (!wave1SecurityOnly && !commercialOnly && !vatOnly && !invoiceOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
+  if (!storefrontOnly && !wave1SecurityOnly && !commercialOnly && !vatOnly && !invoiceOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
   const [rollbackOffer, idempotencyOffer, concurrencyOffer, correctionOffer, snapshotOffer, ...lotOffers] =
     (requisitesOnly || wave1SecurityOnly) ? [] : await createFixtureCatalog();
   const [
@@ -622,6 +626,10 @@ try {
     concurrencyBuyerA,
     concurrencyBuyerB,
   ] = await Promise.all([1, 2, 3, 4, 5].map(index => createBuyer(index)));
+
+  // Public catalog requests must resolve to an owned disposable buyer, never a
+  // missing default organization or the developer's working catalog identity.
+  testEnvironment.PUBLIC_CATALOG_ORGANIZATION_ID = tenantOwner.organizationId;
 
   api = spawn(process.execPath, [apiEntry], {
     cwd: apiDirectory,
@@ -633,7 +641,14 @@ try {
   api.stderr.on("data", rememberLog);
   await waitUntilReady();
 
-  if (wave1SecurityOnly) {
+  if (storefrontOnly) {
+    await verifyStorefrontUpgrade(prisma, assert);
+    await verifySupplierStorefront({ prisma, fixture, request, runId, assert });
+    if (storefrontPreview) {
+      const { storefrontBrowserPreview } = await import("./lib/storefront-browser-preview.mjs");
+      await storefrontBrowserPreview({ prisma, fixture, runId, apiBase, jwtSecret: testEnvironment.JWT_SECRET });
+    }
+  } else if (wave1SecurityOnly) {
     await verifyWave1Security({ prisma, createBuyer, request, runId });
   } else if (invoiceOnly) {
     await verifyOrderInvoices({ prisma, createBuyer, createCartWithItem, request, runId, assert, supplierId: fixture.supplierId, offers: [rollbackOffer, idempotencyOffer], storageRoot, waybills: !invoiceOnly || waybillOnly, discrepancies: discrepanciesOnly, resupply: resupplyOnly });
@@ -649,6 +664,8 @@ try {
       createBuyer, request, runId, assert });
     console.log("Focused PostgreSQL commercial verification PASS");
   } else {
+  await verifyStorefrontUpgrade(prisma, assert);
+  await verifySupplierStorefront({ prisma, fixture, request, runId, assert });
   await verifyCheckoutSnapshot({ prisma, databaseUrl, offerId: snapshotOffer.offerId,
     createBuyer, createCartWithItem, runId, assert });
   await verifyContractLifecycle({ prisma, createBuyer, runId });

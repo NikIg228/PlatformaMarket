@@ -1,5 +1,13 @@
 import { expect, it } from "vitest";
 import { marketplaceCatalogUrl, readMarketplaceCatalog, safeCatalogReturn } from "./marketplace-url";
+it("keeps a public supplier storefront and language through product return while rejecting cabinet/external paths", () => {
+  const path = "/catalog/suppliers/00000000-0000-4000-8000-000000000001";
+  const url = `${path}?q=A2&sort=PRICE_ASC&count=48&lang=kk`;
+  expect(safeCatalogReturn(url)).toBe(url);
+  expect(safeCatalogReturn("/supplier/settings")).toBe("/");
+  expect(safeCatalogReturn("/catalog/suppliers/not-an-id")).toBe("/");
+  expect(safeCatalogReturn("/\\outside.invalid/catalog")).toBe("/");
+});
 it("preserves search, all filters and the loaded window when returning from a product", () => {
   const state = readMarketplaceCatalog(new URLSearchParams("q=композит&sort=PRICE_ASC&brand=Test&category=Материалы&unit=шт&packaging=box&deliveryMethod=PICKUP&inStock=true&verified=true&official=true&minPrice=100&maxPrice=5000&count=72"));
   const url = marketplaceCatalogUrl(state);

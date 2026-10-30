@@ -10,7 +10,7 @@ import { SupplierOffers } from "../catalog/supplier-offers";
 import { PromotionsStorefront } from "../catalog/promotions-storefront";
 import { formatCatalogMoney } from "../../catalog/catalog-view-model";
 import { productLoginUrl } from "../../public-links";
-import { safeCatalogReturn } from "../../catalog/marketplace-url";
+import { isStorefrontPath, safeCatalogReturn } from "../../catalog/marketplace-url";
 import { compactProductTitle } from "../../catalog/product-title";
 import { ProductGallery } from "./product-gallery";
 import { compareDecimal, offerAvailable, packageKey, packageLabel, productAttributes, selectedOffers, selectionFromQuery, toSupplierOffer, type Comparison } from "./model";
@@ -77,7 +77,7 @@ export function ProductDetail({ initial, returnTo, description, sourceUrl, image
   return <div className={styles.page}>
     <MarketplaceHeader />
     <main className={styles.shell}>
-      <nav aria-label="Навигация по каталогу"><Link className={styles.back} href={currentReturn}>← Каталог</Link></nav>
+      <nav aria-label="Навигация по каталогу"><Link className={styles.back} href={currentReturn}>{isStorefrontPath(currentReturn.split("?")[0] ?? "") ? "← Витрина поставщика" : "← Каталог"}</Link></nav>
       <section className={styles.hero} aria-label="Товар">
         <ProductGallery image={image} name={title} />
         <div className={styles.identity}>
