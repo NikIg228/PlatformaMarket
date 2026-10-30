@@ -1,1 +1,1 @@
-export { default } from "../../../../landing-web/app/login/page";
+export { default } from "../../../../landing-web/app/login/login-screen";

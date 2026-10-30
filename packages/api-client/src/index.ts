@@ -1,3 +1,19 @@
+import * as integrationsApi from "./domains/integrations";
+import * as supplierImportsApi from "./domains/supplier-imports";
+import * as workspacesApi from "./domains/workspaces";
+import * as documentsApi from "./domains/documents";
+import * as deliveryApi from "./domains/delivery";
+import * as ordersApi from "./domains/orders";
+import * as cartsApi from "./domains/carts";
+import * as identityApi from "./domains/identity";
+import * as organizationsApi from "./domains/organizations";
+import * as promotionsApi from "./domains/promotions";
+import * as conversationsApi from "./domains/conversations";
+import * as operationsApi from "./domains/operations";
+import * as notificationsApi from "./domains/notifications";
+import * as supportApi from "./domains/support";
+import * as supplierApi from "./domains/supplier";
+import * as catalogApi from "./domains/catalog";
 import type { OrderDiscrepanciesResponse, OrderDiscrepancyCommand, OrderDiscrepancyResult, OrderReviewState, CreateVerifiedReviewInput, VerifiedOrderReview } from "@marketplace/schemas";
 import type { PrepareShipmentWaybillInput, ShipmentWaybillView, ShipmentWaybillsResponse } from "@marketplace/schemas";
 import type { PrepareResupplyDocumentInput, ResupplyDocumentView, ResupplyDocumentsResponse } from "@marketplace/schemas";
@@ -116,95 +132,67 @@ export class MarketplaceApiError extends Error {
 }
 
 export class MarketplaceApiClient {
-  getSupplierVatSettings(supplierId: string) { return this.get<import("@marketplace/schemas").SupplierVatSettings>(`/suppliers/${supplierId}/vat`); }
-  saveSupplierVatSettings(supplierId: string, input: import("@marketplace/schemas").SaveSupplierVatSettingsInput) { return this.post<import("@marketplace/schemas").SupplierVatSettings>(`/suppliers/${supplierId}/vat`, input); }
-  previewOfferVat(supplierId: string, input: import("@marketplace/schemas").PreviewOfferVatInput) { return this.post<import("@marketplace/schemas").OfferVatPreview>(`/suppliers/${supplierId}/vat/offers/preview`, input); }
-  applyOfferVat(supplierId: string, input: import("@marketplace/schemas").ApplyOfferVatInput) { return this.post<import("@marketplace/schemas").OfferVatApplyResult>(`/suppliers/${supplierId}/vat/offers/apply`, input); }
-  createSupportTicket(input: import("@marketplace/schemas").CreateSupportTicketInput) { return this.post<import("@marketplace/schemas").SupportTicketSummary>("/support/tickets", input); }
-  internalNotifications(organizationId: string, offset = 0) { return this.get<import("@marketplace/schemas").InternalNotification[]>(`/notifications/organizations/${encodeURIComponent(organizationId)}?channel=IN_APP&limit=50&offset=${offset}`); }
-  notificationInbox(organizationId: string, query: import("@marketplace/schemas").NotificationInboxQuery = {}, options?: { signal?: AbortSignal }) {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(query)) if (value !== undefined) params.set(key, String(value));
-    return this.get<import("@marketplace/schemas").NotificationInbox>(`/notifications/organizations/${encodeURIComponent(organizationId)}/inbox?${params}`, options);
-  }
-  readNotificationInbox(organizationId: string, before: string) { return this.post<{ count: number }>(`/notifications/organizations/${encodeURIComponent(organizationId)}/inbox/read`, { before }); }
-  readNotification(id: string) { return this.post<import("@marketplace/schemas").InternalNotification>(`/notifications/${encodeURIComponent(id)}/read`, {}); }
-  operationObject(type: import("@marketplace/schemas").OperationQueueType, id: string) { return this.get<import("@marketplace/schemas").OperationObject>(`/operations/work-queue/${type}/${encodeURIComponent(id)}`); }
-  operatorDocumentException(id: string, signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorDocumentException>(`/operations/document-exceptions/${encodeURIComponent(id)}`, { signal }); }
-  operatorAudit(input: import("@marketplace/schemas").OperatorAuditQuery, signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorAuditPage>(this.withQuery("/operations/audit", input), { signal }); }
-  operatorTechnical(signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorTechnical>("/operations/technical", { signal }); }
-  operatorTrust(input: import("@marketplace/schemas").OperatorTrustQuery, signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorTrust>(this.withQuery("/trust/operator", input), { signal }); }
-  operatorTrustEvents(id: string, offset = 0, signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorTrustEvents>(this.withQuery(`/trust/operator/suppliers/${encodeURIComponent(id)}/events`, { offset }), { signal }); }
-  resolveOperatorTrustIncident(id: string, input: import("@marketplace/schemas").OperatorTrustResolve) { return this.post<import("@marketplace/schemas").OperatorTrustResolved>(`/trust/operator/incidents/${encodeURIComponent(id)}/resolve`, input); }
-  publishOperatorExceptionRecommendation(id: string, input: import("@marketplace/schemas").OperatorExceptionReview) { return this.post<import("@marketplace/schemas").OperatorExceptionReviewResult>(`/operations/document-exceptions/${encodeURIComponent(id)}/recommendation`, input); }
-  supportTickets(status?: string, offset = 0, options: { q?: string; sort?: "queue" | "recent" } = {}) { const query = new URLSearchParams({ offset: String(offset) }); if (status) query.set("status", status); if (options.q) query.set("q", options.q); if (options.sort) query.set("sort", options.sort); return this.get<import("@marketplace/schemas").SupportTicketSummary[]>(`/support/tickets?${query}`); }
-  supportTicket(id: string, beforeMessageId?: string) { return this.get<import("@marketplace/schemas").SupportTicketDetail>(`/support/tickets/${encodeURIComponent(id)}${beforeMessageId ? `?beforeMessageId=${encodeURIComponent(beforeMessageId)}` : ""}`); }
-  updateSupportTicket(id: string, input: import("@marketplace/schemas").UpdateSupportTicketInput) { return this.patch<import("@marketplace/schemas").SupportTicketSummary>(`/support/tickets/${encodeURIComponent(id)}`, input); }
-  supportTicketHistory(id: string) { return this.get<import("@marketplace/schemas").OperationHistory>(`/support/tickets/${encodeURIComponent(id)}/history`); }
-  addSupportMessage(id: string, input: import("@marketplace/schemas").AddSupportMessageInput) { return this.post<import("@marketplace/schemas").SupportTicketDetail["messages"][number]>(`/support/tickets/${encodeURIComponent(id)}/messages`, input); }
-  conversationContext(contextType: "OFFER" | "ORDER", contextId: string) { return this.get<import("@marketplace/schemas").ConversationLookup>(`/conversations/context?contextType=${contextType}&contextId=${encodeURIComponent(contextId)}`); }
-  uploadConversationAttachment(input: import("@marketplace/schemas").UploadConversationAttachmentInput) {
-    return this.post<import("@marketplace/schemas").UploadedConversationAttachment>("/conversations/attachments", input);
-  }
-  downloadConversationAttachment(conversationId: string, messageId: string, assetId: string) {
-    return this.download(`/conversations/${encodeURIComponent(conversationId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(assetId)}`);
-  }
-  operationWorkQueue(query: Partial<import("@marketplace/schemas").OperationWorkQueueQuery> = {}, signal?: AbortSignal) {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(query)) if (value !== undefined && value !== "") params.set(key, String(value));
-    return this.get<import("@marketplace/schemas").OperationWorkQueue>(`/operations/work-queue?${params}`, { signal });
-  }
-  operatorDashboard(signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorDashboard>("/operations/dashboard", { signal }); }
-  operatorCapabilities(signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorCapabilities>("/operations/capabilities", { signal }); }
-  operatorOrganizations(query: Partial<import("@marketplace/schemas").OperatorOrganizationsQuery> = {}, signal?: AbortSignal) {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(query)) if (value !== undefined) params.set(key, String(value));
-    return this.get<import("@marketplace/schemas").OperatorOrganizations>(`/operations/organizations?${params}`, { signal });
-  }
-  operatorOrders(query: Partial<import("@marketplace/schemas").OperatorOrdersQuery> = {}, signal?: AbortSignal) {
-    const params = new URLSearchParams();
-    Object.entries(query).forEach(([key, value]) => { if (value !== undefined && value !== "") params.set(key, String(value)); });
-    return this.get<import("@marketplace/schemas").OperatorOrders>(`/operations/orders?${params}`, { signal });
-  }
-  operatorOrder(id: string, signal?: AbortSignal) {
-    return this.get<import("@marketplace/schemas").OperatorOrderDetail>(`/operations/orders/${encodeURIComponent(id)}`, { signal });
-  }
-  operatorOrganization(id: string, signal?: AbortSignal) { return this.get<import("@marketplace/schemas").OperatorOrganizationDetail>(`/operations/organizations/${encodeURIComponent(id)}`, { signal }); }
-  operationAssignees() { return this.get<{ id: string; displayName: string }[]>("/operations/work-queue/assignees"); }
-  assignOperation(type: import("@marketplace/schemas").OperationQueueType, id: string, input: import("@marketplace/schemas").OperationAssignment) { return this.post<import("@marketplace/schemas").OperationAssignmentResult>(`/operations/work-queue/${type}/${encodeURIComponent(id)}/assignment`, input); }
-  operationHistory(type: import("@marketplace/schemas").OperationQueueType, id: string) { return this.get<import("@marketplace/schemas").OperationHistory>(`/operations/work-queue/${type}/${encodeURIComponent(id)}/history`); }
-  conversations(query: Partial<import("@marketplace/schemas").ConversationQuery> = {}) {
-    const params = new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]));
-    return this.get<import("@marketplace/schemas").ConversationPage>(`/conversations?${params}`);
-  }
-  conversation(id: string, beforeSequence?: number) { return this.get<import("@marketplace/schemas").ConversationDetail>(`/conversations/${encodeURIComponent(id)}${beforeSequence ? `?beforeSequence=${beforeSequence}` : ""}`); }
-  startConversation(input: import("@marketplace/schemas").StartConversation) { return this.post<{ conversationId: string }>("/conversations", input); }
-  sendConversationMessage(id: string, input: import("@marketplace/schemas").ConversationMessageInput) { return this.post<{ conversationId: string }>(`/conversations/${encodeURIComponent(id)}/messages`, input); }
-  readConversation(id: string, throughSequence: number) { return this.post<{ throughSequence: number }>(`/conversations/${encodeURIComponent(id)}/read`, { throughSequence }); }
-  resolveConversation(id: string, expectedVersion: number, decision?: string) { return this.post<{ conversationId: string }>(`/conversations/${encodeURIComponent(id)}/resolve`, { expectedVersion, ...(decision ? { decision } : {}) }); }
-  escalateConversation(id: string, input: import("@marketplace/schemas").ConversationEscalation) { return this.post<{ ticketId: string }>(`/conversations/${encodeURIComponent(id)}/escalate`, input); }
-  listPromotions(query: Partial<PromotionListQuery> = {}) { return this.get<PromotionPage>(`/promotions?${new URLSearchParams(Object.entries(query).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)]))}`); }
-  listPublicPromotions(query: Partial<PromotionListQuery> = {}) { return this.get<PublicPromotionPage>(`/promotions/storefront?${new URLSearchParams(Object.entries(query).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)]))}`); }
-  createOfferPromotion(input: CreateOfferPromotion) { return this.post<OfferPromotion>("/promotions", input); }
-  reviseOfferPromotion(id: string, input: ReviseOfferPromotion) { return this.patch<OfferPromotion>(`/promotions/${encodeURIComponent(id)}/terms`, input); }
-  commandOfferPromotion(id: string, input: OfferPromotionCommand) { return this.post<OfferPromotion>(`/promotions/${encodeURIComponent(id)}/commands`, input); }
-  getSupplierLegalDocuments() { return this.get<SupplierLegalBundle>("/supplier-terms/documents"); }
-  getSupplierTerms() { return this.get<SupplierTermsState>("/supplier-terms/current"); }
-  getOrganizationProfile() { return this.get<OrganizationProfileResponse>("/organizations/current/profile"); }
-  saveOrganizationProfile(input: SaveOrganizationProfileInput) { return this.post<OrganizationProfileResponse>("/organizations/current/profile", input); }
-  getOrganizationRequisites() { return this.get<OrganizationRequisitesResponse>("/organizations/current/requisites"); }
-  saveOrganizationRequisites(input: SaveOrganizationRequisitesInput) { return this.post<OrganizationRequisitesMutation>("/organizations/current/requisites", input); }
-  confirmOrganizationRequisites(input: ConfirmOrganizationRequisitesInput) { return this.post<OrganizationRequisitesMutation>("/organizations/current/requisites/confirm", input); }
-  getOrganizationRequisitesHistory(query: OrganizationRequisitesHistoryQuery = {}) {
-    const suffix = query.beforeVersion === undefined ? "" : `?beforeVersion=${encodeURIComponent(query.beforeVersion)}`;
-    return this.get<OrganizationRequisitesHistory>(`/organizations/current/requisites/history${suffix}`);
-  }
-  getOrganizationOnboarding() { return this.get<OrganizationOnboarding>("/organizations/current/onboarding"); }
-  getOperatorOrganizationOnboarding(id: string) { return this.get<OrganizationOnboarding>(`/organizations/${encodeURIComponent(id)}/onboarding`); }
-  acceptSupplierTerms(input: AcceptSupplierTermsInput) { return this.post<SupplierTermsAcceptance>("/supplier-terms/acceptances", input); }
-  getSupplierAdmissions() { return this.get<SupplierAdmissionList>("/supplier-terms/operator/acceptances"); }
-  reviewSupplierAdmission(id: string, input: ReviewSupplierAdmissionInput) { return this.post<SupplierTermsAcceptance>(`/supplier-terms/operator/acceptances/${encodeURIComponent(id)}/review`, input); }
-  downloadSupplierTerms(id: string) { return this.download(`/supplier-terms/acceptances/${encodeURIComponent(id)}/download`); }
+  getSupplierVatSettings(supplierId: string) { return supplierApi.getSupplierVatSettings(this, supplierId); }
+  saveSupplierVatSettings(supplierId: string, input: import("@marketplace/schemas").SaveSupplierVatSettingsInput) { return supplierApi.saveSupplierVatSettings(this, supplierId, input); }
+  previewOfferVat(supplierId: string, input: import("@marketplace/schemas").PreviewOfferVatInput) { return supplierApi.previewOfferVat(this, supplierId, input); }
+  applyOfferVat(supplierId: string, input: import("@marketplace/schemas").ApplyOfferVatInput) { return supplierApi.applyOfferVat(this, supplierId, input); }
+  createSupportTicket(input: import("@marketplace/schemas").CreateSupportTicketInput) { return supportApi.createSupportTicket(this, input); }
+  internalNotifications(organizationId: string, offset = 0) { return notificationsApi.internalNotifications(this, organizationId, offset); }
+  notificationInbox(organizationId: string, query: import("@marketplace/schemas").NotificationInboxQuery = {}, options?: { signal?: AbortSignal }) { return notificationsApi.notificationInbox(this, organizationId, query, options); }
+  readNotificationInbox(organizationId: string, before: string) { return notificationsApi.readNotificationInbox(this, organizationId, before); }
+  readNotification(id: string) { return notificationsApi.readNotification(this, id); }
+  operationObject(type: import("@marketplace/schemas").OperationQueueType, id: string) { return operationsApi.operationObject(this, type, id); }
+  operatorDocumentException(id: string, signal?: AbortSignal) { return operationsApi.operatorDocumentException(this, id, signal); }
+  operatorAudit(input: import("@marketplace/schemas").OperatorAuditQuery, signal?: AbortSignal) { return operationsApi.operatorAudit(this, input, signal); }
+  operatorTechnical(signal?: AbortSignal) { return operationsApi.operatorTechnical(this, signal); }
+  operatorTrust(input: import("@marketplace/schemas").OperatorTrustQuery, signal?: AbortSignal) { return operationsApi.operatorTrust(this, input, signal); }
+  operatorTrustEvents(id: string, offset = 0, signal?: AbortSignal) { return operationsApi.operatorTrustEvents(this, id, offset, signal); }
+  resolveOperatorTrustIncident(id: string, input: import("@marketplace/schemas").OperatorTrustResolve) { return operationsApi.resolveOperatorTrustIncident(this, id, input); }
+  publishOperatorExceptionRecommendation(id: string, input: import("@marketplace/schemas").OperatorExceptionReview) { return operationsApi.publishOperatorExceptionRecommendation(this, id, input); }
+  supportTickets(status?: string, offset = 0, options: { q?: string; sort?: "queue" | "recent" } = {}) { return supportApi.supportTickets(this, status, offset, options); }
+  supportTicket(id: string, beforeMessageId?: string) { return supportApi.supportTicket(this, id, beforeMessageId); }
+  updateSupportTicket(id: string, input: import("@marketplace/schemas").UpdateSupportTicketInput) { return supportApi.updateSupportTicket(this, id, input); }
+  supportTicketHistory(id: string) { return supportApi.supportTicketHistory(this, id); }
+  addSupportMessage(id: string, input: import("@marketplace/schemas").AddSupportMessageInput) { return supportApi.addSupportMessage(this, id, input); }
+  conversationContext(contextType: "OFFER" | "ORDER", contextId: string) { return conversationsApi.conversationContext(this, contextType, contextId); }
+  uploadConversationAttachment(input: import("@marketplace/schemas").UploadConversationAttachmentInput) { return conversationsApi.uploadConversationAttachment(this, input); }
+  downloadConversationAttachment(conversationId: string, messageId: string, assetId: string) { return conversationsApi.downloadConversationAttachment(this, conversationId, messageId, assetId); }
+  operationWorkQueue(query: Partial<import("@marketplace/schemas").OperationWorkQueueQuery> = {}, signal?: AbortSignal) { return operationsApi.operationWorkQueue(this, query, signal); }
+  operatorDashboard(signal?: AbortSignal) { return operationsApi.operatorDashboard(this, signal); }
+  operatorCapabilities(signal?: AbortSignal) { return operationsApi.operatorCapabilities(this, signal); }
+  operatorOrganizations(query: Partial<import("@marketplace/schemas").OperatorOrganizationsQuery> = {}, signal?: AbortSignal) { return operationsApi.operatorOrganizations(this, query, signal); }
+  operatorOrders(query: Partial<import("@marketplace/schemas").OperatorOrdersQuery> = {}, signal?: AbortSignal) { return operationsApi.operatorOrders(this, query, signal); }
+  operatorOrder(id: string, signal?: AbortSignal) { return operationsApi.operatorOrder(this, id, signal); }
+  operatorOrganization(id: string, signal?: AbortSignal) { return operationsApi.operatorOrganization(this, id, signal); }
+  operationAssignees() { return operationsApi.operationAssignees(this); }
+  assignOperation(type: import("@marketplace/schemas").OperationQueueType, id: string, input: import("@marketplace/schemas").OperationAssignment) { return operationsApi.assignOperation(this, type, id, input); }
+  operationHistory(type: import("@marketplace/schemas").OperationQueueType, id: string) { return operationsApi.operationHistory(this, type, id); }
+  conversations(query: Partial<import("@marketplace/schemas").ConversationQuery> = {}) { return conversationsApi.conversations(this, query); }
+  conversation(id: string, beforeSequence?: number) { return conversationsApi.conversation(this, id, beforeSequence); }
+  startConversation(input: import("@marketplace/schemas").StartConversation) { return conversationsApi.startConversation(this, input); }
+  sendConversationMessage(id: string, input: import("@marketplace/schemas").ConversationMessageInput) { return conversationsApi.sendConversationMessage(this, id, input); }
+  readConversation(id: string, throughSequence: number) { return conversationsApi.readConversation(this, id, throughSequence); }
+  resolveConversation(id: string, expectedVersion: number, decision?: string) { return conversationsApi.resolveConversation(this, id, expectedVersion, decision); }
+  escalateConversation(id: string, input: import("@marketplace/schemas").ConversationEscalation) { return conversationsApi.escalateConversation(this, id, input); }
+  listPromotions(query: Partial<PromotionListQuery> = {}) { return promotionsApi.listPromotions(this, query); }
+  listPublicPromotions(query: Partial<PromotionListQuery> = {}) { return promotionsApi.listPublicPromotions(this, query); }
+  createOfferPromotion(input: CreateOfferPromotion) { return promotionsApi.createOfferPromotion(this, input); }
+  reviseOfferPromotion(id: string, input: ReviseOfferPromotion) { return promotionsApi.reviseOfferPromotion(this, id, input); }
+  commandOfferPromotion(id: string, input: OfferPromotionCommand) { return promotionsApi.commandOfferPromotion(this, id, input); }
+  getSupplierLegalDocuments() { return organizationsApi.getSupplierLegalDocuments(this); }
+  getSupplierTerms() { return organizationsApi.getSupplierTerms(this); }
+  getOrganizationProfile() { return organizationsApi.getOrganizationProfile(this); }
+  saveOrganizationProfile(input: SaveOrganizationProfileInput) { return organizationsApi.saveOrganizationProfile(this, input); }
+  getOrganizationRequisites() { return organizationsApi.getOrganizationRequisites(this); }
+  saveOrganizationRequisites(input: SaveOrganizationRequisitesInput) { return organizationsApi.saveOrganizationRequisites(this, input); }
+  confirmOrganizationRequisites(input: ConfirmOrganizationRequisitesInput) { return organizationsApi.confirmOrganizationRequisites(this, input); }
+  getOrganizationRequisitesHistory(query: OrganizationRequisitesHistoryQuery = {}) { return organizationsApi.getOrganizationRequisitesHistory(this, query); }
+  getOrganizationOnboarding() { return organizationsApi.getOrganizationOnboarding(this); }
+  getOperatorOrganizationOnboarding(id: string) { return organizationsApi.getOperatorOrganizationOnboarding(this, id); }
+  acceptSupplierTerms(input: AcceptSupplierTermsInput) { return organizationsApi.acceptSupplierTerms(this, input); }
+  getSupplierAdmissions() { return organizationsApi.getSupplierAdmissions(this); }
+  reviewSupplierAdmission(id: string, input: ReviewSupplierAdmissionInput) { return organizationsApi.reviewSupplierAdmission(this, id, input); }
+  downloadSupplierTerms(id: string) { return organizationsApi.downloadSupplierTerms(this, id); }
   constructor(
     private readonly baseUrl: string,
     private readonly context: ApiContext,
@@ -300,50 +288,44 @@ export class MarketplaceApiClient {
   get<T>(path: string, options?: Pick<RequestInit, "signal">) {
     return this.request<T>(path, options);
   }
-  requestRegistrationResume(input: RegistrationResumeRequest) {
-    return this.post<RegistrationResumeRequested>("/auth/registration/resume/request", input);
-  }
-  authClientOptions() { return this.get<AuthClientOptions>("/auth/client-options"); }
-  loginEmail(input: import("@marketplace/schemas").AuthEmailLogin) { return this.request<import("@marketplace/schemas").AuthEmailSession>("/auth/login", { method: "POST", credentials: "include", body: JSON.stringify(input) }); }
-  verifyEmail(input: import("@marketplace/schemas").AuthEmailToken) { return this.request<import("@marketplace/schemas").AuthEmailVerified>("/auth/email/verify", { method: "POST", credentials: "include", body: JSON.stringify(input) }); }
-  personalProfile(signal?: AbortSignal) { return this.request<import("@marketplace/schemas").PersonalProfile>("/auth/profile", { signal }); }
-  savePersonalProfile(input: import("@marketplace/schemas").UpdatePersonalProfile) { return this.request<import("@marketplace/schemas").PersonalProfile>("/auth/profile", { method: "POST", body: JSON.stringify(input) }); }
-  requestProfileEmail(input: import("@marketplace/schemas").RequestProfileEmail) { return this.request<import("@marketplace/schemas").ProfileEmailRequested>("/auth/profile/email", { method: "POST", body: JSON.stringify(input) }); }
-  uploadProfileAvatar(input: import("@marketplace/schemas").UploadProfileAvatar) { return this.request<import("@marketplace/schemas").PersonalProfile>("/auth/profile/avatar", { method: "POST", body: JSON.stringify(input) }); }
-  profileAvatar(signal?: AbortSignal) { return this.request<import("@marketplace/schemas").ProfileAvatar>("/auth/profile/avatar", { signal }); }
-  resetPassword(input: import("@marketplace/schemas").AuthPasswordReset) { return this.post<import("@marketplace/schemas").AuthPasswordResetResult>("/auth/password/reset", input); }
-  mfaStatus() { return this.get<import("@marketplace/schemas").MfaStatus>("/identity/mfa"); }
-  enrollMfa() { return this.post<import("@marketplace/schemas").MfaEnrollment>("/identity/mfa/totp/enroll", {}); }
-  verifyMfaEnrollment(input: import("@marketplace/schemas").MfaCodeInput) { return this.post<import("@marketplace/schemas").MfaVerificationResult>("/identity/mfa/totp/verify", input); }
-  challengeMfa(input: import("@marketplace/schemas").MfaCodeInput) { return this.post<import("@marketplace/schemas").MfaChallengeResult>("/identity/mfa/challenge", input); }
-  disableMfa(input: import("@marketplace/schemas").MfaCodeInput) { return this.post<import("@marketplace/schemas").MfaDisabled>("/identity/mfa/disable", input); }
-  workspaceContext() { return this.get<WorkspaceContext>("/auth/workspace-context"); }
-  registerEmail(input: AuthEmailRegistration) { return this.post<AuthRegistrationAccepted>("/auth/register", input); }
-  requestPasswordReset(email: string) { return this.post<AuthForgotAccepted>("/auth/password/forgot", { email }); }
-  listMembers(organizationId: string) { return this.get<IdentityMember[]>(`/organizations/${encodeURIComponent(organizationId)}/memberships`); }
-  listRoles(organizationId: string) { return this.get<IdentityRole[]>(`/organizations/${encodeURIComponent(organizationId)}/roles`); }
-  getAccessPolicy(signal?: AbortSignal) { return this.get<AccessPolicy>("/access-control/policy", { signal }); }
-  updateMember(organizationId: string, memberId: string, input: UpdateMembershipInput) { return this.patch<IdentityMember>(`/organizations/${encodeURIComponent(organizationId)}/memberships/${encodeURIComponent(memberId)}`, input); }
-  assignMemberRole(organizationId: string, memberId: string, roleId: string) { return this.post<unknown>(`/organizations/${encodeURIComponent(organizationId)}/memberships/${encodeURIComponent(memberId)}/roles`, { roleId }); }
-  removeMemberRole(organizationId: string, memberId: string, roleId: string) { return this.request<unknown>(`/organizations/${encodeURIComponent(organizationId)}/memberships/${encodeURIComponent(memberId)}/roles/${encodeURIComponent(roleId)}`, { method: "DELETE" }); }
-  listInvitations(organizationId: string) { return this.get<InvitationSummary[]>(`/organizations/${encodeURIComponent(organizationId)}/invitations`); }
-  createInvitation(organizationId: string, input: CreateInvitationInput) { return this.post<InvitationCreated>(`/organizations/${encodeURIComponent(organizationId)}/invitations`, input); }
-  deliverInvitation(organizationId: string, invitationId: string) { return this.post<InvitationDelivered>(`/organizations/${encodeURIComponent(organizationId)}/invitations/${encodeURIComponent(invitationId)}/deliver`); }
-  revokeInvitation(organizationId: string, invitationId: string) { return this.post<{ ok: true }>(`/organizations/${encodeURIComponent(organizationId)}/invitations/${encodeURIComponent(invitationId)}/revoke`); }
-  invitationDetails(token: string) { return this.post<InvitationDetails>("/invitations/details", { token }); }
-  acceptInvitation(input: AcceptInvitationInput) { return this.post<InvitationAccepted>("/invitations/accept", input); }
-  listSessions() { return this.get<IdentitySession[]>("/auth/sessions"); }
-  revokeSession(sessionId: string) { return this.post<IdentitySessionRevoked>(`/auth/sessions/${encodeURIComponent(sessionId)}/revoke`, { reason: "user_security_settings" }); }
-  loginLocalOperator(input: LocalOperatorLogin) { return this.post<LocalOperatorSession>("/auth/local-operator/login", input); }
-  loginOperator(input: import("@marketplace/schemas").OperatorLogin) { return this.request<import("@marketplace/schemas").OperatorSession>("/auth/operator/login", { method: "POST", body: JSON.stringify(input), credentials: "include" }); }
-  currentOperatorSession() { return this.request<import("@marketplace/schemas").OperatorSession | null>("/auth/operator/current", { credentials: "include" }); }
-  logoutOperator(csrfToken: string) { return this.request<{ ok: true }>("/auth/operator/logout", { method: "POST", credentials: "include", headers: { "x-csrf-token": csrfToken } }); }
-  inspectRegistrationResume(input: RegistrationResumeProof) {
-    return this.post<RegistrationResumeDetails>("/auth/registration/resume/inspect", input);
-  }
-  completeRegistrationResume(input: RegistrationResumeComplete) {
-    return this.post<RegistrationResumeCompleted>("/auth/registration/resume/complete", input);
-  }
+  requestRegistrationResume(input: RegistrationResumeRequest) { return identityApi.requestRegistrationResume(this, input); }
+  authClientOptions() { return identityApi.authClientOptions(this); }
+  loginEmail(input: import("@marketplace/schemas").AuthEmailLogin) { return identityApi.loginEmail(this, input); }
+  verifyEmail(input: import("@marketplace/schemas").AuthEmailToken) { return identityApi.verifyEmail(this, input); }
+  personalProfile(signal?: AbortSignal) { return identityApi.personalProfile(this, signal); }
+  savePersonalProfile(input: import("@marketplace/schemas").UpdatePersonalProfile) { return identityApi.savePersonalProfile(this, input); }
+  requestProfileEmail(input: import("@marketplace/schemas").RequestProfileEmail) { return identityApi.requestProfileEmail(this, input); }
+  uploadProfileAvatar(input: import("@marketplace/schemas").UploadProfileAvatar) { return identityApi.uploadProfileAvatar(this, input); }
+  profileAvatar(signal?: AbortSignal) { return identityApi.profileAvatar(this, signal); }
+  resetPassword(input: import("@marketplace/schemas").AuthPasswordReset) { return identityApi.resetPassword(this, input); }
+  mfaStatus() { return identityApi.mfaStatus(this); }
+  enrollMfa() { return identityApi.enrollMfa(this); }
+  verifyMfaEnrollment(input: import("@marketplace/schemas").MfaCodeInput) { return identityApi.verifyMfaEnrollment(this, input); }
+  challengeMfa(input: import("@marketplace/schemas").MfaCodeInput) { return identityApi.challengeMfa(this, input); }
+  disableMfa(input: import("@marketplace/schemas").MfaCodeInput) { return identityApi.disableMfa(this, input); }
+  workspaceContext() { return identityApi.workspaceContext(this); }
+  registerEmail(input: AuthEmailRegistration) { return identityApi.registerEmail(this, input); }
+  requestPasswordReset(email: string) { return identityApi.requestPasswordReset(this, email); }
+  listMembers(organizationId: string) { return identityApi.listMembers(this, organizationId); }
+  listRoles(organizationId: string) { return identityApi.listRoles(this, organizationId); }
+  getAccessPolicy(signal?: AbortSignal) { return identityApi.getAccessPolicy(this, signal); }
+  updateMember(organizationId: string, memberId: string, input: UpdateMembershipInput) { return identityApi.updateMember(this, organizationId, memberId, input); }
+  assignMemberRole(organizationId: string, memberId: string, roleId: string) { return identityApi.assignMemberRole(this, organizationId, memberId, roleId); }
+  removeMemberRole(organizationId: string, memberId: string, roleId: string) { return identityApi.removeMemberRole(this, organizationId, memberId, roleId); }
+  listInvitations(organizationId: string) { return identityApi.listInvitations(this, organizationId); }
+  createInvitation(organizationId: string, input: CreateInvitationInput) { return identityApi.createInvitation(this, organizationId, input); }
+  deliverInvitation(organizationId: string, invitationId: string) { return identityApi.deliverInvitation(this, organizationId, invitationId); }
+  revokeInvitation(organizationId: string, invitationId: string) { return identityApi.revokeInvitation(this, organizationId, invitationId); }
+  invitationDetails(token: string) { return identityApi.invitationDetails(this, token); }
+  acceptInvitation(input: AcceptInvitationInput) { return identityApi.acceptInvitation(this, input); }
+  listSessions() { return identityApi.listSessions(this); }
+  revokeSession(sessionId: string) { return identityApi.revokeSession(this, sessionId); }
+  loginLocalOperator(input: LocalOperatorLogin) { return identityApi.loginLocalOperator(this, input); }
+  loginOperator(input: import("@marketplace/schemas").OperatorLogin) { return identityApi.loginOperator(this, input); }
+  currentOperatorSession() { return identityApi.currentOperatorSession(this); }
+  logoutOperator(csrfToken: string) { return identityApi.logoutOperator(this, csrfToken); }
+  inspectRegistrationResume(input: RegistrationResumeProof) { return identityApi.inspectRegistrationResume(this, input); }
+  completeRegistrationResume(input: RegistrationResumeComplete) { return identityApi.completeRegistrationResume(this, input); }
   post<T>(path: string, body?: unknown) {
     return this.request<T>(path, {
       method: "POST",
@@ -360,458 +342,198 @@ export class MarketplaceApiClient {
     });
   }
 
-  private withQuery(path: string, input: Record<string, unknown>) {
-    const query = new URLSearchParams();
-    for (const [key, value] of Object.entries(input)) {
-      if (value === undefined || value === null || value === "") continue;
-      query.set(key, String(value));
-    }
-    const serialized = query.toString();
-    return serialized ? `${path}?${serialized}` : path;
-  }
 
-  searchCatalog(input: SearchCatalogRequest) {
-    return this.get<CatalogSearchResponse>(
-      this.withQuery("/marketplace/search", input),
-    );
-  }
+
+  searchCatalog(input: SearchCatalogRequest) { return catalogApi.searchCatalog(this, input); }
 
   searchPublicCatalog(
     input: Omit<SearchCatalogRequest, "buyerOrganizationId">,
-  ) {
-    return this.get<CatalogSearchResponse>(
-      this.withQuery("/catalog/search", input),
-    );
-  }
+  ) { return catalogApi.searchPublicCatalog(this, input); }
 
-  compareOffers(input: CompareOffersRequest) {
-    const { productId, ...query } = input;
-    return this.get<OfferComparisonResponse>(
-      this.withQuery(`/marketplace/products/${productId}/compare`, query),
-    );
-  }
+  compareOffers(input: CompareOffersRequest) { return catalogApi.compareOffers(this, input); }
 
   comparePublicOffers(
     productId: string,
     input: Omit<CompareOffersRequest, "buyerOrganizationId" | "productId">,
-  ) {
-    return this.get<OfferComparisonResponse>(
-      this.withQuery(`/catalog/products/${productId}/compare`, input),
-    );
-  }
+  ) { return catalogApi.comparePublicOffers(this, productId, input); }
 
-  listCarts(buyerOrganizationId: string) {
-    return this.get<CartResponse[]>(`/buyers/${buyerOrganizationId}/carts`);
-  }
+  listCarts(buyerOrganizationId: string) { return cartsApi.listCarts(this, buyerOrganizationId); }
 
-  createCart(buyerOrganizationId: string, input: CreateCartRequest) {
-    return this.post<CartResponse>(
-      `/buyers/${buyerOrganizationId}/carts`,
-      input,
-    );
-  }
+  createCart(buyerOrganizationId: string, input: CreateCartRequest) { return cartsApi.createCart(this, buyerOrganizationId, input); }
 
-  addCartItem(cartId: string, input: AddCartItemRequest) {
-    return this.post<CartItemResponse>(`/carts/${cartId}/items`, input);
-  }
+  addCartItem(cartId: string, input: AddCartItemRequest) { return cartsApi.addCartItem(this, cartId, input); }
 
-  updateCartItem(cartId: string, itemId: string, input: UpdateCartItemRequest) {
-    return this.patch<CartResponse>(`/carts/${cartId}/items/${itemId}`, input);
-  }
+  updateCartItem(cartId: string, itemId: string, input: UpdateCartItemRequest) { return cartsApi.updateCartItem(this, cartId, itemId, input); }
 
-  removeCartItem(cartId: string, itemId: string, input: CartVersionRequest) {
-    return this.request<CartResponse>(`/carts/${cartId}/items/${itemId}`, { method: "DELETE", body: JSON.stringify(input) });
-  }
+  removeCartItem(cartId: string, itemId: string, input: CartVersionRequest) { return cartsApi.removeCartItem(this, cartId, itemId, input); }
 
-  repriceCart(cartId: string, input: RepriceCartRequest = {}) {
-    return this.post<CartResponse>(`/carts/${cartId}/reprice`, input);
-  }
+  repriceCart(cartId: string, input: RepriceCartRequest = {}) { return cartsApi.repriceCart(this, cartId, input); }
 
-  validateCart(cartId: string) {
-    return this.post<CartValidationResponse>(`/carts/${cartId}/validate`);
-  }
+  validateCart(cartId: string) { return cartsApi.validateCart(this, cartId); }
 
-  checkoutCart(cartId: string, input: CheckoutCartRequest) {
-    return this.post<CheckoutResponse>(`/carts/${cartId}/checkout`, input);
-  }
+  checkoutCart(cartId: string, input: CheckoutCartRequest) { return cartsApi.checkoutCart(this, cartId, input); }
 
-  getCheckout(checkoutId: string) {
-    return this.get<CheckoutResponse>(`/checkouts/${checkoutId}`);
-  }
+  getCheckout(checkoutId: string) { return cartsApi.getCheckout(this, checkoutId); }
 
-  listBuyerOrders(buyerOrganizationId: string) {
-    return this.get<SupplierOrderResponse[]>(
-      `/buyers/${buyerOrganizationId}/orders`,
-    );
-  }
+  listBuyerOrders(buyerOrganizationId: string) { return ordersApi.listBuyerOrders(this, buyerOrganizationId); }
 
-  listSupplierOrders(checkoutId?: string) {
-    return this.get<SupplierOrderResponse[]>(
-      this.withQuery("/supplier-orders", { checkoutId }),
-    );
-  }
+  listSupplierOrders(checkoutId?: string) { return ordersApi.listSupplierOrders(this, checkoutId); }
 
-  confirmSupplierOrder(orderId: string, input: ConfirmSupplierOrderRequest) {
-    return this.post<SupplierOrderResponse>(
-      `/supplier-orders/${orderId}/confirm`,
-      input,
-    );
-  }
+  confirmSupplierOrder(orderId: string, input: ConfirmSupplierOrderRequest) { return ordersApi.confirmSupplierOrder(this, orderId, input); }
 
-  listOrderShipments(orderId: string) {
-    return this.get<ShipmentResponse[]>(
-      `/supplier-orders/${orderId}/shipments`,
-    );
-  }
+  listOrderShipments(orderId: string) { return deliveryApi.listOrderShipments(this, orderId); }
 
-  createShipment(orderId: string, input: CreateShipmentRequest) {
-    return this.post<ShipmentResponse>(
-      `/supplier-orders/${orderId}/shipments`,
-      input,
-    );
-  }
+  createShipment(orderId: string, input: CreateShipmentRequest) { return deliveryApi.createShipment(this, orderId, input); }
 
-  transitionShipment(shipmentId: string, input: TransitionShipmentRequest) {
-    return this.post<ShipmentResponse>(
-      `/shipments/${shipmentId}/transitions`,
-      input,
-    );
-  }
+  transitionShipment(shipmentId: string, input: TransitionShipmentRequest) { return deliveryApi.transitionShipment(this, shipmentId, input); }
 
   generateOrderDocumentPack(
     orderId: string,
     input: GenerateOrderDocumentPackRequest,
-  ) {
-    return this.post<OrderDocumentPackResponse>(
-      `/supplier-orders/${orderId}/document-pack`,
-      input,
-    );
-  }
+  ) { return documentsApi.generateOrderDocumentPack(this, orderId, input); }
 
-  getOrderDiscrepancies(orderId: string) {
-    return this.get<OrderDiscrepanciesResponse>(`/supplier-orders/${orderId}/discrepancies`);
-  }
-  getResupplyDocuments(orderId: string, discrepancyId: string) {
-    return this.get<ResupplyDocumentsResponse>(`/supplier-orders/${orderId}/discrepancies/${discrepancyId}/documents`);
-  }
-  prepareResupplyDocument(orderId: string, discrepancyId: string, input: PrepareResupplyDocumentInput) {
-    return this.post<ResupplyDocumentView>(`/supplier-orders/${orderId}/discrepancies/${discrepancyId}/documents/prepare`, input);
-  }
-  downloadResupplyDocument(orderId: string, discrepancyId: string, documentId: string) {
-    return this.get<{ fileName: string; mimeType: string; contentBase64: string }>(`/supplier-orders/${orderId}/discrepancies/${discrepancyId}/documents/${documentId}/download`);
-  }
-  executeOrderDiscrepancy(orderId: string, input: OrderDiscrepancyCommand) {
-    return this.post<OrderDiscrepancyResult>(`/supplier-orders/${orderId}/discrepancies`, input);
-  }
-  uploadDiscrepancyAttachment(orderId: string, input: { fileName: string; contentBase64: string }) {
-    return this.post<{ id: string; name: string; mimeType: string; sizeBytes: number }>(`/supplier-orders/${orderId}/discrepancies/attachments`, input);
-  }
-  downloadDiscrepancyAttachment(orderId: string, discrepancyId: string, assetId: string) {
-    return this.get<{ fileName: string; mimeType: string; contentBase64: string }>(`/supplier-orders/${orderId}/discrepancies/${discrepancyId}/attachments/${assetId}`);
-  }
+  getOrderDiscrepancies(orderId: string) { return documentsApi.getOrderDiscrepancies(this, orderId); }
+  getResupplyDocuments(orderId: string, discrepancyId: string) { return documentsApi.getResupplyDocuments(this, orderId, discrepancyId); }
+  prepareResupplyDocument(orderId: string, discrepancyId: string, input: PrepareResupplyDocumentInput) { return documentsApi.prepareResupplyDocument(this, orderId, discrepancyId, input); }
+  downloadResupplyDocument(orderId: string, discrepancyId: string, documentId: string) { return documentsApi.downloadResupplyDocument(this, orderId, discrepancyId, documentId); }
+  executeOrderDiscrepancy(orderId: string, input: OrderDiscrepancyCommand) { return documentsApi.executeOrderDiscrepancy(this, orderId, input); }
+  uploadDiscrepancyAttachment(orderId: string, input: { fileName: string; contentBase64: string }) { return documentsApi.uploadDiscrepancyAttachment(this, orderId, input); }
+  downloadDiscrepancyAttachment(orderId: string, discrepancyId: string, assetId: string) { return documentsApi.downloadDiscrepancyAttachment(this, orderId, discrepancyId, assetId); }
 
-  getShipmentWaybills(orderId: string, shipmentId: string) {
-    return this.get<ShipmentWaybillsResponse>(`/supplier-orders/${orderId}/shipments/${shipmentId}/waybills`);
-  }
+  getShipmentWaybills(orderId: string, shipmentId: string) { return documentsApi.getShipmentWaybills(this, orderId, shipmentId); }
 
-  prepareShipmentWaybill(orderId: string, shipmentId: string, input: PrepareShipmentWaybillInput) {
-    return this.post<ShipmentWaybillView>(`/supplier-orders/${orderId}/shipments/${shipmentId}/waybills/prepare`, input);
-  }
+  prepareShipmentWaybill(orderId: string, shipmentId: string, input: PrepareShipmentWaybillInput) { return documentsApi.prepareShipmentWaybill(this, orderId, shipmentId, input); }
 
-  getOrderInvoices(orderId: string) {
-    return this.get<OrderInvoicesResponse>(`/supplier-orders/${orderId}/invoices`);
-  }
+  getOrderInvoices(orderId: string) { return documentsApi.getOrderInvoices(this, orderId); }
 
-  prepareOrderInvoice(orderId: string, input: PrepareOrderInvoiceInput) {
-    return this.post<OrderInvoiceView>(`/supplier-orders/${orderId}/invoices/prepare`, input);
-  }
+  prepareOrderInvoice(orderId: string, input: PrepareOrderInvoiceInput) { return documentsApi.prepareOrderInvoice(this, orderId, input); }
 
-  prepareOrderDocuments(orderId: string) {
-    return this.post<PreparedOrderDocumentsResponse>(
-      `/supplier-orders/${orderId}/documents/prepare`,
-      {},
-    );
-  }
+  prepareOrderDocuments(orderId: string) { return documentsApi.prepareOrderDocuments(this, orderId); }
 
-  listDocumentArchive(input: DocumentArchiveQueryInput = {}) {
-    return this.get<DocumentArchivePageResponse>(
-      this.withQuery("/documents/archive", input),
-    );
-  }
+  listDocumentArchive(input: DocumentArchiveQueryInput = {}) { return documentsApi.listDocumentArchive(this, input); }
 
-  getDocumentArchiveSummary() {
-    return this.get<DocumentArchiveSummaryResponse>("/documents/archive/summary");
-  }
+  getDocumentArchiveSummary() { return documentsApi.getDocumentArchiveSummary(this); }
 
-  getArchiveDocument(documentId: string) {
-    return this.get<DocumentArchiveItem>(`/documents/archive/${documentId}`);
-  }
+  getArchiveDocument(documentId: string) { return documentsApi.getArchiveDocument(this, documentId); }
 
-  updateDocumentAccountingStatus(documentId: string, input: UpdateDocumentAccountingStatusInput) {
-    return this.patch<DocumentArchiveItem>(`/documents/archive/${documentId}/accounting-status`, input);
-  }
+  updateDocumentAccountingStatus(documentId: string, input: UpdateDocumentAccountingStatusInput) { return documentsApi.updateDocumentAccountingStatus(this, documentId, input); }
 
-  uploadDocument(input: UploadDocumentInput) {
-    return this.post<import("@marketplace/schemas").UploadedDocument>("/documents/upload", input);
-  }
+  uploadDocument(input: UploadDocumentInput) { return documentsApi.uploadDocument(this, input); }
 
-  downloadDocument(documentId: string) {
-    return this.download(`/documents/${documentId}/download`);
-  }
+  downloadDocument(documentId: string) { return documentsApi.downloadDocument(this, documentId); }
 
-  searchOfferOptions(input: import("@marketplace/schemas").OfferOptionsQuery) {
-    return this.get<import("@marketplace/schemas").OfferOptionsResponse>(this.withQuery("/catalog/offer-options", input));
-  }
+  searchOfferOptions(input: import("@marketplace/schemas").OfferOptionsQuery) { return catalogApi.searchOfferOptions(this, input); }
 
-  uploadSupportAttachment(input: import("@marketplace/schemas").UploadSupportAttachmentInput) {
-    return this.post<import("@marketplace/schemas").UploadedSupportAttachment>("/support/attachments", input);
-  }
+  uploadSupportAttachment(input: import("@marketplace/schemas").UploadSupportAttachmentInput) { return supportApi.uploadSupportAttachment(this, input); }
 
-  downloadSupportAttachment(ticketId: string, messageId: string, assetId: string) {
-    return this.download(`/support/tickets/${encodeURIComponent(ticketId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(assetId)}`);
-  }
+  downloadSupportAttachment(ticketId: string, messageId: string, assetId: string) { return supportApi.downloadSupportAttachment(this, ticketId, messageId, assetId); }
 
-  workspaceCorrectionOffers(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
-    return this.get<WorkspaceCorrectionOfferPage>(this.withQuery(`/workspaces/supplier/correction-offers`, query), options);
-  }
-  workspaceInventory(query: WorkspaceInventoryQuery = {}, options?: Pick<RequestInit, "signal">) {
-    return this.get<WorkspaceInventoryPage>(this.withQuery(`/workspaces/supplier/inventory`, query), options);
-  }
-  workspaceLots(balanceId: string, query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
-    return this.get<WorkspaceLotPage>(this.withQuery(`/workspaces/supplier/inventory/${encodeURIComponent(balanceId)}/lots`, query), options);
-  }
-  workspaceReservations(balanceId: string, query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
-    return this.get<WorkspaceReservationPage>(this.withQuery(`/workspaces/supplier/inventory/${encodeURIComponent(balanceId)}/reservations`, query), options);
-  }
-  workspaceOverrides(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
-    return this.get<WorkspaceOverridePage>(this.withQuery(`/workspaces/supplier/inventory-overrides`, query), options);
-  }
-  workspaceOrders(role: "buyer" | "supplier", query: WorkspaceOrderQuery = {}, options?: Pick<RequestInit, "signal">) {
-    return this.get<WorkspaceOrderPage>(this.withQuery(`/workspaces/${role}/orders`, query), options);
-  }
-  workspaceOffers(query: WorkspaceOfferQuery = {}, options?: Pick<RequestInit, "signal">) {
-    return this.get<WorkspaceOfferPage>(this.withQuery("/workspaces/supplier/offers", query), options);
-  }
-  workspaceOffer(offerId: string, options?: Pick<RequestInit, "signal">) {
-    return this.get<WorkspaceOffer>(`/workspaces/supplier/offers/${offerId}`, options);
-  }
-  workspaceCarts(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) {
-    return this.get<WorkspaceCartPage>(this.withQuery("/workspaces/buyer/carts", query), options);
-  }
-  workspaceCart(cartId: string, options?: Pick<RequestInit, "signal">) {
-    return this.get<CartResponse>(`/workspaces/buyer/carts/${cartId}`, options);
-  }
-  workspaceSummary(options?: Pick<RequestInit, "signal">) {
-    return this.get<WorkspaceSummary>("/workspaces/supplier/summary", options);
-  }
-  commerceAnalytics(query: CommerceAnalyticsQuery, options?: Pick<RequestInit, "signal">) {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(query)) if (value !== undefined) params.set(key, String(value));
-    return this.get<CommerceAnalyticsResponse>(`/commerce-analytics?${params}`, options);
-  }
+  workspaceCorrectionOffers(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) { return workspacesApi.workspaceCorrectionOffers(this, query, options); }
+  workspaceInventory(query: WorkspaceInventoryQuery = {}, options?: Pick<RequestInit, "signal">) { return workspacesApi.workspaceInventory(this, query, options); }
+  workspaceLots(balanceId: string, query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) { return workspacesApi.workspaceLots(this, balanceId, query, options); }
+  workspaceReservations(balanceId: string, query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) { return workspacesApi.workspaceReservations(this, balanceId, query, options); }
+  workspaceOverrides(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) { return workspacesApi.workspaceOverrides(this, query, options); }
+  workspaceOrders(role: "buyer" | "supplier", query: WorkspaceOrderQuery = {}, options?: Pick<RequestInit, "signal">) { return workspacesApi.workspaceOrders(this, role, query, options); }
+  workspaceOffers(query: WorkspaceOfferQuery = {}, options?: Pick<RequestInit, "signal">) { return workspacesApi.workspaceOffers(this, query, options); }
+  workspaceOffer(offerId: string, options?: Pick<RequestInit, "signal">) { return workspacesApi.workspaceOffer(this, offerId, options); }
+  workspaceCarts(query: WorkspacePageQuery = {}, options?: Pick<RequestInit, "signal">) { return workspacesApi.workspaceCarts(this, query, options); }
+  workspaceCart(cartId: string, options?: Pick<RequestInit, "signal">) { return workspacesApi.workspaceCart(this, cartId, options); }
+  workspaceSummary(options?: Pick<RequestInit, "signal">) { return workspacesApi.workspaceSummary(this, options); }
+  commerceAnalytics(query: CommerceAnalyticsQuery, options?: Pick<RequestInit, "signal">) { return workspacesApi.commerceAnalytics(this, query, options); }
 
-  recoverCart(cartId: string, input: RecoverCartRequest) {
-    return this.post<CartResponse>(`/carts/${cartId}/recover`, input);
-  }
+  recoverCart(cartId: string, input: RecoverCartRequest) { return cartsApi.recoverCart(this, cartId, input); }
 
-  updateCatalogProduct(productId: string, input: UpdateProductInput) {
-    return this.patch<UpdatedCatalogProduct>(`/catalog/products/${encodeURIComponent(productId)}`, input);
-  }
+  updateCatalogProduct(productId: string, input: UpdateProductInput) { return catalogApi.updateCatalogProduct(this, productId, input); }
 
-  getOrderWorkflow(orderId: string) {
-    return this.get<OrderWorkflowResponse>(`/supplier-orders/${orderId}/workflow`);
-  }
-  getOrderReviewState(orderId: string) {
-    return this.get<OrderReviewState>(`/trust/orders/${encodeURIComponent(orderId)}/review-state`);
-  }
-  createOrderReview(orderId: string, input: CreateVerifiedReviewInput) {
-    return this.post<VerifiedOrderReview>(`/trust/orders/${encodeURIComponent(orderId)}/reviews`, input);
-  }
+  getOrderWorkflow(orderId: string) { return ordersApi.getOrderWorkflow(this, orderId); }
+  getOrderReviewState(orderId: string) { return ordersApi.getOrderReviewState(this, orderId); }
+  createOrderReview(orderId: string, input: CreateVerifiedReviewInput) { return ordersApi.createOrderReview(this, orderId, input); }
 
-  getSupplierPaymentPolicy() {
-    return this.get<SupplierPaymentPolicyResponse>("/suppliers/current/payment-review-policy");
-  }
+  getSupplierPaymentPolicy() { return ordersApi.getSupplierPaymentPolicy(this); }
 
-  saveSupplierPaymentPolicy(input: SaveSupplierPaymentPolicy) {
-    return this.post<SupplierPaymentPolicyResponse>("/suppliers/current/payment-review-policy", input);
-  }
+  saveSupplierPaymentPolicy(input: SaveSupplierPaymentPolicy) { return ordersApi.saveSupplierPaymentPolicy(this, input); }
 
-  executeOrderWorkflow(orderId: string, input: OrderWorkflowCommand) {
-    return this.post<OrderWorkflowResult>(`/supplier-orders/${orderId}/workflow`, input);
-  }
+  executeOrderWorkflow(orderId: string, input: OrderWorkflowCommand) { return ordersApi.executeOrderWorkflow(this, orderId, input); }
 
-  listSupplierWarehouses(supplierId: string) {
-    return this.get<import("@marketplace/schemas").SupplierWarehouseList>(`/suppliers/${supplierId}/warehouses`);
-  }
+  listSupplierWarehouses(supplierId: string) { return supplierApi.listSupplierWarehouses(this, supplierId); }
 
-  createSupplierOffer(supplierId: string, input: import("@marketplace/schemas").CreateSupplierOfferInput) {
-    return this.post<import("@marketplace/schemas").SupplierOfferCreated>(`/suppliers/${supplierId}/offers`, input);
-  }
+  createSupplierOffer(supplierId: string, input: import("@marketplace/schemas").CreateSupplierOfferInput) { return supplierApi.createSupplierOffer(this, supplierId, input); }
 
-  setSupplierOfferPrice(supplierId: string, offerId: string, input: import("@marketplace/schemas").SetOfferPriceInput) {
-    return this.put<unknown>(`/suppliers/${supplierId}/offers/${offerId}/price`, input);
-  }
+  setSupplierOfferPrice(supplierId: string, offerId: string, input: import("@marketplace/schemas").SetOfferPriceInput) { return supplierApi.setSupplierOfferPrice(this, supplierId, offerId, input); }
 
-  getSupplierOfferCommercial(supplierId: string, offerId: string, warehouseId: string) {
-    return this.get<import("@marketplace/schemas").OfferCommercialState>(`/suppliers/${supplierId}/offers/${offerId}/commercial/${warehouseId}`);
-  }
+  getSupplierOfferCommercial(supplierId: string, offerId: string, warehouseId: string) { return supplierApi.getSupplierOfferCommercial(this, supplierId, offerId, warehouseId); }
 
-  saveSupplierOfferCommercial(supplierId: string, offerId: string, input: import("@marketplace/schemas").SaveOfferCommercialInput) {
-    return this.put<import("@marketplace/schemas").OfferCommercialState>(`/suppliers/${supplierId}/offers/${offerId}/commercial`, input);
-  }
+  saveSupplierOfferCommercial(supplierId: string, offerId: string, input: import("@marketplace/schemas").SaveOfferCommercialInput) { return supplierApi.saveSupplierOfferCommercial(this, supplierId, offerId, input); }
 
-  saveSupplierOfferStock(supplierId: string, offerId: string, input: import("@marketplace/schemas").SaveOfferStockInput) {
-    return this.put<import("@marketplace/schemas").OfferCommercialState>(`/suppliers/${supplierId}/offers/${offerId}/commercial/stock`, input);
-  }
+  saveSupplierOfferStock(supplierId: string, offerId: string, input: import("@marketplace/schemas").SaveOfferStockInput) { return supplierApi.saveSupplierOfferStock(this, supplierId, offerId, input); }
 
-  saveSupplierOfferPrice(supplierId: string, offerId: string, input: import("@marketplace/schemas").SaveOfferPriceInput) {
-    return this.put<import("@marketplace/schemas").OfferCommercialState>(`/suppliers/${supplierId}/offers/${offerId}/commercial/price`, input);
-  }
+  saveSupplierOfferPrice(supplierId: string, offerId: string, input: import("@marketplace/schemas").SaveOfferPriceInput) { return supplierApi.saveSupplierOfferPrice(this, supplierId, offerId, input); }
 
-  assignSupplierOfferPackaging(supplierId: string, offerId: string, input: import("@marketplace/schemas").AssignOfferPackagingInput) {
-    return this.put<unknown>(`/suppliers/${supplierId}/offers/${offerId}/packaging`, input);
-  }
+  assignSupplierOfferPackaging(supplierId: string, offerId: string, input: import("@marketplace/schemas").AssignOfferPackagingInput) { return supplierApi.assignSupplierOfferPackaging(this, supplierId, offerId, input); }
 
-  setSupplierInventory(supplierId: string, input: import("@marketplace/schemas").SetInventoryBalanceInput) {
-    return this.put<unknown>(`/suppliers/${supplierId}/inventory/balances`, input);
-  }
+  setSupplierInventory(supplierId: string, input: import("@marketplace/schemas").SetInventoryBalanceInput) { return supplierApi.setSupplierInventory(this, supplierId, input); }
 
-  submitProductCandidate(input: import("@marketplace/schemas").SubmitProductCandidateInput) {
-    return this.post<import("@marketplace/schemas").ProductCandidateSubmitted>("/moderation/product-candidates/submissions", input);
-  }
+  submitProductCandidate(input: import("@marketplace/schemas").SubmitProductCandidateInput) { return catalogApi.submitProductCandidate(this, input); }
 
-  listProductSubmissions(query: import("@marketplace/schemas").ProductCandidateHistoryQuery = {}) {
-    return this.get<import("@marketplace/schemas").ProductCandidateHistoryResponse>(this.withQuery("/moderation/product-candidates/submissions", query));
-  }
+  listProductSubmissions(query: import("@marketplace/schemas").ProductCandidateHistoryQuery = {}) { return catalogApi.listProductSubmissions(this, query); }
 
-  listManualProductReviews(query: import("@marketplace/schemas").ProductCandidateHistoryQuery = {}) {
-    return this.get<import("@marketplace/schemas").ManualProductReviewQueue>(this.withQuery("/moderation/product-candidates/review-queue", query));
-  }
+  listManualProductReviews(query: import("@marketplace/schemas").ProductCandidateHistoryQuery = {}) { return catalogApi.listManualProductReviews(this, query); }
 
-  approveProductCandidate(candidateId: string, input: import("@marketplace/schemas").ApproveProductCandidateInput) {
-    return this.post<import("@marketplace/schemas").ApproveProductCandidateResponse>(`/moderation/product-candidates/${candidateId}/approve`, input);
-  }
+  approveProductCandidate(candidateId: string, input: import("@marketplace/schemas").ApproveProductCandidateInput) { return catalogApi.approveProductCandidate(this, candidateId, input); }
 
-  rejectProductCandidate(candidateId: string, input: import("@marketplace/schemas").RejectProductCandidateInput) {
-    return this.post<import("@marketplace/schemas").ProductCandidateSummary>(`/moderation/product-candidates/${candidateId}/reject`, input);
-  }
+  rejectProductCandidate(candidateId: string, input: import("@marketplace/schemas").RejectProductCandidateInput) { return catalogApi.rejectProductCandidate(this, candidateId, input); }
 
-  listSupplierImportBatches(supplierId: string, query: import("@marketplace/schemas").SupplierImportHistoryQuery = {}) {
-    return this.get<SupplierImportBatchResponse[]>(this.withQuery(`/suppliers/${supplierId}/import-batches`, query));
-  }
+  listSupplierImportBatches(supplierId: string, query: import("@marketplace/schemas").SupplierImportHistoryQuery = {}) { return supplierImportsApi.listSupplierImportBatches(this, supplierId, query); }
 
-  previewSupplierImport(supplierId: string, input: import("@marketplace/schemas").SupplierImportPreviewInput) {
-    return this.post<import("@marketplace/schemas").SupplierImportPreview>(`/suppliers/${supplierId}/import-preview`, input);
-  }
+  previewSupplierImport(supplierId: string, input: import("@marketplace/schemas").SupplierImportPreviewInput) { return supplierImportsApi.previewSupplierImport(this, supplierId, input); }
 
-  previewSupplierImportTax(supplierId: string, input: import("@marketplace/schemas").SupplierImportTaxPreviewInput) {
-    return this.post<import("@marketplace/schemas").SupplierImportTaxPreview>(`/suppliers/${supplierId}/import-tax-preview`, input);
-  }
+  previewSupplierImportTax(supplierId: string, input: import("@marketplace/schemas").SupplierImportTaxPreviewInput) { return supplierImportsApi.previewSupplierImportTax(this, supplierId, input); }
 
-  listIntegrationTaxBindings(supplierId: string) {
-    return this.get<import("@marketplace/schemas").IntegrationTaxBinding[]>(`/suppliers/${supplierId}/integrations/price-tax`);
-  }
+  listIntegrationTaxBindings(supplierId: string) { return integrationsApi.listIntegrationTaxBindings(this, supplierId); }
 
-  updateIntegrationTax(supplierId: string, connectionId: string, bindingId: string, input: import("@marketplace/schemas").UpdateIntegrationTaxInput) {
-    return this.patch<import("@marketplace/schemas").IntegrationTaxBinding>(`/suppliers/${supplierId}/integrations/${connectionId}/bindings/${bindingId}/tax`, input);
-  }
+  updateIntegrationTax(supplierId: string, connectionId: string, bindingId: string, input: import("@marketplace/schemas").UpdateIntegrationTaxInput) { return integrationsApi.updateIntegrationTax(this, supplierId, connectionId, bindingId, input); }
 
-  listOfferDeliveryOptions(supplierId: string, offerId: string) {
-    return this.get<import("@marketplace/schemas").OfferDeliveryOptionResponse[]>(`/suppliers/${supplierId}/offers/${offerId}/delivery-options`);
-  }
+  listOfferDeliveryOptions(supplierId: string, offerId: string) { return deliveryApi.listOfferDeliveryOptions(this, supplierId, offerId); }
 
-  saveOfferDeliveryOption(supplierId: string, offerId: string, input: import("@marketplace/schemas").CreateOfferDeliveryOptionInput) {
-    return this.post<import("@marketplace/schemas").OfferDeliveryOptionResponse>(`/suppliers/${supplierId}/offers/${offerId}/delivery-options`, input);
-  }
+  saveOfferDeliveryOption(supplierId: string, offerId: string, input: import("@marketplace/schemas").CreateOfferDeliveryOptionInput) { return deliveryApi.saveOfferDeliveryOption(this, supplierId, offerId, input); }
 
   createSupplierImportBatch(
     supplierOrganizationId: string,
     input: CreateImportBatchInput,
-  ) {
-    return this.post<SupplierImportBatchResponse>(
-      `/suppliers/${supplierOrganizationId}/import-batches`,
-      input,
-    );
-  }
+  ) { return supplierImportsApi.createSupplierImportBatch(this, supplierOrganizationId, input); }
 
-  processSupplierImportBatch(supplierOrganizationId: string, batchId: string) {
-    return this.post<SupplierImportBatchResponse>(
-      `/suppliers/${supplierOrganizationId}/import-batches/${batchId}/process`,
-      {},
-    );
-  }
+  processSupplierImportBatch(supplierOrganizationId: string, batchId: string) { return supplierImportsApi.processSupplierImportBatch(this, supplierOrganizationId, batchId); }
 
-  getSupplierImportBatch(supplierOrganizationId: string, batchId: string) {
-    return this.get<SupplierImportBatchResponse>(
-      `/suppliers/${supplierOrganizationId}/import-batches/${batchId}`,
-    );
-  }
+  getSupplierImportBatch(supplierOrganizationId: string, batchId: string) { return supplierImportsApi.getSupplierImportBatch(this, supplierOrganizationId, batchId); }
 
   getSupplierImportDiagnostics(
     supplierOrganizationId: string,
     batchId: string,
-  ) {
-    return this.get<SupplierImportDiagnosticsResponse>(
-      `/suppliers/${supplierOrganizationId}/import-batches/${batchId}/diagnostics`,
-    );
-  }
+  ) { return supplierImportsApi.getSupplierImportDiagnostics(this, supplierOrganizationId, batchId); }
 
   rollbackSupplierImportBatch(
     supplierOrganizationId: string,
     batchId: string,
     input: RollbackImportBatchInput,
-  ) {
-    return this.post<SupplierImportRollbackResponse>(
-      `/suppliers/${supplierOrganizationId}/import-batches/${batchId}/rollback`,
-      input,
-    );
-  }
+  ) { return supplierImportsApi.rollbackSupplierImportBatch(this, supplierOrganizationId, batchId, input); }
 
-  resolveIntegrationReconciliation(supplierId: string, connectionId: string, entryId: string, input: import("@marketplace/schemas").ResolveReconciliationInput) {
-    return this.post<import("@marketplace/schemas").ResolvedReconciliation>(
-      `/suppliers/${supplierId}/integrations/${connectionId}/reconciliation/${entryId}/resolve`, input,
-    );
-  }
+  resolveIntegrationReconciliation(supplierId: string, connectionId: string, entryId: string, input: import("@marketplace/schemas").ResolveReconciliationInput) { return integrationsApi.resolveIntegrationReconciliation(this, supplierId, connectionId, entryId, input); }
 
-  listCatalogImportReviews() {
-    return this.get<CatalogImportReviewQueueResponse>(
-      "/moderation/import-reviews",
-    );
-  }
+  listCatalogImportReviews() { return catalogApi.listCatalogImportReviews(this); }
 
   approveCatalogImportCandidate(
     candidateId: string,
     input: ApproveImportProductCandidateInput,
-  ) {
-    return this.post<CatalogImportReview>(
-      `/moderation/import-reviews/${candidateId}/approve`,
-      input,
-    );
-  }
+  ) { return catalogApi.approveCatalogImportCandidate(this, candidateId, input); }
 
   setSupplierOfferPublication(
     supplierOrganizationId: string,
     offerId: string,
     input: SetOfferPublicationInput,
-  ) {
-    return this.put<SupplierOfferPublicationResponse>(
-      `/suppliers/${supplierOrganizationId}/offers/${offerId}/publication`,
-      input,
-    );
-  }
+  ) { return supplierApi.setSupplierOfferPublication(this, supplierOrganizationId, offerId, input); }
 
-  listOutboxDeadLetters(input: OutboxDeadLetterQueryInput = {}, signal?: AbortSignal) {
-    return this.get<OutboxDeadLetterListResponse>(
-      this.withQuery("/operations/outbox/dead-letter", input),
-      { signal },
-    );
-  }
+  listOutboxDeadLetters(input: OutboxDeadLetterQueryInput = {}, signal?: AbortSignal) { return operationsApi.listOutboxDeadLetters(this, input, signal); }
 
-  replayOutboxDeadLetter(eventId: string, input: OutboxReplayInput) {
-    return this.post<OutboxReplayResponse>(
-      `/operations/outbox/dead-letter/${eventId}/replay`,
-      input,
-    );
-  }
+  replayOutboxDeadLetter(eventId: string, input: OutboxReplayInput) { return operationsApi.replayOutboxDeadLetter(this, eventId, input); }
 }
 export { unifiedFrontend, workspacePath } from "./frontend-routes";
