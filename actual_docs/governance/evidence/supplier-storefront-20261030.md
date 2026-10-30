@@ -103,5 +103,16 @@ typecheck был выполнен до добавления теста и оши
 этот ранний PASS не покрывал новый test input. Продуктовые файлы не менялись.
 Fixture исправлена, добавлена проверка обоих identity headers; повторные
 client typecheck, build и storefront test PASS (`.tmp/storefront-client-*-2.log`,
-`.tmp/storefront-client-build-1.log`). Первый CI остаётся FAIL, результат нового
-запуска требуется отдельно; UI/DB suites не повторялись из-за test-only правки.
+`.tmp/storefront-client-build-1.log`). Первый CI остаётся FAIL; UI/DB suites
+локально не повторялись из-за test-only правки.
+
+Итог на `ba55190d7e7b63e49b6f2e4bacf808e5963b05fc`: опубликовано в `main`;
+[CI41105317325](https://github.com/NikIg228/PlatformaMarket/actions/runs/41105317325)
+и [Security41105317288](https://github.com/NikIg228/PlatformaMarket/actions/runs/41105317288)
+завершены `completed/success`. Все четыре CI jobs PASS: verify,
+postgres-integration, API/web container builds; Security dependencies/CodeQL PASS.
+PostgreSQL на чистом опубликованном составе подтвердил новые storefront checks.
+Основной CI дополнительно прошёл types/lint/tests/build, runtime/composition/core
+contracts и browser suites: canonical import7, unified123, full-access3, promotions4.
+Это подтверждение scoped реализации, не deployment. Последующая запись итогов
+меняет только Markdown и переиспользует runtime evidence на неизменных входах.

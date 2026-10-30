@@ -1,6 +1,6 @@
 # PlatformaMarket — актуальная матрица приёмки
 
-## 30.10 — публичная витрина поставщика: local PASS (scoped)
+## 30.10 — публичная витрина поставщика: PASS (scoped), CI GREEN
 
 Каталог → карточка → имя/логотип поставщика → `/catalog/suppliers/[supplierId]`.
 Шапка/логотип/RU-KK, только актуальные доступные публичные предложения,
@@ -9,9 +9,11 @@
 browser1440/390/keyboard/recovery, scoped lint/UI-contract PASS.
 [Evidence и сохранённые FAIL](evidence/supplier-storefront-20261030.md).
 Рабочая БД и deployment не менялись; личная корзина вне scoped результата.
-Feature06025fa опубликован; первый CI выявил неверное поле в client test fixture.
-Fixture исправлена, client types/build/test повторно PASS; новый CI ожидается.
-Первый FAIL сохранён в evidence. Общий R7 не закрывается.
+Feature06025fa и test-fix ba55190 опубликованы. На ba55190
+[CI41105317325](https://github.com/NikIg228/PlatformaMarket/actions/runs/41105317325)
+и [Security41105317288](https://github.com/NikIg228/PlatformaMarket/actions/runs/41105317288)
+completed/success: PostgreSQL, контейнеры, общий verify и Security PASS.
+Первый FAIL client test fixture сохранён в evidence. Общий R7 не закрывается.
 
 <a id="buyer-context-review-20261029"></a>
 
