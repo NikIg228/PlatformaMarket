@@ -11,9 +11,10 @@ it("keeps public reads separate from authenticated storefront editing and preser
   expect(fetcher.mock.calls[1]![0]).toBe(`/api/catalog/suppliers/${id}/search?q=A2+%26+B&offset=24`);
   expect(fetcher.mock.calls[0]![1].headers).not.toHaveProperty("x-organization-id");
   expect(fetcher.mock.calls[0]![1].signal).toBeDefined();
-  const api = new MarketplaceApiClient("/api", { userId: id, organizationId: id });
+  const api = new MarketplaceApiClient("/api", { actorId: id, organizationId: id });
   const input = { expectedVersion: 4, content: { ru: { description: "", location: "", hours: "", delivery: "" }, kk: { description: "", location: "", hours: "", delivery: "" } } };
   await api.saveSupplierStorefront(id, input);
   expect(fetcher.mock.calls[2]![0]).toBe(`/api/suppliers/${id}/storefront`);
   expect(fetcher.mock.calls[2]![1]).toMatchObject({ method: "POST", body: JSON.stringify(input) });
+  expect(fetcher.mock.calls[2]![1].headers).toMatchObject({ "x-user-id": id, "x-organization-id": id });
 });

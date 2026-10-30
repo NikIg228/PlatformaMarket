@@ -9,7 +9,9 @@
 browser1440/390/keyboard/recovery, scoped lint/UI-contract PASS.
 [Evidence и сохранённые FAIL](evidence/supplier-storefront-20261030.md).
 Рабочая БД и deployment не менялись; личная корзина вне scoped результата.
-Публикация/CI ещё не подтверждены этой записью. Общий R7 не закрывается.
+Feature06025fa опубликован; первый CI выявил неверное поле в client test fixture.
+Fixture исправлена, client types/build/test повторно PASS; новый CI ожидается.
+Первый FAIL сохранён в evidence. Общий R7 не закрывается.
 
 <a id="buyer-context-review-20261029"></a>
 

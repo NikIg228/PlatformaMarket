@@ -92,3 +92,16 @@ Attempt5:22 файла,1335852 raw bytes,400486 gzip при прежних ли�
 Личная корзина, её schema/routes/auth и незавершённая приёмка не входят в scoped
 публикацию витрины. Рабочие миграции, deploy, внешние интеграции, полная локализация
 и общая приёмка R7 не выполнялись. Публикация/CI фиксируются отдельно от local PASS.
+
+## Публикация и CI
+
+Feature commit `06025faed45f444fd25fa768c69022ed8279ad0a` опубликован в `main`.
+[CI41104608567](https://github.com/NikIg228/PlatformaMarket/actions/runs/41104608567)
+обнаружил TS2353 в новом `packages/api-client/src/storefront.test.ts`:
+fixture передавала `userId` вместо поля `ApiContext.actorId`. Локальный client
+typecheck был выполнен до добавления теста и ошибочно переиспользован для него;
+этот ранний PASS не покрывал новый test input. Продуктовые файлы не менялись.
+Fixture исправлена, добавлена проверка обоих identity headers; повторные
+client typecheck, build и storefront test PASS (`.tmp/storefront-client-*-2.log`,
+`.tmp/storefront-client-build-1.log`). Первый CI остаётся FAIL, результат нового
+запуска требуется отдельно; UI/DB suites не повторялись из-за test-only правки.
