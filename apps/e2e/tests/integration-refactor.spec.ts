@@ -14,9 +14,19 @@ test("integration selection rejects late details and recovers current read failu
   let release: () => void = () => {};
   const barrier = new Promise<void>(resolve => { release = resolve; });
   let fail = false;
+  let writeHeld = false;
+  let releaseWrite: () => void = () => {};
+  const writeBarrier = new Promise<void>(resolve => { releaseWrite = resolve; });
   await page.route("**/api/**", async route => {
     const request = route.request();
     const path = new URL(request.url()).pathname.replace(/^\/api/, "");
+    if (request.method() === "PATCH" && path === `/suppliers/${id(3)}/integrations/${id(7)}`) {
+      expect(request.postDataJSON()).toEqual({ version: 1, status: "PAUSED" });
+      writeHeld = true;
+      await writeBarrier;
+      connections[2] = { ...connections[2], status: "PAUSED", version: 2 };
+      return route.fulfill({ json: connections[2] });
+    }
     if (request.method() !== "GET") { unexpected.push(`${request.method()} ${path}`); return route.fulfill({ status: 405, json: { message: "Unexpected write" } }); }
     if (path === "/organizations") return route.fulfill({ json: [{ id: id(2), capabilities: [{ capability: "MARKETPLACE_OPERATOR" }] }] });
     if (path === "/access-control/permissions") return route.fulfill({ json: ["import.manage", "integration.reconcile"] });
@@ -50,6 +60,15 @@ test("integration selection rejects late details and recovers current read failu
   await region.getByRole("button", { name: "Повторить загрузку" }).click();
   await expect(region.getByText("CURRENT_SELECTION", { exact: true })).toBeVisible();
   await expect(region.getByRole("button", { name: "Повторить загрузку" })).toHaveCount(0);
+  await region.getByRole("button", { name: "Пауза", exact: true }).click();
+  await expect.poll(() => writeHeld).toBeTruthy();
+  await expect(region.getByRole("button", { name: /Подключение 6/ })).toBeDisabled();
+  await expect(region.getByRole("button", { name: /Подключение 7/ })).toBeDisabled();
+  await expect(region.getByRole("combobox", { name: "Поставщик", exact: true })).toBeDisabled();
+  releaseWrite();
+  await expect(region.getByRole("button", { name: "Возобновить", exact: true })).toBeEnabled();
+  await expect(region.getByRole("button", { name: /Подключение 7/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(region.getByRole("button", { name: /Подключение 6/ })).toBeEnabled();
   await region.getByRole("combobox", { name: "Поставщик", exact: true }).selectOption(id(4));
   await expect(region.getByText("Подключений пока нет. Добавьте учётную систему.")).toBeVisible();
   await expect(region.getByText("CURRENT_SELECTION", { exact: true })).toHaveCount(0);

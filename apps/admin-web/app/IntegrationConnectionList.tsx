@@ -17,6 +17,7 @@ type Props = {
   setMessage: (value: string) => void;
   loadDetails: (supplier: string, connection: string) => Promise<void>;
   supplierId: string;
+  working: boolean;
 };
 
 export function IntegrationConnectionList({
@@ -26,6 +27,7 @@ export function IntegrationConnectionList({
   setMessage,
   loadDetails,
   supplierId,
+  working,
 }: Props) {
   return (
     <div className={styles.connectionList}>
@@ -44,6 +46,7 @@ export function IntegrationConnectionList({
 
             key={connection.id}
             aria-pressed={connection.id === connectionId}
+            disabled={working}
             onClick={() => {
               setConnectionId(connection.id);
               setMessage("");

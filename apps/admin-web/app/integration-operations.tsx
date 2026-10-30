@@ -183,6 +183,7 @@ export function IntegrationOperations() {
                 setMessage={setMessage}
                 loadDetails={loadDetails}
                 supplierId={supplierId}
+                working={working}
               />
             </div>
 
