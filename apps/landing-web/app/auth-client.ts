@@ -1,3 +1,4 @@
+import { legacyFrontendOrigins } from "@marketplace/api-client/frontend-routes";
 import { currentSessionSchema, workspaceContextSchema, workspaceChoicesSchema, type WorkspaceContext, type AuthEmailSession, type AuthEmailVerified } from "@marketplace/schemas";
 import { requestedWorkspaceCapability, workspaceReturnPath } from "@marketplace/schemas/product-navigation";
 import { unifiedFrontend, workspacePath } from "@marketplace/api-client";
@@ -30,13 +31,13 @@ export type AuthFeedback = {
 };
 
 export const apiUrl =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://dentmarket-api.vercel.app/api";
+  process.env.NEXT_PUBLIC_API_URL ?? legacyFrontendOrigins.api;
 export const buyerAppUrl =
   process.env.NEXT_PUBLIC_BUYER_APP_URL ??
-  "https://dentmarket-store.vercel.app";
+  legacyFrontendOrigins.buyer;
 export const supplierAppUrl =
   process.env.NEXT_PUBLIC_SUPPLIER_APP_URL ??
-  "https://dentmarket-supplier.vercel.app";
+  legacyFrontendOrigins.supplier;
 
 export function apiErrorMessage(payload: ApiErrorPayload | null, status: number) {
   if (Array.isArray(payload?.message)) return payload.message.join(". ");
