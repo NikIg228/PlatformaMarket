@@ -27,18 +27,21 @@ describe("Admin performance boundaries", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("keeps only overview panels as eager route imports", () => {
-    const source = readFileSync(join(adminApp, "page.tsx"), "utf8");
+  it("keeps the route adapter thin and panels behind the lazy registry", () => {
+    expect(readFileSync(join(adminApp, "page.tsx"), "utf8").trim()).toBe(
+      'export { default } from "./operations-workspace";',
+    );
+    const source = readFileSync(join(adminApp, "operations-workspace.tsx"), "utf8");
 
     expect(source).toContain('from "./admin-section-components"');
-    expect(source).toContain('from "./live-metrics"');
-    expect(source).toContain('from "./operation-queue"');
+    expect(source).not.toContain('from "./live-metrics"');
+    expect(source).not.toContain('from "./operation-queue"');
     expect(source).not.toContain('from "./commerce-analytics"');
     expect(source).not.toContain('from "./identity-settings"');
     expect(source).not.toMatch(/from "\.\/(?:supplier|catalog|platform|trust|audit|foundation|agreement|resource|organization|integration|connector)-/);
   });
 
-  it("defines every non-overview panel through a dynamic import", () => {
+  it("defines all panels including overview through dynamic imports", () => {
     const source = readFileSync(
       join(adminApp, "admin-section-components.tsx"),
       "utf8",
@@ -59,11 +62,14 @@ describe("Admin performance boundaries", () => {
     expect(source).toContain('import("./operator-orders")');
     expect(source).toContain('import("./operator-organization-admission")');
     expect(source).toContain('import("./signing-admissions")');
-    expect(dynamicImports).toHaveLength(26);
+    expect(source).toContain('import("./live-metrics")');
+    expect(source).toContain('import("./operation-queue")');
+    expect(source).not.toMatch(/from "\.\//);
+    expect(dynamicImports).toHaveLength(28);
   });
 
   it("keeps domain forms and schemas out of eager shell imports", () => {
-    const eagerConsumers = ["page.tsx", "providers.tsx", "admin-shell.tsx", "admin-section-components.tsx", "operation-queue.tsx", "operation-assignment.tsx", "operator-notifications.tsx", "use-admin-access.ts"];
+    const eagerConsumers = ["page.tsx", "operations-workspace.tsx", "providers.tsx", "admin-shell.tsx", "admin-section-components.tsx", "operation-queue.tsx", "operation-assignment.tsx", "operator-notifications.tsx", "use-admin-access.ts"];
     for (const file of eagerConsumers) {
       expect(readFileSync(join(adminApp, file), "utf8"), file).not.toMatch(/from ["']@marketplace\/ui["']/);
     }
