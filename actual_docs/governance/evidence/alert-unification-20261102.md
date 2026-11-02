@@ -1,5 +1,16 @@
 # ALERT-UNIFICATION-20261102
 
+**Итог: SCOPED PASS / CI GREEN.** Код принят на
+`6ff93a9141bd6beff87190646d8bd2f0fdf324cf`:
+[CI41454303846 SUCCESS](https://github.com/NikIg228/PlatformaMarket/actions/runs/41454303846),
+[Security41454303778 SUCCESS](https://github.com/NikIg228/PlatformaMarket/actions/runs/41454303778).
+Notification browser6+consumer6, canonical browser123, full-access3 и promotion4
+PASS. Verify/PG/API-web containers/CodeQL/dependencies — все jobs SUCCESS.
+Предыдущие failed runs сохранены ниже; новым PASS их результаты не переписаны.
+Чужой personal-cart/auth WIP сохранён, CRM и deployment не входили в задачу.
+Финальная редакция этого отчёта docs-only; runtime inputs после принятого SHA
+не меняются, повтор app suites не требуется по Workflow4.2.
+
 Поручение владельца: единая стилистика toast/inline/note, AuthNotice и прямых
 MessageBar; сверка локальных сообщений, mobile/dialog/keyboard и устранение
 двойного offline-сообщения. Scope — Market, без переноса в CRM и без backend/DB.

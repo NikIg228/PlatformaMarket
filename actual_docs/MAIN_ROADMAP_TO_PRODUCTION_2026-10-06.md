@@ -956,7 +956,7 @@ OPEN: внешние требования банка/перевозчика/до
   заказа; доказать API-права и reachable UI. [Граница](domains/organizations.md).
   Общий Admin выполняется в R7.7; shared consumers проверяются по фактическому
   влиянию. Существующие принятые login/support slices сохраняются.
-  02.11: notification cards унифицированы по solid-card эталону, scoped local PASS;
+  02.11: notification cards унифицированы по solid-card эталону, scoped PASS/CI GREEN;
   отдельная [граница и evidence](governance/evidence/alert-unification-20261102.md).
   Это scoped shared UI slice, не общая приёмка R7.1.
 - [ ] **R7.2** Закрыть конкретный остаток document relationship/amount matrix,
