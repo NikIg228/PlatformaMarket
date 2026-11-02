@@ -58,22 +58,25 @@ for (const width of [390, 1440]) test(`catalog comparison, login return and cart
     await db.user.update({ where: { id: fixture.userId }, data: { passwordHash: passwordHash(password) } });
     const city = await db.city.findFirstOrThrow({ select: { id: true }, orderBy: { id: "asc" } });
     const offerId = "77777777-7777-4777-8777-777777777777";
+    let comparisonVariantId = "";
     await browser.route("**/api/catalog/products/*/compare?*", async route => {
       const response = await route.fetch();
       expect(response.ok()).toBe(true);
       const comparison = offerComparisonResponseSchema.parse(await response.json());
       const source = comparison.offers[0];
       expect(source).toBeDefined();
+      comparisonVariantId = source.variantId;
+      const packaging = { ...source.packaging, name: "Упаковка", quantityInBaseUnit: "10", unit: "шт" };
       const availability = { warehouseId: "99999999-9999-4999-8999-999999999999", warehouse: "Тестовый склад", cityId: city.id, updatedAt: null, freshnessExpiresAt: null };
       // The comparison endpoint feeds the product page before and after login.
       // Keep the complete contract while controlling stock, price and cart IDs.
       const offers = [
         { ...source, offerId, supplier: { ...source.supplier, name: "Поставщик А" },
           price: { ...source.price, amountMinor: "120000", normalizedPriceMinor: "12000", baseUnits: "10", currency: "KZT" },
-          packaging: { ...source.packaging, name: "Упаковка", quantityInBaseUnit: "10", unit: "шт" },
+          packaging,
           availability: [{ ...availability, quantityAvailable: "20" }], delivery: [], minimumOrderQuantity: "2", orderIncrement: "2" },
         { ...source, offerId: "88888888-8888-4888-8888-888888888888", supplier: { ...source.supplier, name: "Поставщик Б" },
-          price: { ...source.price, amountMinor: "150000" }, availability: [{ ...availability, quantityAvailable: "0" }], delivery: [] },
+          price: { ...source.price, amountMinor: "150000", currency: "KZT" }, packaging, availability: [{ ...availability, quantityAvailable: "0" }], delivery: [] },
       ];
       await route.fulfill({ response, json: offerComparisonResponseSchema.parse({ ...comparison, offers }) });
     });
@@ -94,17 +97,21 @@ for (const width of [390, 1440]) test(`catalog comparison, login return and cart
     await expect(disabledOffer).toBeDisabled();
     await expect(disabledOffer).toHaveCSS("background-color", "rgb(238, 241, 239)");
     await expect(disabledOffer).toHaveCSS("color", "rgb(114, 128, 120)");
+    const selectedProduct = new URL(productHref!, baseURL!);
+    expect(comparisonVariantId).toBeTruthy();
+    selectedProduct.searchParams.set("variant", comparisonVariantId);
+    selectedProduct.searchParams.set("packaging", await browser.getByRole("combobox", { name: "Фасовка", exact: true }).inputValue());
     const sessionReady = browser.waitForResponse(response => new URL(response.url()).pathname === "/api/auth/current", { timeout: 15_000 });
     await test.step("Continue to login from the selected offer", () => offer.getByRole("button", { name: "Войти и купить", exact: true }).click());
     await expect(browser).toHaveURL(/\/login\?returnTo=/);
-    expect(new URL(browser.url()).searchParams.get("returnTo")).toBe(productHref);
+    expect(new URL(browser.url()).searchParams.get("returnTo")).toBe(selectedProduct.pathname + selectedProduct.search);
     // Session restoration runs after hydration; do not fill an inert server-rendered form.
     await test.step("Wait for login restoration", async () => expect((await sessionReady).ok()).toBe(true));
     await expect(browser.getByRole("button", { name: "Войти", exact: true })).toBeEnabled();
     await browser.locator('input[type="email"]').fill(fixture.email);
     await browser.locator('input[type="password"]').fill(password);
     await test.step("Submit password login", () => browser.getByRole("button", { name: "Войти", exact: true }).click());
-    await expect(browser).toHaveURL(new URL(productHref!, baseURL!).href);
+    await expect(browser).toHaveURL(selectedProduct.href);
     await browser.getByRole("navigation", { name: "Навигация по каталогу" }).getByRole("link", { name: "← Каталог", exact: true }).click();
     await expect(cards).toHaveCount(48);
     expect(new URL(browser.url()).searchParams.get("sort")).toBe("PRICE_ASC");

@@ -82,3 +82,25 @@ Final close geometry2 / network+dialog2 PASS на1440/390; e2e types, scoped lin
 UI contract и повторный unified web build PASS. Новый mobile screenshot:
 output/playwright/notification-network-final/ (крестик справа, одна карточка).
 Desktop after-desktop.jpg/computed styles переиспользуются: desktop не менялся.
+
+## CI catalog fixture — явно разрешённое расширение
+
+Владелец ответил «Исправить фикстуру и проверить CI». На e44a8ab/660fe30 оба
+notification набора6+6 PASS, Security/PG/containers PASS; общий browser gate
+121 PASS /2 FAIL: public-catalog comparison ожидал2 offers, fixture задавала
+первому pack10, второму inherited source pack. Неизменённый model.ts группирует
+по имени/размеру/unit/currency; существующий model test4 PASS подтверждает контракт.
+Теперь оба synthetic offers используют одну packaging и currency. Проверка
+возврата после login сохраняет не только путь/каталожные фильтры, но и выбранные
+variant/packaging по действующему product-detail контракту; assertions не ослаблены.
+Backend/business data/фильтрация фасовок не меняются. До нового CI общего PASS нет.
+На660fe30: CI41449356850 FAIL только2 catalog cases (121 PASS), Security41449356762
+SUCCESS; следующие full-access/promotion шаги не выполнены из-за failed gate.
+После fixture correction e2e types/scoped lint PASS, product model4 PASS.
+Canonical catalog comparison2 PASS (390/1440) на Node24.18.0 через
+`npm run db:test -- run e2e --workspace=@marketplace/e2e -- tests/public-catalog.spec.ts --grep 'catalog comparison'`.
+Target identity подтверждён штатным runner: dentmarket_audit_20260914; fixtures
+synthetic, рабочая БД не затронута, процессы автоматически очищены. Предыдущая
+exec-form запустила cached Node27 вместо выбранного24; её PASS не использован,
+проверка повторена через существующий npm run alias. Source/lock inputs сохранены.
+API/web build не повторялись для test-only правки: runtime inputs не менялись.
