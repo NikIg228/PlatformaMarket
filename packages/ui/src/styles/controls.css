@@ -105,8 +105,8 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
 
 @media (max-width: 640px) {
   .dm-feedback { grid-template-columns: 20px minmax(0, 1fr); }
-  .dm-feedback-action { grid-column: 1 / -1; width: 100%; }
-  .dm-feedback-action > * { width: 100%; }
+  .dm-feedback .dm-feedback-action { grid-column: 1 / -1; width: 100%; }
+  .dm-feedback .dm-feedback-action > * { width: 100%; }
   .dm-table,
   .dm-table tbody { display: block; width: 100%; }
   .dm-table thead { display: none; }

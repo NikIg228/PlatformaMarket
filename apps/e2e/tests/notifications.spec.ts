@@ -11,6 +11,10 @@ for (const width of [1440, 390]) {
     await expect(toast).toHaveCount(1); await expect(toast).toHaveAttribute("role", "status");
     await expect(toast).toHaveCSS("background-color", "rgb(244, 197, 66)");
     await expect(toast).toHaveCSS("color", "rgb(23, 32, 30)");
+    const cardBounds = await toast.boundingBox(), closeBounds = await toast.getByRole("button", { name: "Закрыть уведомление" }).boundingBox();
+    expect(cardBounds).toBeTruthy(); expect(closeBounds).toBeTruthy();
+    expect(closeBounds!.x).toBeGreaterThan(cardBounds!.x + cardBounds!.width / 2);
+    expect(closeBounds!.y + closeBounds!.height).toBeLessThanOrEqual(cardBounds!.y + cardBounds!.height - 12);
     await page.getByRole("button", { name: "Показать error", exact: true }).click();
     await expect(toast).toHaveCount(1); await expect(toast).toHaveAttribute("role", "alert");
     await expect(toast).toContainText("Пример: error");

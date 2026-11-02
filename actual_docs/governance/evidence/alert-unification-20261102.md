@@ -71,3 +71,14 @@ scope и test evidence), без делегирования. Серверы те�
 offline/reduced-motion override сняты; next-env восстановлен после generated build.
 Backend, рабочие данные и CRM не менялись. Чужой personal-cart/auth WIP и docs
 commit2310c91 сохранены. Scoped staging/публикация и CI подтверждаются отдельно.
+
+Финальный review mobile screenshot обнаружил, что старое media-правило для
+inline action затрагивало и toast close, перенося крестик вниз. Оно ограничено
+`.dm-feedback`; для toast сохранён крестик справа. В regression добавлена
+проверка расположения close на desktop/mobile. Для этого изменения повторяются
+только notification browser/типизация и сборка; прежние domain/consumer PASS
+сохранены для неизменённого поведения. Промежуточный e44a8ab не финальная приёмка.
+Final close geometry2 / network+dialog2 PASS на1440/390; e2e types, scoped lint,
+UI contract и повторный unified web build PASS. Новый mobile screenshot:
+output/playwright/notification-network-final/ (крестик справа, одна карточка).
+Desktop after-desktop.jpg/computed styles переиспользуются: desktop не менялся.
