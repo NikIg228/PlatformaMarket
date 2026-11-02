@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 import { CommerceService } from "./commerce.service";
+import { defaultSupplierCalendar } from "@marketplace/schemas";
+import { supplierResponseDeadline } from "./supplier-calendar-rules";
 vi.mock("../../platform/config/environment", () => ({ environment: () => ({ DEPLOYMENT_PROFILE: "pilot" }) }));
 
 const decimal = (value: string) => new Prisma.Decimal(value);
@@ -34,6 +36,7 @@ function fixture() {
       quantityAvailable: decimal("10"), freshnessStatus: "FRESH", lots: [], _count: { lots: 0 } }],
   };
   const tx = {
+    supplierProfile: { findUnique: vi.fn().mockResolvedValue({ status: "ACTIVE", workingCalendar: null, workingCalendarVersion: 0 }) },
     supplierOffer: { findFirst: vi.fn().mockResolvedValue(offer) },
     cart: { updateMany: vi.fn().mockResolvedValue({ count: 1 }), update: vi.fn() },
     cartItem: { update: vi.fn() },
@@ -69,6 +72,15 @@ describe("checkout accepted commercial snapshot", () => {
     expect(tx.supplierOrderItem.create.mock.calls[0]?.[0].data.unitPriceMinor).toBe("9007199254740993");
     expect(tx.checkout.create.mock.calls[0]?.[0].data.totalAmountMinor.toString()).toBe("9007199254740993");
     expect(tx.commerceMetricEvent.create).toHaveBeenCalledWith({ data: { supplierOrderId: "order", sourceKey: "created:order", kind: "CREATED", goodsAmountMinor: "9007199254740993", commissionAmountMinor: "900719925474099" } });
+  });
+
+  it("captures the supplier calendar and deadline in the same order transaction", async () => {
+    const { run, tx } = fixture();
+    await run();
+    const data = tx.supplierOrder.create.mock.calls[0]![0].data;
+    expect(data.responseCalendar).toEqual({ source: "DEFAULT", version: 0, calendar: defaultSupplierCalendar() });
+    expect(data.responseDeadlineAt).toEqual(supplierResponseDeadline(data.responseStartedAt, data.responseCalendar.calendar));
+    expect(tx.supplierProfile.findUnique).toHaveBeenCalledTimes(1);
   });
 
   it.each(["price", "vat", "packaging", "legacy"])("requires consent for changed %s before creating orders or reserves", async (change) => {

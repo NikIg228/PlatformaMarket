@@ -2,6 +2,7 @@ import { z } from "zod";
 import { decimalStringSchema, currencySchema, inventoryReservationResponseSchema, nullableDateTimeSchema, dateTimeSchema, organizationSummarySchema } from "./primitives.js";
 import { orderDocumentResponseSchema } from "./documents.js";
 import { checkoutCartSnapshotResponseSchema } from "./cart.js";
+import { orderResponseCalendarSchema } from "../supplier-calendar.js";
 
 export const shipmentStatusSchema = z.enum([
   "DRAFT",
@@ -114,6 +115,9 @@ export const shipmentListResponseSchema = z.array(shipmentResponseSchema);
 
 export const supplierOrderResponseSchema = z
   .object({
+    responseCalendar: orderResponseCalendarSchema.nullable().optional(),
+    responseStartedAt: nullableDateTimeSchema.optional(),
+    responseDeadlineAt: nullableDateTimeSchema.optional(),
     reviewEligible: z.boolean().optional(),
     id: z.uuid(),
     checkoutId: z.uuid(),

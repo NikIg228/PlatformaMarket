@@ -30,6 +30,7 @@ import { createInvitationSchema, acceptInvitationSchema, invitationProofSchema, 
 import { createOfferPromotionSchema, reviseOfferPromotionSchema, offerPromotionCommandSchema, offerPromotionSchema, promotionPageSchema, publicPromotionPageSchema, promotionListQuerySchema } from "@marketplace/schemas";
 import { orderWorkflowCommandSchema, orderWorkflowResponseSchema, orderWorkflowResultSchema } from "@marketplace/schemas";
 import { saveSupplierPaymentPolicySchema, supplierPaymentPolicyResponseSchema } from "@marketplace/schemas";
+import { saveSupplierCalendarSchema, supplierCalendarResponseSchema } from "@marketplace/schemas";
 import { workspaceOfferQuerySchema, workspaceInventoryQuerySchema, workspacePageQuerySchema, workspaceOrderQuerySchema, workspaceOrderPageSchema, workspaceOfferSchema, workspaceOfferPageSchema, workspaceCartPageSchema, workspaceSummarySchema } from "@marketplace/schemas";
 import { saveOfferCommercialSchema, saveOfferStockSchema, saveOfferPriceSchema, offerCommercialStateSchema } from "@marketplace/schemas";
 import { updateProductSchema, updatedCatalogProductSchema } from "@marketplace/schemas";
@@ -275,6 +276,8 @@ const coreZodSchemas = {
   OrderWorkflowResult: orderWorkflowResultSchema,
   SaveSupplierPaymentPolicy: saveSupplierPaymentPolicySchema,
   SupplierPaymentPolicyResponse: supplierPaymentPolicyResponseSchema,
+  SaveSupplierCalendar: saveSupplierCalendarSchema,
+  SupplierCalendarResponse: supplierCalendarResponseSchema,
   SaveOrganizationProfileRequest: saveOrganizationProfileSchema,
   OrganizationProfileResponse: organizationProfileResponseSchema,
   SaveOrganizationRequisitesRequest: saveOrganizationRequisitesSchema,

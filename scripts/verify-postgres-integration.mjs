@@ -14,6 +14,7 @@ import { verifyOfferCommercial } from "./lib/verify-offer-commercial.mjs";
 import { verifyCartRecovery } from "./lib/verify-cart-recovery.mjs";
 import { verifyPersonalCart, verifyPersonalCartUpgrade } from "./lib/verify-personal-cart.mjs";
 import { verifySupplierStorefront, verifyStorefrontUpgrade } from "./lib/verify-supplier-storefront.mjs";
+import { verifySupplierCalendar, verifySupplierCalendarUpgrade } from "./lib/verify-supplier-calendar.mjs";
 import { verifyReservationExpiry } from "./lib/verify-reservation-expiry.mjs";
 import { verifyLocalPermissions } from "./lib/verify-local-permissions.mjs";
 import { verifyContractLifecycle } from "./lib/verify-contract-lifecycle.mjs";
@@ -605,6 +606,7 @@ try {
   const wave1SecurityOnly = process.argv.includes("--wave1-security-only");
   const storefrontPreview = process.argv.includes("--storefront-preview");
   const storefrontOnly = process.argv.includes("--storefront-only") || storefrontPreview;
+  const calendarOnly = process.argv.includes("--calendar-only");
   const commercialOnly = process.argv.includes("--commercial-only");
   const requisitesOnly = process.argv.includes("--requisites-only");
   const waybillOnly = process.argv.includes("--waybill-only");
@@ -612,12 +614,12 @@ try {
   const resupplyOnly = process.argv.includes("--resupply-only");
   const invoiceOnly = process.argv.includes("--invoice-only") || waybillOnly || discrepanciesOnly || resupplyOnly;
   const vatOnly = process.argv.includes("--vat-only");
-  if (!storefrontOnly && !wave1SecurityOnly && !commercialOnly && !requisitesOnly && !vatOnly && !invoiceOnly) {
+  if (!calendarOnly && !storefrontOnly && !wave1SecurityOnly && !commercialOnly && !requisitesOnly && !vatOnly && !invoiceOnly) {
     await verifyManualPaymentUpgrade(prisma, assert);
     await verifyPromotionUpgrade(prisma, assert);
     await verifyCommerceMetricUpgrade(prisma, assert);
   }
-  if (!storefrontOnly && !wave1SecurityOnly && !commercialOnly && !vatOnly && !invoiceOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
+  if (!calendarOnly && !storefrontOnly && !wave1SecurityOnly && !commercialOnly && !vatOnly && !invoiceOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
   const [rollbackOffer, idempotencyOffer, concurrencyOffer, correctionOffer, snapshotOffer, ...lotOffers] =
     (requisitesOnly || wave1SecurityOnly) ? [] : await createFixtureCatalog();
   const [
@@ -642,7 +644,10 @@ try {
   api.stderr.on("data", rememberLog);
   await waitUntilReady();
 
-  if (storefrontOnly) {
+  if (calendarOnly) {
+    await verifySupplierCalendarUpgrade(prisma, assert);
+    await verifySupplierCalendar({ prisma, fixture, request, runId, assert, createBuyer, createCartWithItem, offerId: snapshotOffer.offerId });
+  } else if (storefrontOnly) {
     await verifyStorefrontUpgrade(prisma, assert);
     await verifySupplierStorefront({ prisma, fixture, request, runId, assert });
     if (storefrontPreview) {
@@ -665,6 +670,8 @@ try {
       createBuyer, request, runId, assert });
     console.log("Focused PostgreSQL commercial verification PASS");
   } else {
+  await verifySupplierCalendarUpgrade(prisma, assert);
+  await verifySupplierCalendar({ prisma, fixture, request, runId, assert, createBuyer, createCartWithItem, offerId: snapshotOffer.offerId });
   await verifyStorefrontUpgrade(prisma, assert);
   await verifySupplierStorefront({ prisma, fixture, request, runId, assert });
   await verifyPersonalCartUpgrade(prisma, assert);

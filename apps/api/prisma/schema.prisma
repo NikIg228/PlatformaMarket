@@ -1797,6 +1797,8 @@ model SupplierProfile {
   regulatoryDetails      Json?
   paymentReviewPolicy    Json?
   paymentReviewVersion   Int                     @default(0)
+  workingCalendar        Json?
+  workingCalendarVersion Int                     @default(0)
   vatSettings            SupplierVatSettings?
   organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   warehouses             Warehouse[]
@@ -2427,6 +2429,9 @@ model Checkout {
 }
 
 model SupplierOrder {
+  responseCalendar         Json?
+  responseStartedAt        DateTime?
+  responseDeadlineAt       DateTime?
   commerceDataset          String                  @default("UNCLASSIFIED")
   metricEvents             CommerceMetricEvent[]
   conversation BusinessConversation?

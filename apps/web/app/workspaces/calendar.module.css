@@ -1,0 +1,19 @@
+.card { display: grid; gap: var(--dm-space-6); min-width: 0; padding: var(--dm-space-6); }
+.form, .section, .days, .day { display: grid; gap: var(--dm-space-4); min-width: 0; }
+.section { gap: var(--dm-space-3); }
+.days { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--dm-space-6); }
+.day { align-content: start; }
+.intervals { display: grid; gap: var(--dm-space-3); }
+.interval { display: flex; flex-wrap: wrap; gap: var(--dm-space-2); align-items: end; }
+.time { width: 112px; min-width: 0; }
+.zone { max-width: 320px; }
+.date { max-width: 240px; }
+.heading, .text { margin: 0; }
+.heading { font-size: var(--dm-font-size-body-lg); font-weight: var(--dm-font-weight-semibold); line-height: var(--dm-line-heading); }
+.text { font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); color: var(--dm-text-secondary); }
+.actions { display: flex; flex-wrap: wrap; gap: var(--dm-space-3); }
+.holidays { margin: 0; padding-inline-start: var(--dm-space-6); display: grid; gap: var(--dm-space-2); }
+@media (max-width: 760px) {
+  .card { padding: var(--dm-space-4); }
+  .days { grid-template-columns: minmax(0, 1fr); }
+}

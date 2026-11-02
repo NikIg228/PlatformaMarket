@@ -1,4 +1,6 @@
 import { fullyReceived } from "../trust-commerce/order-review-eligibility";
+import { supplierCalendarSnapshot } from "./supplier-calendar.service";
+import { supplierResponseDeadline } from "./supplier-calendar-rules";
 import { waybillPreviewVisibility } from "../documents/shipment-waybill.rules";
 import { createActiveCart } from "./create-active-cart";
 import { metricFact, recordCheckoutMetrics } from "./commerce-metric-facts";
@@ -576,8 +578,13 @@ export class CommerceService {
               },
               orderBy: { endsAt: "desc" },
             });
+            const responseCalendar = await supplierCalendarSnapshot(tx, supplierOrganizationId);
+            const responseStartedAt = new Date();
             const order = await tx.supplierOrder.create({
               data: {
+                responseCalendar: responseCalendar as unknown as Prisma.InputJsonValue,
+                responseStartedAt,
+                responseDeadlineAt: supplierResponseDeadline(responseStartedAt, responseCalendar.calendar),
                 checkoutId: checkout.id,
                 supplierOrganizationId,
                 buyerOrganizationId: cart.buyerOrganizationId,

@@ -1,4 +1,54 @@
-## P01-PERSONAL-CART-20261102 — LOCAL_PASS, publication pending
+## P02-SUPPLIER-CALENDAR-20261102 — LOCAL_PASS, publication pending
+
+02.11 continuation: backend focused PG2/full PG3 PASS; API build2/core-contract1/
+runtime1/client build1/Prisma validate2 PASS. Editor implemented in web workspaces
+settings-calendar/calendar-*; deadline component in order-detail both roles.
+Web types3/build2, draft8tests, lint/UI-contract PASS. Calendar real-browser2 PASS
+save/break/holiday/date validation/503 retry/CAS/keyboard/390KK/read-only.
+Order3 both roles1440RU/390KK + immutable deadline PASS; after owner approval,
+legacy-only4 PASS. Prior attempts/logs retained in evidence. Antislop after scoped
+audit PASS, no findings. P01 requisites fixture13browser tests PASS after owner
+approved retry; fix4bc2e301 published. Need P02 scoped publication/CI, authorized
+working migration after acceptance and dev restoration. No working migration yet.
+All logs .tmp/p02-*, evidence supplier-calendar-20261102.md. No new agents.
+
+### Earlier checkpoint (superseded progress)
+
+Ответ владельца получен: разрешены остановка, рабочая миграция после приёмки
+и восстановление. Verified dev launcher20696 и descendants остановлены;
+Prisma generate2 PASS, API build1 выполняется (.tmp/p02-api-build-1.log).
+Рабочая БД ещё не менялась; восстановить dev после полной приёмки/миграции.
+
+Владелец после вопроса о незакрытом CI П01 повторил «приступай к п02» —
+переход явно разрешён; П01 FAIL остаётся видимым ниже. Базаe96afbec main.
+Schemas/API/client, version/CAS/replay, snapshot/deadline в checkout и additive
+migration подготовлены.42focused tests, schemas build, API/client types PASS.
+Точные команды/попытки: ../evidence/supplier-calendar-20261102.md.
+Generate1 FAIL EPERM (dev API держит Prisma DLL); PG/API build/UI/browser пока
+NOT_RUN. Ожидается ответ пользователя об остановке стенда и рабочей миграции
+после приёмки/восстановлении (или только остановке без рабочей миграции).
+До ответа процессы/рабочую БД не трогать. UI ещё не реализован, WIP не публиковать.
+Следующее: разрешённая остановка → generate2/build → focused PG → UI/приёмка.
+Fallback пн–пт09:00–18:00 Asia/Almaty; праздники только отметки; Antislop after.
+
+## P01-PERSONAL-CART-20261102 — published, fixture fix LOCAL_PASS
+
+Fixture correction4bc2e301 published after13targeted browser tests PASS.
+Original CI FAIL retained below; new CI result pending. See personal-cart evidence.
+
+После owner «окей, продолжаем»02.11 тот же scoped Playwright launch повторно
+rejected до запуска: blocked by policy, без причины. Обхода/процесса нет.
+E2E types, eslint изменённой fixture и diff hygiene PASS. Browser NOT_RUN,
+fixture fix не опубликован. Для продолжения нужен доступный разрешённый запуск.
+
+CI41481131263:121pilot tests PASS,2 requisites clinic FAIL из-за нового GET
+/auth/personal-current в strict mock. Точный null handler добавлен в
+apps/e2e/tests/organization-requisites.spec.ts; не проверен/не опубликован.
+Targeted Playwright launch rejected by automatic approval review: blocked by
+policy, без подробного основания; запуск/обход не выполнен. Security/PG/containers
+PASS. Следующий шаг: разрешённый scoped test, types/lint, commit/push и CI.
+П02 код не начат. Fallback календаря пн–пт09:00–18:00 принят владельцем;
+Antislop after (явный выбор02.11); план evidence/supplier-calendar-20261102.md.
 
 Последнее поручение: закончить П01, затем следующие пакеты roadmap (П02 далее).
 После дополнительных разрешений browser8 PASS все9шагов: личный вход/корзина,
@@ -8,8 +58,17 @@ validate/lint/UI-contract PASS. Исторические FAIL/attempts и точ
 `../evidence/personal-cart-20261102.md`. Приложение исправлено: relative login URL
 и явный переход к workspace handoff; fixtures/selectors исправлены отдельно.
 Рабочая БД/deploy не менялись; dev3000/4012 оставлен, owned процессы закрыты.
-Следующий шаг: scoped commit/push, remote/CI, затем П02 календарь поставщика.
+Опубликован 38ca2fe4b727fa60e035cb15281421faca9ab363; remote SHA совпал.
+CI41481131263 и Security41481131187 выполняются (02.11 16:28UTC).
+Следующий шаг: завершить CI, затем П02 календарь поставщика.
 Checkout/order/payment вП01 не входят; весь R7.1.1 открыт.
+
+### П02 — подготовка 02.11
+Владелец выбрал временный график пн–пт09:00–18:00 по времени Казахстана,
+пока поставщик не заполнит свой. Решение записано в domains/orders.md.
+П02 код не начат: ждём обязательный CI П01. Источник праздников для сверки:
+https://www.gov.kz/org/enbek/documents/details/1034069 (редакция29.06.2026).
+Праздники только отметки; timezone Asia/Almaty, snapshot новых заказов.
 
 ## CATALOG-PRODUCT-CONTROLS-20261031 — scoped local PASS
 

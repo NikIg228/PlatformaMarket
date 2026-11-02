@@ -1,5 +1,5 @@
 "use client";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { DmButton, OrderWorkflowWorkspace, PermissionFields } from "@marketplace/ui";
 import { OrderConfirmationPanel } from "../../../supplier-web/app/order-confirmation-panel";
 import {
@@ -10,9 +10,11 @@ import { useWorkspace } from "./workspace";
 import styles from "./workspace.module.css";
 import { frontendFeatures } from "@marketplace/api-client";
 import { OrderReview } from "./order-review";
+import { OrderResponseDeadline } from "./order-response-deadline";
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
+  const locale = useSearchParams().get("lang") === "kk" ? "kk" : "ru";
   const { api, role, organizationId } = useWorkspace();
   return (
     <div id={`supplier-order-${id}`} tabIndex={-1} className={`${styles.stack} ${styles.order}`}>
@@ -34,7 +36,9 @@ export default function OrderDetail() {
           anchor.click();
           URL.revokeObjectURL(url);
         }}
-        renderConfirmation={role === "supplier" ? (data, refresh) => (<OrderConfirmationPanel
+        renderConfirmation={(data, refresh) => (<>
+          <OrderResponseDeadline order={data.order} locale={locale} />
+          {role === "supplier" ? <OrderConfirmationPanel
                       available={data.order.status === "AWAITING_CONFIRMATION"}
                       order={{
                         ...data.order,
@@ -60,7 +64,7 @@ export default function OrderDetail() {
                             : "Не удалось подтвердить заказ";
                         }
                       }}
-                    />) : undefined}
+                    /> : null}</>)}
         renderFulfillment={
           role === "supplier"
             ? (data, refresh) => (

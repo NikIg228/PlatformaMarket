@@ -4,6 +4,8 @@ import * as workspacesApi from "./domains/workspaces";
 import * as documentsApi from "./domains/documents";
 import * as deliveryApi from "./domains/delivery";
 import * as ordersApi from "./domains/orders";
+import * as calendarApi from "./domains/supplier-calendar";
+import type { SaveSupplierCalendar } from "@marketplace/schemas";
 import * as cartsApi from "./domains/carts";
 import * as identityApi from "./domains/identity";
 import * as organizationsApi from "./domains/organizations";
@@ -465,6 +467,10 @@ export class MarketplaceApiClient {
   getOrderWorkflow(orderId: string) { return ordersApi.getOrderWorkflow(this, orderId); }
   getOrderReviewState(orderId: string) { return ordersApi.getOrderReviewState(this, orderId); }
   createOrderReview(orderId: string, input: CreateVerifiedReviewInput) { return ordersApi.createOrderReview(this, orderId, input); }
+
+  getSupplierCalendar() { return calendarApi.getSupplierCalendar(this); }
+
+  saveSupplierCalendar(input: SaveSupplierCalendar) { return calendarApi.saveSupplierCalendar(this, input); }
 
   getSupplierPaymentPolicy() { return ordersApi.getSupplierPaymentPolicy(this); }
 
