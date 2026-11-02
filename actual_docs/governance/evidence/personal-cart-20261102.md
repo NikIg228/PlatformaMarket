@@ -185,3 +185,8 @@ browser tests PASS, включая обе клиники1440/390, без зап�
 Исправление production code не меняет; exact GET mock null handler только
 синхронизирует fixture с личной сессией. Ранее прошедшие E2E types/scoped lint
 переиспользованы для неизменённой строки. Scoped публикация/новый CI ещё впереди.
+
+Fixture fix опубликован как4bc2e301a70adc0ff6d97c159fad7667c52c5aff.
+CI41496811460 completed/success: прежний browser failure закрыт на GitHub.
+Исторические FAIL/approval rejections выше сохранены; кП01 новых открытых
+локальных или CI требований не осталось. П02 учитывается отдельно.

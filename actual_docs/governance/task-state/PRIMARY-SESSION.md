@@ -1,4 +1,4 @@
-## P02-SUPPLIER-CALENDAR-20261102 — LOCAL_PASS, publication pending
+## P02-SUPPLIER-CALENDAR-20261102 — published, CI3 preparation
 
 02.11 continuation: backend focused PG2/full PG3 PASS; API build2/core-contract1/
 runtime1/client build1/Prisma validate2 PASS. Editor implemented in web workspaces
@@ -8,8 +8,14 @@ save/break/holiday/date validation/503 retry/CAS/keyboard/390KK/read-only.
 Order3 both roles1440RU/390KK + immutable deadline PASS; after owner approval,
 legacy-only4 PASS. Prior attempts/logs retained in evidence. Antislop after scoped
 audit PASS, no findings. P01 requisites fixture13browser tests PASS after owner
-approved retry; fix4bc2e301 published. Need P02 scoped publication/CI, authorized
-working migration after acceptance and dev restoration. No working migration yet.
+approved retry; fix4bc2e301 published. P02 published8e6a08e3. CI1 failed E2E
+volume fixture nullable JSON type; fixed Prisma.DbNull in694141fa, E2E types/lint
+and real SQL-null clone rollback probe PASS. CI2 passed types/lint/PG/containers,
+failed admin-auth2tests due eager calendar schemas import. Fixed dynamic loading
+inside operations: client108/admin-auth12, client build2/admin types1/web build3
+and calendar browser3 PASS. Need publish this fix and CI3, authorized working
+migration and dev restoration. Preflight marketplace: exactly calendar migration
+pending, no writes. P01 CI41496811460 completed/success.
 All logs .tmp/p02-*, evidence supplier-calendar-20261102.md. No new agents.
 
 ### Earlier checkpoint (superseded progress)

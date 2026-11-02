@@ -186,3 +186,20 @@ eslint PASS. Дополнительно реальный rollback-probe на dis
 SQL NULL и сохранение исходной записи: `.tmp/p02-volume-null-1.log`.
 Полный performance/browser workload1000rows не запускался ради type/SQL-null fix.
 Production behavior/gates не изменились; требуется scoped публикация и CI2.
+
+## CI attempt2 — eager schema import regression
+
+CI41499167088 passed E2E types/lint/PG/containers, но npm test FAIL в двух
+admin-auth.test.ts: новый calendar client импортировал schemas runtime сразу,
+ломая существующее deferred validation chunk поведение. Не увеличивали timeout
+и не ослабляли mocks: schemas теперь загружаются внутри calendar operations.
+Это исправление клиентского import graph, API/БД/компоненты UI не менялись.
+Все108API-client tests и12admin-auth tests PASS; client build2/admin types1/
+web build3 и повтор изменённого reachable calendar flow выполняются.
+Предыдущие successful PG/API/schemas gates сохраняются для неизменённых входов.
+
+Client build2, admin types1, web build3 PASS. Calendar browser3 PASS на новом
+production artifact: те же save/recovery/CAS/keyboard/mobile/read-only и даты.
+Existing admin-auth regressions12 и client suite108 дают проверку зависимых
+consumers; остальные API/schema/PG/visual gates REUSED_PASS по неизменённым inputs.
+Third CI будет проверять исправленный import graph; пока общего PASS нет.
