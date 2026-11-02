@@ -1,0 +1,41 @@
+#!/bin/bash
+# Private to the ExpoModulesJSI unsigned Simulator phase, not the app tool PATH.
+set -euo pipefail
+
+if [[ -z "${DEVELOPER_DIR:-}" || "${DEVELOPER_DIR}" != /* ]]; then
+  echo "Market: an explicit absolute DEVELOPER_DIR is required" >&2
+  exit 64
+fi
+market_xcodebuild="${DEVELOPER_DIR}/usr/bin/xcodebuild"
+if [[ ! -x "$market_xcodebuild" ]]; then
+  echo "Market: xcodebuild is missing from the selected developer directory" >&2
+  exit 64
+fi
+
+# Expo includes the Xcode version in its source hash before compiling.
+if [[ "$#" == 1 && "$1" == "-version" ]]; then
+  exec "$market_xcodebuild" "$@"
+fi
+if [[ "${1:-}" != "build" ]]; then
+  echo "Market: this private wrapper supports only the ExpoModulesJSI build and version probe" >&2
+  exit 64
+fi
+
+market_scheme=""
+market_sdk=""
+market_destination=""
+market_arguments=("$@")
+for ((market_index=1; market_index<$#; market_index++)); do
+  case "${market_arguments[$market_index]}" in
+    -scheme) market_scheme="${market_arguments[$((market_index+1))]:-}" ;;
+    -sdk) market_sdk="${market_arguments[$((market_index+1))]:-}" ;;
+    -destination) market_destination="${market_arguments[$((market_index+1))]:-}" ;;
+  esac
+done
+if [[ "$market_scheme" != "ExpoModulesJSI" || "$market_sdk" != "iphonesimulator" || "$market_destination" != "generic/platform=iOS Simulator" ]]; then
+  echo "Market: refusing an unexpected scheme, SDK or destination in the private Simulator wrapper" >&2
+  exit 64
+fi
+
+echo "[Market unsigned ExpoModulesJSI] nested Simulator build; signing disabled; jobs=1" >&2
+exec "$market_xcodebuild" "$@" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO COMPILER_INDEX_STORE_ENABLE=NO -jobs 1

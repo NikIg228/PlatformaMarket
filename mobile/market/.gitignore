@@ -1,0 +1,20 @@
+node_modules/
+.expo/
+coverage/
+dist/
+
+# Machine-local/native build artifacts and execution history
+android/.gradle/
+android/.kotlin/
+**/build/
+ios/Pods/
+ios/build/
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+.xcode.env
+local.properties
+PAUSED_BY_USER.md
+BACKEND_READY_QUEUE.md
+backend-readiness-plan.json

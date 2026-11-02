@@ -1,0 +1,1195 @@
+{
+  "kind": "synthetic_mobile_read_contract_fixtures",
+  "sourceSnapshot": "ffddb740c24c140cfe8301214f741099ea2526ba",
+  "realCustomerData": false,
+  "schemaAuthority": "packages/schemas/src; fixture metadata is not a replacement DTO",
+  "cases": [
+    {
+      "id": "catalog-empty",
+      "schema": "catalogSearchResponseSchema",
+      "expected": "accept",
+      "payload": {
+        "query": "synthetic",
+        "total": 0,
+        "offset": 0,
+        "limit": 24,
+        "items": [],
+        "facets": {
+          "categories": [],
+          "suppliers": []
+        }
+      }
+    },
+    {
+      "id": "catalog-null-price",
+      "schema": "catalogSearchResponseSchema",
+      "expected": "accept",
+      "payload": {
+        "query": "synthetic",
+        "total": 1,
+        "offset": 0,
+        "limit": 24,
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "slug": "synthetic-product",
+            "name": "SYNTHETIC product",
+            "description": null,
+            "descriptionSources": null,
+            "brand": null,
+            "manufacturer": null,
+            "productType": "SYNTHETIC",
+            "regulatoryClass": null,
+            "media": [],
+            "categories": [],
+            "minNormalizedPriceMinor": null,
+            "maxNormalizedPriceMinor": null,
+            "isAvailable": false,
+            "reviewSummary": {
+              "count": 0,
+              "averageRating": null
+            },
+            "rank": 0,
+            "variants": [
+              {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sku": null,
+                "gtin": null,
+                "label": "SYNTHETIC variant",
+                "attributes": {}
+              }
+            ],
+            "offers": [
+              {
+                "id": "00000000-0000-4000-8000-000000000003",
+                "variantId": "00000000-0000-4000-8000-000000000002",
+                "supplier": {
+                  "id": "00000000-0000-4000-8000-000000000005",
+                  "name": "SYNTHETIC supplier"
+                },
+                "priceMinor": null,
+                "currency": null,
+                "normalizedPriceMinor": null,
+                "packaging": {
+                  "name": null,
+                  "quantityInBaseUnit": "10",
+                  "unit": null
+                },
+                "available": false,
+                "freshness": [],
+                "confirmationMode": "MANUAL",
+                "deliveryMethods": [],
+                "promotion": null
+              }
+            ]
+          }
+        ],
+        "facets": {
+          "categories": [],
+          "suppliers": []
+        }
+      },
+      "preserve": [
+        {
+          "path": [
+            "items",
+            0,
+            "offers",
+            0,
+            "priceMinor"
+          ],
+          "value": null
+        }
+      ],
+      "absent": [
+        [
+          "filterOptions"
+        ],
+        [
+          "items",
+          0,
+          "catalogName"
+        ]
+      ]
+    },
+    {
+      "id": "product-null-description",
+      "schema": "catalogSearchProductSchema",
+      "expected": "accept",
+      "payload": {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "slug": "synthetic-product",
+        "name": "SYNTHETIC product",
+        "description": null,
+        "descriptionSources": null,
+        "brand": null,
+        "manufacturer": null,
+        "productType": "SYNTHETIC",
+        "regulatoryClass": null,
+        "media": [],
+        "categories": [],
+        "minNormalizedPriceMinor": null,
+        "maxNormalizedPriceMinor": null,
+        "isAvailable": false,
+        "reviewSummary": {
+          "count": 0,
+          "averageRating": null
+        },
+        "rank": 0,
+        "variants": [
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "sku": null,
+            "gtin": null,
+            "label": "SYNTHETIC variant",
+            "attributes": {}
+          }
+        ],
+        "offers": [
+          {
+            "id": "00000000-0000-4000-8000-000000000003",
+            "variantId": "00000000-0000-4000-8000-000000000002",
+            "supplier": {
+              "id": "00000000-0000-4000-8000-000000000005",
+              "name": "SYNTHETIC supplier"
+            },
+            "priceMinor": null,
+            "currency": null,
+            "normalizedPriceMinor": null,
+            "packaging": {
+              "name": null,
+              "quantityInBaseUnit": "10",
+              "unit": null
+            },
+            "available": false,
+            "freshness": [],
+            "confirmationMode": "MANUAL",
+            "deliveryMethods": [],
+            "promotion": null
+          }
+        ]
+      },
+      "preserve": [
+        {
+          "path": [
+            "description"
+          ],
+          "value": null
+        },
+        {
+          "path": [
+            "reviewSummary",
+            "averageRating"
+          ],
+          "value": null
+        }
+      ]
+    },
+    {
+      "id": "variant-null-identifiers",
+      "schema": "catalogVariantSchema",
+      "expected": "accept",
+      "payload": {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "sku": null,
+        "gtin": null,
+        "label": "SYNTHETIC variant",
+        "attributes": {}
+      },
+      "preserve": [
+        {
+          "path": [
+            "sku"
+          ],
+          "value": null
+        },
+        {
+          "path": [
+            "gtin"
+          ],
+          "value": null
+        }
+      ]
+    },
+    {
+      "id": "variant-invalid-id",
+      "schema": "catalogVariantSchema",
+      "expected": "reject",
+      "payload": {
+        "id": "synthetic-not-a-uuid",
+        "sku": null,
+        "gtin": null,
+        "label": "SYNTHETIC variant",
+        "attributes": {}
+      },
+      "issuePaths": [
+        [
+          "id"
+        ]
+      ]
+    },
+    {
+      "id": "offer-exact-money",
+      "schema": "catalogSearchOfferSchema",
+      "expected": "accept",
+      "payload": {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "variantId": "00000000-0000-4000-8000-000000000002",
+        "supplier": {
+          "id": "00000000-0000-4000-8000-000000000005",
+          "name": "SYNTHETIC supplier"
+        },
+        "priceMinor": "9007199254740993",
+        "currency": "KZT",
+        "normalizedPriceMinor": "9007199254740993",
+        "packaging": {
+          "name": null,
+          "quantityInBaseUnit": "10",
+          "unit": null
+        },
+        "available": false,
+        "freshness": [],
+        "confirmationMode": "MANUAL",
+        "deliveryMethods": [],
+        "promotion": null
+      },
+      "preserve": [
+        {
+          "path": [
+            "priceMinor"
+          ],
+          "value": "9007199254740993"
+        }
+      ]
+    },
+    {
+      "id": "offer-explicit-zero-wire",
+      "schema": "catalogSearchOfferSchema",
+      "expected": "accept",
+      "payload": {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "variantId": "00000000-0000-4000-8000-000000000002",
+        "supplier": {
+          "id": "00000000-0000-4000-8000-000000000005",
+          "name": "SYNTHETIC supplier"
+        },
+        "priceMinor": "0",
+        "currency": "KZT",
+        "normalizedPriceMinor": "9007199254740993",
+        "packaging": {
+          "name": null,
+          "quantityInBaseUnit": "10",
+          "unit": null
+        },
+        "available": false,
+        "freshness": [],
+        "confirmationMode": "MANUAL",
+        "deliveryMethods": [],
+        "promotion": null
+      },
+      "preserve": [
+        {
+          "path": [
+            "priceMinor"
+          ],
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "offer-missing-price",
+      "schema": "catalogSearchOfferSchema",
+      "expected": "reject",
+      "payload": {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "variantId": "00000000-0000-4000-8000-000000000002",
+        "supplier": {
+          "id": "00000000-0000-4000-8000-000000000005",
+          "name": "SYNTHETIC supplier"
+        },
+        "currency": null,
+        "normalizedPriceMinor": null,
+        "packaging": {
+          "name": null,
+          "quantityInBaseUnit": "10",
+          "unit": null
+        },
+        "available": false,
+        "freshness": [],
+        "confirmationMode": "MANUAL",
+        "deliveryMethods": [],
+        "promotion": null
+      },
+      "issuePaths": [
+        [
+          "priceMinor"
+        ]
+      ]
+    },
+    {
+      "id": "offer-number-price",
+      "schema": "catalogSearchOfferSchema",
+      "expected": "reject",
+      "payload": {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "variantId": "00000000-0000-4000-8000-000000000002",
+        "supplier": {
+          "id": "00000000-0000-4000-8000-000000000005",
+          "name": "SYNTHETIC supplier"
+        },
+        "priceMinor": 9007199254740992,
+        "currency": "KZT",
+        "normalizedPriceMinor": "9007199254740993",
+        "packaging": {
+          "name": null,
+          "quantityInBaseUnit": "10",
+          "unit": null
+        },
+        "available": false,
+        "freshness": [],
+        "confirmationMode": "MANUAL",
+        "deliveryMethods": [],
+        "promotion": null
+      },
+      "issuePaths": [
+        [
+          "priceMinor"
+        ]
+      ]
+    },
+    {
+      "id": "comparison-exact-offer",
+      "schema": "offerComparisonResponseSchema",
+      "expected": "accept",
+      "payload": {
+        "product": {
+          "id": "00000000-0000-4000-8000-000000000001",
+          "name": "SYNTHETIC product",
+          "brand": null,
+          "manufacturer": null,
+          "baseUnit": null
+        },
+        "reviewSummary": {
+          "count": 0,
+          "averageRating": null
+        },
+        "variants": [
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "sku": null,
+            "gtin": null,
+            "label": "SYNTHETIC variant",
+            "attributes": {}
+          }
+        ],
+        "selectedVariantId": "00000000-0000-4000-8000-000000000002",
+        "offers": [
+          {
+            "offerId": "00000000-0000-4000-8000-000000000003",
+            "variantId": "00000000-0000-4000-8000-000000000002",
+            "supplier": {
+              "organizationId": "00000000-0000-4000-8000-000000000005",
+              "name": "SYNTHETIC supplier"
+            },
+            "supplierSku": null,
+            "price": {
+              "amountMinor": "9007199254740993",
+              "currency": "KZT",
+              "source": "BASE",
+              "normalizedPriceMinor": "900719925474099.3",
+              "baseUnits": "10",
+              "normalizedUnit": "SYNTHETIC unit"
+            },
+            "packaging": {
+              "name": "SYNTHETIC pack",
+              "quantityInBaseUnit": "10",
+              "unit": null
+            },
+            "minimumOrderQuantity": "0.000001",
+            "orderIncrement": "0.000001",
+            "availability": [
+              {
+                "warehouseId": "00000000-0000-4000-8000-000000000009",
+                "warehouse": "SYNTHETIC warehouse",
+                "cityId": "00000000-0000-4000-8000-000000000010",
+                "quantityAvailable": "1.000001",
+                "updatedAt": null,
+                "freshnessExpiresAt": null
+              }
+            ],
+            "delivery": [],
+            "markers": {
+              "verifiedDocuments": false,
+              "complianceRisk": null,
+              "officialDistributor": false,
+              "supplierWarranty": false,
+              "requiresConfirmation": true
+            }
+          }
+        ],
+        "comparisonAttributes": []
+      },
+      "preserve": [
+        {
+          "path": [
+            "offers",
+            0,
+            "price",
+            "amountMinor"
+          ],
+          "value": "9007199254740993"
+        },
+        {
+          "path": [
+            "offers",
+            0,
+            "availability",
+            0,
+            "quantityAvailable"
+          ],
+          "value": "1.000001"
+        }
+      ]
+    },
+    {
+      "id": "comparison-no-offer",
+      "schema": "offerComparisonResponseSchema",
+      "expected": "accept",
+      "payload": {
+        "product": {
+          "id": "00000000-0000-4000-8000-000000000001",
+          "name": "SYNTHETIC product",
+          "brand": null,
+          "manufacturer": null,
+          "baseUnit": null
+        },
+        "reviewSummary": {
+          "count": 0,
+          "averageRating": null
+        },
+        "variants": [
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "sku": null,
+            "gtin": null,
+            "label": "SYNTHETIC variant",
+            "attributes": {}
+          }
+        ],
+        "selectedVariantId": null,
+        "offers": [],
+        "comparisonAttributes": []
+      },
+      "preserve": [
+        {
+          "path": [
+            "selectedVariantId"
+          ],
+          "value": null
+        }
+      ]
+    },
+    {
+      "id": "comparison-invalid-currency",
+      "schema": "offerComparisonResponseSchema",
+      "expected": "reject",
+      "payload": {
+        "product": {
+          "id": "00000000-0000-4000-8000-000000000001",
+          "name": "SYNTHETIC product",
+          "brand": null,
+          "manufacturer": null,
+          "baseUnit": null
+        },
+        "reviewSummary": {
+          "count": 0,
+          "averageRating": null
+        },
+        "variants": [
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "sku": null,
+            "gtin": null,
+            "label": "SYNTHETIC variant",
+            "attributes": {}
+          }
+        ],
+        "selectedVariantId": "00000000-0000-4000-8000-000000000002",
+        "offers": [
+          {
+            "offerId": "00000000-0000-4000-8000-000000000003",
+            "variantId": "00000000-0000-4000-8000-000000000002",
+            "supplier": {
+              "organizationId": "00000000-0000-4000-8000-000000000005",
+              "name": "SYNTHETIC supplier"
+            },
+            "supplierSku": null,
+            "price": {
+              "amountMinor": "9007199254740993",
+              "currency": "kzt",
+              "source": "BASE",
+              "normalizedPriceMinor": "900719925474099.3",
+              "baseUnits": "10",
+              "normalizedUnit": "SYNTHETIC unit"
+            },
+            "packaging": {
+              "name": "SYNTHETIC pack",
+              "quantityInBaseUnit": "10",
+              "unit": null
+            },
+            "minimumOrderQuantity": "0.000001",
+            "orderIncrement": "0.000001",
+            "availability": [
+              {
+                "warehouseId": "00000000-0000-4000-8000-000000000009",
+                "warehouse": "SYNTHETIC warehouse",
+                "cityId": "00000000-0000-4000-8000-000000000010",
+                "quantityAvailable": "1.000001",
+                "updatedAt": null,
+                "freshnessExpiresAt": null
+              }
+            ],
+            "delivery": [],
+            "markers": {
+              "verifiedDocuments": false,
+              "complianceRisk": null,
+              "officialDistributor": false,
+              "supplierWarranty": false,
+              "requiresConfirmation": true
+            }
+          }
+        ],
+        "comparisonAttributes": []
+      },
+      "issuePaths": [
+        [
+          "offers",
+          0,
+          "price",
+          "currency"
+        ]
+      ]
+    },
+    {
+      "id": "order-current",
+      "schema": "supplierOrderResponseSchema",
+      "expected": "accept",
+      "payload": {
+        "id": "00000000-0000-4000-8000-000000000006",
+        "checkoutId": "00000000-0000-4000-8000-000000000007",
+        "supplierOrganizationId": "00000000-0000-4000-8000-000000000005",
+        "buyerOrganizationId": "00000000-0000-4000-8000-000000000004",
+        "orderNumber": "SYNTHETIC-READ-001",
+        "status": "AWAITING_CONFIRMATION",
+        "paymentStatus": "UNPAID",
+        "subtotalAmountMinor": "9007199254740993",
+        "currency": "KZT",
+        "transactionMode": "ONE_TIME",
+        "version": 7,
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "supplierOrderId": "00000000-0000-4000-8000-000000000006",
+            "offerId": "00000000-0000-4000-8000-000000000003",
+            "productVariantId": "00000000-0000-4000-8000-000000000002",
+            "quantity": "1.000001",
+            "acceptedQuantity": null,
+            "decisionReason": null,
+            "unitPriceMinor": "9007199254740993",
+            "totalPriceMinor": "9007199254740993",
+            "currency": "KZT",
+            "status": "PENDING",
+            "warehouseId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "createdAt": "2026-10-28T00:00:00.000Z",
+        "updatedAt": "2026-10-28T00:00:00.000Z"
+      },
+      "preserve": [
+        {
+          "path": [
+            "version"
+          ],
+          "value": 7
+        },
+        {
+          "path": [
+            "subtotalAmountMinor"
+          ],
+          "value": "9007199254740993"
+        },
+        {
+          "path": [
+            "items",
+            0,
+            "acceptedQuantity"
+          ],
+          "value": null
+        }
+      ],
+      "absent": [
+        [
+          "shipments"
+        ],
+        [
+          "documents"
+        ]
+      ]
+    },
+    {
+      "id": "order-detail-future-status",
+      "schema": "supplierOrderResponseSchema",
+      "expected": "accept",
+      "payload": {
+        "id": "00000000-0000-4000-8000-000000000006",
+        "checkoutId": "00000000-0000-4000-8000-000000000007",
+        "supplierOrganizationId": "00000000-0000-4000-8000-000000000005",
+        "buyerOrganizationId": "00000000-0000-4000-8000-000000000004",
+        "orderNumber": "SYNTHETIC-READ-001",
+        "status": "SYNTHETIC_FUTURE_STATUS",
+        "paymentStatus": "UNPAID",
+        "subtotalAmountMinor": "9007199254740993",
+        "currency": "KZT",
+        "transactionMode": "ONE_TIME",
+        "version": 7,
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "supplierOrderId": "00000000-0000-4000-8000-000000000006",
+            "offerId": "00000000-0000-4000-8000-000000000003",
+            "productVariantId": "00000000-0000-4000-8000-000000000002",
+            "quantity": "1.000001",
+            "acceptedQuantity": null,
+            "decisionReason": null,
+            "unitPriceMinor": "9007199254740993",
+            "totalPriceMinor": "9007199254740993",
+            "currency": "KZT",
+            "status": "PENDING",
+            "warehouseId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "createdAt": "2026-10-28T00:00:00.000Z",
+        "updatedAt": "2026-10-28T00:00:00.000Z"
+      },
+      "preserve": [
+        {
+          "path": [
+            "status"
+          ],
+          "value": "SYNTHETIC_FUTURE_STATUS"
+        }
+      ]
+    },
+    {
+      "id": "order-zero-version",
+      "schema": "supplierOrderResponseSchema",
+      "expected": "reject",
+      "payload": {
+        "id": "00000000-0000-4000-8000-000000000006",
+        "checkoutId": "00000000-0000-4000-8000-000000000007",
+        "supplierOrganizationId": "00000000-0000-4000-8000-000000000005",
+        "buyerOrganizationId": "00000000-0000-4000-8000-000000000004",
+        "orderNumber": "SYNTHETIC-READ-001",
+        "status": "AWAITING_CONFIRMATION",
+        "paymentStatus": "UNPAID",
+        "subtotalAmountMinor": "9007199254740993",
+        "currency": "KZT",
+        "transactionMode": "ONE_TIME",
+        "version": 0,
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "supplierOrderId": "00000000-0000-4000-8000-000000000006",
+            "offerId": "00000000-0000-4000-8000-000000000003",
+            "productVariantId": "00000000-0000-4000-8000-000000000002",
+            "quantity": "1.000001",
+            "acceptedQuantity": null,
+            "decisionReason": null,
+            "unitPriceMinor": "9007199254740993",
+            "totalPriceMinor": "9007199254740993",
+            "currency": "KZT",
+            "status": "PENDING",
+            "warehouseId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "createdAt": "2026-10-28T00:00:00.000Z",
+        "updatedAt": "2026-10-28T00:00:00.000Z"
+      },
+      "issuePaths": [
+        [
+          "version"
+        ]
+      ]
+    },
+    {
+      "id": "order-number-money",
+      "schema": "supplierOrderResponseSchema",
+      "expected": "reject",
+      "payload": {
+        "id": "00000000-0000-4000-8000-000000000006",
+        "checkoutId": "00000000-0000-4000-8000-000000000007",
+        "supplierOrganizationId": "00000000-0000-4000-8000-000000000005",
+        "buyerOrganizationId": "00000000-0000-4000-8000-000000000004",
+        "orderNumber": "SYNTHETIC-READ-001",
+        "status": "AWAITING_CONFIRMATION",
+        "paymentStatus": "UNPAID",
+        "subtotalAmountMinor": 1,
+        "currency": "KZT",
+        "transactionMode": "ONE_TIME",
+        "version": 7,
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "supplierOrderId": "00000000-0000-4000-8000-000000000006",
+            "offerId": "00000000-0000-4000-8000-000000000003",
+            "productVariantId": "00000000-0000-4000-8000-000000000002",
+            "quantity": "1.000001",
+            "acceptedQuantity": null,
+            "decisionReason": null,
+            "unitPriceMinor": "9007199254740993",
+            "totalPriceMinor": "9007199254740993",
+            "currency": "KZT",
+            "status": "PENDING",
+            "warehouseId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "createdAt": "2026-10-28T00:00:00.000Z",
+        "updatedAt": "2026-10-28T00:00:00.000Z"
+      },
+      "issuePaths": [
+        [
+          "subtotalAmountMinor"
+        ]
+      ]
+    },
+    {
+      "id": "order-malformed-date",
+      "schema": "supplierOrderResponseSchema",
+      "expected": "reject",
+      "payload": {
+        "id": "00000000-0000-4000-8000-000000000006",
+        "checkoutId": "00000000-0000-4000-8000-000000000007",
+        "supplierOrganizationId": "00000000-0000-4000-8000-000000000005",
+        "buyerOrganizationId": "00000000-0000-4000-8000-000000000004",
+        "orderNumber": "SYNTHETIC-READ-001",
+        "status": "AWAITING_CONFIRMATION",
+        "paymentStatus": "UNPAID",
+        "subtotalAmountMinor": "9007199254740993",
+        "currency": "KZT",
+        "transactionMode": "ONE_TIME",
+        "version": 7,
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "supplierOrderId": "00000000-0000-4000-8000-000000000006",
+            "offerId": "00000000-0000-4000-8000-000000000003",
+            "productVariantId": "00000000-0000-4000-8000-000000000002",
+            "quantity": "1.000001",
+            "acceptedQuantity": null,
+            "decisionReason": null,
+            "unitPriceMinor": "9007199254740993",
+            "totalPriceMinor": "9007199254740993",
+            "currency": "KZT",
+            "status": "PENDING",
+            "warehouseId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "createdAt": "2026-10-28T00:00:00.000Z",
+        "updatedAt": "not-a-date"
+      },
+      "issuePaths": [
+        [
+          "updatedAt"
+        ]
+      ]
+    },
+    {
+      "id": "order-workflow-minimal",
+      "schema": "orderWorkflowResponseSchema",
+      "expected": "accept",
+      "payload": {
+        "orderId": "00000000-0000-4000-8000-000000000006",
+        "order": {
+          "id": "00000000-0000-4000-8000-000000000006",
+          "checkoutId": "00000000-0000-4000-8000-000000000007",
+          "supplierOrganizationId": "00000000-0000-4000-8000-000000000005",
+          "buyerOrganizationId": "00000000-0000-4000-8000-000000000004",
+          "orderNumber": "SYNTHETIC-READ-001",
+          "status": "AWAITING_CONFIRMATION",
+          "paymentStatus": "UNPAID",
+          "subtotalAmountMinor": "9007199254740993",
+          "currency": "KZT",
+          "transactionMode": "ONE_TIME",
+          "version": 7,
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "supplierOrderId": "00000000-0000-4000-8000-000000000006",
+              "offerId": "00000000-0000-4000-8000-000000000003",
+              "productVariantId": "00000000-0000-4000-8000-000000000002",
+              "quantity": "1.000001",
+              "acceptedQuantity": null,
+              "decisionReason": null,
+              "unitPriceMinor": "9007199254740993",
+              "totalPriceMinor": "9007199254740993",
+              "currency": "KZT",
+              "status": "PENDING",
+              "warehouseId": "00000000-0000-4000-8000-000000000009"
+            }
+          ],
+          "createdAt": "2026-10-28T00:00:00.000Z",
+          "updatedAt": "2026-10-28T00:00:00.000Z"
+        },
+        "version": 7,
+        "status": "AWAITING_CONFIRMATION",
+        "paymentStatus": "UNPAID",
+        "invoiceDocumentId": null,
+        "claims": [],
+        "events": []
+      },
+      "preserve": [
+        {
+          "path": [
+            "invoiceDocumentId"
+          ],
+          "value": null
+        },
+        {
+          "path": [
+            "order",
+            "version"
+          ],
+          "value": 7
+        }
+      ],
+      "absent": [
+        [
+          "paymentSummary"
+        ],
+        [
+          "reservationState"
+        ],
+        [
+          "reductions"
+        ],
+        [
+          "returns"
+        ]
+      ]
+    },
+    {
+      "id": "workflow-null-summary",
+      "schema": "orderWorkflowResponseSchema",
+      "expected": "reject",
+      "payload": {
+        "orderId": "00000000-0000-4000-8000-000000000006",
+        "order": {
+          "id": "00000000-0000-4000-8000-000000000006",
+          "checkoutId": "00000000-0000-4000-8000-000000000007",
+          "supplierOrganizationId": "00000000-0000-4000-8000-000000000005",
+          "buyerOrganizationId": "00000000-0000-4000-8000-000000000004",
+          "orderNumber": "SYNTHETIC-READ-001",
+          "status": "AWAITING_CONFIRMATION",
+          "paymentStatus": "UNPAID",
+          "subtotalAmountMinor": "9007199254740993",
+          "currency": "KZT",
+          "transactionMode": "ONE_TIME",
+          "version": 7,
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "supplierOrderId": "00000000-0000-4000-8000-000000000006",
+              "offerId": "00000000-0000-4000-8000-000000000003",
+              "productVariantId": "00000000-0000-4000-8000-000000000002",
+              "quantity": "1.000001",
+              "acceptedQuantity": null,
+              "decisionReason": null,
+              "unitPriceMinor": "9007199254740993",
+              "totalPriceMinor": "9007199254740993",
+              "currency": "KZT",
+              "status": "PENDING",
+              "warehouseId": "00000000-0000-4000-8000-000000000009"
+            }
+          ],
+          "createdAt": "2026-10-28T00:00:00.000Z",
+          "updatedAt": "2026-10-28T00:00:00.000Z"
+        },
+        "version": 7,
+        "status": "AWAITING_CONFIRMATION",
+        "paymentStatus": "UNPAID",
+        "invoiceDocumentId": null,
+        "claims": [],
+        "events": [],
+        "paymentSummary": null
+      },
+      "issuePaths": [
+        [
+          "paymentSummary"
+        ]
+      ]
+    },
+    {
+      "id": "workflow-missing-invoice",
+      "schema": "orderWorkflowResponseSchema",
+      "expected": "reject",
+      "payload": {
+        "orderId": "00000000-0000-4000-8000-000000000006",
+        "order": {
+          "id": "00000000-0000-4000-8000-000000000006",
+          "checkoutId": "00000000-0000-4000-8000-000000000007",
+          "supplierOrganizationId": "00000000-0000-4000-8000-000000000005",
+          "buyerOrganizationId": "00000000-0000-4000-8000-000000000004",
+          "orderNumber": "SYNTHETIC-READ-001",
+          "status": "AWAITING_CONFIRMATION",
+          "paymentStatus": "UNPAID",
+          "subtotalAmountMinor": "9007199254740993",
+          "currency": "KZT",
+          "transactionMode": "ONE_TIME",
+          "version": 7,
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "supplierOrderId": "00000000-0000-4000-8000-000000000006",
+              "offerId": "00000000-0000-4000-8000-000000000003",
+              "productVariantId": "00000000-0000-4000-8000-000000000002",
+              "quantity": "1.000001",
+              "acceptedQuantity": null,
+              "decisionReason": null,
+              "unitPriceMinor": "9007199254740993",
+              "totalPriceMinor": "9007199254740993",
+              "currency": "KZT",
+              "status": "PENDING",
+              "warehouseId": "00000000-0000-4000-8000-000000000009"
+            }
+          ],
+          "createdAt": "2026-10-28T00:00:00.000Z",
+          "updatedAt": "2026-10-28T00:00:00.000Z"
+        },
+        "version": 7,
+        "status": "AWAITING_CONFIRMATION",
+        "paymentStatus": "UNPAID",
+        "claims": [],
+        "events": []
+      },
+      "issuePaths": [
+        [
+          "invoiceDocumentId"
+        ]
+      ]
+    },
+    {
+      "id": "workspace-orders-page",
+      "schema": "workspaceOrderPageSchema",
+      "expected": "accept",
+      "payload": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000006",
+            "orderNumber": "SYNTHETIC-READ-001",
+            "status": "AWAITING_CONFIRMATION",
+            "paymentStatus": "UNPAID",
+            "subtotalAmountMinor": "9007199254740993",
+            "currency": "KZT",
+            "createdAt": "2026-10-28T00:00:00.000Z",
+            "supplier": {
+              "id": "00000000-0000-4000-8000-000000000005",
+              "displayName": "SYNTHETIC supplier"
+            },
+            "buyer": {
+              "id": "00000000-0000-4000-8000-000000000004",
+              "displayName": "SYNTHETIC buyer"
+            },
+            "itemCount": 1
+          }
+        ],
+        "nextCursor": null
+      },
+      "preserve": [
+        {
+          "path": [
+            "nextCursor"
+          ],
+          "value": null
+        }
+      ],
+      "absent": [
+        [
+          "items",
+          0,
+          "nextAction"
+        ],
+        [
+          "items",
+          0,
+          "partiallyPaid"
+        ]
+      ]
+    },
+    {
+      "id": "workspace-null-action",
+      "schema": "workspaceOrderPageSchema",
+      "expected": "accept",
+      "payload": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000006",
+            "orderNumber": "SYNTHETIC-READ-001",
+            "status": "AWAITING_CONFIRMATION",
+            "paymentStatus": "UNPAID",
+            "subtotalAmountMinor": "9007199254740993",
+            "currency": "KZT",
+            "createdAt": "2026-10-28T00:00:00.000Z",
+            "supplier": {
+              "id": "00000000-0000-4000-8000-000000000005",
+              "displayName": "SYNTHETIC supplier"
+            },
+            "buyer": {
+              "id": "00000000-0000-4000-8000-000000000004",
+              "displayName": "SYNTHETIC buyer"
+            },
+            "itemCount": 1,
+            "nextAction": null
+          }
+        ],
+        "nextCursor": null
+      },
+      "preserve": [
+        {
+          "path": [
+            "items",
+            0,
+            "nextAction"
+          ],
+          "value": null
+        }
+      ]
+    },
+    {
+      "id": "workspace-unknown-enum",
+      "schema": "workspaceOrderPageSchema",
+      "expected": "reject",
+      "payload": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000006",
+            "orderNumber": "SYNTHETIC-READ-001",
+            "status": "SYNTHETIC_FUTURE_STATUS",
+            "paymentStatus": "UNPAID",
+            "subtotalAmountMinor": "9007199254740993",
+            "currency": "KZT",
+            "createdAt": "2026-10-28T00:00:00.000Z",
+            "supplier": {
+              "id": "00000000-0000-4000-8000-000000000005",
+              "displayName": "SYNTHETIC supplier"
+            },
+            "buyer": {
+              "id": "00000000-0000-4000-8000-000000000004",
+              "displayName": "SYNTHETIC buyer"
+            },
+            "itemCount": 1
+          }
+        ],
+        "nextCursor": null
+      },
+      "issuePaths": [
+        [
+          "items",
+          0,
+          "status"
+        ]
+      ]
+    },
+    {
+      "id": "error-denied",
+      "schema": "errorResponseSchema",
+      "expected": "accept",
+      "payload": {
+        "statusCode": 403,
+        "code": "FORBIDDEN",
+        "message": "SYNTHETIC denial",
+        "path": "/supplier-orders/00000000-0000-4000-8000-000000000006/workflow",
+        "timestamp": "2026-10-28T00:00:00.000Z"
+      },
+      "absent": [
+        [
+          "requestId"
+        ],
+        [
+          "details"
+        ]
+      ]
+    },
+    {
+      "id": "error-not-found",
+      "schema": "errorResponseSchema",
+      "expected": "accept",
+      "payload": {
+        "statusCode": 404,
+        "code": "NOT_FOUND",
+        "message": "SYNTHETIC object unavailable",
+        "path": "/supplier-orders/00000000-0000-4000-8000-000000000006/workflow",
+        "timestamp": "2026-10-28T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "error-opaque-message",
+      "schema": "errorResponseSchema",
+      "expected": "accept",
+      "payload": {
+        "statusCode": 409,
+        "code": "CONFLICT",
+        "message": {
+          "synthetic": "Envelope shape only; not a claimed endpoint response"
+        },
+        "path": "/supplier-orders/00000000-0000-4000-8000-000000000006/workflow",
+        "timestamp": "2026-10-28T00:00:00.000Z"
+      },
+      "preserve": [
+        {
+          "path": [
+            "message"
+          ],
+          "value": {
+            "synthetic": "Envelope shape only; not a claimed endpoint response"
+          }
+        }
+      ]
+    },
+    {
+      "id": "error-missing-code",
+      "schema": "errorResponseSchema",
+      "expected": "reject",
+      "payload": {
+        "statusCode": 403,
+        "message": "SYNTHETIC denial",
+        "path": "/supplier-orders/00000000-0000-4000-8000-000000000006/workflow",
+        "timestamp": "2026-10-28T00:00:00.000Z"
+      },
+      "issuePaths": [
+        [
+          "code"
+        ]
+      ]
+    },
+    {
+      "id": "error-throttled",
+      "schema": "errorResponseSchema",
+      "expected": "accept",
+      "payload": {
+        "statusCode": 429,
+        "code": "RATE_LIMIT_EXCEEDED",
+        "message": "SYNTHETIC throttled",
+        "path": "/supplier-orders/00000000-0000-4000-8000-000000000006/workflow",
+        "timestamp": "2026-10-28T00:00:00.000Z"
+      },
+      "absent": [
+        [
+          "details"
+        ],
+        [
+          "requestId"
+        ]
+      ]
+    }
+  ]
+}

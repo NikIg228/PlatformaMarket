@@ -1,0 +1,31 @@
+{
+  "name": "@platforma/market-mobile",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.ts",
+  "engines": {
+    "node": ">=24",
+    "npm": ">=11"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "jest --runInBand",
+    "bundle": "expo export --platform ios --platform android"
+  },
+  "dependencies": {
+    "expo": "58.0.21",
+    "expo-status-bar": "58.0.4",
+    "expo-system-ui": "58.0.7",
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "5.10.1",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@testing-library/react-native": "14.1.0",
+    "@types/jest": "30.0.0",
+    "@types/react": "19.3.0",
+    "jest-expo": "58.0.13",
+    "typescript": "6.0.3"
+  }
+}

@@ -1,0 +1,19 @@
+import { copy } from "./i18n";
+import { useState, useSyncExternalStore } from "react";
+import type { OfferConversationResolve, UnknownOfferResolve } from "./offer-conversation-resolve";
+import type { OfferConversationWindow } from "./offer-conversation-read";
+import type { Locale } from "./format-wire";
+import { conversationResolveCopy } from "./OrderConversationResolveUi";
+import { Button, Notice, Stack, Surface, Text } from "./ui/controls";
+export const offerResolveCopy={ru:{...conversationResolveCopy.ru,product:"Товар",variant:"Вариант",supplier:"Поставщик"},kk:{...conversationResolveCopy.kk,product:"Тауар",variant:"Нұсқа",supplier:"Жеткізуші"}} as const;
+function ResolveUnknownHistory({rows,locale}:{rows:readonly UnknownOfferResolve[];locale:Locale}){const [page,setPage]=useState(0),t=offerResolveCopy[locale],pages=Math.ceil(rows.length/8),index=Math.max(0,Math.min(page,pages-1)),end=rows.length-index*8,visible=rows.slice(Math.max(0,end-8),end);if(!rows.length)return null;return <Surface><Text strong>{t.history}</Text><Text secondary>{`${index+1}/${pages}`}</Text>{visible.map(row=><Text key={row.number}>{`${t.attempt} ${row.number} · ${t.historyVersion}: ${row.expectedVersion}`}</Text>)}{index<pages-1&&<Button label={t.historyEarlier} onPress={()=>setPage(index+1)}/>}{index>0&&<Button label={t.historyLater} onPress={()=>setPage(index-1)}/>}</Surface>;}
+export function OfferConversationResolveUi({model,window,locale}:{model:OfferConversationResolve;window:OfferConversationWindow;locale:Locale}){
+ useSyncExternalStore(model.subscribe,model.getSnapshot,model.getSnapshot);
+ const id=window.conversation?.id,t=offerResolveCopy[locale],state=id?model.stateFor(id):null,review=state?.review,authority=model.authorityIssue();if(!id||!state)return null;if(state.phase==="idle"&&!model.canPrepare(window)&&!state.priorUnknown.length)return null;if(authority)return state.phase==="idle"?null:<Notice kind="error" title={authority==="authentication"?t.authentication:t.denied}/>;
+ const issue=state.issue?(state.issue==="not-found"?t.notFound:state.issue==="invalid-result"?t.invalidResult:t[state.issue]):undefined;
+ return <Stack>{model.canPrepare(window)&&<Button label={t.start} onPress={()=>model.prepare(window)}/>}{state.phase!=="idle"&&<Surface>{review&&<Stack><Text strong>{t.review}</Text><Text>{`${t.product}: ${review.productName.trim()?review.productName:copy[locale].detailsUnknown}`}</Text><Text>{`${t.variant}: ${review.variantLabel.trim()?review.variantLabel:copy[locale].detailsUnknown}`}</Text><Text>{`${t.supplier}: ${review.supplierName.trim()?review.supplierName:copy[locale].partyUnknown}`}</Text><Text>{`${t.thread}: ${review.title}`}</Text><Text>{`${t.party}: ${review.counterpartyName}`}</Text><Text>{`${t.version}: ${review.expectedVersion}`}</Text><Text secondary>{t.body}</Text></Stack>}{issue&&<Notice kind="error" title={issue}/>}
+ {state.phase==="prepared"&&review&&<Stack>{!model.canConfirm(review)&&<Notice title={t.stale}/>}<Button label={t.cancel} onPress={()=>model.cancel(review)}/>{model.canConfirm(review)&&<Button label={t.confirm} onPress={()=>{void model.confirm(review);}}/>}</Stack>}
+ {state.phase==="pending"&&<Notice title={t.pending}/>}{state.received&&<Notice title={t.receipt} body={t.receiptBody}/>}{state.unresolved&&<Notice title={t.unknown} body={t.unknownBody}/>}{state.phase==="rejected"&&!state.unresolved&&<Notice title={t.rejected}/>}{state.phase==="reading"&&<Notice title={t.reading}/>}{state.phase==="read-error"&&<Notice kind="error" title={t.readError}/>}{(state.phase==="review"||state.phase==="observed")&&<Notice title={t.observed} body={t.observation}/>}
+ {model.canRead(id)&&<Button label={t.read} onPress={()=>{void model.readCurrent(id);}}/>}{model.canAcknowledge(id)&&<Button label={t.ack} onPress={()=>model.acknowledge(id)}/>}
+ </Surface>}<ResolveUnknownHistory key={id} rows={state.priorUnknown} locale={locale}/></Stack>;
+}

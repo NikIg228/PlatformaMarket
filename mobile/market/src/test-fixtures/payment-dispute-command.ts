@@ -1,0 +1,8 @@
+import { orderWorkflowResultSchema, type OrderWorkflowResponse } from "../../../../packages/schemas/src/order-workflow";
+import type { OpenPaymentDisputeInput } from "../order-workflow-command-fixture";
+import { cancellationCommandScope, cancellationCommandAuthorization, cancellationCommandWorkflow, cancellationCommandClaim } from "./order-cancellation-command";
+import { cancellationId } from "./cancellation-draft";
+export const disputeScope=cancellationCommandScope,disputeId=cancellationId,disputeAuthorization=cancellationCommandAuthorization;
+export function disputeWorkflow(){const value=cancellationCommandWorkflow(),claim=cancellationCommandClaim();claim.currency=value.order.currency;claim.supportTicketId=null;value.claims=[claim];return value;}
+export function disputeResult(orderId:string,input:Readonly<OpenPaymentDisputeInput>,source:OrderWorkflowResponse=disputeWorkflow(),eventId=disputeId(20900)){return orderWorkflowResultSchema.parse({orderId,version:input.expectedVersion+1,status:source.status,paymentStatus:source.paymentStatus,eventId});}
+export function disputedWorkflow(input:Readonly<OpenPaymentDisputeInput>,source:OrderWorkflowResponse=disputeWorkflow()){const value=JSON.parse(JSON.stringify(source)) as OrderWorkflowResponse;value.version=value.order.version=input.expectedVersion+1;value.claims=value.claims.map(claim=>claim.id===input.claimId?{...claim,status:"DISPUTED",supportTicketId:claim.supportTicketId??disputeId(20901)}:claim);value.events.push({id:disputeId(20900),action:"OPEN_PAYMENT_DISPUTE",actorId:disputeScope.userId,organizationId:disputeScope.organizationId,createdAt:"2026-10-30T12:13:14.000Z",details:{action:"OPEN_PAYMENT_DISPUTE",claimId:input.claimId,reason:input.reason}});return value;}

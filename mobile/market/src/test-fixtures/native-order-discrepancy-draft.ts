@@ -1,0 +1,5 @@
+import type { OrderDiscrepancyResult } from "../../../../packages/schemas/src/order-discrepancy";
+import { discrepancyBody,discrepancyWorkflow } from "./native-order-discrepancy";
+import { receiptId as id } from "./receipt-draft";
+export function discrepancyDraftBody(proposal=false){const value=discrepancyBody(),claim=value.discrepancies[0]!;claim.status=proposal?"RESOLUTION_PROPOSED":"DRAFT";claim.version=proposal?3:1;claim.resolution=proposal?"REDUCTION":null;claim.events=claim.events.slice(0,proposal?2:1);if(proposal)claim.events.push({...claim.events[1]!,id:id(270002),version:3,action:"RESPOND",actorId:id(270003),organizationId:discrepancyWorkflow().order.supplierOrganizationId,details:{decision:"COUNTER",resolution:"REDUCTION",reason:"SYNTHETIC supplier proposal"}});return value;}
+export function discrepancyDraftReceipt(action:"SAVE"|"SUBMIT"|"DECIDE",accepted=false):OrderDiscrepancyResult{const raw=discrepancyDraftBody(action==="DECIDE"),claim=raw.discrepancies[0]!;return{orderId:raw.orderId,discrepancyId:claim.id,version:claim.version+1,status:action==="SAVE"?"DRAFT":action==="SUBMIT"?"SUBMITTED":accepted?"AGREED":"REJECTED",eventId:id(270010)};}

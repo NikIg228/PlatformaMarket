@@ -1,0 +1,10 @@
+import { compareReceiptCounts } from "../shipment-receipt-draft";
+import type { OrderWorkflowResponse } from "../../../../packages/schemas/src/order-workflow";
+import type { ReceiveShipmentInput } from "../order-workflow-command-fixture";
+import { nativeDiscrepancyLines } from "./native-discrepancy-lines";
+import { discrepancyScope } from "./native-order-discrepancy";
+import { receiptId as id } from "./receipt-draft";
+export const bulkReceiptScope=discrepancyScope;
+export function bulkReceiptWorkflow(count=2){return nativeDiscrepancyLines(count).workflow;}
+export function bulkReceiptReply(version=4,status="PARTIALLY_FULFILLED"){return{orderId:bulkReceiptWorkflow().orderId,version,status,paymentStatus:"PAID",eventId:id(281000)};}
+export function afterBulkReceipt(before:OrderWorkflowResponse,input:Readonly<ReceiveShipmentInput>){const next=JSON.parse(JSON.stringify(before)) as OrderWorkflowResponse,ship=next.order.shipments!.find(row=>row.id===input.shipmentId)!;next.version=next.order.version=before.version+1;ship.version++;const date="2026-11-02T00:00:00.000Z";ship.updatedAt=next.order.updatedAt=date;for(const line of input.items)ship.items.find(row=>row.id===line.shipmentItemId)!.deliveredQuantity=line.deliveredQuantity;const full=ship.items.every(line=>compareReceiptCounts(line.quantity,line.deliveredQuantity)===0);if(full)for(const step of ship.fulfillmentSteps)if(["DELIVERY","PICKUP"].includes(step.type)){step.status="COMPLETED";step.completedAt=date;}ship.status=full&&ship.fulfillmentSteps.every(step=>["COMPLETED","CANCELLED"].includes(step.status))?"DELIVERED":"PARTIALLY_DELIVERED";if(full)ship.deliveredAt=date;next.status=next.order.status=next.order.shipments!.every(row=>row.status==="DELIVERED")?"DELIVERED":"PARTIALLY_FULFILLED";next.events.push({id:id(281000),action:"RECEIVE_SHIPMENT",actorId:discrepancyScope.userId,organizationId:discrepancyScope.organizationId,createdAt:date,details:{action:"RECEIVE_SHIPMENT",shipmentId:input.shipmentId,items:input.items}});return next;}

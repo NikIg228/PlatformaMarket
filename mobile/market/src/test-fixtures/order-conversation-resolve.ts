@@ -1,0 +1,7 @@
+import { conversationResolveSchema } from "../../../../packages/schemas/src/conversations";
+import { conversationScope, existingConversationId, conversationReadError, orderConversationPage, orderConversationMessage } from "./order-conversation";
+export { conversationScope as conversationResolveScope, existingConversationId, conversationReadError as conversationResolveError, conversationId as conversationResolveId, conversationWorkflow as conversationResolveWorkflow } from "./order-conversation";
+export { conversationSendAuthorization as conversationResolveAuthorization } from "./order-conversation-send";
+export function conversationResolvePage(version=5,resolved=false){const page=orderConversationPage();page.messages=[orderConversationMessage(65)];page.hasOlder=false;page.conversation.version=version;page.conversation.resolved=resolved;return page;}
+/** CAS transition fixture for this exact unlinked conversation; GET snapshots separately scripted. */
+export function conversationResolveProtocol(){let version=5,commits=0;return {version:()=>version,advanceTo:(value:number)=>{version=value;},commits:()=>commits,accept(scope:typeof conversationScope,id:string,input:Readonly<{expectedVersion:number}>){conversationResolveSchema.parse(input);if(scope.organizationId!==conversationScope.organizationId||scope.userId!==conversationScope.userId||id!==existingConversationId)throw conversationReadError(404);if(input.expectedVersion!==version)throw conversationReadError(409);version++;commits++;return {conversationId:id};}};}

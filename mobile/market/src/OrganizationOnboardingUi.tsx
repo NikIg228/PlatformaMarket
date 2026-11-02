@@ -1,0 +1,29 @@
+import { useSyncExternalStore } from "react";
+import type { Locale } from "./format-wire";
+import type { OrganizationOnboardingRead } from "./organization-onboarding-read";
+import type { OrganizationProfileEdit } from "./organization-profile-edit";
+import { Button, Loading, Notice, Stack, Surface, Text } from "./ui/controls";
+export const organizationOnboardingCopy = {
+  ru: { title: "Этапы подключения компании", read: "Проверить этапы подключения", loading: "Читаем этапы подключения", ready: "Проверка подключения: этапы выполнены", pending: "Проверка подключения: есть незавершённые этапы", body: "Показано состояние на момент проверки. После изменений проверьте этапы заново.", version: "Версия анкеты при проверке подключения", capability: "Контур проверки компании", capabilities: { BUYER: "Покупатель", SUPPLIER: "Поставщик" }, complete: "Выполнено", incomplete: "Не выполнено", sourceReason: "Причина из ответа сервера", stale: "Проверка подключения устарела после изменения анкеты", staleBody: "Прочитайте этапы заново, чтобы увидеть состояние с актуальной версией анкеты.", unknownSave: "Проверка этапов не подтверждает результат предыдущего сохранения анкеты.", openProfile: "Открыть анкету для этапа подключения", draft: "Текущая анкета открыта выше. Завершите ввод или проверку сохранения.", steps: { organization: "Реквизиты и контакты", warehouse: "Склад", credentials: "Документы организации", agreement: "Общие условия", admission: "Допуск оператора" }, actions: { warehouse: "Добавление склада выполняется в кабинете поставщика.", compliance: "Документы организации и результаты их проверки доступны в кабинете поставщика.", documents: "Ознакомление с актуальными условиями от имени компании выполняется в кабинете поставщика.", wait: "Дождитесь результата проверки оператором; причина указана в ответе сервера." }, issues: { denied: "Нет доступа к этапам подключения компании", authentication: "Для проверки этапов войдите снова", missing: "Проверка этапов сейчас недоступна", throttled: "Слишком много запросов. Повторите проверку позже", network: "Ответ проверки этапов не получен", contract: "Ответ проверки этапов не удалось проверить" } },
+  kk: { title: "Компанияны қосу кезеңдері", read: "Қосу кезеңдерін тексеру", loading: "Қосу кезеңдерін оқып жатырмыз", ready: "Қосылу тексеруі: кезеңдер орындалған", pending: "Қосылу тексеруі: аяқталмаған кезеңдер бар", body: "Тексеру сәтіндегі күй көрсетілген. Өзгерістерден кейін кезеңдерді қайта тексеріңіз.", version: "Қосылуды тексеру кезіндегі сауалнама нұсқасы", capability: "Компанияны тексеру бағыты", capabilities: { BUYER: "Сатып алушы", SUPPLIER: "Жеткізуші" }, complete: "Орындалған", incomplete: "Орындалмаған", sourceReason: "Сервер жауабындағы себеп", stale: "Сауалнама өзгергеннен кейін қосылу тексеруі ескірді", staleBody: "Сауалнаманың ағымдағы нұсқасымен күйді көру үшін кезеңдерді қайта оқыңыз.", unknownSave: "Кезеңдерді тексеру сауалнаманы бұрын сақтау нәтижесін растамайды.", openProfile: "Қосылу кезеңі үшін сауалнаманы ашу", draft: "Ағымдағы сауалнама жоғарыда ашылған. Енгізуді не сақтауды тексеруді аяқтаңыз.", steps: { organization: "Деректемелер мен байланыстар", warehouse: "Қойма", credentials: "Ұйым құжаттары", agreement: "Жалпы шарттар", admission: "Оператордың рұқсаты" }, actions: { warehouse: "Қойманы қосу жеткізуші кабинетінде орындалады.", compliance: "Ұйым құжаттары мен оларды тексеру нәтижелері жеткізуші кабинетінде қолжетімді.", documents: "Компания атынан ағымдағы шарттармен танысу жеткізуші кабинетінде орындалады.", wait: "Оператор тексеруінің нәтижесін күтіңіз; себеп сервер жауабында көрсетілген." }, issues: { denied: "Компанияның қосылу кезеңдеріне қолжетімділік жоқ", authentication: "Кезеңдерді тексеру үшін қайта кіріңіз", missing: "Кезеңдерді тексеру қазір қолжетімсіз", throttled: "Сұраулар тым көп. Кейінірек қайта тексеріңіз", network: "Кезеңдерді тексеру жауабы алынбады", contract: "Кезеңдерді тексеру жауабын тексеру мүмкін болмады" } },
+} as const;
+export function OrganizationOnboardingUi({ model, profileModel, locale }: { model: OrganizationOnboardingRead; profileModel: OrganizationProfileEdit; locale: Locale }) {
+  const state = useSyncExternalStore(model.subscribe, model.getSnapshot, model.getSnapshot), profile = useSyncExternalStore(profileModel.subscribe, profileModel.getSnapshot, profileModel.getSnapshot), t = organizationOnboardingCopy[locale];
+  if (!model.available()) return null;
+  const stale = model.stale(), value = state.value, profileBusy = ["editing", "review", "saving", "reading"].includes(profile.phase);
+  return <Surface><Text kind="subtitle">{t.title}</Text>
+    <Button label={t.read} disabled={state.phase === "loading"} onPress={() => { void model.read(); }} />
+    {state.phase === "loading" && <Loading label={t.loading} />}
+    {state.issue && <Notice kind="error" title={t.issues[state.issue]} />}
+    {state.phase === "ready" && value && <Stack>
+      {profile.phase === "unknown" || profile.phase === "observed" ? <Notice title={t.unknownSave} /> : null}
+      {stale ? <Notice title={t.stale} body={t.staleBody} /> : <Notice title={value.ready ? t.ready : t.pending} body={t.body} />}
+      <Text>{t.version}: {value.organization.version}</Text><Text>{t.capability}: {t.capabilities[value.capability]}</Text>
+      {!stale && value.steps.map(step => <Surface key={step.id}><Text strong>{t.steps[step.id]}: {step.complete ? t.complete : t.incomplete}</Text>
+        {step.reason && <Text selectable>{t.sourceReason}: {step.reason}</Text>}
+        {!step.complete && step.action === "profile" && (profileBusy ? <Text>{t.draft}</Text> : <Button label={t.openProfile} onPress={() => { void profileModel.read(); }} />)}
+        {!step.complete && step.action !== "profile" && <Text>{t.actions[step.action]}</Text>}
+      </Surface>)}
+    </Stack>}
+  </Surface>;
+}

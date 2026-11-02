@@ -1,0 +1,11 @@
+import { conversationSummarySchema } from "../../../../packages/schemas/src/conversations";
+import { offerMessagesAuthorization } from "./offer-conversation-messages";
+import { offerConversationScope as scope, offerConversationId as uuid, offerConversationThreadId as threadId, offerComparison as comparison, offerConversationLookup, offerConversationAuthorization, offerConversationPage } from "./offer-conversation";
+export { offerConversationScope as inboxScope, offerConversationId as inboxId } from "./offer-conversation";
+export { conversationReadError } from "./order-conversation";
+export { offerConversationLookup, offerConversationAuthorization };
+export function inboxAuthorization(){return offerMessagesAuthorization({permissions:["support.ticket.view"]});}
+export function inboxRow(index=0,supplier=false,order=false){const base=offerConversationPage().conversation;return conversationSummarySchema.parse({...base,id:index===0?threadId:uuid(53000+index),contextId:index===0?comparison().offers[0]!.offerId:uuid(54000+index),contextType:order?"ORDER":"OFFER",productId:order?null:index===0?comparison().product.id:uuid(55000+index),buyerOrganizationId:supplier?uuid(56000+index):scope.organizationId,supplierOrganizationId:supplier?scope.organizationId:base.supplierOrganizationId,title:`SYNTHETIC inbox conversation ${index}`,lastMessage:`SYNTHETIC inbox last message ${index}`,counterpartyName:`SYNTHETIC inbox counterparty ${index}`,version:5,latestSequence:65});}
+export function inboxPage(offset=0,mixed=false){return {items:offset===0?Array.from({length:30},(_,index)=>inboxRow(index,mixed&&index>0&&index%2===1,mixed&&index>0&&index%2===0)):[inboxRow(offset)],hasMore:offset===0,unreadCount:99999};}
+export function inboxComparison(index=0){const raw=comparison(),row=inboxRow(index);raw.product.id=row.productId!;raw.offers[0]!.offerId=row.contextId;raw.offers[0]!.supplier.organizationId=row.supplierOrganizationId;raw.selectedVariantId=null;return raw;}
+export function inboxDetail(index=0){const raw=offerConversationPage(),row=inboxRow(index);raw.conversation={...raw.conversation,...row};raw.messages=raw.messages.slice(-2).map(message=>({...message,conversationId:row.id}));raw.hasOlder=false;return raw;}

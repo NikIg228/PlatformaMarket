@@ -1,0 +1,12 @@
+import { conversationEscalationSchema, type ConversationEscalation } from "../../../../packages/schemas/src/conversations";
+import { offerMessagesAuthorization } from "./offer-conversation-messages";
+import { offerConversationScope as conversationScope, offerConversationThreadId as existingConversationId, offerConversationId as conversationId, offerConversationPage as orderConversationPage } from "./offer-conversation";
+import { conversationReadError } from "./order-conversation";
+import { offerSupportTicketId as conversationSupportTicketId } from "./offer-conversation-support";
+export { offerConversationScope as escalationScope, offerConversationThreadId as existingConversationId, offerConversationId as escalationId, offerComparison as comparison, offerConversationLookup as lookup, offerConversationAuthorization as readAuthorization } from "./offer-conversation";
+export { conversationReadError } from "./order-conversation";
+export const escalationAuthorization=offerMessagesAuthorization;
+export const escalationRaw="  SYNTHETIC уточните предложение 😀\nЕкінші жол  ";
+export function escalationPage(mode:"none"|"finished"|"active"="none",version=5){const page=orderConversationPage();page.messages=page.messages.slice(-2);page.hasOlder=false;page.conversation.version=version;page.conversation.supportTicketId=mode==="none"?null:conversationSupportTicketId;page.conversation.supportStatus=mode==="none"?null:mode==="finished"?"CLOSED":"OPEN";return page;}
+/** Fixed source-command response cache only; read pages are independent supplied snapshots. */
+export function escalationProtocol(){const saved=new Map<string,{json:string;result:Readonly<{ticketId:string}>}>();let effects=0;return {key:(offset=0)=>conversationId(51000+offset),effects:()=>effects,accept(owner:typeof conversationScope,id:string,input:Readonly<ConversationEscalation>){conversationEscalationSchema.parse(input);if(owner.organizationId!==conversationScope.organizationId||owner.userId!==conversationScope.userId||id!==existingConversationId)throw conversationReadError(404);const key=`conversation.escalate:${owner.organizationId}:${owner.userId}:${input.idempotencyKey}`,json=JSON.stringify({id,...input}),prior=saved.get(key);if(prior){if(prior.json!==json)throw conversationReadError(409);return prior.result;}effects++;const result=Object.freeze({ticketId:conversationSupportTicketId});saved.set(key,{json,result});return result;}};}

@@ -1,0 +1,9 @@
+import type { BuyerRegistration } from "../buyer-registration";
+import { response, type Reply, server } from "./market-session";
+import { reviewId } from "./buyer-review";
+export const registrationEmail = "synthetic-owner@example.invalid", registrationToken = "SYNTHETIC-private-pending-registration-token".repeat(2), registrationPassword = " SYNTHETIC-owner-password ";
+export const registrationRaw = { ownerDisplayName: "  SYNTHETIC owner  ", email: "  SYNTHETIC-OWNER@EXAMPLE.INVALID  ", bin: "123456789012", legalName: "  SYNTHETIC legal company  ", organizationDisplayName: "  SYNTHETIC buyer company  " };
+export function registrationReply(overrides: object = {}) { return { registration: { id: reviewId(190001), email: registrationEmail, capability: "BUYER", status: "PENDING", expiresAt: "2099-01-02T00:00:00.000Z", organizationId: null, createdAt: "2099-01-01T00:00:00.000Z" }, registrationToken, replayed: false, ...overrides }; }
+export const registeredReply = (delivery = "PROVIDER") => ({ ok: true, verificationRequired: true, email: registrationEmail, delivery });
+export function prepareRegistration(model: BuyerRegistration) { for (const [field, value] of Object.entries(registrationRaw)) model.change(field as keyof typeof registrationRaw, value); model.consent("termsAccepted", true); model.consent("privacyAccepted", true); model.review(); return model.getSnapshot().preview!; }
+export function registrationBackend(override?: (path: string, init: RequestInit) => Reply | Promise<Reply> | undefined) { return server((path, init) => { const custom = override?.(path, init); if (custom) return custom; if (path === "/auth/current?workspace=BUYER") return response(null); if (path === "/onboarding/registrations") return response(registrationReply(),201); if (path === "/auth/register") return response(registeredReply(),201); return undefined; }); }

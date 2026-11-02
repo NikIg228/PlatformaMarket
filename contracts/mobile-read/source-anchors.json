@@ -1,0 +1,186 @@
+{
+  "sourceSnapshot": "ffddb740c24c140cfe8301214f741099ea2526ba",
+  "snapshotAcceptance": "published_reference_not_integrated_backend_acceptance",
+  "schemas": {
+    "catalogVariantSchema": {
+      "path": "packages/schemas/src/core-api.ts",
+      "symbol": "catalogVariantSchema",
+      "line": 80,
+      "sha256": "fbbece9c8e39418d17a4ab4e808289899a27557cee6370a9987d4630c3e74c88",
+      "gitBlob": "cdc609a79cdd89363f9d02d02eb382368fe870b7",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/core-api.ts#L80"
+    },
+    "catalogSearchOfferSchema": {
+      "path": "packages/schemas/src/core-api.ts",
+      "symbol": "catalogSearchOfferSchema",
+      "line": 99,
+      "sha256": "fbbece9c8e39418d17a4ab4e808289899a27557cee6370a9987d4630c3e74c88",
+      "gitBlob": "cdc609a79cdd89363f9d02d02eb382368fe870b7",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/core-api.ts#L99"
+    },
+    "catalogSearchProductSchema": {
+      "path": "packages/schemas/src/core-api.ts",
+      "symbol": "catalogSearchProductSchema",
+      "line": 135,
+      "sha256": "fbbece9c8e39418d17a4ab4e808289899a27557cee6370a9987d4630c3e74c88",
+      "gitBlob": "cdc609a79cdd89363f9d02d02eb382368fe870b7",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/core-api.ts#L135"
+    },
+    "catalogSearchResponseSchema": {
+      "path": "packages/schemas/src/core-api.ts",
+      "symbol": "catalogSearchResponseSchema",
+      "line": 179,
+      "sha256": "fbbece9c8e39418d17a4ab4e808289899a27557cee6370a9987d4630c3e74c88",
+      "gitBlob": "cdc609a79cdd89363f9d02d02eb382368fe870b7",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/core-api.ts#L179"
+    },
+    "offerComparisonResponseSchema": {
+      "path": "packages/schemas/src/core-api.ts",
+      "symbol": "offerComparisonResponseSchema",
+      "line": 249,
+      "sha256": "fbbece9c8e39418d17a4ab4e808289899a27557cee6370a9987d4630c3e74c88",
+      "gitBlob": "cdc609a79cdd89363f9d02d02eb382368fe870b7",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/core-api.ts#L249"
+    },
+    "supplierOrderResponseSchema": {
+      "path": "packages/schemas/src/core-api.ts",
+      "symbol": "supplierOrderResponseSchema",
+      "line": 706,
+      "sha256": "fbbece9c8e39418d17a4ab4e808289899a27557cee6370a9987d4630c3e74c88",
+      "gitBlob": "cdc609a79cdd89363f9d02d02eb382368fe870b7",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/core-api.ts#L706"
+    },
+    "errorResponseSchema": {
+      "path": "packages/schemas/src/core-api.ts",
+      "symbol": "errorResponseSchema",
+      "line": 25,
+      "sha256": "fbbece9c8e39418d17a4ab4e808289899a27557cee6370a9987d4630c3e74c88",
+      "gitBlob": "cdc609a79cdd89363f9d02d02eb382368fe870b7",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/core-api.ts#L25"
+    },
+    "workspaceOrderPageSchema": {
+      "path": "packages/schemas/src/workspace-reads.ts",
+      "symbol": "workspaceOrderPageSchema",
+      "line": 28,
+      "sha256": "29810fb5d717d414df1c7e4175bfab0efd99db58ce192202395f762a392ef8bc",
+      "gitBlob": "d4f654a90f9672adb196fbfa3a269192a398d581",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/workspace-reads.ts#L28"
+    },
+    "orderWorkflowResponseSchema": {
+      "path": "packages/schemas/src/order-workflow.ts",
+      "symbol": "orderWorkflowResponseSchema",
+      "line": 31,
+      "sha256": "62dd02dafe891d3729dec5274de4e6daa7891d53e8361ceca1aa0ae2298dca5d",
+      "gitBlob": "ac258e06501d30c6acf03d53b588fd14ebc495a7",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/order-workflow.ts#L31"
+    }
+  },
+  "semanticSources": [
+    {
+      "path": "apps/api/src/modules/commerce/order-workflow.service.ts",
+      "lines": [
+        29,
+        51
+      ],
+      "boundary": "existing order visibility/read projection; no authorization test or auth/reset inspection"
+    },
+    {
+      "path": "packages/api-client/src/index.ts",
+      "lines": [
+        373,
+        400
+      ],
+      "boundary": "catalog/compare read methods only"
+    },
+    {
+      "path": "packages/api-client/src/index.ts",
+      "lines": [
+        589,
+        590
+      ],
+      "boundary": "workspace order read method"
+    },
+    {
+      "path": "packages/api-client/src/index.ts",
+      "lines": [
+        621,
+        623
+      ],
+      "boundary": "order workflow read method"
+    }
+  ],
+  "consumerSources": [
+    {
+      "path": "packages/schemas/src/index.ts",
+      "symbol": "searchCatalogSchema",
+      "line": 707,
+      "sha256": "af6abe9b8db67ed79dd9df7dc153b4f1b1b2f3c1b887f970845f4068508896fe",
+      "gitBlob": "7f9fd5d85050c4aedb857eb81b577b3789cbabb8",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/index.ts#L707"
+    },
+    {
+      "path": "packages/schemas/src/index.ts",
+      "symbol": "compareOffersSchema",
+      "line": 735,
+      "sha256": "af6abe9b8db67ed79dd9df7dc153b4f1b1b2f3c1b887f970845f4068508896fe",
+      "gitBlob": "7f9fd5d85050c4aedb857eb81b577b3789cbabb8",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/index.ts#L735"
+    },
+    {
+      "path": "packages/schemas/src/index.ts",
+      "symbol": "SearchCatalogRequest",
+      "line": 774,
+      "sha256": "af6abe9b8db67ed79dd9df7dc153b4f1b1b2f3c1b887f970845f4068508896fe",
+      "gitBlob": "7f9fd5d85050c4aedb857eb81b577b3789cbabb8",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/index.ts#L774"
+    },
+    {
+      "path": "packages/schemas/src/index.ts",
+      "symbol": "CompareOffersRequest",
+      "line": 775,
+      "sha256": "af6abe9b8db67ed79dd9df7dc153b4f1b1b2f3c1b887f970845f4068508896fe",
+      "gitBlob": "7f9fd5d85050c4aedb857eb81b577b3789cbabb8",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/index.ts#L775"
+    },
+    {
+      "path": "packages/schemas/src/workspace-reads.ts",
+      "symbol": "workspaceOrderQuerySchema",
+      "line": 12,
+      "sha256": "29810fb5d717d414df1c7e4175bfab0efd99db58ce192202395f762a392ef8bc",
+      "gitBlob": "d4f654a90f9672adb196fbfa3a269192a398d581",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/schemas/src/workspace-reads.ts#L12"
+    },
+    {
+      "path": "packages/api-client/src/index.ts",
+      "symbol": "searchCatalog",
+      "line": 373,
+      "sha256": "e5d90236369766f151720fb24784b392ab45ee1bb5e33c5cc7c8a4f26c069245",
+      "gitBlob": "2e8597ed30e7833bdb9334a41867c6921afd5c4e",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/api-client/src/index.ts#L373"
+    },
+    {
+      "path": "packages/api-client/src/index.ts",
+      "symbol": "compareOffers",
+      "line": 387,
+      "sha256": "e5d90236369766f151720fb24784b392ab45ee1bb5e33c5cc7c8a4f26c069245",
+      "gitBlob": "2e8597ed30e7833bdb9334a41867c6921afd5c4e",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/api-client/src/index.ts#L387"
+    },
+    {
+      "path": "packages/api-client/src/index.ts",
+      "symbol": "workspaceOrders",
+      "line": 589,
+      "sha256": "e5d90236369766f151720fb24784b392ab45ee1bb5e33c5cc7c8a4f26c069245",
+      "gitBlob": "2e8597ed30e7833bdb9334a41867c6921afd5c4e",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/api-client/src/index.ts#L589"
+    },
+    {
+      "path": "packages/api-client/src/index.ts",
+      "symbol": "getOrderWorkflow",
+      "line": 621,
+      "sha256": "e5d90236369766f151720fb24784b392ab45ee1bb5e33c5cc7c8a4f26c069245",
+      "gitBlob": "2e8597ed30e7833bdb9334a41867c6921afd5c4e",
+      "url": "https://github.com/NikIg228/PlatformaMarket/blob/ffddb740c24c140cfe8301214f741099ea2526ba/packages/api-client/src/index.ts#L621"
+    }
+  ]
+}

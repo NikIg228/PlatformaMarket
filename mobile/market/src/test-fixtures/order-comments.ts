@@ -1,0 +1,6 @@
+import { dashboardWorkflow } from "./buyer-dashboard";
+import { listDraftId, listDraftScope } from "./list-draft";
+export const commentId = listDraftId, commentScope = listDraftScope;
+export function commentWorkflow() { return dashboardWorkflow(); }
+export function orderComment(overrides: Partial<{ id: string; supplierOrderId: string; authorOrganizationId: string; authorUserId: string; body: string; visibility: string; version: number; createdAt: string; editedAt: string | null }> = {}) { return { id: commentId(9200), supplierOrderId: commentWorkflow().orderId, authorOrganizationId: commentScope.organizationId, authorUserId: commentId(20), body: "SYNTHETIC buyer order comment", visibility: "PARTIES_AND_OPERATOR", idempotencyKey: "SYNTHETIC private comment key", editedAt: null, version: 2, createdAt: "2026-10-28T01:02:03.000Z", updatedAt: "2026-10-29T01:02:03.000Z", ...overrides }; }
+export function orderComments() { return [orderComment(), orderComment({ id: commentId(9201), authorOrganizationId: commentWorkflow().order.supplierOrganizationId, authorUserId: commentId(9210), body: "SYNTHETIC supplier order comment", createdAt: "2026-10-29T02:02:03.000Z", editedAt: "2026-10-29T03:02:03.000Z", version: 3 })]; }

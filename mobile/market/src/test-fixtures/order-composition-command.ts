@@ -1,0 +1,8 @@
+import { orderWorkflowResultSchema, type OrderWorkflowResponse } from "../../../../packages/schemas/src/order-workflow";
+import type { AcceptCompositionInput } from "../order-workflow-command-fixture";
+import { cancellationCommandScope, cancellationCommandAuthorization, cancellationCommandWorkflow } from "./order-cancellation-command";
+import { cancellationId } from "./cancellation-draft";
+export const compositionScope=cancellationCommandScope,compositionId=cancellationId,compositionAuthorization=cancellationCommandAuthorization;
+export function compositionWorkflow(){const value=cancellationCommandWorkflow();value.status=value.order.status="PARTIALLY_CONFIRMED";value.paymentStatus=value.order.paymentStatus="UNPAID";value.reservationState={status:"ACTIVE",expiresAt:"2026-10-30T15:00:00.000Z"};return value;}
+export function compositionResult(orderId:string,input:Readonly<AcceptCompositionInput>,eventId=compositionId(20103)){return orderWorkflowResultSchema.parse({orderId,version:input.expectedVersion+1,status:"CONFIRMED",paymentStatus:"UNPAID",eventId});}
+export function acceptedComposition(input:Readonly<AcceptCompositionInput>,source:OrderWorkflowResponse=compositionWorkflow()){const value=JSON.parse(JSON.stringify(source)) as OrderWorkflowResponse;value.status=value.order.status="CONFIRMED";value.version=value.order.version=input.expectedVersion+1;value.events.push({id:compositionId(20103),action:"ACCEPT_COMPOSITION",actorId:compositionScope.userId,organizationId:compositionScope.organizationId,createdAt:"2026-10-30T11:12:13.000Z",details:{action:"ACCEPT_COMPOSITION"}});return value;}

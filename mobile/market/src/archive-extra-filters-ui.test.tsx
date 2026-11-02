@@ -1,0 +1,65 @@
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { jest } from "@jest/globals";
+import App from "../App";
+import * as ArchiveUi from "./DocumentArchiveRead";
+import { archiveCopy, archiveAccountingStatusLabel } from "./document-archive-i18n";
+import { copy } from "./i18n";
+import { type MobileReadClient } from "./read-controller";
+import { archiveDocument, archiveId, archivePage, archiveScope, archiveSummary, archiveEnvelope } from "./test-fixtures/document-archive";
+import { listDraftComparison, listDraftPayload } from "./test-fixtures/list-draft";
+const fromText = "2026-10-28 00:00:00.000", toText = "2026-10-29 23:59:59.999";
+function client() { return {
+  searchCatalog: jest.fn<MobileReadClient["searchCatalog"]>().mockResolvedValue(listDraftPayload("catalog-empty")), compareOffers: jest.fn<MobileReadClient["compareOffers"]>().mockResolvedValue(listDraftComparison()), workspaceOrders: jest.fn<MobileReadClient["workspaceOrders"]>().mockResolvedValue(listDraftPayload("workspace-orders-page")), getOrderWorkflow: jest.fn<MobileReadClient["getOrderWorkflow"]>().mockResolvedValue(listDraftPayload("order-workflow-minimal")),
+  documentArchiveFixture: jest.fn<NonNullable<MobileReadClient["documentArchiveFixture"]>>().mockImplementation(async (_scope, input) => archivePage([archiveDocument({ accountingStatus: input.accountingStatus ?? "NOT_APPLICABLE" })])), documentArchiveSummaryFixture: jest.fn<NonNullable<MobileReadClient["documentArchiveSummaryFixture"]>>().mockResolvedValue(archiveSummary()), archiveDocumentFixture: jest.fn<NonNullable<MobileReadClient["archiveDocumentFixture"]>>().mockImplementation(async (_scope, id) => archiveDocument({ id })),
+}; }
+const session = (api: MobileReadClient, scope = archiveScope) => ({ client: api, scope, organizationName: "SYNTHETIC organization" });
+async function open(api = client(), locale: "ru" | "kk" = "ru") { const view = await render(<App session={session(api)} locale={locale} />); await fireEvent.press(screen.getByRole("tab", { name: archiveCopy[locale].registry })); await screen.findByText(`${archiveCopy[locale].total}: 120`); await fireEvent.press(screen.getByRole("button", { name: archiveCopy[locale].filters })); return view; }
+async function choose(locale: "ru" | "kk") { const a = archiveCopy[locale]; await fireEvent.press(screen.getByRole("tab", { name: `${a.accountingStatus}: ${archiveAccountingStatusLabel("REVIEWED", locale)}` })); await fireEvent.changeText(screen.getByLabelText(a.dateFrom), fromText); await fireEvent.changeText(screen.getByLabelText(a.dateTo), toText); }
+it.each(["ru", "kk"] as const)("applies explicit inclusive UTC period and accounting choice in %s without changing summary or reading on edits", async locale => {
+  const api = client(), a = archiveCopy[locale]; await open(api, locale); await choose(locale); expect(api.documentArchiveFixture).toHaveBeenCalledTimes(1); expect(screen.getByText(a.dateBoundary)).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: a.apply })); await screen.findByText(`${a.accountingStatus}: ${archiveAccountingStatusLabel("REVIEWED", locale)}`);
+  expect(api.documentArchiveFixture).toHaveBeenLastCalledWith(archiveScope, { limit: 25, accountingStatus: "REVIEWED", dateFrom: "2026-10-28T00:00:00.000Z", dateTo: "2026-10-29T23:59:59.999Z" }); expect(screen.getByText(`${a.dateFrom}: ${fromText}`)).toBeOnTheScreen(); expect(screen.getByText(`${a.dateTo}: ${toText}`)).toBeOnTheScreen(); expect(screen.getByText(`${a.total}: 120`)).toBeOnTheScreen(); expect(api.documentArchiveSummaryFixture).toHaveBeenLastCalledWith(archiveScope);
+  expect(screen.queryByText(/SYNTHETIC private/)).toBeNull(); expect(screen.queryByRole("link")).toBeNull();
+});
+it.each(["2026-02-30 00:00:00", "2026-10-28", "2026-10-28 12:00:00+05:00"])("keeps invalid raw date %s local and disables apply without normalization or requests", async text => {
+  const api = client(), a = archiveCopy.ru; await open(api); await fireEvent.changeText(screen.getByLabelText(a.dateFrom), text); expect(screen.getByLabelText(a.dateFrom)).toHaveProp("value", text); expect(screen.getByRole("button", { name: a.apply })).toBeDisabled(); expect(screen.getByText(a.filterInvalid)).toBeOnTheScreen(); await fireEvent.press(screen.getByRole("button", { name: a.apply })); expect(api.documentArchiveFixture).toHaveBeenCalledTimes(1);
+});
+it("rejects reversed range; clearing one bound permits an actual open-ended read", async () => {
+  const api = client(), a = archiveCopy.ru; await open(api); await fireEvent.changeText(screen.getByLabelText(a.dateFrom), "2026-10-29 00:00:00"); await fireEvent.changeText(screen.getByLabelText(a.dateTo), "2026-10-28 00:00:00"); expect(screen.getByRole("button", { name: a.apply })).toBeDisabled();
+  await fireEvent.changeText(screen.getByLabelText(a.dateFrom), ""); await fireEvent.press(screen.getByRole("button", { name: a.apply })); await screen.findByRole("alert"); expect(api.documentArchiveFixture).toHaveBeenLastCalledWith(archiveScope, { limit: 25, dateTo: "2026-10-28T00:00:00Z" }); expect(screen.queryByText("SYNTHETIC registry document")).toBeNull();
+});
+it("keeps raw filter fields through refresh denial/retry and locale changes with stable query dependencies", async () => {
+  const api = client(), a = archiveCopy.ru, view = await open(api); await choose("ru"); await fireEvent.changeText(screen.getByLabelText(a.dateFrom), ` ${fromText} `); api.documentArchiveFixture.mockRejectedValueOnce(archiveEnvelope(403)); await fireEvent.press(screen.getByRole("button", { name: copy.ru.refresh })); await screen.findByRole("alert"); await view.rerender(<App session={session(api)} locale="kk" />); await fireEvent.press(screen.getByRole("button", { name: copy.kk.retry })); await screen.findByLabelText(archiveCopy.kk.dateFrom);
+  expect(screen.getByLabelText(archiveCopy.kk.dateFrom)).toHaveProp("value", ` ${fromText} `); expect(screen.getByLabelText(archiveCopy.kk.dateTo)).toHaveProp("value", toText); expect(api.documentArchiveFixture).toHaveBeenCalledTimes(3); await view.rerender(<App session={session(api)} locale="ru" />); expect(api.documentArchiveFixture).toHaveBeenCalledTimes(3); expect(screen.getByLabelText(a.dateFrom)).toHaveProp("value", ` ${fromText} `);
+});
+it("restores applied filters after cancel, and unchanged apply makes no read while clear removes all date/status selectors", async () => {
+  const api = client(), a = archiveCopy.ru; await open(api); await choose("ru"); await fireEvent.press(screen.getByRole("button", { name: copy.ru.back })); expect(api.documentArchiveFixture).toHaveBeenCalledTimes(1); await fireEvent.press(screen.getByRole("button", { name: a.filters })); expect(screen.getByLabelText(a.dateFrom)).toHaveProp("value", ""); await choose("ru"); await fireEvent.press(screen.getByRole("button", { name: a.apply })); await screen.findByText(`${a.dateFrom}: ${fromText}`);
+  await fireEvent.press(screen.getByRole("button", { name: a.filters })); await fireEvent.press(screen.getByRole("button", { name: a.apply })); expect(api.documentArchiveFixture).toHaveBeenCalledTimes(2); await fireEvent.press(screen.getByRole("button", { name: a.filters })); await fireEvent.press(screen.getByRole("button", { name: a.clear })); expect(screen.getByLabelText(a.dateFrom)).toHaveProp("value", ""); await fireEvent.press(screen.getByRole("button", { name: a.apply })); await screen.findByText(`${a.shown}: 1`); expect(api.documentArchiveFixture).toHaveBeenLastCalledWith(archiveScope, { limit: 25 });
+});
+it("retained Apply cannot mutate a page after Back or repeat a changed apply", async () => {
+  const real = ArchiveUi.ArchiveFilters, captured: Parameters<typeof real>[0][] = [], spy = jest.spyOn(ArchiveUi, "ArchiveFilters").mockImplementation(props => { captured.push(props); return real(props); });
+  try { const api = client(), a = archiveCopy.ru; await open(api); await choose("ru"); const old = captured.at(-1)!; await fireEvent.press(screen.getByRole("button", { name: copy.ru.back })); await act(async () => old.onApply()); expect(api.documentArchiveFixture).toHaveBeenCalledTimes(1); expect(screen.queryByText(`${a.dateFrom}: ${fromText}`)).toBeNull();
+    await fireEvent.press(screen.getByRole("button", { name: a.filters })); await choose("ru"); const current = captured.at(-1)!; await act(async () => { current.onApply(); current.onApply(); }); await screen.findByText(`${a.dateFrom}: ${fromText}`); expect(api.documentArchiveFixture).toHaveBeenCalledTimes(2); await act(async () => old.onApply()); expect(api.documentArchiveFixture).toHaveBeenCalledTimes(2);
+  } finally { spy.mockRestore(); }
+});
+it("preserves applied q, unsent search, exact cursor and metadata Back; changed date/status resets only the cursor", async () => {
+  const api = client(), a = archiveCopy.ru, t = copy.ru;
+  api.documentArchiveFixture.mockImplementation(async (_scope, input) => {
+    const rows = Array.from({ length: 25 }, (_, i) => archiveDocument({ id: archiveId((input.cursor ? 1500 : 1400) + i), documentNumber: `SYNTHETIC-AF-${(input.cursor ? 1500 : 1400) + i}`, accountingStatus: input.accountingStatus ?? "NOT_APPLICABLE" }));
+    return archivePage(rows, input.cursor ? null : rows.at(-1)!.id);
+  });
+  await open(api); await fireEvent.press(screen.getByRole("button", { name: t.back })); await fireEvent.changeText(screen.getByLabelText(a.search), "SYNTHETIC applied"); await fireEvent.press(screen.getByRole("button", { name: t.find })); await screen.findByText(`${t.documentNumber}: SYNTHETIC-AF-1400`); await fireEvent.press(screen.getByRole("button", { name: t.next })); await screen.findByText(`${t.documentNumber}: SYNTHETIC-AF-1500`);
+  await fireEvent.changeText(screen.getByLabelText(a.search), "SYNTHETIC unsent"); await fireEvent.press(screen.getByRole("button", { name: a.filters })); await choose("ru"); await fireEvent.press(screen.getByRole("button", { name: t.back })); expect(api.documentArchiveFixture).toHaveBeenCalledTimes(3); expect(screen.getByLabelText(a.search)).toHaveProp("value", "SYNTHETIC unsent");
+  await fireEvent.press(screen.getByRole("button", { name: a.filters })); await choose("ru"); await fireEvent.press(screen.getByRole("button", { name: a.apply })); await screen.findByText(`${a.dateFrom}: ${fromText}`); expect(api.documentArchiveFixture.mock.calls.at(-1)![1]).toEqual({ q: "SYNTHETIC applied", accountingStatus: "REVIEWED", dateFrom: "2026-10-28T00:00:00.000Z", dateTo: "2026-10-29T23:59:59.999Z", limit: 25 }); expect(screen.getByLabelText(a.search)).toHaveProp("value", "SYNTHETIC unsent");
+  await fireEvent.press(screen.getByRole("button", { name: t.next })); await screen.findByText(`${t.documentNumber}: SYNTHETIC-AF-1500`); const query = api.documentArchiveFixture.mock.calls.at(-1)![1]; await fireEvent.press(screen.getByRole("button", { name: `${a.open}: SYNTHETIC-AF-1500` })); await screen.findByText(a.freshness); await fireEvent.press(screen.getByRole("button", { name: a.back })); await screen.findByText(`${t.documentNumber}: SYNTHETIC-AF-1500`); expect(api.documentArchiveFixture.mock.calls.at(-1)![1]).toEqual(query);
+  const calls = api.documentArchiveFixture.mock.calls.length; await fireEvent.press(screen.getByRole("button", { name: a.filters })); await fireEvent.press(screen.getByRole("button", { name: a.apply })); expect(api.documentArchiveFixture).toHaveBeenCalledTimes(calls); expect(screen.getByText(`${t.documentNumber}: SYNTHETIC-AF-1500`)).toBeOnTheScreen();
+});
+it("discards late filtered data after another section opens before decoding its content", async () => {
+  const api = client(), a = archiveCopy.ru; await open(api); await choose("ru"); let finish!: (body: unknown) => void;
+  api.documentArchiveFixture.mockImplementationOnce(() => new Promise(yes => { finish = yes; })); await fireEvent.press(screen.getByRole("button", { name: a.apply })); await fireEvent.press(screen.getByRole("tab", { name: copy.ru.catalog })); await screen.findByText(copy.ru.emptyCatalog);
+  const hidden = jest.fn(() => { throw new Error("Late filtered content"); }), raw = {}; Object.defineProperty(raw, "items", { get: hidden }); await act(async () => finish(raw)); expect(hidden).not.toHaveBeenCalled(); expect(screen.queryByText(`${a.dateFrom}: ${fromText}`)).toBeNull();
+});
+it.each(["organizationId", "userId", "environment", "generation", "client"] as const)("drops unsent accounting/date selectors on %s replacement", async field => {
+  const api = client(), view = await open(api); await choose("ru"); const scope = { ...archiveScope, ...(field === "organizationId" || field === "userId" ? { [field]: archiveId(99) } : field === "environment" ? { environment: "other-synthetic" } : field === "generation" ? { generation: 2 } : {}) };
+  await view.rerender(<App session={session(field === "client" ? client() : api, scope)} />); await screen.findByText(copy.ru.emptyCatalog); expect(screen.queryByLabelText(archiveCopy.ru.dateFrom)).toBeNull(); expect(screen.queryByText(archiveCopy.ru.dateBoundary)).toBeNull();
+});

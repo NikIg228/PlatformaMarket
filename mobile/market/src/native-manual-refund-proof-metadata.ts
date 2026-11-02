@@ -1,0 +1,75 @@
+import type { OrderArchiveLinkedTarget,OrderArchiveLinkedBinding } from "./native-order-archive-linked-source";
+import { documentArchiveItemSchema,supplierOrderResponseSchema,supplierOrderItemResponseSchema,errorResponseSchema,type DocumentArchiveItem } from "../../../packages/schemas/src/core-api";
+import { orderWorkflowResponseSchema,type OrderWorkflowResponse } from "../../../packages/schemas/src/order-workflow";
+import { orderReturnSchema,type OrderReturn } from "../../../packages/schemas/src/order-returns";
+import { positiveMinorAmountSchema,nonnegativeMinorAmountSchema } from "../../../packages/schemas/src/manual-payments";
+import type { DocumentArchiveFixtureClient } from "./document-archive-fixture-read";
+import type { ReadScope } from "./read-controller";
+export type ManualRefundProofSource=Readonly<{orderId:string;orderVersion:number;orderNumber:string;returnId:string;kind:OrderReturn["kind"];status:OrderReturn["status"];documentId:string;amountMinor:string;currency:string;refundSentAt:string|null;refundReceivedAt:string|null;refundSentAtInvalid:boolean;refundReceivedAtInvalid:boolean;invalidDates:boolean}>;
+export type ManualRefundProofMetadata=Readonly<{documentId:string;version:number;status:DocumentArchiveItem["status"];title:string;documentNumber:string;documentDate:string|null;documentDateInvalid:boolean;immutableAt:string;generatedAt:string|null;generatedAtInvalid:boolean;expiresAt:string|null;expiresAtInvalid:boolean;fileName:string|null;amountMinor:string;currency:string;invalidDates:boolean}>;
+export type ManualRefundProofState=Readonly<{phase:"idle"|"loading"|"ready"|"error";source?:ManualRefundProofSource;value?:ManualRefundProofMetadata;issue?:"authentication"|"denied"|"unavailable"|"throttled"|"network"|"contract"}>;
+type Capture={workflow:OrderWorkflowResponse;record:OrderReturn;source:ManualRefundProofSource;signature:string;supplierOrganizationId:string;paymentStatus:string;key:string};
+const idle:ManualRefundProofState=Object.freeze({phase:"idle"});
+const root=orderWorkflowResponseSchema.pick({orderId:true,version:true,status:true,paymentStatus:true}).strip().extend({order:supplierOrderResponseSchema.pick({id:true,buyerOrganizationId:true,supplierOrganizationId:true,version:true,status:true,paymentStatus:true,currency:true,orderNumber:true}).strip()});
+const itemIds=supplierOrderItemResponseSchema.pick({id:true,supplierOrderId:true}).strip().array();
+const returnIds=orderReturnSchema.pick({id:true,supplierOrderId:true,refundDocumentId:true}).strip().extend({items:orderReturnSchema.shape.items.element.pick({orderItemId:true}).strip().array()}).array(),returnHeader=orderReturnSchema.pick({id:true,supplierOrderId:true,kind:true,status:true,refundDocumentId:true}).strip(),returnMoney=orderReturnSchema.pick({amountMinor:true,currency:true,refundSentAt:true,refundReceivedAt:true}).strip();
+const docHeader=documentArchiveItemSchema.pick({id:true,ownerOrganizationId:true,kind:true,source:true,status:true,version:true}).strip();
+const orderLink=documentArchiveItemSchema.shape.supplierOrder.unwrap().pick({id:true,buyerOrganizationId:true,supplierOrganizationId:true,paymentStatus:true}).strip();
+const docLinks=documentArchiveItemSchema.pick({paymentIntent:true,refund:true}).strip(),docMoney=documentArchiveItemSchema.pick({amountMinor:true,currency:true}).strip(),docText=documentArchiveItemSchema.pick({title:true,documentNumber:true,fileName:true}).strip();
+const date=documentArchiveItemSchema.shape.documentDate;
+function publicDate(value:unknown){const p=date.safeParse(value);return p.success?p.data:null;}
+function optionalDate(value:unknown){if(value===null)return{value:null,invalid:false};const parsed=publicDate(value);return{value:parsed,invalid:parsed===null};}
+function documentBasis(body:unknown,frame:Capture,organizationId:string){
+ try{
+  const h=docHeader.safeParse(body);if(!h.success||h.data.id!==frame.source.documentId||h.data.ownerOrganizationId!==frame.supplierOrganizationId||h.data.kind!=="PAYMENT_PROOF"||h.data.source!=="UPLOADED")return null;
+  const raw=body as Record<string,unknown>,order=orderLink.safeParse(raw.supplierOrder);if(!order.success||order.data.id!==frame.source.orderId||order.data.buyerOrganizationId!==organizationId||order.data.supplierOrganizationId!==frame.supplierOrganizationId||order.data.paymentStatus!==frame.paymentStatus)return null;
+  const links=docLinks.safeParse(body);if(!links.success||links.data.refund!==null||links.data.paymentIntent!==null)return null;
+  const money=docMoney.safeParse(body);if(!money.success||money.data.currency!==frame.source.currency||!nonnegativeMinorAmountSchema.safeParse(money.data.amountMinor).success||BigInt(money.data.amountMinor!)!==BigInt(frame.source.amountMinor))return null;
+  const immutableAt=publicDate(raw.immutableAt);if(immutableAt===null)return null;
+  return{h:h.data,raw,money:money.data,immutableAt};
+ }catch{return null;}
+}
+function decode(body:unknown,frame:Capture,organizationId:string):ManualRefundProofMetadata|null{
+ try{
+  const basis=documentBasis(body,frame,organizationId);if(!basis)return null;const{h,raw,money,immutableAt}=basis;
+  const text=docText.safeParse(body);if(!text.success)return null;const documentDate=publicDate(raw.documentDate),generated=optionalDate(raw.generatedAt),expires=optionalDate(raw.expiresAt);
+  return Object.freeze({documentId:h.id,version:h.version,status:h.status,title:text.data.title,documentNumber:text.data.documentNumber,fileName:text.data.fileName,amountMinor:money.amountMinor!,currency:frame.source.currency,immutableAt,documentDate,documentDateInvalid:documentDate===null,generatedAt:generated.value,generatedAtInvalid:generated.invalid,expiresAt:expires.value,expiresAtInvalid:expires.invalid,invalidDates:documentDate===null||generated.invalid||expires.invalid});
+ }catch{return null;}
+}
+function errorKind(error:unknown):ManualRefundProofState["issue"]{try{if(typeof error==="object"&&error!==null&&"status"in error&&"payload"in error){const p=errorResponseSchema.safeParse(error.payload);if(!p.success||p.data.statusCode!==error.status)return"contract";return error.status===401?"authentication":error.status===403?"denied":error.status===404?"unavailable":error.status===429?"throttled":"network";}}catch{return"contract";}return"network";}
+/** Existing archive metadata GET only. A manual return pointer is not the external archive Refund relation. */
+export function createNativeManualRefundProofMetadata(scope:ReadScope,read:DocumentArchiveFixtureClient["archiveDocumentFixture"],currentWorkflow:(id:string)=>OrderWorkflowResponse|null,isWorkflowActive:(id:string)=>boolean){
+ const owner=Object.freeze({...scope}),listeners=new Set<()=>void>(),requests=new Map<string,object>(),frames=new Map<string,Capture>(),minimumDocumentVersions=new Map<string,number>();let issuedLinks=new WeakMap<OrderArchiveLinkedTarget,{frame:Capture;version:number;number:string;immutableAt:string;binding:OrderArchiveLinkedBinding}>(),linkSequence=0;let active=true,disposed=false,snapshot:Readonly<Record<string,ManualRefundProofState>>=Object.freeze({});
+ const emit=(key:string,state:ManualRefundProofState)=>{snapshot=Object.freeze({...snapshot,[key]:Object.freeze(state)});listeners.forEach(listener=>listener());};
+ const capture=(workflow:OrderWorkflowResponse,record:OrderReturn):Capture|null=>{try{
+  if(!active||typeof read!=="function"||!isWorkflowActive(workflow.orderId)||currentWorkflow(workflow.orderId)!==workflow)return null;const p=root.safeParse(workflow);if(!p.success)return null;const w=p.data;if(w.orderId!==w.order.id||w.order.buyerOrganizationId!==owner.organizationId||w.order.supplierOrganizationId===owner.organizationId||w.version<=0||w.version!==w.order.version||w.status!==w.order.status||w.paymentStatus!==w.order.paymentStatus)return null;
+  const items=itemIds.safeParse(workflow.order.items);if(!items.success||new Set(items.data.map(row=>row.id)).size!==items.data.length||items.data.some(row=>row.supplierOrderId!==w.orderId))return null;const ownedItems=new Set(items.data.map(row=>row.id));
+  if(!Array.isArray(workflow.returns)||!workflow.returns.includes(record))return null;const ids=returnIds.safeParse(workflow.returns);if(!ids.success||new Set(ids.data.map(row=>row.id)).size!==ids.data.length||ids.data.some(row=>row.supplierOrderId!==w.orderId||new Set(row.items.map(line=>line.orderItemId)).size!==row.items.length||row.items.some(line=>!ownedItems.has(line.orderItemId))))return null;const documentIds=ids.data.map(row=>row.refundDocumentId).filter((id):id is string=>id!==null);if(new Set(documentIds).size!==documentIds.length)return null;
+  const h=returnHeader.safeParse(record);if(!h.success||h.data.supplierOrderId!==w.orderId||!["REFUND_SENT","REFUND_RECEIVED"].includes(h.data.status)||h.data.refundDocumentId===null)return null;
+  const value=returnMoney.safeParse(record);if(!value.success||value.data.currency!==w.order.currency||!positiveMinorAmountSchema.safeParse(value.data.amountMinor).success)return null;
+  const sent=optionalDate(value.data.refundSentAt),received=optionalDate(value.data.refundReceivedAt),source=Object.freeze({orderId:w.orderId,orderVersion:w.version,orderNumber:w.order.orderNumber,returnId:h.data.id,kind:h.data.kind,status:h.data.status,documentId:h.data.refundDocumentId,amountMinor:value.data.amountMinor,currency:value.data.currency,refundSentAt:sent.value,refundReceivedAt:received.value,refundSentAtInvalid:sent.invalid,refundReceivedAtInvalid:received.invalid,invalidDates:sent.invalid||received.invalid});
+  return{workflow,record,source,supplierOrganizationId:w.order.supplierOrganizationId,paymentStatus:w.paymentStatus,key:`${w.orderId}/${h.data.id}`,signature:JSON.stringify({source,party:w.order.supplierOrganizationId,status:w.status,paymentStatus:w.paymentStatus,returnIds:ids.data,rawSentAt:value.data.refundSentAt,rawReceivedAt:value.data.refundReceivedAt})};
+ }catch{return null;}};
+ const same=(frame:Capture)=>{const next=capture(frame.workflow,frame.record);return !!next&&next.signature===frame.signature;};
+ const viewFor=(workflow:OrderWorkflowResponse,record:OrderReturn)=>{const source=capture(workflow,record);if(!source)return undefined;const frame=frames.get(source.key);return frame?.workflow===workflow&&frame.record===record&&frame.signature===source.signature?snapshot[source.key]:undefined;};
+ const matches=(left:Capture|undefined,right:Capture)=>left?.workflow===right.workflow&&left.record===right.record&&left.signature===right.signature;
+ const canRead=(workflow:OrderWorkflowResponse,record:OrderReturn)=>{const source=capture(workflow,record);return !!source&&(!requests.has(source.key)||!matches(frames.get(source.key),source));};
+ const linkFrame=(workflow:OrderWorkflowResponse,record:OrderReturn)=>{const source=capture(workflow,record);if(!source)return null;const frame=frames.get(source.key),view=snapshot[source.key];return frame&&matches(frame,source)&&view?.phase==="ready"&&view.value&&view.value.version>=(minimumDocumentVersions.get(source.source.documentId)??0)?{frame,value:view.value}:null;};
+ const resolveArchiveTarget=(target:OrderArchiveLinkedTarget):OrderArchiveLinkedBinding|null=>{if(!target||typeof target!=="object")return null;const issued=issuedLinks.get(target);return issued&&same(issued.frame)&&issued.version>=(minimumDocumentVersions.get(issued.frame.source.documentId)??0)?issued.binding:null;};
+ return{
+  getSnapshot:()=>snapshot,viewFor,canRead,
+  canArchive:(workflow:OrderWorkflowResponse,record:OrderReturn)=>linkFrame(workflow,record)!==null,
+  archiveTargetFor(workflow:OrderWorkflowResponse,record:OrderReturn){const source=linkFrame(workflow,record);if(!source)return null;const target=Object.freeze({orderId:source.frame.source.orderId,documentId:source.frame.source.documentId,documentVersion:source.value.version,selection:++linkSequence}),binding=Object.freeze({workflow:source.frame.workflow,documentId:source.frame.source.documentId,documentVersion:source.value.version});issuedLinks.set(target,{frame:source.frame,version:source.value.version,number:source.value.documentNumber,immutableAt:source.value.immutableAt,binding});return target;},
+  resolveArchiveTarget,
+  verifyArchiveTargetBody(target:OrderArchiveLinkedTarget,body:unknown){const binding=resolveArchiveTarget(target),issued=issuedLinks.get(target);if(!binding||!issued)return false;const basis=documentBasis(body,issued.frame,owner.organizationId);if(!basis)return false;const order=documentArchiveItemSchema.shape.supplierOrder.unwrap().pick({orderNumber:true}).strip().safeParse(basis.raw.supplierOrder),number=docText.pick({documentNumber:true}).strip().safeParse(body);if(!order.success||order.data.orderNumber!==issued.frame.source.orderNumber||!number.success||number.data.documentNumber!==issued.number||basis.immutableAt!==issued.immutableAt||basis.h.version<(minimumDocumentVersions.get(binding.documentId)??0))return false;minimumDocumentVersions.set(binding.documentId,Math.max(minimumDocumentVersions.get(binding.documentId)??0,basis.h.version));return basis.h.version===issued.version;},supports:(workflow:OrderWorkflowResponse,record:OrderReturn)=>capture(workflow,record)!==null,
+  subscribe(listener:()=>void){listeners.add(listener);return()=>{listeners.delete(listener);};},
+  async read(workflow:OrderWorkflowResponse,record:OrderReturn){const source=capture(workflow,record);if(!source||requests.has(source.key)&&matches(frames.get(source.key),source))return;const token={};requests.set(source.key,token);frames.set(source.key,source);emit(source.key,{phase:"loading",source:source.source});
+   try{const body=await read!(owner,source.source.documentId);if(!active||requests.get(source.key)!==token||!same(source))return;const value=decode(body,source,owner.organizationId),current=value&&value.version>=(minimumDocumentVersions.get(source.source.documentId)??0)?value:null;if(current)minimumDocumentVersions.set(current.documentId,current.version);requests.delete(source.key);emit(source.key,current?{phase:"ready",source:source.source,value:current}:{phase:"error",source:source.source,issue:"contract"});}
+   catch(error){if(!active||requests.get(source.key)!==token||!same(source))return;requests.delete(source.key);emit(source.key,{phase:"error",source:source.source,issue:errorKind(error)});}
+   finally{if(requests.get(source.key)===token){requests.delete(source.key);if(active){frames.delete(source.key);emit(source.key,idle);}}}
+  },
+  hideFor(workflow:OrderWorkflowResponse,record:OrderReturn){for(const[key,frame]of frames)if(frame.workflow===workflow&&frame.record===record){requests.delete(key);frames.delete(key);emit(key,idle);}},
+  activate(){if(disposed){disposed=false;active=true;}},dispose(){disposed=true;active=false;requests.clear();frames.clear();issuedLinks=new WeakMap();minimumDocumentVersions.clear();snapshot=Object.freeze({});listeners.forEach(listener=>listener());listeners.clear();},
+ };
+}
+export type NativeManualRefundProofMetadata=ReturnType<typeof createNativeManualRefundProofMetadata>;

@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Platforma Market",
+    "slug": "platforma-market",
+    "version": "0.0.0",
+    "userInterfaceStyle": "light",
+    "orientation": "default",
+    "android": {
+      "permissions": [],
+      "package": "dev.platforma.market.local",
+      "blockedPermissions": [
+        "android.permission.ACCESS_LOCAL_NETWORK",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.VIBRATE"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "dev.platforma.market.local"
+    }
+  }
+}

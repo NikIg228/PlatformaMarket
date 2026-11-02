@@ -1,0 +1,11 @@
+import type { MfaStatus, MfaEnrollment, MfaVerified, MfaChallenged } from "../native-mfa";
+import { reviewScope, reviewId } from "./buyer-review";
+export const mfaScope = reviewScope, mfaId = reviewId, mfaEmail = "synthetic@example.invalid", mfaSecret = "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP", mfaIssuer = "SYNTHETIC MFA";
+export function mfaStatus(status: MfaStatus["status"] = "NOT_ENROLLED"): MfaStatus { return { enabled: status === "ACTIVE", status, verifiedAt: status === "ACTIVE" ? "2026-11-01T00:00:00.000Z" : null, lastUsedAt: null, recoveryCodesRemaining: status === "NOT_ENROLLED" || status === "REVOKED" ? 0 : 10, lockedUntil: null }; }
+export function mfaEnrollment(email = mfaEmail): MfaEnrollment { return { factorId: mfaId(145001), secret: mfaSecret, recoveryCodes: Array.from({ length: 10 }, (_, n) => `A000-B000-${String(n + 1).padStart(4, "0")}`), otpauthUri: `otpauth://totp/${encodeURIComponent(`${mfaIssuer}:${email}`)}?secret=${mfaSecret}&issuer=${encodeURIComponent(mfaIssuer)}&algorithm=SHA1&digits=6&period=30` }; }
+export function mfaVerified(): MfaVerified { return { enabled: true, verifiedAt: "2026-11-01T00:00:00.000Z", recoveryCodesRemaining: 10 }; }
+export function mfaElevated() { return { factor: mfaVerified(), accessToken: "SYNTHETIC-private-elevated-access-token", accessTokenExpiresIn: 300, activeOrganizationId: mfaScope.organizationId, authenticationMethods: ["pwd", "totp"] }; }
+export function rotatedMfaEnrollment(serial: number): MfaEnrollment { const value = mfaEnrollment(); if (!serial) return value; const secret = `${"A".repeat(31)}${"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"[serial % 32]}`; return { ...value, secret, recoveryCodes: Array.from({ length: 10 }, (_, n) => `C000-D000-${String(serial * 10 + n).padStart(4, "0")}`), otpauthUri: value.otpauthUri.replace(mfaSecret, secret) }; }
+
+export function mfaChallenged(method: MfaChallenged["method"] = "TOTP", serial = 0): MfaChallenged { return { verified: true, method, challengeId: mfaId(145100 + serial), recoveryCodesRemaining: method === "RECOVERY_CODE" ? 9 : 10 }; }
+export function mfaChallengeElevated(method: MfaChallenged["method"] = "TOTP", serial = 0) { return { ...mfaElevated(), factor: mfaChallenged(method, serial) }; }

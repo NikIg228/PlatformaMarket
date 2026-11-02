@@ -1,0 +1,6 @@
+import { server, response, type Reply } from "./market-session";
+export const resumeToken = "A".repeat(64), resumeLink = `https://mail-link.example.invalid/register/resume#token=${resumeToken}`;
+export const resumeEmail = "synthetic-owner@example.invalid", resumeBin = "123456789012", resumePassword = " SYNTHETIC-resume-password ";
+export const resumePrefix = "/auth/registration/resume/";
+export function resumeDetails(overrides: object = {}) { return { status: "READY", email: resumeEmail, bin: resumeBin, capability: "BUYER", organizationDisplayName: "SYNTHETIC resumed company", ownerDisplayName: "SYNTHETIC resumed owner", passwordMode: "NEW", expiresAt: "2099-01-01T00:00:00.000Z", ...overrides }; }
+export function resumeBackend(override?: (path: string, init: RequestInit) => Reply | Promise<Reply> | undefined) { return server((path, init) => { const custom = override?.(path, init); if (custom) return custom; if (path === "/auth/current?workspace=BUYER") return response(null); if (path === resumePrefix+"request") return response({ status: "ACCEPTED" }); if (path === resumePrefix+"inspect") return response(resumeDetails()); if (path === resumePrefix+"complete") return response({ status: "COMPLETED", next: "LOGIN" }); return undefined; }); }

@@ -1,0 +1,5 @@
+import { fulfillmentStepResponseSchema } from "../../../../packages/schemas/src/core-api";
+import { discrepancyWorkflow,discrepancyScope } from "./native-order-discrepancy";
+import { receiptId as id } from "./receipt-draft";
+export const shipmentFulfillmentScope=discrepancyScope;
+export function fulfillmentWorkflow(count=3,failed=false){const workflow=discrepancyWorkflow(),ship=workflow.order.shipments![0]!;ship.fulfillmentSteps=Array.from({length:count},(_,index)=>fulfillmentStepResponseSchema.parse({id:id(279000+index),shipmentId:ship.id,type:index===0?"DELIVERY":index%2?"INSTALLATION":"TRAINING",status:"PENDING",sequence:index+1,scheduledAt:index===0?"2026-11-03T12:00:00.000Z":null,startedAt:null,completedAt:null,notes:`SYNTHETIC fulfillment note ${index+1}`,providerOrganizationId:id(279100),metadata:null}));if(failed){workflow.version=workflow.order.version=4;ship.version=3;ship.status="FAILED";(ship as Record<string,unknown>).failureReason="SYNTHETIC carrier failure reason";}return workflow;}

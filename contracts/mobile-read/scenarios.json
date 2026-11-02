@@ -1,0 +1,371 @@
+{
+  "kind": "proposed_mobile_consumer_scenarios",
+  "notServerDTO": true,
+  "scenarios": [
+    {
+      "id": "current-order-response",
+      "fixture": "order-current",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "display-confirmed-read",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Display version 7 and exact supplied values; no mutation or fulfillment inferred."
+    },
+    {
+      "id": "late-response-other-organization",
+      "fixture": "order-current",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000021",
+        "generation": 2
+      },
+      "expectedConsumer": "discard-response",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Late response from the previous organization must not enter the new cache/view."
+    },
+    {
+      "id": "late-response-same-org-new-generation",
+      "fixture": "order-current",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 2
+      },
+      "expectedConsumer": "discard-response",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Same organization does not make an earlier session/context generation current."
+    },
+    {
+      "id": "late-response-other-environment",
+      "fixture": "catalog-null-price",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-other",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 2
+      },
+      "expectedConsumer": "discard-response",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": ""
+    },
+    {
+      "id": "late-response-other-user",
+      "fixture": "order-current",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000022",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 2
+      },
+      "expectedConsumer": "discard-response",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": ""
+    },
+    {
+      "id": "older-order-version",
+      "fixture": "order-current",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "keep-newer-read",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Compare only the same entity and scope; lower version must not replace accepted version 8.",
+      "acceptedRead": {
+        "orderId": "00000000-0000-4000-8000-000000000006",
+        "version": 8
+      }
+    },
+    {
+      "id": "different-order-version-not-comparable",
+      "fixture": "order-current",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "separate-entity-read",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Version numbers are comparable only within the same order; no server lifecycle inference.",
+      "acceptedRead": {
+        "orderId": "00000000-0000-4000-8000-000000000023",
+        "version": 8
+      }
+    },
+    {
+      "id": "nullable-price",
+      "fixture": "catalog-null-price",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "display-price-unknown",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Null does not mean zero or a buyable offer."
+    },
+    {
+      "id": "explicit-zero-price",
+      "fixture": "offer-explicit-zero-wire",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "preserve-zero-wire",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Schema acceptance is not permission to sell free goods; no purchase action in this slice."
+    },
+    {
+      "id": "missing-optional-projection",
+      "fixture": "order-workflow-minimal",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "display-projection-unavailable",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Absent paymentSummary/shipments/documents does not prove zero, unpaid, signed, or completed."
+    },
+    {
+      "id": "unknown-detail-state",
+      "fixture": "order-detail-future-status",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "display-unsupported-read-state",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Open string in detail differs from closed workspace enum; do not enable actions by guessing."
+    },
+    {
+      "id": "unknown-workspace-enum",
+      "fixture": "workspace-unknown-enum",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "contract-error-with-recovery",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Reject schema-incompatible page; preserve context and offer explicit refresh, without inventing status mappings."
+    },
+    {
+      "id": "forbidden-order",
+      "fixture": "error-denied",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "display-denied-no-stale-data",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Envelope example only; actual endpoint/service authorization not tested."
+    },
+    {
+      "id": "missing-order",
+      "fixture": "error-not-found",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "display-unavailable-no-stale-data",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Do not recover hidden order/contact data from another cache entry."
+    },
+    {
+      "id": "opaque-error-message",
+      "fixture": "error-opaque-message",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "display-generic-localized-error",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "Do not parse backend prose/object message into a permission or retry decision."
+    },
+    {
+      "id": "throttled-read",
+      "fixture": "error-throttled",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "display-retry-limited",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "No retry delay inferred from message or missing header; no automatic live requests."
+    },
+    {
+      "id": "empty-search",
+      "fixture": "catalog-empty",
+      "requestScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "activeScope": {
+        "product": "market",
+        "environment": "synthetic-offline",
+        "userId": "00000000-0000-4000-8000-000000000020",
+        "organizationId": "00000000-0000-4000-8000-000000000004",
+        "generation": 1
+      },
+      "expectedConsumer": "display-empty",
+      "status": "fixture_expectation_not_implemented_client_behavior",
+      "notes": "No fallback prices, stock, or selected seller."
+    }
+  ]
+}

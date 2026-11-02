@@ -1,0 +1,9 @@
+import { listDraftComparison, listDraftScope, listDraftId } from "./list-draft";
+import { orderConversationPage, orderConversationSummary } from "./order-conversation";
+import type { ConversationReadMarkerAuthorization } from "../order-conversation-read-marker";
+export { listDraftScope as offerConversationScope, listDraftId as offerConversationId, listDraftComparison as offerComparison } from "./list-draft";
+export const offerConversationThreadId=listDraftId(43000);
+export const offerConversationRaw="  SYNTHETIC вопрос по предложению 😀\nЕкінші жол  ";
+export function offerConversationAuthorization():ConversationReadMarkerAuthorization{return {provenance:"synthetic-source-contract",scope:listDraftScope,side:"BUYER",operator:false,permissions:["support.ticket.view"]};}
+export function offerConversationLookup(empty=false){return {conversationId:empty?null:offerConversationThreadId,context:{...orderConversationSummary().context,title:"SYNTHETIC unbound offer lookup title",imageUrl:"https://private.example.invalid/ignored-offer-image"}};}
+export function offerConversationPage(beforeSequence?:number){const comparison=listDraftComparison(),offer=comparison.offers[0]!,raw=orderConversationPage(beforeSequence);raw.conversation={...raw.conversation,id:offerConversationThreadId,contextType:"OFFER",contextId:offer.offerId,productId:comparison.product.id,buyerOrganizationId:listDraftScope.organizationId,supplierOrganizationId:offer.supplier.organizationId,title:"SYNTHETIC source offer conversation",counterpartyName:"SYNTHETIC source offer supplier"};raw.messages=raw.messages.map(row=>({...row,conversationId:offerConversationThreadId,authorOrganizationId:row.authorRole==="BUYER"?listDraftScope.organizationId:offer.supplier.organizationId,authorId:row.authorRole==="BUYER"?listDraftScope.userId:row.authorId}));return raw;}
