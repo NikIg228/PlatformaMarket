@@ -1,4 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { ActionFeedback } from "./action-feedback";
+import { FeedbackSurface } from "./feedback-surface";
 
 vi.mock("@fluentui/react-components", () => ({
   Avatar: "div",
@@ -73,10 +76,10 @@ describe("DentMarket UI contracts", () => {
   it("keeps persistent notes inline even for success and error states", () => {
     for (const tone of ["success", "danger"] as const) {
       const note = DmFeedback({ tone, presentation: "note", title: "Статус", description: "Нужна проверка", alert: tone === "danger" });
-      expect(note.type).toBe("div");
-      expect(note.props.role).toBe(tone === "danger" ? "alert" : "status");
-      expect(note.props.children).toBeDefined();
-      expect(DmFeedback({ tone, title: "Результат", description: "Действие завершено" }).type).not.toBe("div");
+      expect(note.type).toBe(FeedbackSurface);
+      expect(renderToStaticMarkup(note)).toContain(`role="${tone === "danger" ? "alert" : "status"}"`);
+      expect(renderToStaticMarkup(note)).toContain("Нужна проверка");
+      expect(DmFeedback({ tone, title: "Результат", description: "Действие завершено" }).type).toBe(ActionFeedback);
     }
   });
 

@@ -60,7 +60,7 @@ function IntegrationTaxEditor({ initial, onDirtyChange, onClose }: { initial: In
     {error ? <ErrorState description={error} /> : null}
     {!settings ? <LoadingState label="Загружаем налоговый профиль" /> : <>
       {settings.profileIssue ? <ErrorState description={settings.profileIssue} /> : null}
-      {settings.defaultIssue ? <p role="alert">Настройка по умолчанию устарела. Подтвердите её в настройках НДС или укажите режим для новых товаров этого источника.</p> : null}
+    {settings.defaultIssue ? <DmFeedback presentation="note" tone="warning" alert title="Настройка НДС устарела" description="Подтвердите её в настройках НДС или укажите режим для новых товаров этого источника." /> : null}
       <p>Ваша настройка для новых товаров: {settings.defaultTax ? vatLabel(settings.defaultTax.selection) : "не задана"}. Пустые поля существующих предложений сохраняют прежние условия.</p>
       <DmField className={layout.field} label="Формат цены ERP" required><DmDropdown value={kind} disabled={busy || !editable} onChange={(_, data) => { setKind(data.value); changed(); }}><option value="">Выберите формат</option><option value="GROSS">Цена включает применимый НДС</option><option value="NET">Цена без НДС — начислить сверху</option></DmDropdown></DmField>
       <DmCheckbox label="Задать режим для новых товаров этого источника" checked={override} disabled={busy || !editable} onChange={(_, data) => { setOverride(data.checked === true); changed(); }} />
@@ -69,7 +69,7 @@ function IntegrationTaxEditor({ initial, onDirtyChange, onClose }: { initial: In
       {([ ["vatMode", "Поле режима НДС"], ["vatRate", "Поле ставки НДС"], ["vatBasis", "Поле основания НДС"] ] as const).map(([key, label]) => <DmField className={layout.field} key={key} label={label}><DmInput value={columns[key]} maxLength={120} disabled={busy || !editable} onChange={(_, data) => { setColumns(value => ({ ...value, [key]: data.value })); changed(); }} /></DmField>)}
       <DmCheckbox label="Подтверждаю формат цен и налоговые условия источника" checked={ack} disabled={busy || !editable} onChange={(_, data) => setAck(data.checked === true)} />
     </>}
-    {conflict ? <p role="alert">Обновите данные и проверьте введённые условия перед повторным сохранением.</p> : null}
+    {conflict ? <DmFeedback presentation="note" tone="warning" alert title="Условия изменились" description="Обновите данные и проверьте введённые условия перед повторным сохранением." /> : null}
     {notice ? <DmFeedback tone="success" title="Сохранено" description={notice} /> : null}
     <div className={layout.actions}>{error || conflict ? <DmButton disabled={busy} onClick={() => void load()}>Повторить загрузку</DmButton> : null}<DmButton disabled={busy || dirty} onClick={onClose}>Другой источник</DmButton><DmButton appearance="primary" disabled={busy || !editable || conflict || !ack || !kind || !settings?.profile || Boolean(settings.profileIssue) || (override && !parseVatDraft(draft).success)} onClick={() => void save()}>Сохранить НДС источника</DmButton></div>
   </div>;

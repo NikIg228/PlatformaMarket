@@ -2,7 +2,7 @@
 
 import { DmButton as Button } from "@marketplace/ui/controls";
 import type { MarketplaceApiClient, OrderDocumentResponse } from "@marketplace/api-client";
-import { StatusTag, errorMessage, formatDate, formatStatus } from "@marketplace/ui";
+import { ActionFeedback, StatusTag, errorMessage, formatDate, formatStatus } from "@marketplace/ui";
 import { useState } from "react";
 import styles from "./order-documents.module.css";
 
@@ -49,7 +49,7 @@ export function OrderDocuments({
         <strong>Документы заказа</strong>
         <span>{documents.length}/3</span>
       </header>
-      {error ? <div className={styles.error} role="alert">{error}</div> : null}
+      {error ? <ActionFeedback tone="error" title="Документ не скачан" description={error} /> : null}
       <div className={styles.list}>
         {documents.map((document) => (
           <article className={styles.document} key={document.id}>

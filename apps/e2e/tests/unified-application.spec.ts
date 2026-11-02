@@ -81,8 +81,8 @@ for (const width of [390, 1440]) test(`shared theme auth audit ${width}`, async 
   await pending.evaluate((button: HTMLButtonElement) => button.click());
   expect(writes).toBe(1);
   release();
-  await expect(page.locator(".authNotice-error")).toBeVisible();
-  await expect(page.locator(".authNotice-error")).toHaveCSS("color", "rgb(163, 59, 53)");
+  await expect(page.locator('.dm-feedback[data-tone="error"]')).toBeVisible();
+  await expect(page.locator('.dm-feedback[data-tone="error"]')).toHaveCSS("background-color", "rgb(163, 59, 53)");
   await expect(email).toHaveValue("theme-audit@example.test");
   await page.screenshot({ path: testInfo.outputPath(`theme-auth-error-${width}.png`), fullPage: true });
   for (const route of ["/register", "/admin/login", "/about", "/suppliers"]) {

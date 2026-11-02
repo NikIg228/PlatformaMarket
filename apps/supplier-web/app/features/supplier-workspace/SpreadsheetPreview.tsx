@@ -4,6 +4,7 @@ import { vatLabel, type SupplierImportTaxPreview } from "@marketplace/schemas";
 
 import {
   DmHeading,
+  DmFeedback,
   DmButton,
   StatusTag,
   productWorkflowStyles as styles,
@@ -158,9 +159,7 @@ export function SpreadsheetPreview({
         </div>
       ) : null}
       {errors ? (
-        <p role="alert">
-          Исправьте {errors} ошибок в исходном файле или сопоставлении столбцов.
-        </p>
+        <DmFeedback presentation="inline" tone="warning" alert title="Проверьте импорт" description={`Исправьте ${errors} ошибок в исходном файле или сопоставлении столбцов.`} />
       ) : null}
       <div className={styles.footer}>
         <DmButton onClick={() => setStep(1)}>Изменить столбцы</DmButton>

@@ -1,5 +1,5 @@
 "use client";
-import { ActionFeedback } from "@marketplace/ui";
+import { ActionFeedback, DmFeedback } from "@marketplace/ui";
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferCommercialState, SaveOfferCommercialInput, SaveOfferPriceInput, SupplierWarehouseList } from "@marketplace/schemas";
@@ -136,7 +136,7 @@ export function OfferCommercialEditor({ api, supplierId, offerId, warehouses, in
       <option value="">Выберите склад</option>{activeWarehouses.map(warehouse => <option value={warehouse.id} key={warehouse.id}>{warehouse.name}</option>)}
     </DmSelect></DmField>
     {error ? <DmButton type="button" disabled={locked} onClick={() => void refreshWarehouses()}>Повторить загрузку</DmButton> : null}
-    {!activeWarehouses.length ? <p role="alert">Нет действующего склада. Добавьте склад в настройках организации.</p> : null}
+    {!activeWarehouses.length ? <DmFeedback presentation="note" tone="warning" alert title="Нет действующего склада" description="Добавьте склад в настройках организации." /> : null}
     <DmField label="Цена за упаковку, ₸"><DmInput inputMode="decimal" value={price} disabled={locked || !selectedDraft} onChange={(_, data) => { setPrice(data.value); setSaved(false); }} /></DmField>
     {selectedDraft ? <OfferVatEditor api={api} supplierId={supplierId} initial={initialTax} applyDefault={newPrice} disabled={locked} onChange={setTax} onDirty={() => setSaved(false)} /> : null}
     {stockEditable ? <DmField label="Остаток, упаковок" hint="Фактический остаток выбранного склада. Количество другого склада сюда не переносится."><DmInput inputMode="decimal" value={selectedDraft?.stock ?? ""} disabled={locked || !selectedDraft} onChange={(_, data) => { setDrafts(current => ({ ...current, [warehouseId]: { ...current[warehouseId]!, stock: data.value } })); setSaved(false); }} /></DmField> : <a href={`/supplier/products/inventory?offer=${offerId}&edit=1${warehouseId ? `&warehouse=${warehouseId}` : ""}${selectedDraft?.baseline ? `&balance=${selectedDraft.baseline.id}` : ""}`}>Обновить остатки</a>}

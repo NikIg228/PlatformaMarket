@@ -1,7 +1,7 @@
 "use client";
 import { vatLegacyFields, vatLabel, type OfferVatInput, type VatSelection } from "@marketplace/schemas";
 import { OfferVatEditor } from "./offer-vat-editor";
-import { ActionFeedback } from "@marketplace/ui";
+import { ActionFeedback, DmFeedback } from "@marketplace/ui";
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferOption, OfferOptionsResponse, SupplierWarehouseList, SaveOfferCommercialInput, OfferCommercialState } from "@marketplace/schemas";
@@ -88,7 +88,7 @@ export function AddOfferWizard({ api, supplierId }: { api: MarketplaceApiClient;
   return <div className={selected ? s.columns : undefined}>
     <section className={`${s.panel} ${s.form}`}>
       {error ? <ErrorState description={error} /> : null}
-      {unknownCreation ? <div className={s.notice} role="alert">Ответ о создании не получен. Проверьте список товаров, прежде чем создавать предложение повторно. <a href="/supplier/products">Открыть товары</a></div> : null}
+      {unknownCreation ? <DmFeedback presentation="note" tone="warning" alert title="Создание не подтверждено" description="Ответ о создании не получен. Проверьте список товаров, прежде чем создавать предложение повторно." action={<DmButton as="a" href="/supplier/products">Открыть товары</DmButton>} /> : null}
       {unknownSave ? <p className={s.hint} role="status">Ответ не получен. Повтор проверит тот же запрос — условия не будут сохранены дважды.</p> : null}
       {step === 0 ? <>
         <h2>Найдите товар в каталоге</h2>
@@ -118,14 +118,14 @@ export function AddOfferWizard({ api, supplierId }: { api: MarketplaceApiClient;
           <DmField label="Склад" validationState={fieldError === "warehouse" ? "error" : undefined}><DmDropdown id="warehouse" value={warehouseId} disabled={locked} onChange={(_, data) => setWarehouseId(data.value)}><option value="">Выберите склад</option>{warehouses.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</DmDropdown></DmField>
           <DmField label="Количество упаковок" validationState={fieldError === "stock" ? "error" : undefined}><DmInput name="stock" inputMode="decimal" value={stock} disabled={locked} onChange={(_, data) => setStock(data.value)} /></DmField>
         </div>
-        {!warehouses.length ? <p role="alert">Нет действующего склада. <a href="/supplier/settings">Добавьте склад в настройках организации</a>.</p> : null}
+        {!warehouses.length ? <DmFeedback presentation="note" tone="warning" alert title="Нет действующего склада" description="Добавьте склад в настройках организации." action={<DmButton as="a" href="/supplier/settings">Настройки организации</DmButton>} /> : null}
         <p className={s.hint}>Цена и количество указаны за упаковку: {packaging?.name}.</p>
         <section className={s.subsection}><h3>Условия заказа</h3><div className={s.fields}>
           <DmField label="Минимум, уп."><DmInput name="minimum" inputMode="decimal" value={minimum} disabled={locked || Boolean(created.current)} onChange={(_, data) => setMinimum(data.value)} /></DmField>
           <DmField label="Шаг заказа, уп."><DmInput inputMode="decimal" value={increment} disabled={locked || Boolean(created.current)} onChange={(_, data) => setIncrement(data.value)} /></DmField>
         </div></section>
         <OfferVatEditor api={api} supplierId={supplierId} initial={taxBaseline} applyDefault={!created.current} disabled={locked} onChange={setTax} />
-        {conflict ? <p role="alert">Условия изменились. Проверьте свои значения перед повторным сохранением.</p> : null}
+        {conflict ? <DmFeedback presentation="note" tone="warning" alert title="Условия изменились" description="Проверьте свои значения перед повторным сохранением." /> : null}
         {!has("pricing.manage", "inventory.adjust") ? <p role="status">Для сохранения нужны права на изменение цены и остатка. Ввод сохранён.</p> : null}
         <div className={s.footer}><DmButton type="button" disabled={locked || Boolean(created.current)} onClick={() => setStep(1)}>Назад</DmButton><DmButton type="submit" appearance="primary" disabled={busy || unknownCreation || !has("pricing.manage", "inventory.adjust")}>{busy ? "Сохраняем…" : unknownSave ? "Повторить сохранение" : conflict ? "Подтвердить мои значения" : "Проверить предложение"}</DmButton></div>
       </form> : null}

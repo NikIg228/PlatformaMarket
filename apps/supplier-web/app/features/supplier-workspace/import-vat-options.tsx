@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import { vatLabel, type SupplierColumnMappingInput, type SupplierVatSettings } from "@marketplace/schemas";
-import { DmButton, DmCheckbox, DmDropdown, DmField, ErrorState, LoadingState, errorMessage } from "@marketplace/ui";
+import { DmButton, DmCheckbox, DmDropdown, DmFeedback, DmField, ErrorState, LoadingState, errorMessage } from "@marketplace/ui";
 import { VatFields, parseVatDraft, vatDraft } from "./vat-fields";
 
 export type ImportVatOptionsValue = Pick<SupplierColumnMappingInput, "priceIncludesVat" | "defaultVat" | "expectedRequisitesVersion" | "taxAcknowledged">;
@@ -24,7 +24,7 @@ export function ImportVatOptions({ api, supplierId, disabled, onChange }: {
   return <section aria-label="НДС в прайсе">
     <h3>НДС в прайсе</h3>
     {error || settings.profileIssue ? <ErrorState description={error || settings.profileIssue!} /> : null}
-    {settings.defaultIssue ? <p role="alert">Настройка по умолчанию устарела. Подтвердите её в настройках НДС или укажите режим для новых товаров этой загрузки.</p> : null}
+    {settings.defaultIssue ? <DmFeedback presentation="note" tone="warning" alert title="Настройка НДС устарела" description="Подтвердите её в настройках НДС или укажите режим для новых товаров этой загрузки." /> : null}
     {!settings.profile || settings.profileIssue ? <a href="/supplier/settings?tab=requisites">Подтвердить реквизиты поставщика</a> : null}
     <p>Пустые налоговые поля сохраняют условия существующего предложения. Для новых используется {settings.defaultTax ? vatLabel(settings.defaultTax.selection) : "режим, указанный в строке или настройках этой загрузки"}.</p>
     <p>Значения столбца режима: TAXABLE, NOT_VAT_PAYER, EXEMPT, ZERO_RATED. Ставка — число без знака %. Индивидуальные условия строки имеют приоритет.</p>

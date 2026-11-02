@@ -1,4 +1,5 @@
 "use client";
+import { DmFeedback } from "@marketplace/ui/primitives";
 import { useEffect, useState } from "react";
 import { DmButton, DmField, DmSelect } from "@marketplace/ui/controls";
 import type { WorkspaceContext } from "@marketplace/schemas";
@@ -51,6 +52,6 @@ export function BuyerContextBar() {
     </DmField>
     {!ready || mode === "loading" || mode === "switching" ? <p role="status">Проверяем контекст покупателя…</p> :
       mode === "personal" || !active ? <p role="status">{personalPurchaseMessage}</p> : <p>Покупка от организации. Личность плательщика не меняет покупателя.</p>}
-    {error ? <div role="alert">{error} <DmButton onClick={() => setRetry(value => value + 1)}>Повторить проверку</DmButton></div> : null}
+    {error ? <DmFeedback presentation="inline" tone="danger" title="Покупатель не выбран" description={error} action={<DmButton onClick={() => setRetry(value => value + 1)}>Повторить проверку</DmButton>} /> : null}
   </div>;
 }

@@ -2,7 +2,7 @@
 import { DmAction } from "@marketplace/ui/controls";
 
 
-import { DmButton } from "@marketplace/ui";
+import { DmButton, DmFeedback } from "@marketplace/ui";
 import type { AuthCapability, AuthFeedback } from "./auth-client";
 import styles from "./auth-brand.module.css";
 
@@ -62,15 +62,9 @@ export function AuthRolePicker({
 
 export function AuthNotice({ feedback }: { feedback: AuthFeedback }) {
   return (
-    <div
-      className={`authNotice authNotice-${feedback.kind}`}
-      role={feedback.kind === "error" ? "alert" : "status"}
-    >
-      <strong>{feedback.title ?? (feedback.kind === "error" ? "Нужно исправить" : "Готово")}</strong>
-      <span>{feedback.message}</span>
-      {feedback.requestId ? (
-        <small>Код обращения: {feedback.requestId}</small>
-      ) : null}
-    </div>
+    <DmFeedback presentation="inline" tone={feedback.kind === "error" ? "danger" : "success"}
+      title={feedback.title ?? (feedback.kind === "error" ? "Нужно исправить" : "Готово")}
+      description={feedback.message} alert={feedback.kind === "error"}
+      details={feedback.requestId ? <small>Код обращения: {feedback.requestId}</small> : undefined} />
   );
 }

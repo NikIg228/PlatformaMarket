@@ -3,6 +3,7 @@ import { DmCheckbox, DmDisclosureSummary } from "@marketplace/ui/controls";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { DmButton as Button } from "@marketplace/ui/controls";
+import { DmFeedback } from "@marketplace/ui";
 import { ChevronDown20Regular } from "@fluentui/react-icons/svg/chevron-down";
 import { useDeliveryContext } from "./delivery-context";
 import styles from "./header.module.css";
@@ -25,7 +26,7 @@ export function HeaderCity({ toolbar = false }: { toolbar?: boolean }) {
     <div className={styles.cityPanel}><strong>Город доставки</strong>
       <p>Уточняет доступность предложений и условия доставки. Адрес подтвердим при оформлении заказа.</p>
       {!delivery.ready ? <p role="status">Загружаем города…</p> : <>
-        {delivery.message ? <p role="alert">{delivery.message}</p> : null}
+        {delivery.message ? <DmFeedback presentation="note" tone="warning" alert title="Проверьте город доставки" description={delivery.message} /> : null}
         {open ? <CityPicker /> : null}
         <DmCheckbox checked={delivery.inCity} disabled={!delivery.city} onChange={e => delivery.choose(delivery.city?.id ?? "", e.target.checked)} label="Доступно в выбранном городе" className={styles.check} />
         {!delivery.cities.length ? <Button onClick={delivery.retry}>Повторить загрузку городов</Button> : null}

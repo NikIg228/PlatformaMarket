@@ -63,11 +63,6 @@ footer { display:grid; grid-template-columns:1fr 1fr auto; align-items:center; g
 .registrationConsents a { color:var(--dm-brand-primary); font-weight:var(--dm-font-weight-bold); text-decoration:underline; text-underline-offset:2px; }
 .consentError { margin:var(--dm-space-1) 0 0; color:var(--dm-danger-text); font-size:var(--dm-font-size-caption); line-height:var(--dm-line-body); }
 .registrationMeta { margin:0; color:var(--dm-text-muted); font-size:var(--dm-font-size-caption); line-height:var(--dm-line-body); }
-.authNotice { display:grid; gap:var(--dm-space-1); margin-top:var(--dm-space-4); padding:var(--dm-space-3) var(--dm-space-4); border:1px solid transparent; border-radius:var(--dm-radius-button); font-size:var(--dm-font-size-caption); line-height:var(--dm-line-body); }
-.authNotice strong { font-size:var(--dm-font-size-caption); }
-.authNotice small { opacity:.82; overflow-wrap:anywhere; }
-.authNotice-error { border-color:color-mix(in srgb,var(--dm-danger-text) 24%,transparent); background:var(--dm-danger-surface); color:var(--dm-danger-text); }
-.authNotice-success { border-color:color-mix(in srgb,var(--dm-success-text) 24%,transparent); background:var(--dm-success-surface); color:var(--dm-success-text); }
 .authUtilityPage { min-height:100dvh; display:grid; place-items:center; padding:var(--dm-space-8) var(--dm-space-6); background:linear-gradient(145deg,var(--dm-page-surface),var(--dm-surface)); }
 .authUtilityCard { width:min(560px,100%); display:grid; gap:var(--dm-space-6); padding:clamp(var(--dm-space-8),6vw,var(--dm-space-14)); border:1px solid var(--dm-border); border-radius:var(--dm-radius-card); background:var(--dm-surface); box-shadow:var(--dm-shadow-card); }
 .authUtilityCard .brand { margin:0 0 var(--dm-space-6); }

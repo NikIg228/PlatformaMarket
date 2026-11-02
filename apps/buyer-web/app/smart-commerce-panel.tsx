@@ -4,7 +4,7 @@ import { DmAction } from "@marketplace/ui/controls";
 import { Spinner } from "@fluentui/react-components";
 import { DmButton as Button, DmSelect as Select } from "@marketplace/ui/controls";
 import { MarketplaceApiClient, type ApiContext } from "@marketplace/api-client";
-import { EmptyState, ErrorState, PageHeader, Section, StatusTag, errorMessage, formatMoney } from "@marketplace/ui";
+import { DmFeedback, EmptyState, ErrorState, PageHeader, Section, StatusTag, errorMessage, formatMoney } from "@marketplace/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./smart-commerce-panel.module.css";
 
@@ -69,7 +69,7 @@ export function SmartCommercePanel({ buyerId = BUYER_ID, apiContext }: { buyerId
   if (error && !addresses.length) return <ErrorState description={error} action={<Button onClick={() => void load()}>Повторить</Button>} />;
   return <div className={styles.stack}>
     <PageHeader eyebrow="Рекомендации" title="Сравните цену, срок и надёжность" description="Выберите товар. Мы покажем полную стоимость, срок поставки и проверенные данные о поставщике." />
-    {error ? <div className={styles.error}>{error}</div> : null}
+    {error ? <DmFeedback presentation="inline" tone="danger" title="Действие не завершено" description={error} /> : null}
     <Section title="Куда доставить" description="Выберите адрес клиники.">
       <div className={styles.contextGrid}>
         <label><span>Филиал</span><Select value={addressId} onChange={(_, data) => setAddressId(data.value)}>{addresses.map((address) => <option value={address.id} key={address.id}>{address.city.nameRu}, {address.line1}</option>)}</Select></label>

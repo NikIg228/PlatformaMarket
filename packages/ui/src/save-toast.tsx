@@ -1,14 +1,10 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Portal, useDialogContext_unstable, type DialogContextValue } from "@fluentui/react-components";
-import { CheckmarkCircle20Regular } from "@fluentui/react-icons/svg/checkmark-circle";
-import { ErrorCircle20Regular } from "@fluentui/react-icons/svg/error-circle";
-import { Warning20Regular } from "@fluentui/react-icons/svg/warning";
-import { Info20Regular } from "@fluentui/react-icons/svg/info";
 import { Dismiss20Regular } from "@fluentui/react-icons/svg/dismiss";
 import { DmButton } from "./actions";
 import { useConnectionMonitor } from "./use-connection-monitor";
-import { offlineMessage } from "./feedback-error";
+import { FeedbackSurface } from "./feedback-surface";
 
 export type ToastTone = "success" | "error" | "warning" | "info";
 export type ToastOptions = { tone?: ToastTone; title?: string };
@@ -37,7 +33,6 @@ export const useSaveToast = useToast;
 /** Register a dialog's modalizer even before its first action produces a toast. */
 export function ToastScope() { useToast(); return null; }
 const labels = { success: "Успешно", error: "Ошибка", warning: "Внимание", info: "Информация" };
-const icons = { success: CheckmarkCircle20Regular, error: ErrorCircle20Regular, warning: Warning20Regular, info: Info20Regular };
 
 /** Shared action feedback. Field errors and recovery controls stay at the action. */
 export function SaveToastProvider({ children }: { children: ReactNode }) {
@@ -46,13 +41,14 @@ export function SaveToastProvider({ children }: { children: ReactNode }) {
   const sequence = useRef(0);
   const owners = useRef(new Map<symbol, DialogAttributes>());
   const networkOwner = useRef(Symbol("connection"));
-  const offlineNotified = useRef(false);
+  const [connectionDismissed, setConnectionDismissed] = useState(false);
+  const connectionCard = useRef<HTMLDivElement>(null);
   const card = useRef<HTMLDivElement>(null), returnFocus = useRef<HTMLElement | null>(null);
   const lastFocused = useRef<HTMLElement | null>(null);
   const lastDialog = useRef<HTMLElement | null>(null);
   useEffect(() => {
     const remember = (event: FocusEvent) => {
-      if (event.target instanceof HTMLElement && event.target !== document.body && !card.current?.contains(event.target)) {
+      if (event.target instanceof HTMLElement && event.target !== document.body && !card.current?.contains(event.target) && !connectionCard.current?.contains(event.target)) {
         lastFocused.current = event.target;
         lastDialog.current = event.target.closest<HTMLElement>('[role="dialog"], [role="alertdialog"]');
       }
@@ -62,9 +58,8 @@ export function SaveToastProvider({ children }: { children: ReactNode }) {
   }, []);
   const notify = useCallback((message: string, options: ToastOptions, owner: symbol, dialogAttributes?: DialogAttributes) => {
     if (!navigator.onLine && (options.title === "Нет подключения к сети" || /^(Нет подключения к сети|Нет сети)/.test(message))) {
-      if (offlineNotified.current) return;
-      offlineNotified.current = true;
-      options = { ...options, tone: "warning", title: "Нет подключения к сети" };
+      // The persistent connection card already announces this interruption.
+      return;
     }
     const tone = options.tone ?? "success";
     if (!card.current?.contains(document.activeElement)) returnFocus.current = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : lastFocused.current;
@@ -80,8 +75,8 @@ export function SaveToastProvider({ children }: { children: ReactNode }) {
   }, []);
   const [context] = useState(() => ({ notify, syncOwner }));
   const connection = useConnectionMonitor((state, recovered) => {
-    if (recovered) offlineNotified.current = false;
-    if (state === "offline") notify("Данные могут быть устаревшими.", { tone: "warning", title: "Нет подключения к сети" }, networkOwner.current, [...owners.current.values()].at(-1));
+    setConnectionDismissed(false);
+    if (state === "offline") setNotice(current => current?.owner === networkOwner.current ? null : current);
     if (recovered) notify("Сервис снова доступен.", { tone: "success", title: "Связь восстановлена" }, networkOwner.current, [...owners.current.values()].at(-1));
   });
   const dismiss = useCallback(() => {
@@ -100,12 +95,19 @@ export function SaveToastProvider({ children }: { children: ReactNode }) {
     const remove = window.setTimeout(dismiss, 5220);
     return () => { window.clearTimeout(slide); window.clearTimeout(remove); };
   }, [noticeId, dismiss]);
-  const Icon = notice ? icons[notice.tone] : Info20Regular;
   return <ToastContext.Provider value={context}>{children}{notice || connection !== "online" ? <Portal mountNode={{className:"dm-toast-portal"}}><div className="dm-save-toast-viewport" {...(notice?.dialogAttributes ?? [...owners.current.values()].at(-1))}>
-    {notice ? <div ref={card} key={notice.id} className="dm-save-toast" role={notice.tone === "error" ? "alert" : "status"} aria-atomic="true" data-tone={notice.tone} data-leaving={leaving || undefined}>
-      <Icon aria-hidden="true" /><div className="dm-toast-copy"><strong>{notice.title}</strong><span>{notice.message}</span></div>
-      <DmButton appearance="subtle" density="compact" icon={<Dismiss20Regular />} aria-label="Закрыть уведомление" onClick={dismiss} />
-    </div> : null}
-    {connection !== "online" ? <div className="dm-connection-status" role="status">{connection === "offline" ? offlineMessage : connection === "checking" ? "Проверяем соединение…" : "Связь с сервисом пока не восстановлена."}</div> : null}
+    {notice ? <FeedbackSurface ref={card} key={notice.id} presentation="toast" tone={notice.tone === "error" ? "danger" : notice.tone}
+      title={notice.title} description={notice.message} data-leaving={leaving || undefined}
+      action={<DmButton appearance="subtle" density="compact" icon={<Dismiss20Regular />} aria-label="Закрыть уведомление" onClick={dismiss} />} /> : null}
+    {connection !== "online" && !connectionDismissed ? <FeedbackSurface ref={connectionCard} presentation="toast" tone="warning" data-connection-notice="true"
+      title={connection === "offline" ? "Нет подключения к сети" : connection === "checking" ? "Проверяем соединение…" : "Сервис пока недоступен"}
+      description={connection === "offline" ? "Данные могут быть устаревшими. Проверьте подключение к интернету." : "Данные могут быть устаревшими. Автоматически проверяем доступность сервиса."}
+      action={<DmButton appearance="subtle" density="compact" icon={<Dismiss20Regular />} aria-label="Закрыть уведомление" onClick={() => {
+        if (connectionCard.current?.contains(document.activeElement)) {
+          if (lastFocused.current?.isConnected) lastFocused.current.focus();
+          if (connectionCard.current.contains(document.activeElement) && lastDialog.current?.isConnected) lastDialog.current.focus();
+        }
+        setConnectionDismissed(true);
+      }} /> } /> : null}
   </div></Portal> : null}</ToastContext.Provider>;
 }

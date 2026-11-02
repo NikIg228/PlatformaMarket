@@ -1,5 +1,4 @@
-import { MessageBar, MessageBarBody } from "@fluentui/react-components";
-import { formatMoney } from "@marketplace/ui";
+import { DmFeedback, formatMoney } from "@marketplace/ui";
 import styles from "./order-decision-details.module.css";
 import { hasPartialDecision } from "./features/purchasing/orders-view-model";
 
@@ -31,13 +30,10 @@ export function OrderDecisionDetails({ order }: OrderDecisionDetailsProps) {
 
   return (
     <div className={styles.root}>
-      <MessageBar intent="warning">
-        <MessageBarBody>
-          {order.status === "REJECTED"
+      <DmFeedback presentation="inline" tone="warning" title={order.status === "REJECTED" ? "Заказ отклонён" : "Состав заказа изменён"}
+        description={order.status === "REJECTED"
             ? "Поставщик отклонил заказ. Причины отказа указаны ниже."
-            : "Поставщик изменил состав заказа. Проверьте принятые количества и причины до следующего шага."}
-        </MessageBarBody>
-      </MessageBar>
+            : "Поставщик изменил состав заказа. Проверьте принятые количества и причины до следующего шага."} />
       <div className={styles.summary}>
         <strong>
           Новый итог: {formatMoney(order.subtotalAmountMinor, order.currency)}

@@ -64,9 +64,10 @@ for (const width of [390, 1440]) {
     const toast = page.locator(".dm-save-toast"); await expect(toast).toContainText("Нет подключения к сети");
     await page.screenshot({ path: info.outputPath(`offline-${width}.png`), animations: "disabled" });
     await page.clock.runFor(4000); await page.evaluate(() => window.dispatchEvent(new Event("offline")));
-    await page.clock.runFor(1300); await expect(toast).toHaveCount(0); await expect(page.locator(".dm-connection-status")).toContainText("Нет подключения");
-    await context.setOffline(false); await expect.poll(() => state.probes).toBe(1); await expect(page.locator(".dm-connection-status")).toContainText("пока не восстановлена");
-    await expect(toast).toHaveCount(0); state.probeOk = true;
+    await page.clock.runFor(1300); await expect(toast).toHaveCount(1); await expect(toast).toContainText("Нет подключения");
+    await expect(page.locator(".dm-connection-status")).toHaveCount(0);
+    await context.setOffline(false); await expect.poll(() => state.probes).toBe(1); await expect(toast).toContainText("Сервис пока недоступен");
+    await expect(toast).toHaveCount(1); state.probeOk = true;
     await page.evaluate(() => window.dispatchEvent(new Event("focus"))); await expect(toast).toContainText("Связь восстановлена");
     await expect(page.locator(".dm-connection-status")).toHaveCount(0); await page.clock.runFor(5300); await expect(toast).toHaveCount(0);
   });
@@ -74,14 +75,14 @@ for (const width of [390, 1440]) {
 
 test("state cards catalog failures retain retry and already loaded products", async ({ page }) => {
   const state = await fixture(page); state.firstFail = true;
-  await page.goto("/catalog"); const toast = page.locator(".dm-save-toast"); await expect(toast).toContainText("Не удалось загрузить каталог");
-  await toast.getByRole("button", { name: "Закрыть уведомление" }).click();
+  await page.goto("/catalog"); const error = page.locator('.dm-feedback[data-tone="error"]'); await expect(error).toContainText("Не удалось загрузить каталог");
+  await expect(page.locator(".dm-save-toast")).toHaveCount(0);
   state.firstFail = false; await page.getByRole("button", { name: "Повторить загрузку", exact: true }).click(); await expect(page.getByTestId("product-card")).toHaveCount(24);
-  state.moreFail = true; await page.getByRole("button", { name: "Показать ещё", exact: true }).click(); await expect(toast).toContainText("Не удалось загрузить ещё товары");
+  state.moreFail = true; await page.getByRole("button", { name: "Показать ещё", exact: true }).click(); await expect(error).toContainText("Не удалось загрузить ещё товары");
   await expect(page.getByTestId("product-card")).toHaveCount(24);
   state.moreFail = false; await page.getByRole("button", { name: "Повторить загрузку товаров" }).click(); await expect(page.getByTestId("product-card")).toHaveCount(25);
   state.compareFail = true; await page.getByRole("link", { name: "Подробнее: Тестовый товар 0", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Не удалось загрузить предложения" })).toBeVisible();
+  await expect(page.locator(".dm-save-toast")).toContainText("Не удалось загрузить предложения");
   state.compareFail = false; await page.getByRole("button", { name: "Повторить загрузку", exact: true }).click();
   await expect(page.locator("#supplier-offers").getByRole("button", { name: "В корзину", exact: true })).toBeEnabled();
 });

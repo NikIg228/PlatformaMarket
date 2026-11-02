@@ -58,7 +58,7 @@ export function TrustIncidentCard({ incident, canResolve, onResolved }: { incide
     {incident.status !== "RESOLVED" && !success ? <DmButton ref={trigger} disabled={!canResolve || unresolvedAppeal} onClick={() => setOpen(true)}>Подтвердить восстановление</DmButton> : null}
     {unresolvedAppeal ? <p>Сначала требуется решение по открытой апелляции.</p> : null}
     <DmDialog open={open} onOpenChange={value => { if (!busy) setOpen(value); }} onClosed={() => trigger.current?.focus()} title="Подтверждение восстановления" actions={<><DmButton disabled={busy} onClick={() => setOpen(false)}>Отмена</DmButton><DmButton appearance="primary" disabled={busy || !canResolve || mustRefresh} onClick={() => void resolve()}>{busy ? "Сохраняем…" : "Закрыть инцидент"}</DmButton></>}>
-      <div className={styles.section}><p>Инцидент будет закрыт, ограничение снято. Подтвердите выполнение условия: {incident.restorationCondition}</p><DmField label="Результат проверки"><DmTextarea ref={reasonInput} value={reason} maxLength={2000} onChange={(_, value) => setReason(value.value)} /></DmField>{error ? <p role="alert">{error}</p> : null}</div>
+      <div className={styles.section}><p>Инцидент будет закрыт, ограничение снято. Подтвердите выполнение условия: {incident.restorationCondition}</p><DmField label="Результат проверки"><DmTextarea ref={reasonInput} value={reason} maxLength={2000} onChange={(_, value) => setReason(value.value)} /></DmField>{error ? <DmFeedback presentation="inline" tone="danger" title="Решение не сохранено" description={error} /> : null}</div>
     </DmDialog>
   </div></DmSurface>;
 }

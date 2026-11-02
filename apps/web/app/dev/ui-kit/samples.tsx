@@ -5,6 +5,7 @@ import { Option, Spinner } from "@fluentui/react-components";
 import { DmAction, DmButton, DmCheckbox, DmCombobox, DmField, DmFluentDropdown, DmInput, DmSelect, DmSurface, DmTextarea } from "@marketplace/ui/controls";
 import { DmDialog, DmDropdown, DmFeedback, DmSearch } from "@marketplace/ui";
 import styles from "./samples.module.css";
+import { FeedbackSamples } from "./feedback-samples";
 
 export function ComponentSamples() {
   const [value, setValue] = useState("one");
@@ -16,6 +17,7 @@ export function ComponentSamples() {
   return <main className={styles.page}>
     <h1>Компоненты Market</h1>
     <p>Светлая тема · обычные действия 44px · компактные 32px</p>
+    <FeedbackSamples />
     <DmSurface className={styles.stack}>
       <h2>Действия</h2>
       <div className={styles.row}>

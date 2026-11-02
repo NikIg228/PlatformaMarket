@@ -25,6 +25,7 @@ async function fixture(page: Page, role: "clinic" | "supplier", canEdit = true) 
     if(req.method() === "GET" && path === "/auth/workspaces") return route.fulfill({ json:[{ organizationId, organizationDisplayName:"Демо организация", capabilities:[capability] }] });
     if(path === "/access-control/policy") return route.fulfill({ json:{ mode:"ROLE_BASED", permissions:["organization.view", ...(canEdit ? ["organization.members.manage"] : []), "inventory.view", "import.manage", "supplier.warehouse.manage", "support.ticket.view", "support.ticket.create", "notification.view"] } });
     if(path === "/auth/current") return route.fulfill({ json:url.searchParams.has("workspace") ? { sessionId,user:state.personal } : null });
+    if(req.method() === "GET" && path === "/auth/personal-current") return route.fulfill({ json:null });
     if(path === "/auth/profile") return route.fulfill({ json:state.personal });
     if(path === "/identity/signing-binding") return route.fulfill({ json:{status:"UNVERIFIED",verificationAvailable:false,activeSessionId:null} });
     if(path === "/auth/profile/avatar") return route.fulfill({ json:{contentType:"image/png",contentBase64:png} });
@@ -193,6 +194,7 @@ for (const [role, width] of [["clinic", 390], ["supplier", 1440]] as const) test
   await expect(address).toHaveValue("Сохраняемый адрес, 12");
   await expect(page.getByRole("button", {name:"Повторить загрузку", exact:true})).toBeEnabled();
   await submit.click(); await expect(toast).toContainText("Сервис временно недоступен"); await expect(toast).toHaveCount(1);
+  await toast.getByRole("button", {name:"Закрыть уведомление", exact:true}).click();
   state.fail = false; await submit.click(); await expect(toast).toHaveAttribute("role", "status");
   await expect(toast).toHaveAttribute("data-tone", "success"); await expect(toast).toContainText("Изменения сохранены");
   expect(state.writes.at(-1)?.idempotencyKey).toBe(state.writes[0]?.idempotencyKey);

@@ -58,6 +58,22 @@
     "--dm-tracking-normal": "0",
     "--dm-tab-indicator-height": "3px"
   },
+  "notificationCards": {
+    "version": "solid-card-v1",
+    "radius": "--dm-radius-card",
+    "padding": "--dm-space-4",
+    "gap": "--dm-space-3",
+    "titleSize": "--dm-font-size-body",
+    "descriptionSize": "--dm-font-size-body",
+    "titleWeight": "--dm-font-weight-semibold",
+    "shadow": "--dm-shadow-overlay",
+    "warningFill": "warning.toast",
+    "successFill": "brand.default",
+    "errorFill": "danger.content",
+    "infoFill": "info.content",
+    "persistentStates": "no-auto-dismiss",
+    "actionResultDurationMs": 5000
+  },
   "controlStates": {
     "version": "neutral-fill-v1",
     "rest": "surface.subtle",

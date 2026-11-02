@@ -74,7 +74,11 @@ jobs:
       - run: npm test
       - run: npm run verify:outbound-security
       - run: npm run verify:outbox
+      - name: Shared notification cards (desktop, mobile, keyboard and recovery)
+        run: npm exec --workspace=@marketplace/e2e -- playwright test --config playwright.notifications.config.ts
       - run: npm run build
+      - name: Notification consumers (catalog recovery and workspace actions)
+        run: npm exec --workspace=@marketplace/e2e -- playwright test --config playwright.notification-consumers.config.ts
       - name: Canonical web JavaScript budget
         shell: bash
         run: |

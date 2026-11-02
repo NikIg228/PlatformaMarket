@@ -5,8 +5,7 @@ import { ActionFeedback } from "./action-feedback";
 import { DmHeading } from "./heading";
 import { Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Spinner, Tag, Tooltip, type DropdownProps } from "@fluentui/react-components";
 import { Dismiss24Regular } from "@fluentui/react-icons/svg/dismiss";
-import { Info20Regular } from "@fluentui/react-icons/svg/info";
-import { Warning20Regular } from "@fluentui/react-icons/svg/warning";
+import { FeedbackSurface } from "./feedback-surface";
 import type { ReactNode } from "react";
 function joinClasses(...classes: Array<string | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -117,7 +116,7 @@ export function DmFeedback({
   icon,
   action,
   details,
-  alert = false,
+  alert,
   presentation,
 }: {
   tone?: "success" | "warning" | "danger" | "info" | "neutral";
@@ -132,21 +131,7 @@ export function DmFeedback({
   if (presentation === "toast" || (presentation == null && (tone === "success" || tone === "danger"))) {
     return <ActionFeedback tone={tone} title={title} description={description} action={action} />;
   }
-  return (
-    <div
-      className={`dm-feedback dm-feedback-${tone}${presentation === "note" ? " dm-feedback-note" : ""}`}
-      role={alert ? "alert" : "status"}
-      aria-live={alert ? "assertive" : "polite"}
-    >
-      {icon || presentation === "note" ? <span className="dm-feedback-icon" aria-hidden="true">{icon ?? (tone === "warning" || tone === "danger" ? <Warning20Regular /> : <Info20Regular />)}</span> : null}
-      <div className="dm-feedback-copy">
-        <strong>{title}</strong>
-        <span>{description}</span>
-        {details}
-      </div>
-      {action ? <div className="dm-feedback-action">{action}</div> : null}
-    </div>
-  );
+  return <FeedbackSurface {...{ tone, title, description, icon, action, details, alert, presentation }} />;
 }
 
 /** Explicit reprice/stock/conflict state. Never hide a blocking change in a toast. */
@@ -306,13 +291,7 @@ export function ErrorState({
   presentation?: "inline" | "toast";
 }) {
   if (presentation === "toast") return <ActionFeedback tone="error" title={title} description={description} action={action} />;
-  return (
-    <div className="mp-state mp-error" role="alert">
-      <strong>{title}</strong>
-      <p>{description}</p>
-      {action}
-    </div>
-  );
+  return <DmFeedback presentation="inline" tone="danger" alert title={title} description={description} action={action} />;
 }
 
 export function Section({

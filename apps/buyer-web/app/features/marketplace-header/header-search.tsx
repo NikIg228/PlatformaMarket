@@ -2,6 +2,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { DmButton as Button } from "@marketplace/ui/controls";
 import { DmSearch } from "@marketplace/ui/dm-search";
+import { DmFeedback } from "@marketplace/ui";
 import { catalogContext, searchDestination } from "./navigation";
 import { isStorefrontPath } from "../../catalog/marketplace-url";
 import styles from "./header.module.css";
@@ -55,7 +56,7 @@ export function HeaderSearch({ placeholder = "Найти товар", fullWidth 
       onKeyDown={e => { if (e.key === "Enter" && open && selected >= 0 && items[selected]) { e.preventDefault(); navigate(items[selected]); } if (e.key === "Escape") { e.preventDefault(); setOpen(false); } if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); setOpen(true); setSelected(n => items.length ? (n + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length : -1); } }}
       onClear={() => { generation.current++; request.current?.abort(); setOpen(false); root.current?.querySelector("input")?.focus(); }} />
     {open && query.trim().length >= 2 ? <div className={styles.suggestions}>
-      {status === "loading" ? <p role="status">Ищем товары…</p> : status === "error" ? <div role="alert"><p>Не удалось загрузить подсказки.</p><Button onClick={() => setRetry(v => v + 1)}>Повторить</Button></div> : null}
+      {status === "loading" ? <p role="status">Ищем товары…</p> : status === "error" ? <DmFeedback presentation="inline" tone="danger" title="Подсказки недоступны" description="Не удалось загрузить подсказки товаров." action={<Button type="button" onClick={() => setRetry(v => v + 1)}>Повторить</Button>} /> : null}
       <ul id={listId} role="listbox" aria-label="Подсказки товаров">{items.map((item, i) => <li id={`${listId}-${i}`} role="option" aria-selected={selected === i} key={item.id} onMouseDown={e => e.preventDefault()} onClick={() => navigate(item)}><strong>{item.name}</strong>{item.brand ? <small>{item.brand}</small> : null}</li>)}</ul>
       {status === "done" && !items.length ? <p role="status">Ничего не найдено</p> : null}
     </div> : null}

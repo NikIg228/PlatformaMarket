@@ -1,5 +1,5 @@
 "use client";
-import { ActionFeedback, useToast, VatLineAmount, VatBreakdown } from "@marketplace/ui";
+import { ActionFeedback, DmFeedback, useToast, VatLineAmount, VatBreakdown } from "@marketplace/ui";
 import { cartChangeNotice } from "./cart-notice";
 
 import { useEffect, useRef, useState } from "react";
@@ -114,7 +114,7 @@ export function BuyerCart({
       {editor.pending ? <p role="status">Сохраняем и проверяем корзину…</p> : null}
       {editor.error ? <ActionFeedback tone="error" description={editor.error} action={<DmButton disabled={Boolean(busy) || editor.pending} onClick={cart ? () => void editor.reload() : onRefresh}>Повторить проверку корзины</DmButton>} /> : null}
       {editor.notice ? <ActionFeedback tone="success" description={editor.notice} /> : null}
-      {Object.entries(editor.drafts).filter(([id]) => !cart?.items.some(item => item.id === id)).map(([id, draft]) => <p key={id} role="alert">Позиция больше не находится в корзине. Несохранённое количество: {draft.value}. <DmButton onClick={() => editor.discard(id)}>Отменить ввод удалённой позиции</DmButton></p>)}
+      {Object.entries(editor.drafts).filter(([id]) => !cart?.items.some(item => item.id === id)).map(([id, draft]) => <DmFeedback key={id} presentation="note" tone="warning" alert title="Позиция удалена из корзины" description={`Несохранённое количество: ${draft.value}.`} action={<DmButton onClick={() => editor.discard(id)}>Отменить ввод удалённой позиции</DmButton>} />)}
       {!cart?.items.length ? (
         <Section>
           <EmptyState

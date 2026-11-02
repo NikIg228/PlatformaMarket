@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { frontendFeatures } from "@marketplace/api-client";
 import type { PromotionListQuery, PublicPromotion } from "@marketplace/schemas";
-import { DmAction, DmButton, DmSearch, DmSelect, EmptyState } from "@marketplace/ui";
+import { DmAction, DmButton, DmFeedback, DmSearch, DmSelect, EmptyState } from "@marketplace/ui";
 import { MarketplaceHeader } from "../marketplace-header/marketplace-header";
 import { fetchLiveCatalog } from "../../catalog/live-search";
 import type { SearchResult } from "../../catalog-search-types";
@@ -84,7 +84,7 @@ export default function PromotionsPage() {
       <div className={styles.kinds} aria-label="Вид акции">
         {([[undefined, "Все акции"], ["PERCENTAGE", "Скидки в процентах"], ["FIXED_AMOUNT", "Скидки в сумме"], ["BUY_X_GET_Y", "Подарки за покупку"]] as const).map(([kind, label]) => <DmAction variant="tab" key={label} aria-pressed={filters.kind === kind} onClick={() => change({ kind })}>{label}</DmAction>)}
       </div>
-      {data.error ? <div className={styles.error} role="alert"><p>Не удалось загрузить акции. {items.length ? "Уже загруженные предложения сохранены." : "Попробуйте ещё раз."}</p><DmButton onClick={data.retry}>Повторить загрузку акций</DmButton></div> : null}
+      {data.error ? <DmFeedback presentation="inline" tone="danger" title="Акции не загружены" description={items.length ? "Уже загруженные предложения сохранены." : "Не удалось загрузить акции. Попробуйте ещё раз."} action={<DmButton onClick={data.retry}>Повторить загрузку акций</DmButton>} /> : null}
       {!ready || (data.loading && !items.length) || (data.page?.total === 0 && previewProbe.loading) ? <p role="status">Загружаем акции…</p> : displayed.length ? <>
         <div className={styles.hero}>{displayed.slice(0, 3).map(render)}</div>
         {displayed.length > 3 ? <><h2 className={styles.sectionTitle}>Все действующие акции</h2><div className={styles.feed}>{displayed.slice(3).map((item, i) => <div key={item.id} className={i % 5 === 2 ? styles.wide : undefined}>{render(item, i + 3)}</div>)}</div></> : null}

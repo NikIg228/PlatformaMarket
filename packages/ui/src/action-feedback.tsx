@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, type ReactNode } from "react";
 import { useToast, useToastAvailable, type ToastTone } from "./save-toast";
+import { FeedbackSurface } from "./feedback-surface";
 
 /** State-driven outcomes use the same toast as imperative commands.
  * Keep recovery actions in their original form after the five-second notice. */
@@ -21,6 +22,6 @@ export function ActionFeedback({ tone = "info", title, description, action }: {
     if (resolvedTone === "error" && !navigator.onLine) notify("Данные могут быть устаревшими.", { tone: "warning", title: "Нет подключения к сети" });
     else notify(description, { tone: resolvedTone, title });
   }, [available, description, notify, resolvedTone, title]);
-  if (!available) return <div className="dm-feedback" role={resolvedTone === "error" ? "alert" : "status"}><strong>{title}</strong><span>{description}</span>{action}</div>;
+  if (!available) return <FeedbackSurface tone={resolvedTone === "error" ? "danger" : resolvedTone} title={title} description={description} action={action} />;
   return action ? <div className="dm-feedback-recovery">{action}</div> : null;
 }

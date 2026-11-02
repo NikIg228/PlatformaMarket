@@ -2,9 +2,8 @@
 
 import { Key20Regular } from "@fluentui/react-icons/svg/key";
 
-import { DmButton } from "@marketplace/ui";
+import { DmButton, DmFeedback } from "@marketplace/ui";
 
-import styles from "./integration-operations.module.css";
 
 type Props = {
   oneTimeSecret: { title: string; lines: string[] };
@@ -13,21 +12,15 @@ type Props = {
 
 export function IntegrationSecret({ oneTimeSecret, setOneTimeSecret }: Props) {
   return (
-    <div className={styles.secret} role="alert">
-      <Key20Regular />
-      <div>
-        <strong>{oneTimeSecret.title}</strong>
-        {oneTimeSecret.lines.map((line) => (
-          <code key={line}>{line}</code>
-        ))}
-      </div>
-      <DmButton
+    <DmFeedback presentation="inline" tone="warning" alert icon={<Key20Regular />}
+      title={oneTimeSecret.title} description="Сохраните данные подключения в безопасном месте. Они показываются один раз."
+      details={oneTimeSecret.lines.map(line => <div key={line}><code>{line}</code></div>)}
+      action={<DmButton
         appearance="subtle"
         aria-label="Закрыть данные подключения"
         onClick={() => setOneTimeSecret(null)}
       >
         Закрыть
-      </DmButton>
-    </div>
+      </DmButton>} />
   );
 }

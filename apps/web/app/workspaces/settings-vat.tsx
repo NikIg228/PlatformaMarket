@@ -63,7 +63,7 @@ function VatSettingsEditor({ initial, onDirtyChange }: { initial: SupplierVatSet
       {enabled ? <VatFields value={draft} onChange={value => { setDraft(value); setAcknowledged(false); }} date={saved.date} profile={saved.profile} disabled={busy || !editable || !saved.profile || Boolean(saved.profileIssue)} /> : <p>Для каждого нового предложения налоговые условия нужно выбрать отдельно.</p>}
       <DmCheckbox label="Подтверждаю настройку только для новых предложений и ответственность за применимость режима" checked={acknowledged} disabled={busy || !editable} onChange={(_, data) => setAcknowledged(data.checked === true)} />
       {error ? <ErrorState description={error} /> : null}{notice ? <DmFeedback tone="success" title="Сохранено" description={notice} /> : null}
-      {conflict ? <p role="alert">Настройки или реквизиты изменились. Обновите данные и проверьте сохранённый ввод.</p> : null}
+      {conflict ? <DmFeedback presentation="note" tone="warning" alert title="Настройки изменились" description="Настройки или реквизиты изменились. Обновите данные и проверьте сохранённый ввод." /> : null}
       <div className={layout.actions}>{error || conflict ? <DmButton type="button" disabled={busy} onClick={() => void refresh()}>Повторить загрузку</DmButton> : null}<DmButton type="submit" appearance="primary" disabled={busy || !editable || conflict || (enabled && (!saved.profile || Boolean(saved.profileIssue)))}>{busy ? "Сохраняем…" : "Сохранить настройку НДС"}</DmButton></div>
     </form>
   </DmSurface>{has("integration.view") ? <SettingsIntegrationTax onDirtyChange={setIntegrationDirty} /> : null}</div>;

@@ -88,22 +88,23 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
 .dm-dialog-description { margin: 0; color: var(--dm-text-secondary); font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); }
 
 .dm-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-.dm-feedback { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--dm-space-3); align-items: start; padding: var(--dm-space-4) var(--dm-space-4); border: 1px solid var(--dm-border); border-radius: var(--dm-radius-card); background: var(--dm-surface-subtle); color: var(--dm-text-secondary); }
+.dm-notice { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: var(--dm-space-3); align-items: center; padding: var(--dm-space-4); border: 1px solid transparent; border-radius: var(--dm-radius-card); box-shadow: var(--dm-shadow-overlay); background: var(--dm-info-text); color: var(--dm-text-inverse); font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); min-width: 0; max-width: 100%; }
+.dm-notice[data-tone="success"] { background: var(--dm-brand-primary); }
+.dm-notice[data-tone="error"] { background: var(--dm-danger-text); }
+.dm-notice[data-tone="warning"] { background: var(--dm-warning-toast); color: var(--dm-text-primary); }
+.dm-notice[data-tone="neutral"] { background: var(--dm-surface-subtle); color: var(--dm-text-secondary); border-color: var(--dm-border); }
 /* Ordinary actions keep their intrinsic width even inside a grid or column. */
 :where(.dm-button, .dm-link-button) { width: fit-content; max-width: 100%; }
 :is(.dm-button.fui-Button, .dm-link-button)[data-dm-full-width="true"] { width: 100%; }
 .dm-feedback-icon { display: grid; place-items: center; margin-top: 1px; color: currentColor; }
-.dm-feedback-copy { display: grid; gap: var(--dm-space-micro); }
-.dm-feedback-copy strong { color: var(--dm-text-primary); font-size: var(--dm-font-size-body); }
-.dm-feedback-copy span { font-size: var(--dm-font-size-caption); line-height: var(--dm-line-body); }
+.dm-feedback-copy { display: grid; gap: var(--dm-space-1); min-width: 0; overflow-wrap: anywhere; }
+.dm-feedback-copy strong { color: inherit; font-size: var(--dm-font-size-body); font-weight: var(--dm-font-weight-semibold); }
+.dm-feedback-copy > span { font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); }
+.dm-feedback-copy small { font-size: var(--dm-font-size-caption); }
 .dm-feedback-action { align-self: center; }
-.dm-feedback-success { border-color: color-mix(in srgb, var(--dm-success-text) 35%, transparent); background: var(--dm-success-surface); color: var(--dm-success-text); }
-.dm-feedback-warning { border-color: color-mix(in srgb, var(--dm-warning-text) 38%, transparent); background: var(--dm-warning-surface); color: var(--dm-warning-text); }
-.dm-feedback-danger { border-color: color-mix(in srgb, var(--dm-danger-text) 38%, transparent); background: var(--dm-danger-surface); color: var(--dm-danger-text); }
-.dm-feedback-info { border-color: color-mix(in srgb, var(--dm-info-text) 30%, transparent); background: var(--dm-info-surface); color: var(--dm-info-text); }
 
 @media (max-width: 640px) {
-  .dm-feedback { grid-template-columns: auto minmax(0, 1fr); }
+  .dm-feedback { grid-template-columns: 20px minmax(0, 1fr); }
   .dm-feedback-action { grid-column: 1 / -1; width: 100%; }
   .dm-feedback-action > * { width: 100%; }
   .dm-table,
@@ -118,8 +119,8 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
   .dm-table td[colspan]::before { content: none; }
 }
 
-/* Persistent field/section guidance is a note, not another nested card. */
-.dm-feedback.dm-feedback-note { grid-template-columns: 20px minmax(0, 1fr) auto; width: 100%; max-width: 100%; padding: var(--dm-space-4); border: 1px solid currentColor; border-radius: var(--dm-radius-card); background: transparent; }
+/* Persistent notices share the same card; only placement/lifetime differ. */
+.dm-feedback.dm-feedback-note { width: 100%; }
 .dm-feedback-note .dm-feedback-copy strong { color: inherit; }
 .dm-feedback-note .dm-feedback-copy { min-width: 0; max-width: 72ch; overflow-wrap: anywhere; }
 .dm-feedback-note .dm-feedback-action { grid-column: 3; width: auto; justify-self: end; }
@@ -131,7 +132,7 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
 
 @media (forced-colors: active) {
   .dm-dialog-surface,
-  .dm-feedback { border-color: CanvasText; background: Canvas; color: CanvasText; }
+  .dm-notice[data-tone] { border-color: CanvasText; background: Canvas; color: CanvasText; }
 }
 
 @media (max-width: 1120px) {
