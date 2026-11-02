@@ -1833,8 +1833,9 @@ R4.1.1 сохраняет уже подробный B2B-подтип оплат�
   проверенной версии. Pending transfer на границе — отдельная сверка. Входы: DG-03/06/07. DoD: отсутствие ответа не согласие,
   boundary/restart/replay не меняют deadline повторно; stale offer показывает
   уточнение, изменение прежнего guard адресное и совместимое с обязательствами.
-  П02 календарь/snapshot/deadline/UI: локально PASS02.11, [evidence](governance/evidence/supplier-calendar-20261102.md);
-  публикация/CI и разрешённая рабочая миграция учитываются отдельно. Час ответа
+  П02 календарь/snapshot/deadline/UI: PASS02.11, опубликован92344019, CI41501353701
+  и Security41501353652 PASS; разрешённая рабочая миграция применена,32старых заказа
+  сохранены без ретроспективных сроков; [evidence](governance/evidence/supplier-calendar-20261102.md). Час ответа
   с reminders/escalation и остальные интервалы этого R-пункта ещё не приняты.
 - [ ] **R4.1.3** [Принятые правила31.10 и проверкиT03–T17](domains/orders.md#order-agreement-state-table). Proposal и оплаченная согласованная часть: версии состава/цены/
   доставки/gift, допустимые стадии, acceptance, allocation и stock commit.

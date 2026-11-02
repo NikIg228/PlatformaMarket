@@ -1,4 +1,12 @@
-## P02-SUPPLIER-CALENDAR-20261102 — published, CI3 preparation
+## P02-SUPPLIER-CALENDAR-20261102 — DONE (scoped, CI GREEN)
+
+Final code9234401948054f5693e5a4b07bf7a2d42bc0fc00 published; CI41501353701 and
+Security41501353652 completed/success. Authorized working migration applied to
+marketplace:32legacy orders preserved, no retrospective deadlines or invented schedules.
+Canonical npm run dev restored: launcher21328/API10460/web15120, go_live;
+API ready/database/storage and catalog HTTP200. Dev left running for owner.
+P01 CI41496811460 success. P03 not started; parent R4.1.2 OPEN. No production deploy.
+Evidence: ../evidence/supplier-calendar-20261102.md. Below is historical progress.
 
 02.11 continuation: backend focused PG2/full PG3 PASS; API build2/core-contract1/
 runtime1/client build1/Prisma validate2 PASS. Editor implemented in web workspaces

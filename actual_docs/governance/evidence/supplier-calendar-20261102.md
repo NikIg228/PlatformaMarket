@@ -203,3 +203,30 @@ production artifact: те же save/recovery/CAS/keyboard/mobile/read-only и д
 Existing admin-auth regressions12 и client suite108 дают проверку зависимых
 consumers; остальные API/schema/PG/visual gates REUSED_PASS по неизменённым inputs.
 Third CI будет проверять исправленный import graph; пока общего PASS нет.
+
+## Завершение П02 — 02.11, scoped PASS
+
+Итоговый код9234401948054f5693e5a4b07bf7a2d42bc0fc00 опубликован в origin/main.
+[CI41501353701](https://github.com/NikIg228/PlatformaMarket/actions/runs/41501353701)
+и [Security41501353652](https://github.com/NikIg228/PlatformaMarket/actions/runs/41501353652)
+completed/success: verify, PostgreSQL/backup, оба containers, security gates.
+Предыдущие FAIL выше сохранены. P01 CI41496811460 также completed/success.
+
+После зелёного CI выполнено ранее данное разрешение владельца:
+`node .tmp/p02-migration.mjs --apply` — PASS, `.tmp/p02-migration-1.log`.
+На127.0.0.1:5432/marketplace применена только20261102000000_supplier_working_calendar;
+32прежних заказа сохранены, ретроспективных сроков0, выдуманных графиков0.
+Seed и изменение содержимого заказов не выполнялись.
+
+Канонический `npm run dev` восстановлен с go_live-профилем: launcher21328,
+dev-local13696, API10460 на4012, web15120 на3000. Проверены process ancestry,
+канонические пути Next/Turbo и запуск из единственной папки. Логи
+`.tmp/p02-dev-out.log`/`.tmp/p02-dev-err.log`; launcher сообщил unified ready.
+GET /api/health/ready —200, database/storage ok; GET /catalog —200;
+launcher read-only catalog-search —200. Стенд оставлен работающим владельцу.
+
+П02 завершён в согласованном объёме: редактор графика/перерывов/исключений,
+fallback, immutable snapshot/deadline новых заказов и отображение обеим ролям.
+П03 reminders/escalation не начат, родительский R4.1.2 остаётся OPEN.
+Production deployment не выполнялся. Финальная запись evidence — docs-only;
+кодовые gates переиспользованы на неизменённых входах, проверяются ссылки/diff.
