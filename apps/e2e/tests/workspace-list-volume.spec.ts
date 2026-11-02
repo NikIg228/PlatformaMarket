@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { writeFile } from "node:fs/promises";
@@ -131,7 +131,8 @@ test("A12 production list measurement with 1000 owned records", async ({ page, r
     const boundaryId = first.items.at(-1).id;
     const boundary = await db.supplierOrder.findUniqueOrThrow({ where: { id: boundaryId } });
     await db.supplierOrder.delete({ where: { id: boundaryId } });
-    const inserted = await db.supplierOrder.create({ data: { ...boundary, id: randomUUID(), orderNumber: `NEW-${key}`, createdAt: new Date() } });
+    const inserted = await db.supplierOrder.create({ data: { ...boundary, responseCalendar: boundary.responseCalendar ?? Prisma.DbNull,
+      id: randomUUID(), orderNumber: `NEW-${key}`, createdAt: new Date() } });
     const next = await get(routes[1].url + "?limit=100&cursor=" + encodeURIComponent(first.nextCursor));
     expect(next.items).toHaveLength(100);
     expect(next.items.some((row: { id: string }) => first.items.some((old: { id: string }) => old.id === row.id))).toBe(false);

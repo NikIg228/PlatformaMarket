@@ -165,3 +165,24 @@ immutable snapshots reviewed по Code Reviewer checklist, без новых blo
 pending migration20261102000000_supplier_working_calendar; writes пока нет.
 Миграция и восстановление dev разрешены владельцем после приёмки. Следующее:
 scoped commit/push, CI, затем разрешённая рабочая миграция и dev restoration.
+
+## Публикация
+
+P01 fixture fix4bc2e301a70adc0ff6d97c159fad7667c52c5aff и П02
+8e6a08e311f0efae29a27ad6c842f19e9bf1971d опубликованы обычным push в origin/main;
+remote SHA проверен. Staged только owned35paths и первые2hunks checkpoint;
+чужие checkpoint/history, apps/web/AGENTS.md и output сохранены.
+CI41497279880 и Security41497279900 IN_PROGRESS. Не PASS до результата.
+Working migration ещё не применена; dev остановлен по согласованному плану.
+
+## CI attempt1 — dependent fixture type failure
+
+CI41497279880: PostgreSQL/authority/backup и API/web containers PASS;
+Security41497279900 PASS. Verify FAIL на E2E typecheck: workspace-list-volume.spec.ts
+копирует read SupplierOrder в create; новое nullable JSON responseCalendar требует
+Prisma.DbNull вместо JS null. Это пропущенный dependent consumer; не baseline PASS.
+Исправлено только преобразование при клонировании fixture. E2E typecheck1/scoped
+eslint PASS. Дополнительно реальный rollback-probe на disposable DB подтвердил
+SQL NULL и сохранение исходной записи: `.tmp/p02-volume-null-1.log`.
+Полный performance/browser workload1000rows не запускался ради type/SQL-null fix.
+Production behavior/gates не изменились; требуется scoped публикация и CI2.
