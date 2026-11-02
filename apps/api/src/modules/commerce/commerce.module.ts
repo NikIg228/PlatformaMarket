@@ -1,4 +1,5 @@
 import { PersonalCartController } from "./personal-cart.controller";
+import { OrderResponseService } from "./order-response.service";
 import { SupplierCalendarController } from "./supplier-calendar.controller";
 import { SupplierCalendarService } from "./supplier-calendar.service";
 import { PersonalCartService } from "./personal-cart.service";
@@ -24,5 +25,5 @@ import { CommerceAnalyticsController } from "./commerce-analytics.controller";
 import { CommerceAnalyticsService } from "./commerce-analytics.service";
 import { DocumentsModule } from "../documents/documents.module";
 
-@Module({ imports: [InventoryModule, SuppliersModule, IntegrationsModule, ComplianceModule, MarketplaceAgreementsModule, DocumentsModule], controllers: [SupplierCalendarController, PersonalCartController, OrderDiscrepancyController, CommerceController, OrderWorkflowController, WorkspaceReadsController, SupplierPaymentPolicyController, CommerceAnalyticsController], providers: [SupplierCalendarService, PersonalCartService, OrderDiscrepancyService, SupplierAuxiliaryReadsService, CommerceService, OrderWorkflowService, WorkspaceReadsService, SupplierPaymentPolicyService, PaymentReviewService, CommerceAnalyticsService], exports: [CommerceService, OrderWorkflowService] })
+@Module({ imports: [InventoryModule, SuppliersModule, IntegrationsModule, ComplianceModule, MarketplaceAgreementsModule, DocumentsModule], controllers: [SupplierCalendarController, PersonalCartController, OrderDiscrepancyController, CommerceController, OrderWorkflowController, WorkspaceReadsController, SupplierPaymentPolicyController, CommerceAnalyticsController], providers: [OrderResponseService, SupplierCalendarService, PersonalCartService, OrderDiscrepancyService, SupplierAuxiliaryReadsService, CommerceService, OrderWorkflowService, WorkspaceReadsService, SupplierPaymentPolicyService, PaymentReviewService, CommerceAnalyticsService], exports: [CommerceService, OrderWorkflowService] })
 export class CommerceModule {}

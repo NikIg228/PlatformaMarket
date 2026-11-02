@@ -1,3 +1,20 @@
+## P03-ORDER-RESPONSE-20261103 — local PASS, publication pending
+
+Owner: start P03; explicitly approved stopping dev, working migration AFTER
+acceptance and restoration. Dev21328 descendants stopped, no working DB writes.
+Implementation:45/60/120 working-minute stages via existing queue/DB fallback,
+row-lock markers, notifications both sides, one linked support case, stops on
+substantive response/cancellation. Response UI/RU-KK/history/inbox/buyer case link;
+operator existing UI sees case. External delivery P27, P04 not started.
+Focused34 + classifier2 + UI3 tests, API build3, schema/client/web build1/types,
+Prisma validate1, core-contract/runtime/UI-contract/lint PASS. PG focused3 and
+full3 PASS (prior failures preserved); browser2 PASS both roles1440RU390KK,
+polling/recovery/keyboard/inbox/operator. Antislop after audit002 scopedPASS.
+Evidence ../evidence/order-response-sla-20261103.md; logs .tmp/p03-*.
+Next: final diff/staging, publish/CI, approved working migration then restoredev.
+Migration preflight:marketplace only20261103000000_order_response_sla pending.
+Do not stage foreign checkpoint hunks/apps/web/AGENTS/output; no agents.
+
 ## P02-SUPPLIER-CALENDAR-20261102 — DONE (scoped, CI GREEN)
 
 Final code9234401948054f5693e5a4b07bf7a2d42bc0fc00 published; CI41501353701 and

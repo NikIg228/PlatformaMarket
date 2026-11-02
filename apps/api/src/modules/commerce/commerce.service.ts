@@ -1,4 +1,5 @@
 import { fullyReceived } from "../trust-commerce/order-review-eligibility";
+import { orderConfirmationConflict } from "./order-confirmation-conflict";
 import { supplierCalendarSnapshot } from "./supplier-calendar.service";
 import { supplierResponseDeadline } from "./supplier-calendar-rules";
 import { waybillPreviewVisibility } from "../documents/shipment-waybill.rules";
@@ -1105,6 +1106,7 @@ export class CommerceService {
           data: {
             status,
             subtotalAmountMinor: subtotal,
+            ...(current.responseStartedAt && !current.responseReceivedAt ? { responseReceivedAt: new Date() } : {}),
             version: { increment: 1 },
           },
         });
@@ -1167,13 +1169,7 @@ export class CommerceService {
       try {
         return await confirm();
       } catch (error) {
-        if (
-          !(
-            error instanceof Prisma.PrismaClientKnownRequestError &&
-            error.code === "P2034"
-          )
-        )
-          throw error;
+        if (!orderConfirmationConflict(error)) throw error;
       }
     }
     throw new ConflictException(

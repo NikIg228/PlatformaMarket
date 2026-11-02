@@ -2432,6 +2432,12 @@ model SupplierOrder {
   responseCalendar         Json?
   responseStartedAt        DateTime?
   responseDeadlineAt       DateTime?
+  responseReceivedAt       DateTime?
+  responseRemindedAt       DateTime?
+  responseOverdueAt        DateTime?
+  responseEscalatedAt      DateTime?
+  responseSupportTicketId  String? @unique @db.Uuid
+  responseSupportTicket    SupportTicket? @relation(fields: [responseSupportTicketId], references: [id], onDelete: Restrict)
   commerceDataset          String                  @default("UNCLASSIFIED")
   metricEvents             CommerceMetricEvent[]
   conversation BusinessConversation?
@@ -3982,6 +3988,7 @@ model PurchaseBudget {
 }
 
 model SupportTicket {
+  responseOrder SupplierOrder?
   version Int @default(1)
   conversation BusinessConversation?
   id              String              @id @default(uuid()) @db.Uuid

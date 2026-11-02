@@ -23,6 +23,9 @@ const select = { id: true, eventType: true, aggregateType: true, aggregateId: tr
   createdAt: true, readAt: true, recipientUserId: true } satisfies Prisma.NotificationSelect;
 type Row = Prisma.NotificationGetPayload<{ select: typeof select }>;
 const titles: Record<string, [string, string]> = {
+  SupplierResponseReminder: ["Заказ ожидает ответа 45 рабочих минут", "Подтвердите заказ, предложите конкретные изменения или откажите с причиной."],
+  SupplierResponseOverdue: ["Срок ответа поставщика истёк", "Содержательный ответ пока не получен. Просрочка не означает согласие и не отменяет заказ."],
+  SupplierResponseEscalated: ["Ожидание ответа передано оператору", "Создано обращение по задержке ответа поставщика. Условия заказа остаются прежними."],
   SupplierOrderCreated: ["Создан новый заказ", "Проверьте состав и условия заказа."],
   SupplierOrderConfirmed: ["Поставщик рассмотрел заказ", "Откройте заказ и проверьте подтверждённый состав."],
   OrderReservationExpired: ["Срок резерва заказа истёк", "Откройте заказ, чтобы проверить итоговый статус. Не используйте прежний счёт для оплаты."],

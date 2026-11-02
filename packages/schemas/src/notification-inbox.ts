@@ -21,7 +21,7 @@ export type NotificationInbox = z.infer<typeof notificationInboxSchema>;
 
 /** Only business-visible events enter the inbox. Internal reservation/check events stay in audit. */
 export const notificationEvents: Record<z.infer<typeof notificationCategorySchema>, readonly string[]> = {
-  orders: ["SupplierOrderCreated", "SupplierOrderConfirmed", "OrderReservationExpired", "OrderReceived"],
+  orders: ["SupplierOrderCreated", "SupplierOrderConfirmed", "OrderReservationExpired", "OrderReceived", "SupplierResponseReminder", "SupplierResponseOverdue", "SupplierResponseEscalated"],
   payments: ["OrderWorkflowChanged", "RefundCompleted", "ManualPaymentReviewRequired"],
   delivery: ["ShipmentCreated", "ShipmentStatusChanged"],
   documents: ["DocumentSigned", "DocumentGenerated", "DocumentUploaded", "OrganizationCredentialExpired"],

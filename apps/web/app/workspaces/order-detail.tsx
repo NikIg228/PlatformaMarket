@@ -37,7 +37,7 @@ export default function OrderDetail() {
           URL.revokeObjectURL(url);
         }}
         renderConfirmation={(data, refresh) => (<>
-          <OrderResponseDeadline order={data.order} locale={locale} />
+          <OrderResponseDeadline order={data.order} locale={locale} role={role} />
           {role === "supplier" ? <OrderConfirmationPanel
                       available={data.order.status === "AWAITING_CONFIRMATION"}
                       order={{
