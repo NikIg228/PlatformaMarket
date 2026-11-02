@@ -25,7 +25,7 @@ import { PrismaService } from "../../platform/prisma/prisma.service";
 import { InventoryService } from "../inventory/inventory.service";
 import { ExternalReservationsService } from "../integrations/external-reservations.service";
 import { ComplianceService } from "../compliance/compliance.service";
-import { resolvePriceRules } from "../pricing/price-resolver";
+import { resolveCartOffer } from "./resolve-cart-offer";
 import {
   SupplierAccessService,
   type SupplierActorContext,
@@ -34,7 +34,6 @@ import {
   calculateLineTotal,
   cartItemSnapshot,
   compareCartLineSnapshots,
-  quantityMatchesOffer,
   resolveSupplierOrderState,
   type CartLineSnapshot,
 } from "./commerce-rules";
@@ -42,9 +41,7 @@ import { MarketplaceAgreementsService } from "../agreements/marketplace-agreemen
 import { documentReferenceInclude, hasConsistentDocumentReferences, withoutReferenceRelations } from "../documents/document-reference-graph";
 import { assertOrganizationProfileComplete } from "../organizations/organization-profile.service";
 import { recoveredCartId, recoverFailedCart } from "./cart-recovery";
-import { quoteOfferPromotion, claimCheckoutPromotion, releaseCheckoutPromotions } from "../promotions/checkout-promotions";
-import { calculateVatLine } from "@marketplace/schemas";
-import { assertVatCurrent, storedVat } from "../vat/vat-rules";
+import { claimCheckoutPromotion, releaseCheckoutPromotions } from "../promotions/checkout-promotions";
 
 @Injectable()
 export class CommerceService {
@@ -96,206 +93,10 @@ export class CommerceService {
   }
 
   private async resolveCurrentOffer(
-    buyerOrganizationId: string,
-    offerId: string,
-    quantity: number,
-    context: SupplierActorContext,
-    expectedCurrency?: string,
-    db: Prisma.TransactionClient = this.prisma,
+    buyerOrganizationId: string, offerId: string, quantity: number, _context: SupplierActorContext,
+    expectedCurrency?: string, db: Prisma.TransactionClient = this.prisma,
   ) {
-    const at = new Date();
-    const offer = await db.supplierOffer.findFirst({
-      where: {
-        id: offerId,
-        status: "ACTIVE",
-        publication: {
-          is: {
-            status: { in: ["PUBLISHED", "RESTRICTED"] },
-            marketplaceVisible: true,
-          },
-        },
-      },
-      include: {
-        publication: true,
-        packaging: true,
-        saleUnit: true,
-        supplier: { include: { organization: true } },
-        productVariant: { include: { product: true } },
-        prices: {
-          where: {
-            status: "ACTIVE",
-            validFrom: { lte: at },
-            OR: [{ validTo: null }, { validTo: { gte: at } }],
-            AND: [
-              {
-                OR: [
-                  { freshnessExpiresAt: null },
-                  { freshnessExpiresAt: { gte: at } },
-                ],
-              },
-            ],
-          },
-          orderBy: { validFrom: "desc" },
-        },
-        priceTiers: {
-          where: {
-            minimumQuantity: { lte: quantity },
-            validFrom: { lte: at },
-            OR: [
-              { maximumQuantity: null },
-              { maximumQuantity: { gte: quantity } },
-            ],
-            AND: [{ OR: [{ validTo: null }, { validTo: { gte: at } }] }],
-          },
-        },
-        contractPrices: {
-          where: {
-            buyerOrganizationId,
-            status: "ACTIVE",
-            minimumQuantity: { lte: quantity },
-            validFrom: { lte: at },
-            OR: [{ validTo: null }, { validTo: { gte: at } }],
-          },
-        },
-        inventoryBalances: {
-          where: { freshnessStatus: "FRESH" },
-          include: {
-            warehouse: true,
-            _count: { select: { lots: true } },
-            lots: {
-              where: {
-                status: "ACTIVE",
-                OR: [{ expirationDate: null }, { expirationDate: { gt: at } }],
-              },
-              orderBy: { expirationDate: { sort: "asc", nulls: "last" } },
-            },
-          },
-          orderBy: [{ quantityAvailable: "desc" }, { warehouseId: "asc" }],
-        },
-      },
-    });
-    if (!offer)
-      throw new NotFoundException("Published marketplace offer not found");
-    await this.agreements.assertActive(offer.supplierOrganizationId);
-    if (
-      !quantityMatchesOffer(
-        quantity,
-        offer.minimumOrderQuantity.toString(),
-        offer.orderIncrement.toString(),
-      )
-    )
-      throw new BadRequestException(
-        "Quantity does not match offer minimum and increment",
-      );
-    const allowedBuyerIds = offer.publication?.allowedBuyerIds;
-    if (
-      Array.isArray(allowedBuyerIds) &&
-      allowedBuyerIds.length > 0 &&
-      !allowedBuyerIds.includes(buyerOrganizationId)
-    )
-      throw new ForbiddenException("Offer is not available to this buyer");
-
-    const decision = resolvePriceRules({
-      quantity,
-      at,
-      contracts: offer.contractPrices.map((rule) => ({
-        id: rule.id,
-        amountMinor: rule.amountMinor.toString(),
-        currency: rule.currency,
-        minimumQuantity: rule.minimumQuantity.toString(),
-        validFrom: rule.validFrom,
-        validTo: rule.validTo,
-        priority: rule.priority,
-      })),
-      tiers: offer.priceTiers.map((rule) => ({
-        id: rule.id,
-        amountMinor: rule.unitPriceMinor.toString(),
-        currency: rule.currency,
-        minimumQuantity: rule.minimumQuantity.toString(),
-        maximumQuantity: rule.maximumQuantity?.toString(),
-        validFrom: rule.validFrom,
-        validTo: rule.validTo,
-      })),
-      base: offer.prices[0]
-        ? {
-            id: offer.prices[0].id,
-            amountMinor: offer.prices[0].amountMinor.toString(),
-            currency: offer.prices[0].currency,
-            validFrom: offer.prices[0].validFrom,
-            validTo: offer.prices[0].validTo,
-          }
-        : null,
-    });
-    if (
-      decision.source === "UNAVAILABLE" ||
-      !decision.amountMinor ||
-      !decision.currency
-    )
-      throw new ConflictException(
-        "No active price applies to the requested quantity",
-      );
-    if (expectedCurrency && decision.currency !== expectedCurrency)
-      throw new ConflictException("Offer currency differs from cart currency");
-    const availableQuantity = offer.inventoryBalances.reduce(
-      (sum, candidate) => sum.plus(candidate.quantityAvailable),
-      new Prisma.Decimal(0),
-    );
-    const selected =
-      offer.inventoryBalances
-        .filter(
-          ({ quantityAvailable }) => Number(quantityAvailable) >= quantity,
-        )
-        .map((balance) => ({
-          balance,
-          lot:
-            balance.lots.find(
-              ({ quantityAvailable }) => Number(quantityAvailable) >= quantity,
-            ) ?? null,
-        }))
-        .find(
-          ({ balance, lot }) => balance._count.lots === 0 || lot !== null,
-        ) ?? null;
-    const balance = selected?.balance ?? null;
-    const lot = selected?.lot ?? null;
-    const fulfillmentStatus = availableQuantity.lte(0)
-      ? ("OUT_OF_STOCK" as const)
-      : balance
-        ? ("AVAILABLE" as const)
-        : ("INSUFFICIENT_STOCK" as const);
-    const promotion = await quoteOfferPromotion(db, { offerId, supplierOrganizationId: offer.supplierOrganizationId, buyerOrganizationId,
-      source: decision.source, unitPriceMinor: decision.amountMinor, currency: decision.currency, quantity, balanceId: balance?.id ?? null, lotId: lot?.id ?? null });
-    if (promotion) decision.amountMinor = promotion.snapshot.unitPriceMinor;
-    const total = calculateLineTotal(decision.amountMinor, quantity);
-    const taxDeclaration = storedVat(offer.prices[0]?.taxSnapshot);
-    if (taxDeclaration) await assertVatCurrent(db, offer.supplierOrganizationId, taxDeclaration);
-    const pricingSnapshot: CartLineSnapshot = {
-      tax: taxDeclaration ? calculateVatLine(total.toString(), taxDeclaration) : null,
-      resolvedAt: at.toISOString(),
-      offerVersion: offer.version,
-      source: decision.source,
-      ruleId: decision.ruleId,
-      unitPriceMinor: decision.amountMinor,
-      quantity: String(quantity),
-      totalPriceMinor: total.toString(),
-      currency: decision.currency,
-      minimumOrderQuantity: offer.minimumOrderQuantity.toString(),
-      orderIncrement: offer.orderIncrement.toString(),
-      commercialTerms: {
-        saleUnitId: offer.saleUnitId,
-        saleUnitName: offer.saleUnit?.nameRu ?? null,
-        packagingId: offer.packagingId,
-        packagingName: offer.packaging?.name ?? null,
-        baseUnitsPerSaleUnit: offer.baseUnitsPerSaleUnit.toString(),
-        packagingUnitId: offer.packaging?.unitId ?? null,
-        packagingQuantity: offer.packaging?.quantityInBaseUnit.toString() ?? null,
-        includesVat: offer.prices[0]?.includesVat ?? null,
-        vatRate: offer.prices[0]?.vatRate?.toString() ?? null,
-      },
-      ...(promotion ? { promotion: promotion.snapshot } : {}),
-      availableQuantity: availableQuantity.toString(),
-      fulfillmentStatus,
-    };
-    return { offer, decision, balance, lot, total, pricingSnapshot, promotion };
+    return resolveCartOffer(db, this.agreements, buyerOrganizationId, offerId, quantity, expectedCurrency);
   }
 
   private async resolveOffer(

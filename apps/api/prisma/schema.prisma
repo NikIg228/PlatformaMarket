@@ -987,6 +987,7 @@ enum BuyerSupplierAgreementStatus {
 }
 
 model User {
+  personalCart PersonalCart?
   signingAdmissions SigningPrincipalAdmission[]
   signingReviews SigningPrincipalReview[]
   signingPrincipalAuthorities SigningPrincipalAuthority[]
@@ -2037,6 +2038,7 @@ model SupplierOffer {
   inventoryBalances      InventoryBalance[]
   inventoryLots          InventoryLot[]
   cartItems              CartItem[]
+  personalCartItems      PersonalCartItem[]
   supplierOrderItems     SupplierOrderItem[]
   integrationBindings    IntegrationDataBinding[]
   deliveryOptions        OfferDeliveryOption[]
@@ -2338,6 +2340,31 @@ model InventoryReservation {
   @@unique([supplierOrganizationId, idempotencyKey])
   @@index([inventoryBalanceId, status, expiresAt])
   @@index([inventoryLotId, status])
+}
+
+model PersonalCart {
+  id          String             @id @default(uuid()) @db.Uuid
+  ownerUserId String             @unique @db.Uuid
+  version     Int                @default(1)
+  owner       User               @relation(fields: [ownerUserId], references: [id], onDelete: Restrict)
+  items       PersonalCartItem[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model PersonalCartItem {
+  id              String        @id @default(uuid()) @db.Uuid
+  cartId          String        @db.Uuid
+  offerId         String        @db.Uuid
+  quantity        Decimal       @db.Decimal(18, 6)
+  pricingSnapshot Json
+  cart            PersonalCart  @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  offer           SupplierOffer @relation(fields: [offerId], references: [id], onDelete: Restrict)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([cartId, offerId])
+  @@index([offerId])
 }
 
 model Cart {

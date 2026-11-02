@@ -20,6 +20,7 @@ import {
   buyerAppUrl,
   feedbackFromError,
   openWorkspace,
+  openPersonalWorkspace,
   availableWorkspaces,
   workspaceOptions, resumeAuthSession, type WorkspaceChoice,
 } from "../auth-client";
@@ -58,6 +59,7 @@ type BusyAction = "email" | "forgot" | "workspace" | "social" | null;
 export default function LoginPage() {
   const returnTo = useProductReturn();
   const signedOut = useSearchParams().get("signedOut") === "1";
+  const personalRequested = useSearchParams().get("personal") === "1";
   const [busyAction, setBusyAction] = useState<BusyAction>(null);
   const [feedback, setFeedback] = useState<AuthFeedback | null>(null);
   const [email, setEmail] = useState("");
@@ -75,6 +77,11 @@ export default function LoginPage() {
   const hasSocialLogin = hasGoogle || hasApple;
 
   const continueSession = async (session: AuthSession, expected = continuation.current) => {
+    if (personalRequested || (!session.activeOrganizationId && !session.organizationId)) {
+      if (expected !== continuation.current) return;
+      if (!await openPersonalWorkspace(session.user.id, personalRequested ? undefined : returnTo)) throw new Error("Не удалось подтвердить личный вход.");
+      return;
+    }
     const contexts = await availableWorkspaces(session);
     if (expected !== continuation.current) return;
     const workspaces = workspaceOptions(contexts, returnTo);
@@ -88,11 +95,14 @@ export default function LoginPage() {
     let active = true;
     const expected = ++continuation.current;
     setBusyAction("workspace");
-    void resumeAuthSession().then(session => { if (active && session) return continueSession(session, expected); })
+    void resumeAuthSession().then(async session => {
+      if (active && session) { await continueSession(session, expected); return; }
+      if (active && personalRequested) await openPersonalWorkspace();
+    })
       .catch(cause => { if (active) setFeedback(feedbackFromError(cause, "Не удалось восстановить вход")); })
       .finally(() => { if (active) setBusyAction(null); });
     return () => { active = false; continuation.current += 1; };
-  }, [returnTo, signedOut]);
+  }, [returnTo, signedOut, personalRequested]);
 
   const chooseWorkspace = async () => {
     const session = pendingSession;

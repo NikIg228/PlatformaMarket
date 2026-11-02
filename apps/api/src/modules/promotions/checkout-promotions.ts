@@ -4,7 +4,7 @@ import type { AcceptedPromotion } from "@marketplace/schemas";
 import { environment } from "../../platform/config/environment";
 import { promotionGiftQuantity, promotionUnitPrice } from "./offer-promotion-rules";
 
-type QuoteInput = { offerId: string; supplierOrganizationId: string; buyerOrganizationId: string; source: string; unitPriceMinor: string;
+type QuoteInput = { offerId: string; supplierOrganizationId: string; buyerOrganizationId: string | null; source: string; unitPriceMinor: string;
   currency: string; quantity: number; balanceId: string | null; lotId: string | null };
 export async function quoteOfferPromotion(db: Prisma.TransactionClient, input: QuoteInput) {
   if (environment().DEPLOYMENT_PROFILE !== "go_live" || input.source !== "BASE") return null;
@@ -17,7 +17,7 @@ export async function quoteOfferPromotion(db: Prisma.TransactionClient, input: Q
   const unit = promotionUnitPrice(p);
   const giftQuantity = p.kind === "BUY_X_GET_Y" ? promotionGiftQuantity(String(input.quantity), p.buyQuantity!.toString(), p.giftQuantity!.toString()) : "0";
   const gift = new Prisma.Decimal(giftQuantity).gt(0) ? await db.supplierOffer.findFirst({ where: { id: p.giftOfferId!, supplierOrganizationId: input.supplierOrganizationId, status: "ACTIVE",
-    publication: { is: { status: { in: ["PUBLISHED", "RESTRICTED"] }, marketplaceVisible: true } }, productVariant: { status: "ACTIVE", product: { status: "ACTIVE" } } },
+    publication: { is: { status: input.buyerOrganizationId ? { in: ["PUBLISHED", "RESTRICTED"] } : "PUBLISHED", marketplaceVisible: true } }, productVariant: { status: "ACTIVE", product: { status: "ACTIVE" } } },
     include: { publication: true, productVariant: { include: { product: true } }, inventoryBalances: { where: { freshnessStatus: "FRESH", warehouse: { status: "ACTIVE" },
       OR: [{ freshnessExpiresAt: null }, { freshnessExpiresAt: { gt: now } }] }, include: { _count: { select: { lots: true } }, lots: { where: { status: "ACTIVE", OR: [{ expirationDate: null }, { expirationDate: { gt: now } }] }, orderBy: [{ expirationDate: { sort: "asc", nulls: "last" } }, { id: "asc" }] } }, orderBy: [{ quantityAvailable: "desc" }, { id: "asc" }] } } }) : null;
   const required = new Prisma.Decimal(giftQuantity);

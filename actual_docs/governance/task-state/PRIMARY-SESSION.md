@@ -1,3 +1,16 @@
+## P01-PERSONAL-CART-20261102 — LOCAL_PASS, publication pending
+
+Последнее поручение: закончить П01, затем следующие пакеты roadmap (П02 далее).
+После дополнительных разрешений browser8 PASS все9шагов: личный вход/корзина,
+изменение цены/recovery/аккаунта,390KK/styles, переход к клинике и отдельная B2B
+корзина, отсутствие checkout/reserve. Все focused87/types/builds/PG/core/runtime/
+validate/lint/UI-contract PASS. Исторические FAIL/attempts и точные команды:
+`../evidence/personal-cart-20261102.md`. Приложение исправлено: relative login URL
+и явный переход к workspace handoff; fixtures/selectors исправлены отдельно.
+Рабочая БД/deploy не менялись; dev3000/4012 оставлен, owned процессы закрыты.
+Следующий шаг: scoped commit/push, remote/CI, затем П02 календарь поставщика.
+Checkout/order/payment вП01 не входят; весь R7.1.1 открыт.
+
 ## CATALOG-PRODUCT-CONTROLS-20261031 — scoped local PASS
 
 Owner screenshots: catalogue Details opens product directly; quantity compact with

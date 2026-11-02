@@ -16,6 +16,8 @@ import * as supplierApi from "./domains/supplier";
 import * as catalogApi from "./domains/catalog";
 import * as storefrontApi from "./domains/storefront";
 import type { OrderDiscrepanciesResponse, OrderDiscrepancyCommand, OrderDiscrepancyResult, OrderReviewState, CreateVerifiedReviewInput, VerifiedOrderReview } from "@marketplace/schemas";
+import type { PersonalCart, PersonalCartAdd, PersonalCartUpdate, PersonalCartVersion, PersonalCartReprice, PersonalCartValidation } from "@marketplace/schemas";
+export { createPersonalSession } from "./personal-session";
 import type { PrepareShipmentWaybillInput, ShipmentWaybillView, ShipmentWaybillsResponse } from "@marketplace/schemas";
 import type { PrepareResupplyDocumentInput, ResupplyDocumentView, ResupplyDocumentsResponse } from "@marketplace/schemas";
 import type { PrepareOrderInvoiceInput, OrderInvoiceView, OrderInvoicesResponse } from "@marketplace/schemas";
@@ -364,6 +366,15 @@ export class MarketplaceApiClient {
   ) { return catalogApi.comparePublicOffers(this, productId, input); }
 
   listCarts(buyerOrganizationId: string) { return cartsApi.listCarts(this, buyerOrganizationId); }
+
+  personalCurrentCart(signal?: AbortSignal) { return this.get<PersonalCart | null>("/personal/carts/current", { signal }); }
+  personalCart(id: string, signal?: AbortSignal) { return this.get<PersonalCart>(`/personal/carts/${encodeURIComponent(id)}`, { signal }); }
+  personalCreateCart() { return this.post<PersonalCart>("/personal/carts", {}); }
+  personalAddItem(id: string, input: PersonalCartAdd) { return this.post<PersonalCart>(`/personal/carts/${encodeURIComponent(id)}/items`, input); }
+  personalUpdateItem(id: string, itemId: string, input: PersonalCartUpdate) { return this.patch<PersonalCart>(`/personal/carts/${encodeURIComponent(id)}/items/${encodeURIComponent(itemId)}`, input); }
+  personalRemoveItem(id: string, itemId: string, input: PersonalCartVersion) { return this.request<PersonalCart>(`/personal/carts/${encodeURIComponent(id)}/items/${encodeURIComponent(itemId)}`, { method: "DELETE", body: JSON.stringify(input) }); }
+  personalValidateCart(id: string) { return this.post<PersonalCartValidation>(`/personal/carts/${encodeURIComponent(id)}/validate`); }
+  personalRepriceCart(id: string, input: PersonalCartReprice) { return this.post<PersonalCart>(`/personal/carts/${encodeURIComponent(id)}/reprice`, input); }
 
   createCart(buyerOrganizationId: string, input: CreateCartRequest) { return cartsApi.createCart(this, buyerOrganizationId, input); }
 

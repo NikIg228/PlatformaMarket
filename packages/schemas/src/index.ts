@@ -9,6 +9,7 @@ export * from "./identity-management";
 export * from "./auth-api";
 export * from "./workspace-reads";
 export * from "./document-upload-limits";
+export * from "./personal-cart.js";
 export * from "./commercial.js";
 export * from "./trust-commerce.js";
 export * from "./core-api.js";

@@ -11,9 +11,13 @@ import styles from "./header.module.css";
 import { workspacePath } from "@marketplace/api-client/frontend-routes";
 import { catalogContext } from "./navigation";
 import { resilientGet } from "../../resilient-get";
+import { usePersonalSession } from "../../personal-session";
+import { useBuyerMode } from "../../buyer-context";
 
 export function HeaderAccount() {
   const buyer = useBuyerSession();
+  const personal = usePersonalSession();
+  const mode = useBuyerMode();
   const [session, setSession] = useState<CurrentSession | null>(null);
   const [ready, setReady] = useState(false); const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
@@ -52,6 +56,9 @@ export function HeaderAccount() {
   const organizationName = buyer.session?.organizationDisplayName ?? current?.organizationDisplayName;
   const capability = buyer.session ? "BUYER" : current?.capabilities.includes("SUPPLIER") ? "SUPPLIER" : "BUYER";
   if (!buyer.ready || !ready) return <span className={styles.authLoading} role="status" aria-label="Проверяем вход">Личный кабинет…</span>;
+  if (personal.session && (mode === "personal" || !organizationName)) return <a className={styles.accountLink} href="/personal/cart" aria-label={`${personal.session.user.displayName} · Личная корзина`}>
+    <span className={styles.organization}>{personal.session.user.displayName}</span>
+  </a>;
   if (!organizationName) return error ? <Button onClick={() => setRetry(v => v + 1)}>{error}. Повторить</Button> : <DmButton as="a" appearance="primary" className={styles.login} href={withWorkspaceReturn(loginUrl, returnTo)} onClick={e => { e.preventDefault(); window.location.assign(withWorkspaceReturn(loginUrl, window.location.pathname + window.location.search)); }}>Войти</DmButton>;
   return <div style={{ display: "flex", gap: "var(--dm-space-3)", alignItems: "center", minWidth: 0 }}><a className={styles.accountLink} href={capability === "BUYER" ? workspacePath("BUYER") + catalogQuery : supplierAppUrl} aria-label={`${organizationName} · ${capability === "BUYER" ? "Клиника" : "Поставщик"} · Личный кабинет`}>
     <span className={styles.organization} title={organizationName}>{organizationName}</span>

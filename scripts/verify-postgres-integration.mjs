@@ -12,6 +12,7 @@ import { verifyCheckoutSnapshot } from "./lib/verify-checkout-snapshot.mjs";
 import { verifyLotEligibility } from "./lib/verify-lot-eligibility.mjs";
 import { verifyOfferCommercial } from "./lib/verify-offer-commercial.mjs";
 import { verifyCartRecovery } from "./lib/verify-cart-recovery.mjs";
+import { verifyPersonalCart, verifyPersonalCartUpgrade } from "./lib/verify-personal-cart.mjs";
 import { verifySupplierStorefront, verifyStorefrontUpgrade } from "./lib/verify-supplier-storefront.mjs";
 import { verifyReservationExpiry } from "./lib/verify-reservation-expiry.mjs";
 import { verifyLocalPermissions } from "./lib/verify-local-permissions.mjs";
@@ -666,6 +667,8 @@ try {
   } else {
   await verifyStorefrontUpgrade(prisma, assert);
   await verifySupplierStorefront({ prisma, fixture, request, runId, assert });
+  await verifyPersonalCartUpgrade(prisma, assert);
+  await verifyPersonalCart({ prisma, apiBase, offerId: snapshotOffer.offerId, createBuyer, runId, assert });
   await verifyCheckoutSnapshot({ prisma, databaseUrl, offerId: snapshotOffer.offerId,
     createBuyer, createCartWithItem, runId, assert });
   await verifyContractLifecycle({ prisma, createBuyer, runId });

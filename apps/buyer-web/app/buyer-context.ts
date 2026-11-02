@@ -3,7 +3,7 @@ import { useSyncExternalStore } from "react";
 
 const key = "dentmarket:buyer-context";
 const event = "dentmarket:buyer-context-changed";
-export const personalPurchaseMessage = "Личный режим: можно просматривать каталог. Оформление личных покупок пока недоступно. Для закупки выберите организацию.";
+export const personalPurchaseMessage = "Личный режим: можно собирать и сохранять свою корзину. Оформление личных покупок пока недоступно.";
 let switching = false;
 export function buyerMode(): "personal" | "organization" | "switching" {
   if (switching) return "switching";

@@ -6,10 +6,37 @@ import {
   pickCapability,
   workspaceHandoffUrl,
   openWorkspace,
+  openPersonalWorkspace,
   workspaceOptions,
 } from "./auth-client";
 
 describe("landing auth contract", () => {
+  it("opens the personal cart on the unified app's relative buyer origin", async () => {
+    vi.stubEnv("NEXT_PUBLIC_BUYER_APP_URL", "/");
+    vi.resetModules();
+    try {
+      const { openPersonalWorkspace: openUnifiedPersonal } = await import("./auth-client");
+      const id = "00000000-0000-4000-8000-000000000001", assign = vi.fn();
+      vi.stubGlobal("window", { location: { origin: "https://market.example", assign }, sessionStorage: { setItem: vi.fn() } });
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ user: { id, displayName: "Fixture" }, sessionId: id, mode: "PERSONAL", accessToken: "personal", accessTokenExpiresIn: 900 }))));
+      await expect(openUnifiedPersonal(id)).resolves.toBe(true);
+      expect(assign).toHaveBeenCalledWith("https://market.example/personal/cart");
+    } finally { vi.unstubAllEnvs(); vi.resetModules(); }
+  });
+  it("opens a verified personal account without a workspace handoff and rejects account substitution", async () => {
+    const userId = "00000000-0000-4000-8000-000000000001";
+    const sessionId = "00000000-0000-4000-8000-000000000002";
+    const assign = vi.fn(), setItem = vi.fn();
+    vi.stubGlobal("window", { location: { assign }, sessionStorage: { setItem } });
+    const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ user: { id: userId, displayName: "Fixture" }, sessionId, mode: "PERSONAL", accessToken: "personal", accessTokenExpiresIn: 900 })));
+    vi.stubGlobal("fetch", fetcher);
+    await expect(openPersonalWorkspace(userId, "/catalog?q=test")).resolves.toBe(true);
+    expect(assign).toHaveBeenCalledWith(expect.stringContaining("/catalog?q=test"));
+    expect(setItem).toHaveBeenCalledWith("dentmarket:buyer-context", "personal");
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    await expect(openPersonalWorkspace(sessionId)).rejects.toThrow("Аккаунт изменился");
+    expect(assign).toHaveBeenCalledTimes(1);
+  });
   const organizations = [
     { organizationId: "buyer", organizationDisplayName: "Clinic", capabilities: ["BUYER" as const] },
     { organizationId: "dual", organizationDisplayName: "Both", capabilities: ["BUYER" as const, "SUPPLIER" as const] },

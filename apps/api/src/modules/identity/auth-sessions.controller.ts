@@ -107,6 +107,19 @@ export class AuthSessionsController {
     return response.json(await this.sessions.currentSession(cookie[`mp_refresh${suffix}`], cookie[`mp_csrf${suffix}`], parsed.data.workspace));
   }
 
+  @Get("personal-current") @Header("Cache-Control", "no-store")
+  @Throttle({
+    ip: { limit: () => environment().RATE_LIMIT_REQUESTS, ttl: () => environment().RATE_LIMIT_TTL_MS },
+    user: { limit: () => environment().RATE_LIMIT_REQUESTS * 2, ttl: () => environment().RATE_LIMIT_TTL_MS },
+    tenant: { limit: () => environment().RATE_LIMIT_REQUESTS * 5, ttl: () => environment().RATE_LIMIT_TTL_MS },
+  })
+  @ApiCoreResponse("PersonalSessionResponse")
+  @ApiOperation({ description: "Restores personal identity from the sign-in cookie, including accounts without organization membership. Issues a personal-only bearer; no organization switch or refresh rotation." })
+  async personalCurrent(@Req() request: Request, @Res() response: Response) {
+    const cookie = cookies(request.header("cookie"));
+    return response.json(await this.sessions.currentPersonalSession(cookie.mp_refresh, cookie.mp_csrf));
+  }
+
   @Get("workspaces") @Header("Cache-Control", "no-store") @ApiCoreProtected()
   @ApiCoreResponse("WorkspaceChoicesResponse")
   workspaces(@Headers("x-user-id") userId: string) { return this.sessions.workspaceChoices(userId); }

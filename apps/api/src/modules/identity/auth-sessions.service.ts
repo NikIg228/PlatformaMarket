@@ -41,10 +41,10 @@ export class AuthSessionsService {
     return { key, algorithm: config.JWT_PRIVATE_KEY ? "RS256" as const : "HS256" as const };
   }
 
-  private issueAccessToken(userId: string, organizationIds: string[], activeOrganizationId: string | null, authMethods: string[], sessionId: string) {
+  private issueAccessToken(userId: string, organizationIds: string[], activeOrganizationId: string | null, authMethods: string[], sessionId: string, personal = false) {
     const config = environment();
     const signing = this.signingKey();
-    return jwt.sign({ organization_ids: organizationIds, organization_id: activeOrganizationId ?? undefined, amr: authMethods }, signing.key, {
+    return jwt.sign({ organization_ids: organizationIds, organization_id: activeOrganizationId ?? undefined, amr: authMethods, ...(personal ? { personal: true } : {}) }, signing.key, {
       algorithm: signing.algorithm,
       subject: userId,
       issuer: config.JWT_ISSUER ?? "dentmarket-kz",
@@ -67,6 +67,18 @@ export class AuthSessionsService {
     });
     return memberships.map(({ organization }) => ({ organizationId: organization.id, organizationDisplayName: organization.displayName,
       capabilities: organization.capabilities.map(item => item.capability).filter((value): value is "BUYER" | "SUPPLIER" => value === "BUYER" || value === "SUPPLIER") })).filter(item => item.capabilities.length > 0);
+  }
+
+  async currentPersonalSession(refreshToken: string | undefined, csrfToken: string | undefined) {
+    if (!refreshToken || !csrfToken || csrfToken.length < 24) return null;
+    const session = await this.prisma.authSession.findFirst({
+      where: { refreshTokenHash: hash(refreshToken), status: "ACTIVE", expiresAt: { gt: new Date() }, user: { status: "ACTIVE" } },
+      include: { user: { select: { id: true, displayName: true } } },
+    });
+    if (!session || session.authMethods.includes("operator_password")) return null;
+    return { user: session.user, sessionId: session.id, mode: "PERSONAL" as const,
+      accessToken: this.issueAccessToken(session.userId, [], null, session.authMethods, session.id, true),
+      accessTokenExpiresIn: environment().AUTH_ACCESS_TOKEN_TTL_SECONDS };
   }
 
   async currentSession(refreshToken: string | undefined, csrfToken: string | undefined, workspace?: "BUYER" | "SUPPLIER") {

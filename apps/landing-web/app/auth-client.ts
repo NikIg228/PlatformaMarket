@@ -1,5 +1,5 @@
 import { legacyFrontendOrigins } from "@marketplace/api-client/frontend-routes";
-import { currentSessionSchema, workspaceContextSchema, workspaceChoicesSchema, type WorkspaceContext, type AuthEmailSession, type AuthEmailVerified } from "@marketplace/schemas";
+import { currentSessionSchema, personalSessionSchema, workspaceContextSchema, workspaceChoicesSchema, type WorkspaceContext, type AuthEmailSession, type AuthEmailVerified } from "@marketplace/schemas";
 import { requestedWorkspaceCapability, workspaceReturnPath } from "@marketplace/schemas/product-navigation";
 import { unifiedFrontend, workspacePath } from "@marketplace/api-client";
 export type AuthCapability = "BUYER" | "SUPPLIER";
@@ -228,6 +228,19 @@ export async function availableWorkspaces(session: AuthSession, capability?: Aut
 }
 
 export type WorkspaceChoice = { organizationId: string; organizationDisplayName: string; capability: AuthCapability };
+export async function openPersonalWorkspace(expectedUserId?: string, returnTo?: string) {
+  const response = await fetch(`${apiUrl}/auth/personal-current`, { credentials: "include", cache: "no-store", signal: AbortSignal.timeout(15_000) });
+  if (!response.ok) throw new Error("Не удалось проверить личный вход. Повторите попытку.");
+  const personal = personalSessionSchema.nullable().parse(await response.json());
+  if (!personal) return false;
+  if (expectedUserId && personal.user.id !== expectedUserId) throw new Error("Аккаунт изменился. Повторите вход.");
+  const allowed = workspaceReturnPath(returnTo, "BUYER");
+  const target = allowed && (/^\/products\//.test(allowed) || /^\/catalog(?:\?|$)/.test(allowed)) ? allowed : "/personal/cart";
+  window.sessionStorage.setItem("dentmarket:buyer-context", "personal");
+  window.location.assign(new URL(target, new URL(buyerAppUrl, window.location.origin)).href);
+  return true;
+}
+
 export function workspaceOptions(contexts: WorkspaceContext[], returnTo?: string): WorkspaceChoice[] {
   const requested = requestedWorkspaceCapability(returnTo);
   return contexts.flatMap(item => item.capabilities.filter(capability => !requested || capability === requested).map(capability => ({ organizationId: item.organizationId, organizationDisplayName: item.organizationDisplayName, capability })));

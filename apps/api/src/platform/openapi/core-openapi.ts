@@ -1,4 +1,5 @@
 import { supplierStorefrontSchema, supplierStorefrontSettingsSchema, saveSupplierStorefrontSchema, uploadSupplierLogoSchema, supplierStorefrontQuerySchema } from "@marketplace/schemas";
+import { personalSessionSchema, personalCartSchema, personalCartCreateSchema, personalCartAddSchema, personalCartUpdateSchema, personalCartVersionSchema, personalCartRepriceSchema, personalCartValidationSchema } from "@marketplace/schemas";
 import { operatorOrdersQuerySchema, operatorOrdersSchema, operatorOrderDetailSchema, operatorDocumentExceptionSchema, operatorExceptionReviewSchema, operatorExceptionReviewResultSchema } from "@marketplace/schemas";
 import { operatorAuditQuerySchema, operatorAuditPageSchema } from "@marketplace/schemas";
 import { operatorTechnicalSchema } from "@marketplace/schemas";
@@ -284,6 +285,16 @@ const coreZodSchemas = {
   OrganizationRequisitesHistory: organizationRequisitesHistorySchema,
   OrganizationOnboardingResponse: organizationOnboardingSchema,
   CurrentSessionResponse: currentSessionSchema.nullable(),
+  PersonalSessionResponse: personalSessionSchema.nullable(),
+  PersonalCartResponse: personalCartSchema,
+  PersonalCartCurrentResponse: personalCartSchema.nullable(),
+  PersonalCartListResponse: personalCartSchema.array(),
+  PersonalCartCreateRequest: personalCartCreateSchema,
+  PersonalCartAddRequest: personalCartAddSchema,
+  PersonalCartUpdateRequest: personalCartUpdateSchema,
+  PersonalCartVersionRequest: personalCartVersionSchema,
+  PersonalCartRepriceRequest: personalCartRepriceSchema,
+  PersonalCartValidationResponse: personalCartValidationSchema,
   AcceptSupplierTermsRequest: acceptSupplierTermsSchema,
   ReviewSupplierAdmissionRequest: reviewSupplierAdmissionSchema,
   SupplierLegalBundleResponse: supplierLegalBundleSchema,

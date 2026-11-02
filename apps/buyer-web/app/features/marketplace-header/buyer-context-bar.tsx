@@ -1,13 +1,18 @@
 "use client";
 import { DmFeedback } from "@marketplace/ui/primitives";
 import { useEffect, useState } from "react";
-import { DmButton, DmField, DmSelect } from "@marketplace/ui/controls";
+import { DmButton, DmField } from "@marketplace/ui/controls";
+import { DmDropdown } from "@marketplace/ui";
+import { usePersonalSession } from "../../personal-session";
 import type { WorkspaceContext } from "@marketplace/schemas";
 import { useBuyerMode, setBuyerMode, personalPurchaseMessage } from "../../buyer-context";
+import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
+import { loginUrl } from "../../public-links";
 import styles from "./buyer-context-bar.module.css";
 
 export function BuyerContextBar() {
   const mode = useBuyerMode();
+  const personal = usePersonalSession();
   const [choices, setChoices] = useState<WorkspaceContext[]>([]);
   const [active, setActive] = useState("");
   const [ready, setReady] = useState(false);
@@ -45,13 +50,15 @@ export function BuyerContextBar() {
   };
   return <div className={styles.bar} aria-label="Контекст покупателя">
     <DmField label="Покупатель">
-      <DmSelect aria-label="Покупатель" value={mode === "personal" || !active ? "personal" : active} disabled={!ready || mode === "loading" || mode === "switching"} onChange={(_, data) => void choose(data.value)}>
-        <option value="personal">Личная покупка · только просмотр</option>
+      <DmDropdown aria-label="Покупатель" value={mode === "personal" || !active ? "personal" : active} disabled={!ready || mode === "loading" || mode === "switching"} onChange={(_, data) => void choose(data.value)}>
+        <option value="personal">Личная покупка</option>
         {choices.map(item => <option key={item.organizationId} value={item.organizationId}>{item.organizationDisplayName}</option>)}
-      </DmSelect>
+      </DmDropdown>
     </DmField>
     {!ready || mode === "loading" || mode === "switching" ? <p role="status">Проверяем контекст покупателя…</p> :
       mode === "personal" || !active ? <p role="status">{personalPurchaseMessage}</p> : <p>Покупка от организации. Личность плательщика не меняет покупателя.</p>}
+    {personal.session && (mode === "personal" || !active) ? <DmButton as="a" href="/personal/cart">Личная корзина</DmButton> : null}
+    {ready && personal.session && !active && !error ? <DmButton as="a" href={withWorkspaceReturn(loginUrl, "/clinic/cart")}>Войти в кабинет клиники</DmButton> : null}
     {error ? <DmFeedback presentation="inline" tone="danger" title="Покупатель не выбран" description={error} action={<DmButton onClick={() => setRetry(value => value + 1)}>Повторить проверку</DmButton>} /> : null}
   </div>;
 }

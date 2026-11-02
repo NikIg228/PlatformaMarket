@@ -1,10 +1,11 @@
 "use client";
 import { DmInput } from "@marketplace/ui/controls";
 import type { OrganizationContact } from "@marketplace/schemas";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MarketplaceApiClient, workspacePath } from "@marketplace/api-client";
 import { ActionFeedback, DmButton, StatusTag, actionFailure } from "@marketplace/ui";
-import { useVerifiedSession, sessionApiContext } from "../../workspace-session";
+import { sessionApiContext } from "../../workspace-session";
+import { personalApiFor, usePurchaseContext } from "../../personal-session";
 import { formatCatalogMoney } from "../../catalog/catalog-view-model";
 import { OfferDeliverySummary, type DeliverySummary } from "../../catalog/offer-delivery-summary";
 import { deliveryLabel } from "../../catalog-ranking";
@@ -28,42 +29,63 @@ export type SupplierOffer = {
 export function SupplierOffers({ offers, loginHref, compact = false, productName, comparison = false, imageUrl }: {
   offers: SupplierOffer[]; loginHref: string; compact?: boolean; productName?: string; comparison?: boolean; imageUrl?: string;
 }) {
-  const { session, ready } = useVerifiedSession();
+  const context = usePurchaseContext();
+  const { session } = context.organization;
+  const { ready, isPersonal } = context;
+  const signedIn = isPersonal ? Boolean(context.personal.session) : Boolean(session);
+  const identity = useRef(context.identityKey);
+  identity.current = context.identityKey;
   const [quantities, setQuantities] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const lock = useRef(false);
   const [question, setQuestion] = useState<SupplierOffer | null>(null);
   const questionTrigger = useRef<HTMLElement | null>(null);
   const [feedback, setFeedback] = useState<{ tone: "success" | "error" | "warning"; title: string; description: string } | null>(null);
+  useEffect(() => { setFeedback(null); setQuantities({}); setBusy(null); lock.current = false; }, [context.identityKey]);
   const add = async (offer: SupplierOffer) => {
     const raw = quantities[offer.id] ?? initialQuantity(offer);
     const quantity = Number(raw);
     if (lock.current || !ready || !offer.available || offer.priceMinor == null || !validQuantity(raw, offer)) return;
-    if (!session?.organizationId) { window.location.assign(loginHref); return; }
+    if (!signedIn) { window.location.assign(loginHref); return; }
     if (!navigator.onLine) { setFeedback({ tone: "warning", title: "Нет подключения к сети", description: "Не удалось проверить актуальные цены и наличие." }); return; }
     lock.current = true;
     setBusy(offer.id);
     setFeedback(null);
     let writing = false;
+    const started = identity.current;
     try {
+      if (isPersonal && context.personal.session) {
+        const api = personalApiFor(context.personal.session.sessionId);
+        let cart = await api.personalCurrentCart();
+        if (identity.current !== started) return;
+        if (!cart) { writing = true; cart = await api.personalCreateCart(); writing = false; }
+        if (identity.current !== started) return;
+        writing = true;
+        await api.personalAddItem(cart.id, { expectedVersion: cart.version, offerId: offer.id, quantity });
+      } else if (session?.organizationId) {
       const api = new MarketplaceApiClient(process.env.NEXT_PUBLIC_API_URL ?? "/api", sessionApiContext);
       const carts = await api.listCarts(session.organizationId);
+      if (identity.current !== started) return;
       let cart = carts.find(item => item.status === "ACTIVE" && item.currency === offer.currency);
       if (!cart) { writing = true; cart = await api.createCart(session.organizationId, { currency: offer.currency }); writing = false; }
+      if (identity.current !== started) return;
       writing = true;
       await api.addCartItem(cart.id, { offerId: offer.id, quantity });
+      }
+      if (identity.current !== started) return;
       setFeedback({ tone: "success", title: "Добавлено в корзину", description: `${productName ?? offer.supplier.name} · ${quantity} ед. продажи${offer.packaging?.name ? ` (${offer.packaging.name})` : ""}.` });
     } catch (cause) {
+      if (identity.current !== started) return;
       const failure = actionFailure(cause, { write: writing, title: "Не удалось добавить товар" });
       setFeedback({ ...failure, ...(failure.title === "Результат пока неизвестен" ? { description: "Проверьте корзину перед повторным добавлением." } : {}) });
     }
-    finally { lock.current = false; setBusy(null); }
+    finally { if (identity.current === started) { lock.current = false; setBusy(null); } }
   };
   return <div className={`${styles.list} ${compact ? styles.compact : ""} ${comparison ? styles.comparison : ""}`}>
     <SupplierQuestion key={session?.organizationId ?? "guest"} offer={question} productName={productName} imageUrl={imageUrl} onClose={() => setQuestion(null)} onClosed={() => questionTrigger.current?.focus({ preventScroll: true })} />
     {!comparison || offers.length ? <p className={styles.hint}>Цена указана за единицу продажи. Окончательные условия доставки и оплаты — при оформлении заказа.</p> : null}
     {comparison && offers.length ? <div className={styles.columnHeadings} aria-hidden="true"><span>Поставщик</span><span>Наличие и доставка</span><span>Цена за единицу</span><span>Количество и покупка</span></div> : null}
-    {feedback ? <ActionFeedback {...feedback} action={feedback.tone === "success" || feedback.title === "Результат пока неизвестен" ? <a href={workspacePath("BUYER", "/cart")}>Перейти в корзину</a> : undefined} /> : null}
+    {feedback ? <ActionFeedback {...feedback} action={feedback.tone === "success" || feedback.title === "Результат пока неизвестен" ? <DmButton as="a" href={isPersonal ? "/personal/cart" : workspacePath("BUYER", "/cart")}>Перейти в корзину</DmButton> : undefined} /> : null}
     {!offers.length ? comparison ? null : <p>Предложения пока отсутствуют.</p> : offers.map(offer => {
       const { min, step } = quantityRules(offer);
       const quantity = quantities[offer.id] ?? initialQuantity(offer);
@@ -110,7 +132,7 @@ export function SupplierOffers({ offers, loginHref, compact = false, productName
           {!valid ? <small className={styles.quantityNote} role="alert">от 1 до 100 штук</small> : null}
           {comparison && total ? <small className={styles.quantityNote}>Предварительно: {formatCatalogMoney(total, offer.currency)}. Скидки — в корзине.</small> : null}
           <DmButton className={comparison ? styles.buy : undefined} appearance="primary" disabled={!ready || busy !== null || !valid || !offer.available || offer.priceMinor == null} onClick={() => void add(offer)}>
-            {!ready ? "Проверяем вход…" : busy === offer.id ? "Добавляем…" : !offer.available ? comparison ? "Недоступно" : "Под заказ" : offer.priceMinor == null ? "Нет цены" : session ? "В корзину" : "Войти и купить"}
+            {!ready ? "Проверяем вход…" : busy === offer.id ? "Добавляем…" : !offer.available ? comparison ? "Недоступно" : "Под заказ" : offer.priceMinor == null ? "Нет цены" : signedIn ? "В корзину" : "Войти и купить"}
           </DmButton>
           {session?.organizationId && comparison ? <DmButton appearance="subtle" className={styles.question} onClick={event => { questionTrigger.current = event.currentTarget; setQuestion(offer); }}>Задать вопрос</DmButton> : null}
         </div>
