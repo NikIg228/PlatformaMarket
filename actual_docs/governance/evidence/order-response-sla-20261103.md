@@ -115,3 +115,31 @@ Antislop after [audit002](../../../anti-slop/audit-002-2026-11-03.md) scoped PAS
 раньше45рабочих минут. П03 не продлевает резерв и не напоминает об ответе на
 отменённый заказ; новый P1 без доплатёжного резерва относится кП07. Это граница
 поэтапного внедрения, не заявление о готовности всего согласованного lifecycle.
+
+## Публикация и CI
+
+Код4214eb41fbb7b8fa9d40a03413f9a042c4f6b76d опубликован в origin/main,
+remote SHA совпал. CI41509771171 attempt1: PostgreSQL/authority/backup и оба
+containers PASS; Security41509771035 PASS. Verify прошёл types/lint/tests/build,
+contract/runtime/config/extended API/import, но pilot browser FAIL на одном
+неизменённом settings-profile.spec.ts:216 (не найдена подсказка телефона).
+Это не записано как PASS. Diff П03 не касается profile/info-tip/test.
+Тот же test отдельно на текущем artifact прошёл без правок:
+`npm exec -- playwright test --config .tmp/p03-profile-ci.config.ts --grep 'save-feedback five-second toast'`
+—1PASS, `.tmp/p03-profile-ci-1.log`. На основании неповторившегося сбоя разрешён
+один transient retry: GitHub rerun_failed_workflow_run_jobs41509771171,
+только verify; successful jobs не повторяются. Attempt2 ожидается.
+Рабочая миграция и восстановление dev ещё не выполнены.
+
+## Итог03.11
+
+CI41509771171 attempt2 завершён success: verify, PostgreSQL и оба container jobs.
+Security41509771035 PASS. Первый сбой сохранён выше; код для retry не менялся.
+`node .tmp/p03-migration.mjs --apply` PASS: применена только ожидаемая миграция
+к127.0.0.1:5432/marketplace, digest32старых заказов совпал, retrospectiveEvents0.
+Канонический `npm run dev` восстановлен из основной папки: launcher7196,
+dev17192/API22748/web17748, профиль go_live. GET /api/health/ready:ready,
+database/storage ok; GET http://127.0.0.1:3000/catalog:200. Dev оставлен владельцу.
+П03 завершён в своём scope. R4.1.2 целиком открыт; П04 не начат, deploy не было.
+Финальные изменения evidence/roadmap/checkpoint — docs-only; runtime PASS
+переиспользован для неизменённых исходников, diff hygiene проверен отдельно.

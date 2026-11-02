@@ -1,4 +1,12 @@
-## P03-ORDER-RESPONSE-20261103 — local PASS, publication pending
+## P03-ORDER-RESPONSE-20261103 — DONE (scoped, CI GREEN)
+
+Code4214eb41 published; CI41509771171 attempt2 and Security41509771035 PASS.
+Attempt1 profile tooltip failure retained in evidence; isolated test passed.
+Approved migration applied to marketplace:32orders preserved, no retrospective events.
+Canonical npm run dev restored:launcher7196/dev17192/API22748/web17748, go_live.
+API ready/database/storage and catalog HTTP200. Dev left running for owner.
+P04 not started; parent R4.1.2 remains OPEN. No production deployment.
+Below is historical local acceptance progress.
 
 Owner: start P03; explicitly approved stopping dev, working migration AFTER
 acceptance and restoration. Dev21328 descendants stopped, no working DB writes.
