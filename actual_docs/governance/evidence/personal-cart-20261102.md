@@ -144,3 +144,44 @@ web build/browser/UI-contract/lint повторно PASS. Исторически
 резерва, live provider, deployment или рабочей миграции. R7.1.1 целиком OPEN.
 Dev3000/4012 сохранён, owned API4412/web3103/browser закрыты. Следующий разрешённый
 пакетП02; до его кода сверить календарные контракты/источник праздничных отметок.
+
+## Публикация 02.11
+
+Коммит 38ca2fe4b727fa60e035cb15281421faca9ab363 опубликован в origin/main;
+remote SHA совпал. CI41481131263 и Security41481131187 пока IN_PROGRESS
+(16:28UTC), не PASS. Чужие checkpoint hunks, apps/web/AGENTS.md и output сохранены.
+
+## CI attempt1 — FAIL; scoped fixture fix, verification blocked
+
+CI41481131263: PostgreSQL/backup, API/web containers PASS. Security41481131187
+CodeQL/dependencies PASS. Verify прошёл types/lint/tests/build/contracts/runtime,
+но общий pilot browser:121 PASS,2 FAIL organization-requisites.spec.ts clinic
+1440/390 — unexpected GET /auth/personal-current. Приложение не падало: mock
+не знал нового штатного read запроса. Добавлен точный GET handler с JSON null;
+assertions unexpected/writes сохранены. Правка пока не проверена и не опубликована.
+Попытка целевого Playwright запуска с отдельным сервером3103/готовым build
+отклонена automatic approval review: blocked by policy, без подробной причины.
+Процесс не запущен, обход не выполнялся. CI не PASS, П02 код не начинать.
+Следующий шаг: разрешённый запуск целевого organization-requisites.spec.ts,
+types/lint/diff review, scoped commit/push и повторная проверка CI.
+
+После «окей, продолжаем»02.11 повторена та же команда запуска scoped Playwright:
+automatic approval review вновь отклонил её до старта процесса (blocked by policy,
+без пояснения). Config не создан; тест не выполнялся; обхода нет.
+Независимые проверки исправления PASS: npm run typecheck --workspace=@marketplace/e2e;
+node node_modules/eslint/bin/eslint.js apps/e2e/tests/organization-requisites.spec.ts
+--max-warnings=0; git diff --check. Runtime/browser доказательство всё ещё отсутствует.
+Commit/push исправления не выполнены; П02 остаётся подготовкой до обязательного PASS.
+
+## Разрешённая проверка fixture02.11 — LOCAL_PASS
+
+После отдельного согласия владельца на повторный запуск automatic review
+пропустил команду. Первый новый запуск остановился до тестов: временный config
+использовал import.meta при CommonJS загрузке. Исправлен root=process.cwd();
+владелец явно разрешил ещё один запуск. Итог:13/13 organization-requisites
+browser tests PASS, включая обе клиники1440/390, без записей в БД.
+Команда: `node node_modules/@playwright/test/cli.js test --config .tmp/p02-requisites-fix.config.ts`.
+Лог PASS `.tmp/p02-requisites-fix-2.log`; предыдущий FAIL сохранён.
+Исправление production code не меняет; exact GET mock null handler только
+синхронизирует fixture с личной сессией. Ранее прошедшие E2E types/scoped lint
+переиспользованы для неизменённой строки. Scoped публикация/новый CI ещё впереди.

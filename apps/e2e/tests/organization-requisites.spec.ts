@@ -32,6 +32,7 @@ async function fixture(page: Page, role: "clinic" | "supplier", canEdit = true) 
     if (request.method() === "GET" && path === "/auth/workspaces") return route.fulfill({ json: [{ organizationId, organizationDisplayName: "Тестовые реквизиты", capabilities: [capability] }] });
     if (path === "/access-control/policy") return route.fulfill({ json: { mode: "ROLE_BASED", permissions: ["organization.view", "notification.view", "document.view", ...(canEdit ? ["organization.members.manage"] : [])] } });
     if (path === "/auth/current") return route.fulfill({ json: { sessionId: actorId, user: { id: actorId, displayName: "Тестовый сотрудник", email: contact.email, phone: contact.phone, avatarAssetId: null, version: 1 } } });
+    if (request.method() === "GET" && path === "/auth/personal-current") return route.fulfill({ contentType: "application/json", body: "null" });
     if (path === "/conversations") return route.fulfill({ json: { items: [], hasMore: false, unreadCount: 0 } });
     if (path.startsWith("/notifications/organizations/")) return route.fulfill({ json: { items: [], unreadCount: 0, hasMore: false, nextCursor: null } });
     if (path === "/organizations/current/profile") return route.fulfill({ json: { organizationId, legalName: state.current.source.legalName, displayName: state.current.source.displayName, bin: state.current.source.identifier, version: 1, canEdit, complete: true, profile: state.current.source.profile, requiredReserveContacts: role === "supplier" ? 2 : 0 } });
