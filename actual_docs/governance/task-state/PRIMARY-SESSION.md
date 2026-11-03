@@ -35,6 +35,8 @@ feasibility/final quote/explicit consent and required extra payment or refund;
 post-handoff only confirmed carrier capabilities. No surcharge for normal execution.
 Implementation belongs to П08/R5; П04 remains unpaid-order scope.
 П04 dependency remains open; fixed tariff assurance still «На утверждение».
+V12 goods-return/claims preparation explicitly «На утверждение»03.11; no option
+or deadlines/restrictions chosen. Prior delivery-refund decisions preserved.
 No product implementation yet; no agents.
 
 ## P03-ORDER-RESPONSE-20261103 — DONE (scoped, CI GREEN)
