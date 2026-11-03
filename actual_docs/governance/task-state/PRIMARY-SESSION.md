@@ -30,6 +30,10 @@ Carrier refusal after payment accepted03.11: show both parties, operator task;
 no automatic goods cancellation/carrier replacement; alternative needs clinic
 consent/no replacement surcharge; no option or refusal -> delivery cancellation/
 refund under agreed rules, goods resolved separately. Cost difference pending.
+Clinic-requested paid address/method change accepted03.11: separate request,
+feasibility/final quote/explicit consent and required extra payment or refund;
+post-handoff only confirmed carrier capabilities. No surcharge for normal execution.
+Implementation belongs to П08/R5; П04 remains unpaid-order scope.
 П04 dependency remains open; fixed tariff assurance still «На утверждение».
 No product implementation yet; no agents.
 
