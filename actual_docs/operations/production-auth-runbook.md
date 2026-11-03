@@ -11,8 +11,13 @@ contract or provider-specific incident procedures.
   mandatory. Development identity headers are never accepted in production.
 - JWT validation requires the configured issuer, audience, signing key and an
   `AuthSession` that is active, unexpired and bound to the requested tenant.
-- `JWT_REQUIRE_MFA=true` is mandatory for production. Operators and financial
-  roles must complete TOTP MFA before receiving an elevated access token.
+- `JWT_REQUIRE_MFA=true` is mandatory for production. Ordinary password/social
+  sessions, including financial roles, require MFA. The owner's13.10 decision
+  permits the separate server-issued `password,operator_password` session bound
+  to one active operator organization; session/user/operator membership revocation
+  is checked on every request. See [the operator-login contract](operations.md).
+  This exception does not authorize changing the production flag or accepting
+  caller-supplied authentication methods.
 - Refresh tokens are stored only as hashes, rotated on use, and a replay of an
   old token revokes its token family. Refresh cookies are `HttpOnly`, `Secure`
   in production and protected by the double-submit CSRF cookie.

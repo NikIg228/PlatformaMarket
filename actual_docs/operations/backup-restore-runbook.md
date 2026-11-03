@@ -102,8 +102,10 @@ Docker mode запускает client из `postgres:17-alpine`; database servic
 - source unchanged: true;
 - оставшиеся drill databases: 0.
 
-Это существенно ниже целевого RTO 4 часа, но объём pilot-базы мал. Результат не
-снижает целевой RPO 15 минут и не доказывает PITR.
+На момент этого исторического запуска сравнение выполнялось с RTO 4 часа и
+RPO 15 минут; объём pilot-базы мал, PITR не проверен. Актуальные цели из
+[ТЗ §28](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md#spec-28) — RTO ≤ 2 часа,
+RPO ≤ 5 минут. Исторические измерения не являются проверкой выбранной Yandex Cloud среды.
 
 ## 6. Production backup artifact
 

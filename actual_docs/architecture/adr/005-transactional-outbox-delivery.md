@@ -107,4 +107,5 @@ worker. Поэтому обработчики обязаны выдержива�
 
 - идемпотентность остаётся обязанностью каждого handler;
 - долгий handler без heartbeat может быть повторно claimed после lease;
-- operator replay и dashboard dead-letter остаются задачами B4.
+- operator replay и список dead-letter реализованы в границе B4.3, описанной
+  выше; дальнейшие operator/UI изменения принимаются отдельно по roadmap.

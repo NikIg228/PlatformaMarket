@@ -45,7 +45,7 @@ runtime-приёмка и не второй execution backlog. Чекбоксы 
 | [domains/document-workflow-implementation-log.md](domains/document-workflow-implementation-log.md) | EXECUTION | Краткие результаты документооборота по R7.6 |
 | [governance/ROADMAP-QUESTIONS-AND-DECISIONS.md](governance/ROADMAP-QUESTIONS-AND-DECISIONS.md) | EXECUTION | Вопросы, рекомендации и самостоятельные решения; не второй backlog |
 | [MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md) | CURRENT | Рабочий источник по назначению |
-| [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) | EXECUTION | Краткое описание контекста при явном поручении передать задачу |
+| [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) | COMPAT | Исторический handoff23.10; сохранён в архиве03.11, текущий контекст задаёт выбранная задача |
 | [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) | CURRENT | Рабочий источник по назначению |
 | [README.md](README.md) | CURRENT | Рабочий источник по назначению |
 | [applications/admin-web.md](applications/admin-web.md) | REFERENCE | Карта кода; маршруты и статус сверять с текущим кодом |
@@ -75,7 +75,7 @@ runtime-приёмка и не второй execution backlog. Чекбоксы 
 | [governance/SESSION_ROLLOVER.md](governance/SESSION_ROLLOVER.md) | EXECUTION | Читать только для выбранного scope/владения |
 | [governance/task-state/DOCS-REFRESH-2026-10-06.md](governance/task-state/DOCS-REFRESH-2026-10-06.md) | EXECUTION | Читать только для выбранного scope/владения |
 | [governance/task-state/PRIMARY-SESSION.md](governance/task-state/PRIMARY-SESSION.md) | EXECUTION | Читать только для выбранного scope/владения |
-| [governance/task-state/FUNCTIONAL-AUDIT-ROADMAP-2026-10-08.md](governance/task-state/FUNCTIONAL-AUDIT-ROADMAP-2026-10-08.md) | EXECUTION | Docs-only приоритизация аудита и правил ERP/backend/UI |
+| [governance/task-state/FUNCTIONAL-AUDIT-ROADMAP-2026-10-08.md](governance/task-state/FUNCTIONAL-AUDIT-ROADMAP-2026-10-08.md) | COMPAT | Receipt создания карты08.10; сама актуальная карта сохранена |
 | [integrations/connector-readiness.md](integrations/connector-readiness.md) | REFERENCE | Контракт/процедура выбранного канала |
 | [integrations/runbooks/custom-api.md](integrations/runbooks/custom-api.md) | REFERENCE | Контракт/процедура выбранного канала |
 | [integrations/runbooks/external-adapters.md](integrations/runbooks/external-adapters.md) | REFERENCE | Контракт/процедура выбранного канала |
@@ -121,7 +121,6 @@ runtime-приёмка и не второй execution backlog. Чекбоксы 
 
 | Адрес | Класс | Ограничение |
 | --- | --- | --- |
-| `actual_docs/applications/support-workspace.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
 | `actual_docs/governance/task-state/ORDERS-NOTIFICATIONS-UX-2026-10-06.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
 | `actual_docs/governance/task-state/SUPPORT-UX-2026-10-06.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
 | `actual_docs/governance/task-state/UI-CONTRACT-2026-10-06.md` | WIP | Сверить собственную карточку, local/CI/publication и изменённые inputs |
@@ -133,6 +132,15 @@ runtime-приёмка и не второй execution backlog. Чекбоксы 
 ссылки не является доказательством публикации или полной приёмки.
 
 ## Архив и совместимые адреса
+
+[Аудит03.11](governance/evidence/comprehensive-audit-20261103.md) — EVIDENCE;
+[полный инвентарь](governance/evidence/comprehensive-audit-20261103-doc-inventory.csv)
+фиксирует disposition и глубину проверки каждого адреса.
+[Архив03.11](history/archive/2026-11-03-audit/README.md) сохраняет четыре
+устаревших источника с manifest и проверкой исходных тел. Следующие адреса теперь
+COMPAT: `PROJECT_HANDOFF.md`, `governance/task-state/CATALOG-REFERENCE-V3-2026-10-09.md`,
+`governance/task-state/DESIGN-SYSTEM-2026-10-07.md`,
+`governance/task-state/FUNCTIONAL-AUDIT-ROADMAP-2026-10-08.md`.
 
 [Карта архива06.10](history/archive/2026-10-06/README.md) содержит26 источников:
 23 прежних документа/плана и3 снимка навигации из committed baseline.

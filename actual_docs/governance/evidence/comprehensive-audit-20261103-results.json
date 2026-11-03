@@ -1,0 +1,837 @@
+{
+  "revision": "4543fd22c92464bb72fe75a627bb225adb921fde",
+  "node": "24.18.0",
+  "npm": "12.0.1",
+  "lockSha256": "aff3aff242f95339e3bc2be24fe7584859ac65efe87187e008c23a2134fce721",
+  "database": "127.0.0.1:5432/dentmarket_audit_20260914/public",
+  "logLocation": ".tmp/comprehensive-audit-20261103",
+  "logs": [
+    {
+      "name": "backup-restore-1.log",
+      "sha256": "094b3f5c704d2045d3f15d63bb36f5b39887f10d6781270a3820a22dc924060b",
+      "bytes": 1207
+    },
+    {
+      "name": "browser-pilot-1.log",
+      "sha256": "b194dbfb3570e2e5d6fd65ea024b25e4ecda4a7cbec84fbc6744a72dfbae5826",
+      "bytes": 17113
+    },
+    {
+      "name": "build-go-live-1.log",
+      "sha256": "3c4d7dc5ec9ad2b05ec8876b77193035babca0f38a4941a8c15ca5b1fb7e1a91",
+      "bytes": 2472
+    },
+    {
+      "name": "build-pilot-1.log",
+      "sha256": "26aea2488671f145382efb604603ccc0ba9a589460dc3e22d519ec3f116d2bdf",
+      "bytes": 7566
+    },
+    {
+      "name": "composition-1.log",
+      "sha256": "00c00881f898bc6cd986eb6be14a8fb6ff20c96d14eae317bbdfd448474e28da",
+      "bytes": 174
+    },
+    {
+      "name": "core-contract-1.log",
+      "sha256": "ff8843fd5249cb4fff9abc9735c01faeeb33e2d6a6d7f1f31cfbcc2a3be3b683",
+      "bytes": 898
+    },
+    {
+      "name": "freshness-race-1.log",
+      "sha256": "72d30f8d4874d50b83064c5e920e4786807ecbffe6644cdb5992d084c304588f",
+      "bytes": 773
+    },
+    {
+      "name": "http-candidates-1.log",
+      "sha256": "f0bdae5c6c734e3a9278928957931e429aeba31e7197846c4554fea4f3511af8",
+      "bytes": 822
+    },
+    {
+      "name": "lint-1.log",
+      "sha256": "65bcec67d3a7061865b061b014e7b50b65f336706e16485b85d537c8df240615",
+      "bytes": 1018
+    },
+    {
+      "name": "observability-alerts-1.log",
+      "sha256": "cafd86b4e9ba8e647defb0fa940d548a3612b904330ac1309a7a0b6953b95163",
+      "bytes": 171
+    },
+    {
+      "name": "observability-integration-1.log",
+      "sha256": "89a5f25881ed4c8a58d43c9aefd30f8197a6208eb7cfb76d7a86d197c899cb88",
+      "bytes": 512
+    },
+    {
+      "name": "operator-real-1.log",
+      "sha256": "9d211ded8bee923d76077613bacf58b929df9798d97b93e1d25306ccc7a73d64",
+      "bytes": 11252
+    },
+    {
+      "name": "operator-real-2.log",
+      "sha256": "703dd3f5e25ec1aba5d3df7f10fd6114d371140134cb52b53bd1ec8e1faa2477",
+      "bytes": 1621
+    },
+    {
+      "name": "pilot-backend-1.log",
+      "sha256": "5c9a73c7dfd2eec48531c4432abf3c1c90944d2d736f912fdd73e97bcccfa73b",
+      "bytes": 1281
+    },
+    {
+      "name": "postgres-1.log",
+      "sha256": "9d11873080cdb9db037e3a3d55d53b18ddf70263c06c4eee02292ef9dddf143e",
+      "bytes": 8035
+    },
+    {
+      "name": "postgres-supplement-1.log",
+      "sha256": "2b5cfee1cdbc4b24e7a0267fc0970955f068c32f0182402e344e3ee41ca89fc9",
+      "bytes": 1409
+    },
+    {
+      "name": "production-config-1.log",
+      "sha256": "4daec1e70b29d4140cbe99dc0eedcd75f07087bced8726017ac1586549903708",
+      "bytes": 1746
+    },
+    {
+      "name": "profile-contracts-1.log",
+      "sha256": "46f60db1b3d5311c0112a81f5b90243f170d9230d7b3c7a4ac839b50f02ba330",
+      "bytes": 2156
+    },
+    {
+      "name": "read-load-1.log",
+      "sha256": "6091fbe46dd670cf571d95a0d2959f29b974d6d9e4ad461ff9bb727339c67bf2",
+      "bytes": 832
+    },
+    {
+      "name": "runtime-split-1.log",
+      "sha256": "94cfc03659d4356dc79205bf109dbb017913d528c050d0dd9e952d972aa2022d",
+      "bytes": 495
+    },
+    {
+      "name": "typecheck-1.log",
+      "sha256": "dce71d9b69e07cef3fedc01995b01d48e120a0f2fd85c117c6608ab1346fa01a",
+      "bytes": 4084
+    },
+    {
+      "name": "ui-run-1.log",
+      "sha256": "8bdc01788e239466a10ea92dd808735c2c0858ade2056b6b397dfda66ee2b9a2",
+      "bytes": 7157
+    },
+    {
+      "name": "unit-1.log",
+      "sha256": "735462c9579f85328f398e87c893ba5aabb626cfafae98dd00dbd5dd6a075203",
+      "bytes": 49258
+    },
+    {
+      "name": "workspaces-mock-1.log",
+      "sha256": "fffb6766dfaa20ac081280ba226fbadc20166660f85bf1c7eb3bc0b7c246b580",
+      "bytes": 2273
+    }
+  ],
+  "browsers": {
+    "ui": {
+      "stats": {
+        "startTime": "2026-11-03T15:37:57.700Z",
+        "duration": 17974.763,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "title": "AUD-UI03 blocking initial cart error remains after toast timeout",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "duration": 8541
+            }
+          ]
+        },
+        {
+          "title": "AUD-UI01 ERP source dialog observation keyboard 1440",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1036
+            }
+          ]
+        },
+        {
+          "title": "AUD-UI01 ERP source dialog observation keyboard 390",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 909
+            }
+          ]
+        },
+        {
+          "title": "AUD-UI04 shared input hover placeholder contrast",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "duration": 1206
+            }
+          ]
+        },
+        {
+          "title": "AUD-UI02 calendar KK and mixed shell observation mobile zoom",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1826
+            }
+          ]
+        },
+        {
+          "title": "operator real order detail distinguishes money documents and mobile keyboard",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2264
+            }
+          ]
+        }
+      ]
+    },
+    "operator-real": {
+      "stats": {
+        "startTime": "2026-11-03T15:44:00.032Z",
+        "duration": 12244.358,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "title": "real operator session reads registry, selected order and its documents",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2374
+            }
+          ]
+        },
+        {
+          "title": "real operator reads another organization's profile and supplier readiness without changing active identity",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2471
+            }
+          ]
+        },
+        {
+          "title": "real operator sees database totals and profile projection through the unified UI",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2371
+            }
+          ]
+        }
+      ]
+    },
+    "workspaces-mock": {
+      "stats": {
+        "startTime": "2026-11-03T15:47:59.094Z",
+        "duration": 49520.011999999995,
+        "expected": 12,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "title": "documents registry filters, pagination, empty and list recovery",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2243
+            }
+          ]
+        },
+        {
+          "title": "documents detail retry and accounting draft recovery",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 6044
+            }
+          ]
+        },
+        {
+          "title": "documents mobile drawer settled visual and keyboard",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1624
+            }
+          ]
+        },
+        {
+          "title": "messages layout, attachments and retry 1440",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 8662
+            }
+          ]
+        },
+        {
+          "title": "messages layout, attachments and retry 390",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 7315
+            }
+          ]
+        },
+        {
+          "title": "messages discard a delayed previous selection and retain per-dialog drafts",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1624
+            }
+          ]
+        },
+        {
+          "title": "support first request validation and safe create retry 1440",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1455
+            }
+          ]
+        },
+        {
+          "title": "support first request validation and safe create retry 390",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1231
+            }
+          ]
+        },
+        {
+          "title": "support load failure recovers without endless loading; read-only role cannot write",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 633
+            }
+          ]
+        },
+        {
+          "title": "support denies the route before ticket reads without view permission",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 520
+            }
+          ]
+        },
+        {
+          "title": "support attachments: invalid input, scanner recovery, remove and download recovery",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 12935
+            }
+          ]
+        },
+        {
+          "title": "support operator toast preserves failed reply and announces recovery",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1516
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "http": {
+    "revision": "4543fd22c92464bb72fe75a627bb225adb921fde",
+    "database": "dentmarket_audit_20260914",
+    "profile": "go_live/test/jwt",
+    "cases": [
+      {
+        "id": "session-anonymous-organization-switch",
+        "expected": "401/403, no DB state change",
+        "status": 500,
+        "code": "INTERNAL_SERVER_ERROR",
+        "activeOrganizationChanged": true,
+        "tokenReturned": false
+      },
+      {
+        "id": "connector-heartbeat",
+        "scheme": "Bearer",
+        "expected": "201 accepted for valid agent access token",
+        "status": 401,
+        "code": "UNAUTHORIZED",
+        "accepted": false
+      },
+      {
+        "id": "connector-heartbeat",
+        "scheme": "bearer",
+        "expected": "201 accepted for valid agent access token",
+        "status": 201,
+        "accepted": true
+      }
+    ]
+  },
+  "freshness": {
+    "revision": "4543fd22c92464bb72fe75a627bb225adb921fde",
+    "database": "dentmarket_audit_20260914",
+    "case": "freshness-snapshot-concurrent-refresh",
+    "expected": {
+      "freshnessStatus": "FRESH",
+      "publicationStatus": "PUBLISHED",
+      "version": 2
+    },
+    "actual": {
+      "freshnessStatus": "STALE",
+      "publicationStatus": "PAUSED",
+      "version": 3,
+      "futureExpiryPreserved": true,
+      "lastSyncPreserved": true
+    },
+    "defectReproduced": true,
+    "summary": {
+      "evaluatedAt": "2026-11-03T15:38:53.881Z",
+      "suppliers": [
+        {
+          "supplierOrganizationId": "8ed5f943-f192-40b0-a18d-7508b4111ac2",
+          "staleBalances": 1,
+          "pausedOffers": 1
+        }
+      ],
+      "staleBalances": 1,
+      "pausedOffers": 1
+    }
+  },
+  "readLoad": {
+    "revision": "4543fd22c92464bb72fe75a627bb225adb921fde",
+    "profile": "pilot/test/development",
+    "machine": {
+      "platform": "win32",
+      "cpus": 8,
+      "memoryGiB": 8
+    },
+    "phases": [
+      {
+        "name": "burst",
+        "concurrency": 20,
+        "requests": 300,
+        "status": {
+          "200": 240,
+          "429": 60
+        },
+        "durationMs": 5467,
+        "p50Ms": 381,
+        "p95Ms": 681,
+        "p99Ms": 703
+      },
+      {
+        "name": "soak",
+        "concurrency": 10,
+        "requests": 7690,
+        "status": {
+          "200": 10,
+          "429": 7680
+        },
+        "durationMs": 60069,
+        "p50Ms": 21,
+        "p95Ms": 24,
+        "p99Ms": 27
+      }
+    ],
+    "fixture": {
+      "database": "dentmarket_audit_20260914",
+      "products": 648,
+      "offers": 680
+    },
+    "recovered": true
+  },
+  "bundle": [
+    {
+      "route": "/(marketplace)/page",
+      "javascriptFiles": 24,
+      "rawBytes": 1174223,
+      "gzipBytes": 357516,
+      "budgets": {
+        "javascriptFiles": 24,
+        "rawBytes": 1500000,
+        "gzipBytes": 450000
+      },
+      "files": [
+        {
+          "asset": "static/chunks/1968-65e2c47b34d66497.js",
+          "rawBytes": 243141,
+          "gzipBytes": 68487
+        },
+        {
+          "asset": "static/chunks/87c73c54-6890e5aad4d9e16a.js",
+          "rawBytes": 203725,
+          "gzipBytes": 64063
+        },
+        {
+          "asset": "static/chunks/4455-d602650778c71ee5.js",
+          "rawBytes": 113464,
+          "gzipBytes": 26011
+        },
+        {
+          "asset": "static/chunks/polyfills-42372ed130431b0a.js",
+          "rawBytes": 112594,
+          "gzipBytes": 39627
+        },
+        {
+          "asset": "static/chunks/8166-97973d4f072f51db.js",
+          "rawBytes": 103317,
+          "gzipBytes": 29000
+        },
+        {
+          "asset": "static/chunks/810-6d75ab6aa11c8d81.js",
+          "rawBytes": 79522,
+          "gzipBytes": 23567
+        },
+        {
+          "asset": "static/chunks/5127-1d541715f2dd966b.js",
+          "rawBytes": 51858,
+          "gzipBytes": 15778
+        },
+        {
+          "asset": "static/chunks/fluent-icons-b1f44f889ba1c078.js",
+          "rawBytes": 45485,
+          "gzipBytes": 14799
+        },
+        {
+          "asset": "static/chunks/7188-b2e625e5c9fd2887.js",
+          "rawBytes": 36619,
+          "gzipBytes": 12941
+        },
+        {
+          "asset": "static/chunks/3826-92588ee9346f3645.js",
+          "rawBytes": 34104,
+          "gzipBytes": 8645
+        },
+        {
+          "asset": "static/chunks/2802-9363b40b41333a53.js",
+          "rawBytes": 32343,
+          "gzipBytes": 11429
+        },
+        {
+          "asset": "static/chunks/5013-71733a75b8bd50ef.js",
+          "rawBytes": 25672,
+          "gzipBytes": 7874
+        },
+        {
+          "asset": "static/chunks/2378-a1ce1b837ff95751.js",
+          "rawBytes": 14643,
+          "gzipBytes": 4934
+        },
+        {
+          "asset": "static/chunks/6019-0671fcf3f3add56a.js",
+          "rawBytes": 13691,
+          "gzipBytes": 4963
+        },
+        {
+          "asset": "static/chunks/app/layout-beb411f1b93daedb.js",
+          "rawBytes": 13304,
+          "gzipBytes": 4711
+        },
+        {
+          "asset": "static/chunks/559-afc3137cb9407919.js",
+          "rawBytes": 12814,
+          "gzipBytes": 4230
+        },
+        {
+          "asset": "static/chunks/8598-1245359127d4139b.js",
+          "rawBytes": 11842,
+          "gzipBytes": 4416
+        },
+        {
+          "asset": "static/chunks/app/(marketplace)/layout-43e2729a2d0e8e2d.js",
+          "rawBytes": 8863,
+          "gzipBytes": 3508
+        },
+        {
+          "asset": "static/chunks/5587-a8dc538170243aab.js",
+          "rawBytes": 7670,
+          "gzipBytes": 3280
+        },
+        {
+          "asset": "static/chunks/webpack-7fa1c644bfebf937.js",
+          "rawBytes": 7077,
+          "gzipBytes": 3670
+        },
+        {
+          "asset": "static/chunks/app/(marketplace)/page-0f3054877844121b.js",
+          "rawBytes": 1159,
+          "gzipBytes": 724
+        },
+        {
+          "asset": "static/chunks/app/error-5e7524111b6c8eda.js",
+          "rawBytes": 588,
+          "gzipBytes": 457
+        },
+        {
+          "asset": "static/chunks/main-app-d8f6e5472bf55fd1.js",
+          "rawBytes": 525,
+          "gzipBytes": 230
+        },
+        {
+          "asset": "static/chunks/app/(auth)/layout-04378b0291c7dd51.js",
+          "rawBytes": 203,
+          "gzipBytes": 172
+        }
+      ]
+    },
+    {
+      "route": "/(marketplace)/catalog/page",
+      "javascriptFiles": 24,
+      "rawBytes": 1174223,
+      "gzipBytes": 357516,
+      "budgets": {
+        "javascriptFiles": 24,
+        "rawBytes": 1500000,
+        "gzipBytes": 450000
+      },
+      "files": [
+        {
+          "asset": "static/chunks/1968-65e2c47b34d66497.js",
+          "rawBytes": 243141,
+          "gzipBytes": 68487
+        },
+        {
+          "asset": "static/chunks/87c73c54-6890e5aad4d9e16a.js",
+          "rawBytes": 203725,
+          "gzipBytes": 64063
+        },
+        {
+          "asset": "static/chunks/4455-d602650778c71ee5.js",
+          "rawBytes": 113464,
+          "gzipBytes": 26011
+        },
+        {
+          "asset": "static/chunks/polyfills-42372ed130431b0a.js",
+          "rawBytes": 112594,
+          "gzipBytes": 39627
+        },
+        {
+          "asset": "static/chunks/8166-97973d4f072f51db.js",
+          "rawBytes": 103317,
+          "gzipBytes": 29000
+        },
+        {
+          "asset": "static/chunks/810-6d75ab6aa11c8d81.js",
+          "rawBytes": 79522,
+          "gzipBytes": 23567
+        },
+        {
+          "asset": "static/chunks/5127-1d541715f2dd966b.js",
+          "rawBytes": 51858,
+          "gzipBytes": 15778
+        },
+        {
+          "asset": "static/chunks/fluent-icons-b1f44f889ba1c078.js",
+          "rawBytes": 45485,
+          "gzipBytes": 14799
+        },
+        {
+          "asset": "static/chunks/7188-b2e625e5c9fd2887.js",
+          "rawBytes": 36619,
+          "gzipBytes": 12941
+        },
+        {
+          "asset": "static/chunks/3826-92588ee9346f3645.js",
+          "rawBytes": 34104,
+          "gzipBytes": 8645
+        },
+        {
+          "asset": "static/chunks/2802-9363b40b41333a53.js",
+          "rawBytes": 32343,
+          "gzipBytes": 11429
+        },
+        {
+          "asset": "static/chunks/5013-71733a75b8bd50ef.js",
+          "rawBytes": 25672,
+          "gzipBytes": 7874
+        },
+        {
+          "asset": "static/chunks/2378-a1ce1b837ff95751.js",
+          "rawBytes": 14643,
+          "gzipBytes": 4934
+        },
+        {
+          "asset": "static/chunks/6019-0671fcf3f3add56a.js",
+          "rawBytes": 13691,
+          "gzipBytes": 4963
+        },
+        {
+          "asset": "static/chunks/app/layout-beb411f1b93daedb.js",
+          "rawBytes": 13304,
+          "gzipBytes": 4711
+        },
+        {
+          "asset": "static/chunks/559-afc3137cb9407919.js",
+          "rawBytes": 12814,
+          "gzipBytes": 4230
+        },
+        {
+          "asset": "static/chunks/8598-1245359127d4139b.js",
+          "rawBytes": 11842,
+          "gzipBytes": 4416
+        },
+        {
+          "asset": "static/chunks/app/(marketplace)/layout-43e2729a2d0e8e2d.js",
+          "rawBytes": 8863,
+          "gzipBytes": 3508
+        },
+        {
+          "asset": "static/chunks/5587-a8dc538170243aab.js",
+          "rawBytes": 7670,
+          "gzipBytes": 3280
+        },
+        {
+          "asset": "static/chunks/webpack-7fa1c644bfebf937.js",
+          "rawBytes": 7077,
+          "gzipBytes": 3670
+        },
+        {
+          "asset": "static/chunks/app/(marketplace)/catalog/page-0f3054877844121b.js",
+          "rawBytes": 1159,
+          "gzipBytes": 724
+        },
+        {
+          "asset": "static/chunks/app/error-5e7524111b6c8eda.js",
+          "rawBytes": 588,
+          "gzipBytes": 457
+        },
+        {
+          "asset": "static/chunks/main-app-d8f6e5472bf55fd1.js",
+          "rawBytes": 525,
+          "gzipBytes": 230
+        },
+        {
+          "asset": "static/chunks/app/(auth)/layout-04378b0291c7dd51.js",
+          "rawBytes": 203,
+          "gzipBytes": 172
+        }
+      ]
+    }
+  ],
+  "uiArtifacts": [
+    {
+      "name": "ui-results/.last-run.json",
+      "sha256": "397000b3b85a785b9b496d5943763b1d51ea6ec0161211ee169e2248fbf48792",
+      "bytes": 145
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI01-ERP-sour-f0ef2-g-observation-keyboard-1440/erp-metrics.json",
+      "sha256": "477b2e0537a8b428acc0d0f87032a97066dc3de2cc680c901d777cd6e1c60f25",
+      "bytes": 82
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI01-ERP-sour-f0ef2-g-observation-keyboard-1440/erp-request-dialog.png",
+      "sha256": "7cc1d693cdbe6ba274fc37e9137a2523ec2eb10ff713fb9c7076a1224eebf53f",
+      "bytes": 129839
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI01-ERP-source-dialog-observation-keyboard-390/erp-metrics.json",
+      "sha256": "bed3f789224081183f96e33b0b1188925b2c7d4afe244c193b7dc126c0ffae31",
+      "bytes": 79
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI01-ERP-source-dialog-observation-keyboard-390/erp-request-dialog.png",
+      "sha256": "87f9bac254a09b013f652be85856c271c355394af662bacedf5d53eaa9e5eb2b",
+      "bytes": 73600
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI02-calendar-21ff6-ell-observation-mobile-zoom/calendar-kk-mixed-shell.png",
+      "sha256": "07e55d48e9968d66f91c0c56e588bf9d6342ceb14ae8ed77f53ce3dd4b7224c0",
+      "bytes": 215919
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI02-calendar-21ff6-ell-observation-mobile-zoom/calendar-layout.json",
+      "sha256": "21f88dcd60e1aa03a3d57b986fa00250e399205b32825c233c59c39d65d7b4d2",
+      "bytes": 133
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI02-calendar-21ff6-ell-observation-mobile-zoom/calendar-zoom200.png",
+      "sha256": "d4e54ea106bb44e34b48902cdc08cba055580a618b7ad67954fb3b52fb878531",
+      "bytes": 950632
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI03-blocking-77661-remains-after-toast-timeout/cart-after-timeout.txt",
+      "sha256": "55d6dca9e2f46140cb475e73037c64ac0396750c86773755546f956c1c587b43",
+      "bytes": 214
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI03-blocking-77661-remains-after-toast-timeout/cart-error-after-timeout.png",
+      "sha256": "09b9638087a868793cbe1dde840d0fa33b2e7a34a28684afd3b92b7df862bcaf",
+      "bytes": 133245
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI03-blocking-77661-remains-after-toast-timeout/test-failed-1.png",
+      "sha256": "09b9638087a868793cbe1dde840d0fa33b2e7a34a28684afd3b92b7df862bcaf",
+      "bytes": 133245
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI04-shared-input-hover-placeholder-contrast/hover-contrast.json",
+      "sha256": "f40c5f5eac1463440836442a58118b002f22d1673d06bb40c220fc90b9b8535e",
+      "bytes": 204
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI04-shared-input-hover-placeholder-contrast/hover-placeholder.png",
+      "sha256": "653454ff0093b054a74ee70113fe9a2a15bbb38c832cc71652064bddc31ada8c",
+      "bytes": 112207
+    },
+    {
+      "name": "ui-results/ui-audit-AUD-UI04-shared-input-hover-placeholder-contrast/test-failed-1.png",
+      "sha256": "653454ff0093b054a74ee70113fe9a2a15bbb38c832cc71652064bddc31ada8c",
+      "bytes": 112207
+    },
+    {
+      "name": "ui-results/ui-audit-operator-real-ord-5ca4c-cuments-and-mobile-keyboard/operator-order-mobile.png",
+      "sha256": "ca5b56ab6fe335639f703d5ed8d4fad635203eb65f6e1fbef0ba226ee8781f78",
+      "bytes": 228218
+    },
+    {
+      "name": "ui-results/ui-audit-operator-real-ord-5ca4c-cuments-and-mobile-keyboard/operator-order-money-docs.png",
+      "sha256": "d26be3f0b73bc6127ceddcf99f1dda8c52141315437b09e6a0e4189517a05428",
+      "bytes": 253070
+    }
+  ],
+  "limits": [
+    "No sealed security scan",
+    "Restore blocked CREATEDB",
+    "No Linux/container/native/device or live provider acceptance",
+    "Read load dominated by429; not capacity PASS"
+  ]
+}

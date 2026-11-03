@@ -131,8 +131,9 @@ Scheduler `MarketplaceAgreementsService.processRenewals` ежедневно за
 
 - PostgreSQL full dump ежедневно, WAL/PITR в production;
 - S3 versioning и cross-region/lifecycle policy;
-- retention: 7 daily, 4 weekly, 12 monthly;
-- целевые RPO 15 минут и RTO 4 часа для первой production-конфигурации;
+- retention/legal hold согласуются отдельно; прежние 7 daily, 4 weekly, 12 monthly
+  остаются историческим предложением, не утверждённой политикой;
+- целевые RPO ≤ 5 минут и RTO ≤ 2 часа по [ТЗ §28](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md#spec-28), с отдельным доказательством на выбранной среде;
 - restore drill не реже раза в квартал.
 
 Автоматический локальный/CI rehearsal описан в

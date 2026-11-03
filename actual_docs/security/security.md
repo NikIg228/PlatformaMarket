@@ -17,7 +17,11 @@ permissions/изоляции и не отключение security guards. До�
 
 `AUTH_MODE=jwt` проверяет HS256 либо RS256/ES256 подпись, срок жизни, issuer, audience, subject и tenant claims `organization_id`/`organization_ids`. Переданный клиентом user header удаляется и заменяется проверенным `sub`. Активная организация должна входить в подписанный список, после чего `PermissionsGuard` дополнительно проверяет активную membership и permissions.
 
-При `JWT_REQUIRE_MFA=true` токен обязан содержать `mfa`, `otp` или `totp` в `amr`.
+При `JWT_REQUIRE_MFA=true` обычный password/social токен обязан содержать `mfa`,
+`otp` или `totp` в `amr`. Принятое владельцем13.10 исключение — серверная
+`password,operator_password` сессия одной операторской организации с активным
+членством и отзывом на каждом запросе; [точные условия](../operations/operations.md).
+Это исключение не распространяется на обычный вход или произвольный клиентский `amr`.
 
 Google и Apple OIDC проверяются по issuer, audience, сроку и JWKS. Автоматическое связывание допускается только для подтверждённого email. Refresh token хранится как hash, вращается при каждом использовании; повтор старого токена отзывает всю token family. Cookie-refresh защищён double-submit CSRF.
 
@@ -56,7 +60,8 @@ Google и Apple OIDC проверяются по issuer, audience, сроку и
 - `AUTH_MODE=jwt`, `JWT_PUBLIC_KEY` или 32+ symbol `JWT_SECRET`;
 - отдельные `INTEGRATION_ENCRYPTION_KEY` и `APP_SECURITY_ENCRYPTION_KEY`;
 - ротация integration key выполняется без простоя: новый ключ задаётся в `INTEGRATION_ENCRYPTION_KEY`, старый временно остаётся в `INTEGRATION_ENCRYPTION_KEY_PREVIOUS`; новые записи шифруются новым ключом, старые расшифровываются обоими;
-- `JWT_REQUIRE_MFA=true` для операторов и финансовых ролей;
+- `JWT_REQUIRE_MFA=true`, с принятым исключением только для ограниченного
+  operator-password входа выше; обычные финансовые password/social сессии требуют MFA;
 - `AV_SCAN_MODE=required` и доступный ClamAV;
 - TLS termination, `TRUST_PROXY=true` только за доверенным proxy;
 - production Redis с TLS обязателен для shared rate limiting и BullMQ;

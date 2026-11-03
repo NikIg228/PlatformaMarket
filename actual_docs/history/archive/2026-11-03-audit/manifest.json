@@ -1,0 +1,55 @@
+{
+  "archivedAt": "2026-11-03",
+  "sourceGitRevision": "4543fd22c92464bb72fe75a627bb225adb921fde",
+  "purpose": "Owner-authorized technical documentation audit; historical receipts only",
+  "entries": [
+    {
+      "source": "actual_docs/PROJECT_HANDOFF.md",
+      "destination": "actual_docs/history/archive/2026-11-03-audit/PROJECT_HANDOFF.md",
+      "replacement": "actual_docs/governance/task-state/PRIMARY-SESSION.md",
+      "reason": "Срез текущего контекста23.10 и прежние межчатовые записи заменены checkpoint, roadmap и evidence; исторические BLOCKED/CI статусы сохранены.",
+      "originalSha256": "0655c592396dbc297e9278436b3a8b44450afceb8e21eb9f7e282ab125f09602",
+      "rewrittenBodySha256": "353ac547105026089e2986ced5f6588e98896e787d8c8cdf5fa37369acada48f",
+      "archiveSha256": "45013d64f1e1795918994c8a98393601190368b03d0f64c1611039a78db8c302",
+      "stubSha256": "776ad5173a1b10a01614b713a314a96b20d96ced948a9b1224e4efaeaa778bf2",
+      "bannerLength": 405,
+      "relativeLinksRewritten": 38
+    },
+    {
+      "source": "actual_docs/governance/task-state/CATALOG-REFERENCE-V3-2026-10-09.md",
+      "destination": "actual_docs/history/archive/2026-11-03-audit/governance/task-state/CATALOG-REFERENCE-V3-2026-10-09.md",
+      "replacement": "actual_docs/governance/evidence/catalog-product-controls-20261031.md",
+      "reason": "Карточка референса09.10 и старый CTA заменены решением31.10; прежний CI_PENDING не повышается.",
+      "originalSha256": "c972b4de67d6dc835d41bcffa0080e36ef59eaecc79be754f0023e71e6170186",
+      "rewrittenBodySha256": "c972b4de67d6dc835d41bcffa0080e36ef59eaecc79be754f0023e71e6170186",
+      "archiveSha256": "7afd160eb6758f1776e5e5bea687a3489a3c590834f482b23ee9b2945d81622b",
+      "stubSha256": "ae1eb647ae14c6960b1ea6b9e918e1a0250f669e63a25246bb9d90539479e9f2",
+      "bannerLength": 381,
+      "relativeLinksRewritten": 0
+    },
+    {
+      "source": "actual_docs/governance/task-state/DESIGN-SYSTEM-2026-10-07.md",
+      "destination": "actual_docs/history/archive/2026-11-03-audit/governance/task-state/DESIGN-SYSTEM-2026-10-07.md",
+      "replacement": "actual_docs/ui-ux/DESIGN_SYSTEM.md",
+      "reason": "Исторический receipt консолидации docs; действующий стандарт и tokens сохранены в каноническом источнике.",
+      "originalSha256": "2b5e1011facad8d8f41f8709268b9efdcd08ed3492116cc9a47dc80aa31c74f8",
+      "rewrittenBodySha256": "2b5e1011facad8d8f41f8709268b9efdcd08ed3492116cc9a47dc80aa31c74f8",
+      "archiveSha256": "374223afbb486a39900e44e58bac13f39a979d1e43b2b210479797a4f0bbe694",
+      "stubSha256": "8c05563231129d35b19556d077a93ddc87ce5d1a68bd54d8fc59c2bc06e16173",
+      "bannerLength": 358,
+      "relativeLinksRewritten": 0
+    },
+    {
+      "source": "actual_docs/governance/task-state/FUNCTIONAL-AUDIT-ROADMAP-2026-10-08.md",
+      "destination": "actual_docs/history/archive/2026-11-03-audit/governance/task-state/FUNCTIONAL-AUDIT-ROADMAP-2026-10-08.md",
+      "replacement": "actual_docs/FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md",
+      "reason": "Исторический receipt создания функциональной карты; сам действующий roadmap не перемещается.",
+      "originalSha256": "dc6b6e64700e71bce8ea5d81df749cf52d925da55bfb18189db0ed00f91906fc",
+      "rewrittenBodySha256": "95b48291e6e40a7889870b95c219ef00c0b1da4456bfa5c03440b9dfe7201ae4",
+      "archiveSha256": "052234f02a174a35a40574ef4b989087a5ecaf77ab03c205b42bf05978e235fe",
+      "stubSha256": "f13a617751d7badc723bd02fa62ac13112efd875241c7dd89b5c547f14e8cfe2",
+      "bannerLength": 365,
+      "relativeLinksRewritten": 1
+    }
+  ]
+}

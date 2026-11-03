@@ -1,19 +1,22 @@
 # Production deployment and rollback
 
-Owner decision08.10.2026: target hosting is **Yandex.Cloud Kazakhstan**.
-This records the owner's selection, not verified service availability or a deployed
-environment. The owner is responsible for the cloud account, monthly budget,
-hosting/domain/database setup and recovery arrangements. The domain will be supplied
-later; resource sizing and numeric budget/outage/data-loss targets are not specified.
-No cloud purchase or deployment is executed or authorized by this documentation task.
+Owner clarification03.11.2026: target hosting is **Yandex Cloud**. Region, services,
+resource sizes and tariff are not yet selected. The earlier Kazakhstan wording is
+not a current region approval. The owner supplies the cloud account, budget and
+domain decisions; this runbook does not authorize purchases or deployment.
+Recovery targets are **RTO ≤ 2 hours and RPO ≤ 5 minutes** under
+[the accepted requirements §28](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md#spec-28).
+These are targets, not measured guarantees of an available cloud environment.
 
-Target launch date: **by 30 October 2026**, with required external integrations.
+The earlier 30 October launch date is historical. Current product scope and dates
+are recorded in [PROJECT_OVERVIEW](../PROJECT_OVERVIEW.md); the03.11 audit has no deadline.
 Owner acceptance sequence: review locally implemented functionality → connect
 required external services and deploy to live hosting/domain/database → pass the
 applicable checks → accept production readiness. Existing isolated/local checks
 still precede publication/deployment as required; the sequence does not postpone
 them or waive release guards. A date, local PASS or mock integration is not live PASS.
-Choose and verify backup/restore and outage/data-loss targets before acceptance.
+Verify backup/restore and the accepted outage/data-loss targets on the selected
+environment before production acceptance. Local rehearsal alone does not prove PITR.
 
 Status01.10.2026: configuration now targets api + one apps/web image. Caddy
 serves WEB_DOMAIN with same-origin /api; operator login is /admin/login.
@@ -52,10 +55,10 @@ can reach the API's 413 boundary. Route-specific lower limits remain in the API.
 ## First deployment
 
 1. Create managed PostgreSQL with PITR, managed Redis with TLS, an encrypted S3-compatible private bucket, DNS records, EDS gateway credentials, PSP credentials, transactional email credentials, Sentry and OTLP projects.
-2. Pre-provision at least two corporate operator users as active members of the `MARKETPLACE_OPERATOR` organization. Their Google/Apple verified emails must match the users. Both must enroll TOTP at `/admin/login`.
+2. Pre-provision the agreed corporate operator users as active members of the `MARKETPLACE_OPERATOR` organization, with verified emails, passwords and the required grants. `/admin/login` uses the separate operator-password flow under the owner's13.10 decision; it does not offer Google/Apple or TOTP enrollment. Verify session, user and operator-membership revocation according to [the current login contract](operations.md).
 3. Validate configuration with `npm run build && npm run verify:production-config && npm run verify:production-readiness-contract && npm run verify:production-connectors && npm run verify:rate-limit-auth` and `docker compose --env-file .env.production -f compose.production.yaml config --quiet`.
 4. Take a backup, set `REGISTRY` and immutable `APP_RELEASE`, then run `docker compose --env-file .env.production -f compose.production.yaml pull` and `docker compose --env-file .env.production -f compose.production.yaml up -d`.
-5. Check `/api/health`, `/api/health/ready`, social login + MFA, supplier common-terms acceptance and separate operator admission (ADR013), selected legacy/external EDS callback where applicable, search, checkout against PSP sandbox, document download, notification delivery and operator queues.
+5. Check `/api/health`, `/api/health/ready`, ordinary participant social login + MFA, the separate operator-password login, supplier common-terms acceptance and separate operator admission (ADR013), selected legacy/external EDS callback where applicable, search, checkout against PSP sandbox, document download, notification delivery and operator queues.
 
 ## Backup and restore drill
 

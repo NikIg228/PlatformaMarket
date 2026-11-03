@@ -22,6 +22,11 @@ roadmap — единственный реестр исполнения. Свод
 
 ## Основные документы
 
+Аудит03.11: [результаты, находки и границы проверки](governance/evidence/comprehensive-audit-20261103.md),
+[матрица требований](governance/evidence/comprehensive-audit-20261103-requirements.csv)
+и [журнал архивирования четырёх устаревших карточек](history/archive/2026-11-03-audit/README.md).
+Аудит не является production-допуском и не закрывает roadmap общим PASS.
+
 | Нужно понять | Читать |
 | --- | --- |
 | Приоритет №1: функционал, незакрытые связи и целевой roadmap | [Функциональная карта и roadmap](FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md) |
