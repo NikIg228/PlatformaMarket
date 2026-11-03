@@ -10,7 +10,10 @@ Supplier-delivery payee accepted03.11: supplier receives goods+delivery in ONE
 payment (transfer/acquiring), amounts itemized; free/included adds no charge.
 V10 accepted03.11: confirmed cause determines costs; buyer amount needs consent;
 carrier contract applies; disputed/unknown cause has no charges before operator decision.
-Next: paid delivery cancellation/refund and external DG-08 inputs; then П04. No agents.
+Cancellation refund basis accepted03.11, subject to contract review: full return
+before start/no costs; actual costs need agreed contractual basis; supplier error
+not charged to buyer; dispute operator; original payee refunds. Next: separate
+Platforma delivery payment flow and external DG-08 inputs; then П04. No agents.
 
 ## P03-ORDER-RESPONSE-20261103 — DONE (scoped, CI GREEN)
 
