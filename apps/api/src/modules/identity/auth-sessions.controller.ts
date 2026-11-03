@@ -268,7 +268,7 @@ export class AuthSessionsController {
   revoke(@Param("sessionId") sessionId: string, @Headers("x-user-id") userId: string, @Body() body: unknown) { const parsed = revokeSessionSchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten()); return this.sessions.revoke(sessionId, userId, parsed.data.reason); }
 
   @Post("sessions/:sessionId/organization")
-  switchOrganization(@Param("sessionId") sessionId: string, @Headers("x-user-id") userId: string, @Body() body: unknown) { const parsed = switchSessionOrganizationSchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten()); return this.sessions.switchOrganization(sessionId, userId, parsed.data.organizationId); }
+  switchOrganization(@Param("sessionId") sessionId: string, @Headers("x-user-id") userId: string | undefined, @Body() body: unknown) { const parsed = switchSessionOrganizationSchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten()); return this.sessions.switchOrganization(sessionId, userId, parsed.data.organizationId); }
 
   @Delete("identities")
   unlink(@Headers("x-user-id") userId: string, @Body() body: unknown) { const parsed = unlinkExternalIdentitySchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten()); return this.sessions.unlink(userId, parsed.data.provider); }

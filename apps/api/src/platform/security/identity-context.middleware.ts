@@ -34,21 +34,23 @@ export function identityContextMiddleware(sessionVerifier?: SessionVerifier) {
   const config = environment();
   return (request: Request, _response: Response, next: NextFunction) => {
     const authorization = request.header("authorization");
+    const connectorRequest = request.method === "POST" && /^\/api\/connector-agents\/[^/]+\/(?:enroll|heartbeat|jobs\/claim|jobs\/[^/]+\/(?:complete|fail))\/?$/.test(request.originalUrl.split("?")[0] ?? "");
     const personal = /^\/api\/personal\/carts(?:\/|$)/.test(request.originalUrl.split("?")[0] ?? "");
     const metricsRequest = ["GET", "HEAD"].includes(request.method) && /^\/api\/metrics\/?(?:\?|$)/.test(request.originalUrl);
-    if (config.AUTH_MODE === "development" && !authorization && !metricsRequest && !personal) return next();
+    if (config.AUTH_MODE === "development" && !authorization && !metricsRequest && !connectorRequest && !personal) return next();
     const requestedOrganizationId = request.header("x-organization-id");
     delete request.headers["x-user-id"];
     delete request.headers["x-organization-id"];
     delete request.headers["x-session-id"];
     delete request.headers["x-authentication-methods"];
-    // MetricsController validates its separate scraper token; it is not a user JWT.
-    if (metricsRequest) return next();
-    if (!authorization?.startsWith("Bearer ")) return next();
+    // Scraper and connector controllers verify their own credentials, not user JWTs.
+    if (metricsRequest || connectorRequest) return next();
+    const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
+    if (!token) return next();
     void (async () => {
       try {
       const allowMfaBootstrap = /^\/api\/identity\/mfa(?:\/|$)/.test(request.originalUrl.split("?")[0] ?? "");
-      const actor = resolveJwtActor(authorization.slice(7), requestedOrganizationId, config, allowMfaBootstrap, personal);
+      const actor = resolveJwtActor(token, requestedOrganizationId, config, allowMfaBootstrap, personal);
       if (!sessionVerifier || !actor.sessionId) throw new UnauthorizedException("Bearer token is not bound to an active session");
       await sessionVerifier.assertActive(actor.sessionId, actor.actorId);
       request.headers["x-user-id"] = actor.actorId;

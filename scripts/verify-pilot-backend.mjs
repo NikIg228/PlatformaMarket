@@ -606,8 +606,13 @@ try {
       await prisma.outboxEvent.delete({ where: { id: replayEvent.id } });
     }
 
-    await completeFixtureOrganization(prisma, buyer.id);
-    const cart = await post(`/buyers/${buyer.id}/carts`, { currency: "KZT" });
+    const purchaseBuyer = await prisma.organization.create({ data: {
+      legalName: "Synthetic pilot verification", displayName: "Synthetic pilot verification",
+      bin: String(Date.now()).slice(-12), commerceDataset: "TEST",
+      capabilities: { create: { capability: "BUYER" } },
+    } });
+    await completeFixtureOrganization(prisma, purchaseBuyer.id);
+    const cart = await post(`/buyers/${purchaseBuyer.id}/carts`, { currency: "KZT" });
     assertSchema(
       coreSchemas.cartResponseSchema,
       cart,
@@ -751,7 +756,7 @@ try {
       repricedCart,
       "POST /carts/:id/reprice",
     );
-    const carts = await request(`/buyers/${buyer.id}/carts`, {
+    const carts = await request(`/buyers/${purchaseBuyer.id}/carts`, {
       headers: identityHeaders,
     });
     assertSchema(
@@ -763,6 +768,7 @@ try {
     const idempotencyKey = `pilot-backend-${Date.now()}`;
     const checkout = await post(`/carts/${cart.id}/checkout`, {
       idempotencyKey,
+      expectedVersion: repricedCart.version,
     });
     assertSchema(
       coreSchemas.checkoutResponseSchema,
@@ -779,6 +785,7 @@ try {
     );
     const repeated = await post(`/carts/${cart.id}/checkout`, {
       idempotencyKey,
+      expectedVersion: repricedCart.version,
     });
     assertSchema(
       coreSchemas.checkoutResponseSchema,
@@ -798,7 +805,7 @@ try {
       "GET /checkouts/:id",
     );
 
-    const buyerOrders = await request(`/buyers/${buyer.id}/orders`, {
+    const buyerOrders = await request(`/buyers/${purchaseBuyer.id}/orders`, {
       headers: identityHeaders,
     });
     assertSchema(
@@ -876,7 +883,7 @@ try {
         {
           ...baseSummary,
           purchase: {
-            buyerOrganizationId: buyer.id,
+            buyerOrganizationId: purchaseBuyer.id,
             cartId: cart.id,
             checkoutId: checkout.id,
             supplierOrders: checkout.supplierOrders.length,

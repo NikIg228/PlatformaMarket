@@ -1,3 +1,17 @@
+## 04.11 — исправления аудита: scoped LOCAL_PASS
+
+AUD-SEC01/API01/FUNC05: actor/session ownership, отдельная agent-token граница и
+CAS freshness подтверждены unit, реальными HTTP/PG и concurrency проверками.
+AUD-UI03/04: persistent cart error/retry и shared placeholder contrast подтверждены
+screenshots/computed styles, keyboard1440/390;6browser checks PASS.
+Pilot purchase gate PASS на разрешённой попытке4, предыдущие FAIL сохранены.
+Modern glob/minimatch patched overrides:4compatibility regressions и21import tests,
+API build/lint PASS. Audit остаётся с11moderate legacy dependency records,
+0high/critical; общая security/release приёмка не заявляется.
+[Команды, ограничения и незакрытые пункты](evidence/audit-remediation-20261104.md).
+Load/restore/native/live-provider gates и крупные функциональные разрывы открыты.
+Рабочая БД не менялась; публикация/CI учитываются отдельно.
+
 ## 02.11 — П01: личная сессия и корзина, scoped local PASS
 
 Вошедший пользователь без организации собирает и сохраняет личную корзину,

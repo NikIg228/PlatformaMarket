@@ -454,13 +454,17 @@ export class AuthSessionsService {
     return { revoked: true };
   }
 
-  async switchOrganization(sessionId: string, userId: string, organizationId: string) {
+  async switchOrganization(sessionId: string, userId: string | undefined, organizationId: string) {
+    if (typeof userId !== "string" || !userId.trim()) throw new UnauthorizedException("Войдите в аккаунт");
     const session = await this.prisma.authSession.findFirst({ where: { id: sessionId, userId, status: "ACTIVE", expiresAt: { gt: new Date() } } });
     if (!session) throw new NotFoundException("Session not found");
     const membership = await this.prisma.organizationMembership.findFirst({ where: { userId, organizationId, status: "ACTIVE", user: { status: "ACTIVE" }, organization: { status: "ACTIVE" } } });
     if (!membership || !session.organizationIds.includes(organizationId)) throw new UnauthorizedException("Organization membership is not active");
-    const updated = await this.prisma.authSession.update({ where: { id: sessionId }, data: { activeOrganizationId: organizationId, lastUsedAt: new Date() } });
-    return { activeOrganizationId: organizationId, accessToken: this.issueAccessToken(userId, updated.organizationIds, organizationId, updated.authMethods, updated.id), accessTokenExpiresIn: environment().AUTH_ACCESS_TOKEN_TTL_SECONDS };
+    const accessToken = this.issueAccessToken(session.userId, session.organizationIds, organizationId, session.authMethods, session.id);
+    const now = new Date();
+    const updated = await this.prisma.authSession.updateMany({ where: { id: session.id, userId, status: "ACTIVE", expiresAt: { gt: now } }, data: { activeOrganizationId: organizationId, lastUsedAt: now } });
+    if (updated.count !== 1) throw new NotFoundException("Session not found");
+    return { activeOrganizationId: organizationId, accessToken, accessTokenExpiresIn: environment().AUTH_ACCESS_TOKEN_TTL_SECONDS };
   }
 
   async elevateMfa(sessionId: string, userId: string, organizationId: string) {

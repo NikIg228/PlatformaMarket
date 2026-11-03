@@ -18,7 +18,7 @@ export class InventoryFreshnessService {
   async recompute(supplierOrganizationId: string | undefined, staleAfterMinutes?: number, context?: SupplierActorContext) {
     if (supplierOrganizationId && context) await this.access.assertCanManage(supplierOrganizationId, context);
     const now = new Date();
-    const candidates = await this.prisma.inventoryBalance.findMany({ where: { supplierOrganizationId, freshnessStatus: { not: "STALE" } }, select: { id: true, supplierOrganizationId: true, offerId: true, source: true, lastSuccessfulSyncAt: true, freshnessExpiresAt: true } });
+    const candidates = await this.prisma.inventoryBalance.findMany({ where: { supplierOrganizationId, freshnessStatus: { not: "STALE" } }, select: { id: true, version: true, supplierOrganizationId: true, offerId: true, source: true, lastSuccessfulSyncAt: true, freshnessExpiresAt: true } });
     const policyRows = await this.prisma.freshnessPolicy.findMany({ where: { status: "ACTIVE", dataType: "INVENTORY", OR: [{ supplierOrganizationId }, { supplierOrganizationId: null }] }, orderBy: { priority: "asc" } });
     const staleBalances = candidates.filter((balance) => {
       if (balance.freshnessExpiresAt) return balance.freshnessExpiresAt <= now;
@@ -32,24 +32,32 @@ export class InventoryFreshnessService {
     const result: Array<{ supplierOrganizationId: string; staleBalances: number; pausedOffers: number }> = [];
     for (const [currentSupplierId, balances] of bySupplier) {
       const summary = await this.prisma.$transaction(async (tx) => {
-        await tx.inventoryBalance.updateMany({ where: { id: { in: balances.map(({ id }) => id) } }, data: { freshnessStatus: "STALE", version: { increment: 1 } } });
-        const offerIds = [...new Set(balances.map(({ offerId }) => offerId).filter((id): id is string => Boolean(id)))];
+        const changedBalances: typeof balances = [];
+        for (const balance of balances) {
+          const changed = await tx.inventoryBalance.updateMany({
+            where: { id: balance.id, version: balance.version, source: balance.source, freshnessStatus: { not: "STALE" }, lastSuccessfulSyncAt: balance.lastSuccessfulSyncAt, freshnessExpiresAt: balance.freshnessExpiresAt },
+            data: { freshnessStatus: "STALE", version: { increment: 1 } },
+          });
+          if (changed.count === 1) changedBalances.push(balance);
+        }
+        if (!changedBalances.length) return { supplierOrganizationId: currentSupplierId, staleBalances: 0, pausedOffers: 0 };
+        const offerIds = [...new Set(changedBalances.map(({ offerId }) => offerId).filter((id): id is string => Boolean(id)))];
         const pausedOfferIds: string[] = [];
         for (const offerId of offerIds) {
           const freshAvailable = await tx.inventoryBalance.count({ where: { offerId, freshnessStatus: "FRESH", quantityAvailable: { gt: 0 } } });
-          const source = balances.find(({ offerId: balanceOfferId }) => balanceOfferId === offerId)?.source;
+          const source = changedBalances.find(({ offerId: balanceOfferId }) => balanceOfferId === offerId)?.source;
           const policy = policyRows.find((candidate) => candidate.supplierOrganizationId === currentSupplierId && candidate.source === source) ?? policyRows.find((candidate) => candidate.scopeKey === "global" && candidate.source === source);
           if (freshAvailable === 0 && (policy?.expirationBehavior ?? "PAUSE") === "PAUSE") {
             const paused = await tx.offerPublication.updateMany({ where: { offerId, status: "PUBLISHED" }, data: { status: "PAUSED", marketplaceVisible: false } });
             if (paused.count > 0) pausedOfferIds.push(offerId);
           }
         }
-        await tx.auditLog.create({ data: { actorId: context?.actorId ?? null, organizationId: context?.organizationId ?? currentSupplierId, action: "inventory.freshness.recomputed", entityType: "SupplierProfile", entityId: currentSupplierId, after: { staleBalanceIds: balances.map(({ id }) => id), pausedOfferIds, evaluatedAt: now.toISOString() } } });
-        await tx.outboxEvent.create({ data: { aggregateType: "SupplierProfile", aggregateId: currentSupplierId, eventType: "InventoryFreshnessChanged", payload: { supplierOrganizationId: currentSupplierId, staleBalanceIds: balances.map(({ id }) => id), pausedOfferIds } } });
-        return { supplierOrganizationId: currentSupplierId, staleBalances: balances.length, pausedOffers: pausedOfferIds.length };
+        await tx.auditLog.create({ data: { actorId: context?.actorId ?? null, organizationId: context?.organizationId ?? currentSupplierId, action: "inventory.freshness.recomputed", entityType: "SupplierProfile", entityId: currentSupplierId, after: { staleBalanceIds: changedBalances.map(({ id }) => id), pausedOfferIds, evaluatedAt: now.toISOString() } } });
+        await tx.outboxEvent.create({ data: { aggregateType: "SupplierProfile", aggregateId: currentSupplierId, eventType: "InventoryFreshnessChanged", payload: { supplierOrganizationId: currentSupplierId, staleBalanceIds: changedBalances.map(({ id }) => id), pausedOfferIds } } });
+        return { supplierOrganizationId: currentSupplierId, staleBalances: changedBalances.length, pausedOffers: pausedOfferIds.length };
       });
       result.push(summary);
     }
-    return { evaluatedAt: now, suppliers: result, staleBalances: staleBalances.length, pausedOffers: result.reduce((total, item) => total + item.pausedOffers, 0) };
+    return { evaluatedAt: now, suppliers: result, staleBalances: result.reduce((total, item) => total + item.staleBalances, 0), pausedOffers: result.reduce((total, item) => total + item.pausedOffers, 0) };
   }
 }
