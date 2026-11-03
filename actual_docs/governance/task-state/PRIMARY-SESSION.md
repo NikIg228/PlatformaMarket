@@ -12,8 +12,12 @@ V10 accepted03.11: confirmed cause determines costs; buyer amount needs consent;
 carrier contract applies; disputed/unknown cause has no charges before operator decision.
 Cancellation refund basis accepted03.11, subject to contract review: full return
 before start/no costs; actual costs need agreed contractual basis; supplier error
-not charged to buyer; dispute operator; original payee refunds. Next: separate
-Platforma delivery payment flow and external DG-08 inputs; then П04. No agents.
+not charged to buyer; dispute operator; original payee refunds.
+Platforma delivery accepted03.11: TWO payments, goods directly to supplier, delivery
+to Platforma settlement account via transfer/acquiring, then carrier settlement.
+Itemized amounts/payees/statuses+total; bank split optional/unconfirmed.
+Next: reconcile complete monetary contract with П04 and external DG-07/08 inputs.
+No product implementation yet; no agents.
 
 ## P03-ORDER-RESPONSE-20261103 — DONE (scoped, CI GREEN)
 
