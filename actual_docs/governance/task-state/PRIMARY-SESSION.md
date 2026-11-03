@@ -38,7 +38,10 @@ Implementation belongs to П08/R5; П04 remains unpaid-order scope.
 V12 goods-return/claims preparation explicitly «На утверждение»03.11; no option
 or deadlines/restrictions chosen. Prior delivery-refund decisions preserved.
 V14 commission tax inclusion/addition explicitly «На утверждение»03.11;
-no A/B/C selected, base10% unchanged. Next questionnaire item V15.
+no A/B/C selected, base10% unchanged.
+V15 selected A03.11: separate supplier commission credit toward future commission,
+cash refund on supplier request/end of relationship; not buyer wallet. Procedure/
+documents/closed-period accounting remain open. Next questionnaire item V16.
 No product implementation yet; no agents.
 
 ## P03-ORDER-RESPONSE-20261103 — DONE (scoped, CI GREEN)
