@@ -16,7 +16,11 @@ not charged to buyer; dispute operator; original payee refunds.
 Platforma delivery accepted03.11: TWO payments, goods directly to supplier, delivery
 to Platforma settlement account via transfer/acquiring, then carrier settlement.
 Itemized amounts/payees/statuses+total; bank split optional/unconfirmed.
-Next: reconcile complete monetary contract with П04 and external DG-07/08 inputs.
+Goods-paid/delivery-unpaid accepted03.11: retain goods money, assembly allowed
+subject to other holds, no carrier handoff before delivery payment; expired quote
+recalculated/new amount accepted; available alternative/pickup agreed, no automatic
+goods cancellation/refund. Next: carrier booking trigger, then reconcile П04
+contract and external DG-07/08 inputs.
 No product implementation yet; no agents.
 
 ## P03-ORDER-RESPONSE-20261103 — DONE (scoped, CI GREEN)
