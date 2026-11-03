@@ -1,3 +1,14 @@
+## P04-ORDER-PROPOSALS-20261103 — delivery contract preparation
+
+Owner authorized П04 after П01–03 review, then explicitly chose to define the
+monetary delivery contract FIRST; rejected text-only delivery scope with amount deferred toR5.
+No product code/migration/dev stop. Plan: ../evidence/order-proposals-20261103.md.
+Base main@bae2175c; preserve foreign checkpoint hunks/apps/web/AGENTS/output.
+V11 accepted03.11: refreshed quote/old-new totals/explicit consent; unavailable or
+expired quote blocks final accept/new payment,24h proposal does not extend tariff.
+Recorded in questionnaire/decision journal/delivery domain. Next: supplier-delivery
+payee and V10 costs, external DG-08 inputs; then full П04. No agents.
+
 ## P03-ORDER-RESPONSE-20261103 — DONE (scoped, CI GREEN)
 
 Code4214eb41 published; CI41509771171 attempt2 and Security41509771035 PASS.

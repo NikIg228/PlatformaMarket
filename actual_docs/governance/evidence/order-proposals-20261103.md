@@ -1,0 +1,68 @@
+# П04 — предложения изменений неоплаченного заказа
+
+## Scope и план до реализации
+
+Основание: после обзора П01–П03 владелец поручил «приступай» кП04.
+База main@bae2175cc4df85be9670b4f6a0ca1987a14c0d09; единственная папка
+C:/Users/user/Desktop/dentmarket-kz-main. Чужие checkpoint hunks,
+apps/web/AGENTS.md и output сохраняются. Агентов не создавать.
+
+R4.1.3/П04: поставщик публикует конкретную полную версию изменения неоплаченного
+заказа; покупатель видит diff и итог, принимает целиком, обсуждает либо отменяет
+заказ этого продавца. Пожелания покупателя не меняют состав. История/actor,
+24непрерывных часа, одно напоминание12ч в09:00–20:00, новые версии и conflict/recovery.
+Неизменное подтверждение без второго accept. Proposal прекращает первый таймерП03.
+Оплаченные части/allocations/возврат — П06–08, новый P1 без резерва — П07,
+внешняя доставка уведомлений — П27. Чужие платежи/заказы не изменять.
+
+Риск высокий: money/stock, права/tenant/филиал, переходы и гонки оплаты.
+Сначала schemas/API и отдельный proposal service с immutable snapshots,
+row-lock/CAS/idempotency и audit/outbox; focused tests после каждого блока.
+Затем интеграция payment/legacy confirmation guards и PostgreSQL до зависимого UI.
+Интерфейс обеих сторон внутри текущего order workspace, shared controls/tokens,
+full diff/history/expiry, RU/KK1440/390, keyboard, loading/error/draft recovery.
+
+Проверки: schema/rules/service focused Vitest; disposable PostgreSQL
+dentmarket_audit_20260914 — publish/accept/stale/expiry/discuss/cancel/republish,
+replay/rollback/гонки publish–accept–payment–expiry, role/tenant/branch denial,
+stock/replacement/gifts/money, legacy upgrade. Затем affected/dependent suites,
+API/schema/client/web types/build, Prisma validate/upgrade, core-contract,
+verify:postgres/runtime-split, targeted browser и UI-contract/lint/diff hygiene.
+Полный release audit не входит. Точные команды и attempts фиксировать далее.
+Лимит3/gate; probe2m, startup5m, command20m, suite45m, blocker15m.
+
+Dev послеП03 запущен; остановка для Prisma generation и рабочая миграцияП04
+требуют отдельного конкретного разрешения. Пока рабочую БД не менять.
+Development Toolkit: execution/backend/verification применены для границ,
+контрактов/транзакций и пропорциональных gates; профильные frontend-инструкции
+перед UI. Antislop after — ранее выбранный режим; аудит после browser.
+
+## Начальная сверка
+
+П01–П03 опубликованы, CI41496811460/41501353701/41509771171 PASS.
+Существующий confirmSupplierOrder меняет accepted quantities/subtotal напрямую;
+ACCEPT_COMPOSITION только меняет status. Полной proposal сущности/24ч/history/diff
+нет. Использовать существующие workflow events, очередь и notification outbox.
+Сохранить pending/unknown guards; прежний30мин reserve автоматически не продлевать.
+П04 NOT_IMPLEMENTED; нижеследующие проверки пока NOT_RUN.
+
+## Решение владельца03.11 — сначала денежный контракт доставки
+
+Владелец отклонил вариант ограничитьП04 текстовыми условиями доставки и отложить
+отдельную сумму доR5: «Нет, сначала определить денежный контракт доставки».
+Зависимая реализацияП04 не начата. Сначала подготовка и утверждение недостающих
+правилDG-08/V10–11 в существующем журнале; не считать рекомендации выбранными.
+Уже принято (§10–11 объединённогоТЗ): delivery quote отдельно от товара,
+сумма/получатель/основание/validity/version/consent; Platforma получает свою
+доставочную сумму, продавец товарную; refund выполняет исходный получатель.
+Не повышать плату при дроблении без согласия. Внешние тарифы/договоры/налоги
+и подтверждённые возможности перевозчиков остаются отдельными входами.
+Первое недостающее решение —V11: перерасчёт доставки при изменении состава,
+веса/адреса/числа отправлений; затем получатель supplier-delivery и матрица
+отмены/допрасходовV10. Рабочая БД, dev и продуктовый код не изменены.
+
+03.11 владелец принял предложенный порядокV11: актуальный расчёт, старые/новые
+суммы и общий итог, явное согласие; недоступный/просроченный quote блокирует
+окончательное принятие и начало оплаты.24ч не продлевают quote. Записано в
+анкете/журнале/domains/delivery. Следующий выбор: получатель доплаты за supplier
+delivery; V10 и внешние входы остаются открыты. Docs-only, diff/согласованность.
