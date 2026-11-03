@@ -8,7 +8,9 @@ V11 accepted03.11: refreshed quote/old-new totals/explicit consent; unavailable 
 expired quote blocks final accept/new payment,24h proposal does not extend tariff.
 Supplier-delivery payee accepted03.11: supplier receives goods+delivery in ONE
 payment (transfer/acquiring), amounts itemized; free/included adds no charge.
-Next: V10/cancellation costs and external DG-08 inputs; then full П04. No agents.
+V10 accepted03.11: confirmed cause determines costs; buyer amount needs consent;
+carrier contract applies; disputed/unknown cause has no charges before operator decision.
+Next: paid delivery cancellation/refund and external DG-08 inputs; then П04. No agents.
 
 ## P03-ORDER-RESPONSE-20261103 — DONE (scoped, CI GREEN)
 
