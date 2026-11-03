@@ -4,8 +4,10 @@ Owner authorized П04 after П01–03 review, then explicitly chose to define th
 monetary delivery contract FIRST; rejected text-only delivery scope with amount deferred toR5.
 No product code/migration/dev stop. Plan: ../evidence/order-proposals-20261103.md.
 Base main@bae2175c; preserve foreign checkpoint hunks/apps/web/AGENTS/output.
-V11 accepted03.11: refreshed quote/old-new totals/explicit consent; unavailable or
-expired quote blocks final accept/new payment,24h proposal does not extend tariff.
+Latest owner correction03.11 overrides post-payment repricing: TWO FINAL amounts
+(goods+fixed delivery) BEFORE any payment; packing/weight/carrier tariff expiry
+never increases clinic cost after payment. Goods-paid/delivery-unpaid retains
+fixed delivery price. V11 refresh only BEFORE payment. No provisional-price checkout.
 Supplier-delivery payee accepted03.11: supplier receives goods+delivery in ONE
 payment (transfer/acquiring), amounts itemized; free/included adds no charge.
 V10 accepted03.11: confirmed cause determines costs; buyer amount needs consent;
@@ -16,11 +18,10 @@ not charged to buyer; dispute operator; original payee refunds.
 Platforma delivery accepted03.11: TWO payments, goods directly to supplier, delivery
 to Platforma settlement account via transfer/acquiring, then carrier settlement.
 Itemized amounts/payees/statuses+total; bank split optional/unconfirmed.
-Goods-paid/delivery-unpaid accepted03.11: retain goods money, assembly allowed
-subject to other holds, no carrier handoff before delivery payment; expired quote
-recalculated/new amount accepted; available alternative/pickup agreed, no automatic
-goods cancellation/refund. Next: carrier booking trigger, then reconcile П04
-contract and external DG-07/08 inputs.
+Goods-paid/delivery-unpaid: retain goods money, assembly subject to holds, no
+carrier handoff before delivery payment; fixed agreed delivery amount retained.
+Next: reconcile П04 monetary contract with fixed-price requirement; provider/
+contract support must not be inferred. Original П04 implementation remains authorized.
 No product implementation yet; no agents.
 
 ## P03-ORDER-RESPONSE-20261103 — DONE (scoped, CI GREEN)
