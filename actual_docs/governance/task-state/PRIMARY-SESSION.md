@@ -6,8 +6,9 @@ No product code/migration/dev stop. Plan: ../evidence/order-proposals-20261103.m
 Base main@bae2175c; preserve foreign checkpoint hunks/apps/web/AGENTS/output.
 V11 accepted03.11: refreshed quote/old-new totals/explicit consent; unavailable or
 expired quote blocks final accept/new payment,24h proposal does not extend tariff.
-Recorded in questionnaire/decision journal/delivery domain. Next: supplier-delivery
-payee and V10 costs, external DG-08 inputs; then full П04. No agents.
+Supplier-delivery payee accepted03.11: supplier receives goods+delivery in ONE
+payment (transfer/acquiring), amounts itemized; free/included adds no charge.
+Next: V10/cancellation costs and external DG-08 inputs; then full П04. No agents.
 
 ## P03-ORDER-RESPONSE-20261103 — DONE (scoped, CI GREEN)
 
