@@ -20,8 +20,10 @@ to Platforma settlement account via transfer/acquiring, then carrier settlement.
 Itemized amounts/payees/statuses+total; bank split optional/unconfirmed.
 Goods-paid/delivery-unpaid: retain goods money, assembly subject to holds, no
 carrier handoff before delivery payment; fixed agreed delivery amount retained.
-Next: reconcile П04 monetary contract with fixed-price requirement; provider/
-contract support must not be inferred. Original П04 implementation remains authorized.
+Owner03.11 marks carrier fixed-price assurance «На утверждение» (V11/V13,DG-08).
+No approved automatic Platforma loss coverage; proposed carrier preparation plan
+not authorized externally. Final prices/no post-payment extras remain required.
+П04 dependency remains open; do not claim full monetary contract ready.
 No product implementation yet; no agents.
 
 ## P03-ORDER-RESPONSE-20261103 — DONE (scoped, CI GREEN)
