@@ -23,7 +23,10 @@ carrier handoff before delivery payment; fixed agreed delivery amount retained.
 Owner03.11 marks carrier fixed-price assurance «На утверждение» (V11/V13,DG-08).
 No approved automatic Platforma loss coverage; proposed carrier preparation plan
 not authorized externally. Final prices/no post-payment extras remain required.
-П04 dependency remains open; do not claim full monetary contract ready.
+Carrier booking accepted03.11: automatic after goods+delivery payments confirmed
+and supplier ready, with matching agreed parameters. Price mismatch -> review,
+no buyer surcharge/automatic new-price booking; lost response -> lookup before retry.
+П04 dependency remains open; fixed tariff assurance still «На утверждение».
 No product implementation yet; no agents.
 
 ## P03-ORDER-RESPONSE-20261103 — DONE (scoped, CI GREEN)
