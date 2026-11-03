@@ -215,3 +215,58 @@ Dependency fix локально зафиксирован в a70118c; push ещё
 Публикация outgoing range включает ранее local-only audit36081f04 и поэтому
 ожидает отдельного решения владельца. Остальные принятые исправления готовы
 к локальному коммиту; CI до публикации не запускался.
+
+## AUD-UI02 — продолжение исправлений04.11
+
+Owner: «Продолжаем исправления». Base177b8532, чужие PRIMARY-SESSION/AGENTS/output
+сохранены. Scope: RU/KK shell clinic/supplier, settings tabs и calendar route;
+locale query propagation по shell links, header/profile/notification chrome,
+loading/error/permission/dirty states. Полный перевод остальных feature forms и
+серверных notification bodies не заявляется. Publication decision остаётся pending.
+
+Паспорт: market-components-v1/platforma-semantic-light-v1; Manrope14, controls44/32,
+radius8; прежние layout/spacing/colors. Аналоги: calendarCopy, SettingsCalendar,
+Workspace + DmTabList/ProfileMenu. Audit screenshot и неизменный calendar source
+сверены; новый reference не нужен. Shared ConversationCounter расширяется optional
+copy prop с прежним RU default, без копирования adapter/локального style override.
+
+Риск: сохранение lang в навигации, default RU consumers, dirty calendar при смене
+tab, доступность mobile menu/popovers. Checks: pure URL/title/greeting and shared
+counter regressions, types web/UI, build web once at completion, scoped lint/UI
+contract. Browser1440RU/390KK + keyboard/menu/Escape/tab/dirty/error/recovery,
+screenshots/computed. Только isolated fixtures; working DB не менять.
+
+### AUD-UI02 — verification progress
+
+Web/UI scoped types PASS; locale/title/greeting21 tests PASS; shared counter2
+PASS attempt2 (attempt1 tabster ESM harness import, before tests). Web production
+build1, changed ESLint1 and UI contract1 PASS. No dependency changes in this block.
+Supplier browser1 PASS:390KK/1440RU/200% zoom, translated tabs/shell/profile and
+notification chrome, locale links, keyboard menu/Escape and calendar503/retry.
+Screenshots reviewed: existing geometry preserved, no document overflow.
+Isolated server first launch incorrectly nested db:test around helper that already
+resolves testDatabaseUrl; guard rejected before startup. Direct helper launch PASS,
+verified dentmarket_audit_20260914. Working DB untouched.
+Clinic/dirty browser acceptance still in progress; no full acceptance claimed yet.
+
+### AUD-UI02 — локальный результат
+
+Shell/calendar scope LOCAL_PASS. Browser final2 PASS (locale-browser-2.log):
+обе роли,1440RU/390KK,200% zoom, keyboard menu/Escape, profile links, notification
+chrome, actual clinic cart navigation retains lang, calendar503/retry, dirty-tab
+cancel preserves08:30. Consumer attempt1 FAIL from diagnostic dialog wait order;
+handler fixed, product code unchanged. Failure trace retained in locale-results,
+final screenshots/computed in locale-final-results. Input44px/radius8/Manrope14,
+scrollWidth390 at viewport390. Screenshots reviewed; no new layout finding.
+
+AUD-UI02 remains PARTIAL globally: cart contents/buyer context, other feature forms
+and server-generated notification bodies retain existing RU. No claim of complete
+product localization. Read-only calendar and editable unsaved state both covered.
+No working DB writes, migrations or deployment. Isolated servers stopped normally.
+Dev restoration launched10660; health verification follows. Publication approval
+requested separately because outgoing range includes earlier local-only audit36081f04.
+
+Dev restoration confirmed: launcher10660, API8196:4012 and Next5644:3000;
+readiness200/catalog200, canonical npm run dev/go_live. Early health probe was
+before startup build completed; no restart was needed. next-env regenerated back
+to original content. Local shell fix committed; push/CI remain pending approval.

@@ -10,12 +10,13 @@ import { calendarDraft, parseCalendarDraft } from "./calendar-draft";
 import { calendarHolidays, holidaySource } from "./calendar-holidays";
 import { CalendarIntervals } from "./calendar-intervals";
 import styles from "./calendar.module.css";
+import { workspaceText } from "./workspace-locale";
 
 export function SettingsCalendar({ onDirtyChange, locale }: { onDirtyChange: (dirty: boolean) => void; locale: CalendarLocale }) {
   const { api, organizationId } = useWorkspace(), t = calendarCopy[locale];
   const load = useCallback(() => api.getSupplierCalendar(), [api]);
   const resource = useResource(load, { automatic: false });
-  if (!resource.data) return resource.error ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>{t.retry}</DmButton>} /> : <LoadingState label={t.loading} />;
+  if (!resource.data) return resource.error ? <ErrorState presentation="inline" title={workspaceText(locale, "Не удалось загрузить календарь")} description={locale === "ru" ? resource.error : workspaceText(locale, "Повторите попытку. Сохранённый календарь не изменён.")} action={<DmButton onClick={() => void resource.refresh()}>{t.retry}</DmButton>} /> : <LoadingState label={t.loading} />;
   return <CalendarEditor key={organizationId} initial={resource.data} onDirtyChange={onDirtyChange} locale={locale} />;
 }
 
@@ -30,7 +31,7 @@ function CalendarEditor({ initial, onDirtyChange, locale }: {
   const retry = useRef<{ signature: string; input: SaveSupplierCalendar } | null>(null);
   const dirty = JSON.stringify(draft) !== JSON.stringify(calendarDraft(saved.calendar));
   const disabled = busy || !saved.canEdit;
-  useUnsavedChanges(dirty || busy);
+  useUnsavedChanges(dirty || busy, workspaceText(locale, "Есть несохранённые изменения. Покинуть страницу?"));
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   useEffect(() => { onDirtyChange(dirty || busy); return () => onDirtyChange(false); }, [dirty, busy, onDirtyChange]);
   async function save() {
@@ -109,7 +110,7 @@ function CalendarEditor({ initial, onDirtyChange, locale }: {
         <a href={holidaySource} target="_blank" rel="noopener noreferrer">{t.source}</a>
       </details>
       {issues.length ? <DmFeedback presentation="note" tone="danger" title={t.invalid} description={t.validation} alert /> : null}
-      {error ? <DmFeedback presentation="note" tone="danger" title={t.error} description={`${error} ${t.draftKept}`} alert
+      {error ? <DmFeedback presentation="note" tone="danger" title={t.error} description={locale === "ru" ? `${error} ${t.draftKept}` : t.draftKept} alert
         action={<DmButton disabled={busy} onClick={() => void reload()}>{t.reload}</DmButton>} /> : null}
       <div className={styles.actions}><DmButton type="submit" appearance="primary" disabled={disabled || (!dirty && saved.source !== "DEFAULT")}>{busy ? t.saving : t.save}</DmButton></div>
     </form>

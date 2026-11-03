@@ -20,7 +20,7 @@ export function ProductThumbnail({ src, name, large = false }: { src?: string | 
 }
 
 /** Preserve drafts on accidental same-tab links and browser unload; no sensitive fields go into URLs. */
-export function useUnsavedChanges(dirty: boolean) {
+export function useUnsavedChanges(dirty: boolean, message = "Есть несохранённые изменения. Покинуть страницу?") {
   useEffect(() => {
     if (!dirty) return;
     const unload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
@@ -29,11 +29,11 @@ export function useUnsavedChanges(dirty: boolean) {
       const target = event.target instanceof Element ? event.target.closest("a[href]") : null;
       if (!(target instanceof HTMLAnchorElement) || target.target === "_blank" || target.hasAttribute("download")) return;
       if (target.href === window.location.href || target.getAttribute("href")?.startsWith("#")) return;
-      if (!window.confirm("Есть несохранённые изменения. Покинуть страницу?")) { event.preventDefault(); event.stopImmediatePropagation(); }
+      if (!window.confirm(message)) { event.preventDefault(); event.stopImmediatePropagation(); }
     };
     window.addEventListener("beforeunload", unload); document.addEventListener("click", click, true);
     return () => { window.removeEventListener("beforeunload", unload); document.removeEventListener("click", click, true); };
-  }, [dirty]);
+  }, [dirty, message]);
 }
 
 export { styles as productWorkflowStyles };

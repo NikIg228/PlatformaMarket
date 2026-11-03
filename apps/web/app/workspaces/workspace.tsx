@@ -41,10 +41,12 @@ import { MessageHeader } from "./message-header";
 import { WorkspaceFooter } from "./workspace-footer";
 import { useBuyerMode, personalPurchaseMessage } from "../../../buyer-web/app/buyer-context";
 import { BuyerContextBar } from "../../../buyer-web/app/features/marketplace-header/buyer-context-bar";
+import { workspaceLocale, workspaceText, withWorkspaceLocale, type WorkspaceLocale } from "./workspace-locale";
 
 export type WorkspaceRole = "clinic" | "supplier";
 type WorkspaceContext = {
   role: WorkspaceRole;
+  locale: WorkspaceLocale;
   api: MarketplaceApiClient;
   apiContext: ApiContext;
   organizationId: string;
@@ -120,6 +122,9 @@ export function Workspace({
   const session = personal ? null : rawSession;
   const pathname = usePathname();
   const query = useSearchParams().toString();
+  const locale = workspaceLocale(new URLSearchParams(query).get("lang"));
+  const t = (text: string) => workspaceText(locale, text);
+  const hrefFor = (href: string) => withWorkspaceLocale(href, locale);
   const api = useMemo(
     () => new MarketplaceApiClient(API_URL, adapter.sessionApiContext),
     [adapter],
@@ -128,9 +133,9 @@ export function Workspace({
     sessionKey: `dentmarket:${role === "clinic" ? "buyer" : "supplier"}-session`,
     sessionId: session?.sessionId,
     revoke: adapter.logoutSession,
-    redirectUrl: "/login",
+    redirectUrl: hrefFor("/login"),
   });
-  const label = role === "clinic" ? "Кабинет клиники" : "Кабинет поставщика";
+  const label = t(role === "clinic" ? "Кабинет клиники" : "Кабинет поставщика");
   const renderContent = (pageContent: ReactNode) => (
     <div
       className={styles.root}
@@ -139,14 +144,14 @@ export function Workspace({
         if (event.key === "Escape" && menuOpen && !event.defaultPrevented) { event.preventDefault(); closeMenu(); }
       }}
     >
-      <a className={styles.skip} href="#workspace-content">
-        К содержимому
+      <a className={styles.skip} href="#workspace-content" lang={locale}>
+        {t("К содержимому")}
       </a>
-      <header className={styles.header}>
+      <header className={styles.header} lang={locale}>
         <Link
-          href="/catalog"
+          href={hrefFor("/catalog")}
           className={styles.brand}
-          aria-label="Platforma Market — каталог"
+          aria-label={t("Platforma Market — каталог")}
         >
           <img
             src="/brand/platforma-market.webp"
@@ -163,20 +168,21 @@ export function Workspace({
             aria-controls="workspace-sidebar"
             onClick={() => setMenuOpen((value) => !value)}
           >
-            {menuOpen ? "Закрыть меню" : "Меню кабинета"}
+            {t(menuOpen ? "Закрыть меню" : "Меню кабинета")}
           </DmButton>
         ) : null}
       </header>
       {ready && session?.organizationId ? (
         <aside
           id="workspace-sidebar"
+          lang={locale}
           className={styles.sidebar}
           data-open={menuOpen}
         >
           <Link
-            href="/catalog"
+            href={hrefFor("/catalog")}
             className={styles.sidebarBrand}
-            aria-label="Platforma Market — каталог"
+            aria-label={t("Platforma Market — каталог")}
           >
             <img
               src="/brand/platforma-market.webp"
@@ -187,10 +193,10 @@ export function Workspace({
           </Link>
           <nav className={styles.navigation} aria-label={label}>
             {links[role].map(([href, text]) => (
-              text === "Сообщения" ? <ConversationCounter key={href} api={api} href={href} icon={<Chat24Regular />} showLabel onClick={closeMenu} current={pathname === href} /> :
+              text === "Сообщения" ? <ConversationCounter key={href} api={api} href={hrefFor(href)} icon={<Chat24Regular />} showLabel onClick={closeMenu} current={pathname === href} copy={locale === "kk" ? { label: "Хабарламалар", unavailable: "Хабарламалар, есептегіш уақытша қолжетімсіз", unread: "Оқылмаған диалогтар" } : undefined} /> :
               <Link
                 key={href}
-                href={href}
+                href={hrefFor(href)}
                 onClick={closeMenu}
                 aria-current={
                   pathname === href ||
@@ -200,7 +206,7 @@ export function Workspace({
                 }
               >
                 <span aria-hidden="true">{navigationIcons[text]}</span>
-                {text}
+                {t(text)}
               </Link>
             ))}
           </nav>
@@ -215,30 +221,30 @@ export function Workspace({
         {role === "supplier" && pathname.startsWith("/supplier/legal/") ? (
           children
         ) : !ready ? (
-          <LoadingState label="Проверяем вход" />
+          <LoadingState label={t("Проверяем вход")} />
         ) : personal ? <ActionFeedback tone="info" description={personalPurchaseMessage} /> : !session?.organizationId ? (
           <ErrorState presentation="inline"
             title={
               error
-                ? "Не удалось проверить вход"
-                : `Войдите в ${role === "clinic" ? "кабинет клиники" : "кабинет поставщика"}`
+                ? t("Не удалось проверить вход")
+                : t(role === "clinic" ? "Войдите в кабинет клиники" : "Войдите в кабинет поставщика")
             }
             description={
-              error ?? "Выберите организацию с доступом к этому кабинету."
+              (error && locale === "ru" ? error : null) ?? t("Выберите организацию с доступом к этому кабинету.")
             }
             action={
               <>
                 <DmButton
                   as="a"
                   href={withWorkspaceReturn(
-                    "/login",
+                    hrefFor("/login"),
                     pathname + (query ? `?${query}` : ""),
                   )}
                 >
-                  Войти
+                  {t("Войти")}
                 </DmButton>
                 <DmButton onClick={() => void adapter.sessionStore.retry()}>
-                  Повторить проверку
+                  {t("Повторить проверку")}
                 </DmButton>
               </>
             }
@@ -252,7 +258,7 @@ export function Workspace({
   if (!ready || !session?.organizationId) return renderContent(children);
   return <Context.Provider
     key={`${role}:${session.organizationId}:${session.sessionId}`}
-    value={{ role, api, apiContext: adapter.sessionApiContext, organizationId: session.organizationId, session, logout }}
+    value={{ role, locale, api, apiContext: adapter.sessionApiContext, organizationId: session.organizationId, session, logout }}
   >
     {role === "supplier" && pathname.startsWith("/supplier/legal/") ? renderContent(children) :
       <WorkspacePermissions api={api} organizationId={session.organizationId} render={renderContent}>{children}</WorkspacePermissions>}

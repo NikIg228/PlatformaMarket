@@ -1,4 +1,6 @@
-export function workspacePageTitle(pathname: string) {
+import { workspaceLocale, workspaceText, withWorkspaceLocale, type WorkspaceLocale } from "./workspace-locale";
+
+export function workspacePageTitle(pathname: string, locale: WorkspaceLocale = "ru") {
   const page = pathname.replace(/^\/(clinic|supplier)\/?/, "").replace(/\/$/, "");
   const titles: Record<string, string> = {
     cart: "Корзина", products: "Товары", orders: "Заказы", documents: "Документы",
@@ -7,13 +9,20 @@ export function workspacePageTitle(pathname: string) {
     "products/new": "Добавить товар", "products/import": "Загрузить из файла",
     "products/inventory": "Остатки", "products/promotions": "Акции поставщика", "settings/sources": "Источники товаров",
   };
-  if (page === "analytics") return pathname.startsWith("/clinic") ? "Аналитика закупок" : "Аналитика продаж";
-  if (page.startsWith("orders/")) return "Заказ";
-  return titles[page] ?? "Главная";
+  if (page === "analytics") return workspaceText(locale, pathname.startsWith("/clinic") ? "Аналитика закупок" : "Аналитика продаж");
+  if (page.startsWith("orders/")) return workspaceText(locale, "Заказ");
+  return workspaceText(locale, titles[page] ?? "Главная");
 }
 
 /** Product navigation follows the section hierarchy, never the browser's previous origin. */
 export function workspaceNavigation(pathname: string, search = "") {
+  const locale = workspaceLocale(new URLSearchParams(search).get("lang"));
+  return navigationItems(pathname, search).map(item => ({
+    title: workspaceText(locale, item.title), href: withWorkspaceLocale(item.href, locale),
+  }));
+}
+
+function navigationItems(pathname: string, search: string) {
   const title = workspacePageTitle(pathname);
   if (!pathname.startsWith("/supplier/products/")) return [{ title, href: pathname }];
   const query = new URLSearchParams(search);
