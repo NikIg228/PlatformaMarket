@@ -26,6 +26,10 @@ not authorized externally. Final prices/no post-payment extras remain required.
 Carrier booking accepted03.11: automatic after goods+delivery payments confirmed
 and supplier ready, with matching agreed parameters. Price mismatch -> review,
 no buyer surcharge/automatic new-price booking; lost response -> lookup before retry.
+Carrier refusal after payment accepted03.11: show both parties, operator task;
+no automatic goods cancellation/carrier replacement; alternative needs clinic
+consent/no replacement surcharge; no option or refusal -> delivery cancellation/
+refund under agreed rules, goods resolved separately. Cost difference pending.
 П04 dependency remains open; fixed tariff assurance still «На утверждение».
 No product implementation yet; no agents.
 
