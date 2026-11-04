@@ -36,7 +36,10 @@ describe("payment operation claims", () => {
 
   it("reuses the durable provider result instead of invoking the provider again", async () => {
     const create = vi.fn().mockRejectedValue(uniqueViolation());
-    const findUnique = vi.fn().mockResolvedValue({ id: "attempt-1", status: "SUCCEEDED", externalAttemptId: "external-1", responsePayload: { status: "SUCCEEDED", externalId: "external-1", data: { confirmed: true } } });
+    const findUnique = vi.fn().mockResolvedValue({ id: "attempt-1", paymentIntentId: "intent-1", providerId: "provider-1",
+      idempotencyKey: "payment-operation:AUTHORIZATION:intent-1", status: "SUCCEEDED", externalAttemptId: "external-1",
+      requestPayload: { operationType: "AUTHORIZATION", operationKey: "payment-operation:AUTHORIZATION:intent-1", clientIdempotencyKey: "client-a", amountMinor: "100" },
+      responsePayload: { status: "SUCCEEDED", externalId: "external-1", data: { confirmed: true } } });
     const { claim } = serviceWithAttempt(create, findUnique);
 
     const result = await claim("intent-1", "provider-1", "AUTHORIZATION", "intent-1", "client-a", { amountMinor: "100" }) as { shouldCallProvider: boolean; operationKey: string; result: { externalId: string; status: string } };
@@ -53,8 +56,9 @@ describe("payment operation claims", () => {
       update: vi.fn(),
     };
     const tx = {
-      paymentTransaction: { create: vi.fn().mockResolvedValue({ id: "transaction-1" }) },
-      paymentIntent: { update: vi.fn() },
+      $queryRaw: vi.fn(),
+      paymentTransaction: { findFirst: vi.fn().mockResolvedValue(null), create: vi.fn().mockResolvedValue({ id: "transaction-1" }) },
+      paymentIntent: { findUnique: vi.fn().mockResolvedValue({ status: "PROCESSING" }), update: vi.fn() },
       paymentAllocation: { update: vi.fn(), aggregate: vi.fn() },
       paymentCapture: { create: vi.fn() },
     };

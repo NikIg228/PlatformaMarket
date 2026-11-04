@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import type { AuthorizePaymentInput, CancelPaymentIntentInput, CapturePaymentInput, CreateRefundInput, PaymentOperationsQueryInput, PaymentReconciliationImportInput, ProcessPayoutInput } from "@marketplace/schemas";
-import { Prisma } from "@prisma/client";
+import { Prisma, type PaymentTransactionType } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import type { SupplierActorContext } from "../suppliers/supplier-access.service";
 import { PaymentAdapterRegistry } from "./adapters/payment-adapter-registry.service";
@@ -9,6 +9,7 @@ import type { PaymentAdapterResult } from "./adapters/payment-adapter";
 import { calculateRefundAllocation } from "./payment-rules";
 import { MarketplaceAgreementsService } from "../agreements/marketplace-agreements.service";
 import { usableLotWhere } from "../inventory/lot-eligibility";
+import { assertPaymentSettlementPending, confirmedPaymentOperation, lockPaymentSettlement, recoverPaymentOperation } from "./payment-operation-recovery";
 
 @Injectable()
 export class PaymentSettlementService {
@@ -34,7 +35,7 @@ export class PaymentSettlementService {
     return `payment-operation:${type}:${target}`;
   }
 
-  private async claimOperation(paymentIntentId: string, providerId: string, type: string, target: string, clientIdempotencyKey: string, request: Record<string, unknown>) {
+  private async claimOperation(paymentIntentId: string, providerId: string, type: PaymentTransactionType, target: string, clientIdempotencyKey: string, request: Record<string, unknown>) {
     const operationKey = this.operationKey(type, target);
     const requestPayload = { ...request, operationType: type, operationKey, clientIdempotencyKey } as Prisma.InputJsonValue;
     try {
@@ -46,11 +47,7 @@ export class PaymentSettlementService {
       if (!attempt) throw error;
       if (attempt.status === "PROCESSING") throw new ConflictException("Payment operation is awaiting provider confirmation");
       if (attempt.status === "FAILED") throw new ConflictException("Payment provider operation previously failed");
-      const response = this.record(attempt.responsePayload);
-      const status = response.status;
-      const externalId = attempt.externalAttemptId;
-      if ((status !== "PENDING" && status !== "SUCCEEDED") || !externalId) throw new ConflictException("Payment operation requires provider reconciliation");
-      return { attempt, operationKey, shouldCallProvider: false, result: { externalId, status, data: this.record(response.data) } as PaymentAdapterResult };
+      return confirmedPaymentOperation(attempt, { paymentIntentId, providerId, type, operationKey, clientIdempotencyKey, request });
     }
   }
 
@@ -94,16 +91,24 @@ export class PaymentSettlementService {
     if (replay) return intent;
     const clientReplay = intent.transactions.find(({ type, ...transaction }) => type === "AUTHORIZATION" && this.clientReplay(transaction, input.idempotencyKey));
     if (clientReplay) return intent;
-    if (intent.status !== "PENDING") throw new ConflictException("Payment intent is not ready for authorization");
-    this.requireMerchantAccounts(intent.allocations);
-    const { adapter, context: adapterContext } = this.registry.resolve(intent.provider);
-    const claim = await this.claimOperation(intent.id, intent.providerId, "AUTHORIZATION", intent.id, input.idempotencyKey, { paymentIntentId: intent.id, amountMinor: intent.totalAmountMinor.toString(), currency: intent.currency });
-    try { await this.claimIntentProcessing(intent.id, [intent.status], intent.updatedAt); } catch (error) { await this.recordOperationResult(claim.attempt.id, undefined, "Payment state claim was lost"); throw error; }
+    const operation = { paymentIntentId: intent.id, providerId: intent.providerId, type: "AUTHORIZATION" as const,
+      operationKey: this.operationKey("AUTHORIZATION", intent.id), clientIdempotencyKey: input.idempotencyKey,
+      request: { paymentIntentId: intent.id, amountMinor: intent.totalAmountMinor.toString(), currency: intent.currency } };
+    const recovery = intent.status === "PROCESSING" ? await recoverPaymentOperation(this.prisma, operation) : null;
+    if (intent.status !== "PENDING" && !recovery) throw new ConflictException("Payment intent is not ready for authorization");
+    if (!recovery) this.requireMerchantAccounts(intent.allocations);
+    const execution = recovery ? null : this.registry.resolve(intent.provider);
+    const claim = recovery ?? await this.claimOperation(intent.id, intent.providerId, "AUTHORIZATION", intent.id, input.idempotencyKey, operation.request);
+    if (claim.shouldCallProvider) {
+      try { await this.claimIntentProcessing(intent.id, [intent.status], intent.updatedAt); } catch (error) { await this.recordOperationResult(claim.attempt.id, undefined, "Payment state claim was lost"); throw error; }
+    }
     const request = { paymentIntentId: intent.id, amountMinor: intent.totalAmountMinor.toString(), currency: intent.currency, idempotencyKey: claim.operationKey };
-    const result = claim.result ?? await adapter.authorize(adapterContext, request).catch(async (error: unknown) => { await this.recordOperationResult(claim.attempt.id, undefined, error instanceof Error ? error.message : "Payment provider request failed"); throw error; });
+    const result = claim.result ?? await execution!.adapter.authorize(execution!.context, request).catch(async (error: unknown) => { await this.recordOperationResult(claim.attempt.id, undefined, error instanceof Error ? error.message : "Payment provider request failed"); throw error; });
     if (claim.shouldCallProvider) await this.recordOperationResult(claim.attempt.id, result);
     if (result.status === "FAILED") { await this.restoreIntentStatus(intent.id, intent.status); throw new ConflictException("Payment provider declined authorization"); }
     await this.prisma.$transaction(async (tx) => {
+      if (await lockPaymentSettlement(tx, operation)) return;
+      await assertPaymentSettlementPending(tx, intent.id);
       const transaction = await tx.paymentTransaction.create({ data: { paymentIntentId: intent.id, providerId: intent.providerId, type: "AUTHORIZATION", status: result.status === "SUCCEEDED" ? "SUCCEEDED" : "PROCESSING", amountMinor: intent.totalAmountMinor, currency: intent.currency, externalTransactionId: result.externalId, idempotencyKey: input.idempotencyKey, requestPayload: { ...request, clientIdempotencyKey: input.idempotencyKey } as Prisma.InputJsonValue, responsePayload: result.data as Prisma.InputJsonValue, processedAt: result.status === "SUCCEEDED" ? new Date() : null } });
       await tx.paymentAuthorization.create({ data: { paymentIntentId: intent.id, paymentTransactionId: transaction.id, authorizedAmountMinor: intent.totalAmountMinor, status: result.status === "SUCCEEDED" ? "AUTHORIZED" : "PENDING", expiresAt: intent.expiresAt } });
       await tx.paymentAllocation.updateMany({ where: { paymentIntentId: intent.id, status: "PENDING" }, data: { status: "AUTHORIZED" } });
@@ -120,30 +125,40 @@ export class PaymentSettlementService {
     if (replay) return intent;
     const clientReplay = intent.transactions.find(({ type, ...transaction }) => type === "CAPTURE" && this.clientReplay(transaction, input.idempotencyKey));
     if (clientReplay) return intent;
-    if (!["PENDING", "AUTHORIZED", "PARTIALLY_CAPTURED"].includes(intent.status)) throw new ConflictException("Payment intent is not ready for capture");
+    if (!["PENDING", "AUTHORIZED", "PARTIALLY_CAPTURED", "PROCESSING"].includes(intent.status)) throw new ConflictException("Payment intent is not ready for capture");
     const requestedIds = input.allocationIds ? new Set(input.allocationIds) : null;
     const selected = intent.allocations.filter((allocation) => (!requestedIds || requestedIds.has(allocation.id)) && ["PENDING", "AUTHORIZED"].includes(allocation.status));
     if (selected.length === 0 || (requestedIds && selected.length !== requestedIds.size)) throw new BadRequestException("Capture allocations are missing or already processed");
-    await Promise.all([...new Set(selected.map(({ supplierOrder }) => supplierOrder.supplierOrganizationId))].map((supplierOrganizationId) => this.agreements.assertActive(supplierOrganizationId)));
-    const capabilities = providerCapabilities(intent.provider.capabilities);
-    if (selected.length !== intent.allocations.filter(({ status }) => ["PENDING", "AUTHORIZED"].includes(status)).length && capabilities.supports_partial_capture !== true) throw new ConflictException("Payment provider does not support partial capture");
-    this.requireMerchantAccounts(selected);
-    for (const allocation of selected) for (const item of allocation.supplierOrder.items) {
-      const reservation = item.reservation;
-      if (reservation?.externalReservation && reservation.externalReservation.status !== "ACTIVE") throw new ConflictException("External inventory reservation must be active before payment capture");
-    }
     const amount = selected.reduce((sum, allocation) => sum.plus(allocation.grossAmountMinor), new Prisma.Decimal(0));
-    const { adapter, context: adapterContext } = this.registry.resolve(intent.provider);
     const allocationIds = selected.map(({ id }) => id).sort();
-    const claim = await this.claimOperation(intent.id, intent.providerId, "CAPTURE", allocationIds.join(","), input.idempotencyKey, { paymentIntentId: intent.id, amountMinor: amount.toString(), currency: intent.currency, allocationIds, parentExternalId: intent.authorization?.paymentTransactionId });
-    try { await this.claimIntentProcessing(intent.id, [intent.status], intent.updatedAt); } catch (error) { await this.recordOperationResult(claim.attempt.id, undefined, "Payment state claim was lost"); throw error; }
+    const operation = { paymentIntentId: intent.id, providerId: intent.providerId, type: "CAPTURE" as const,
+      operationKey: this.operationKey("CAPTURE", allocationIds.join(",")), clientIdempotencyKey: input.idempotencyKey,
+      request: { paymentIntentId: intent.id, amountMinor: amount.toString(), currency: intent.currency, allocationIds, parentExternalId: intent.authorization?.paymentTransactionId } };
+    const recovery = intent.status === "PROCESSING" ? await recoverPaymentOperation(this.prisma, operation) : null;
+    if (!recovery) {
+      await Promise.all([...new Set(selected.map(({ supplierOrder }) => supplierOrder.supplierOrganizationId))].map((supplierOrganizationId) => this.agreements.assertActive(supplierOrganizationId)));
+      const capabilities = providerCapabilities(intent.provider.capabilities);
+      if (selected.length !== intent.allocations.filter(({ status }) => ["PENDING", "AUTHORIZED"].includes(status)).length && capabilities.supports_partial_capture !== true) throw new ConflictException("Payment provider does not support partial capture");
+      this.requireMerchantAccounts(selected);
+      for (const allocation of selected) for (const item of allocation.supplierOrder.items) {
+        const reservation = item.reservation;
+        if (reservation?.externalReservation && reservation.externalReservation.status !== "ACTIVE") throw new ConflictException("External inventory reservation must be active before payment capture");
+      }
+    }
+    const execution = recovery ? null : this.registry.resolve(intent.provider);
+    const claim = recovery ?? await this.claimOperation(intent.id, intent.providerId, "CAPTURE", allocationIds.join(","), input.idempotencyKey, operation.request);
+    if (claim.shouldCallProvider) {
+      try { await this.claimIntentProcessing(intent.id, [intent.status], intent.updatedAt); } catch (error) { await this.recordOperationResult(claim.attempt.id, undefined, "Payment state claim was lost"); throw error; }
+    }
     const request = { paymentIntentId: intent.id, amountMinor: amount.toString(), currency: intent.currency, idempotencyKey: claim.operationKey, allocationIds, parentExternalId: intent.authorization?.paymentTransactionId };
-    const result = claim.result ?? await adapter.capture(adapterContext, request).catch(async (error: unknown) => { await this.recordOperationResult(claim.attempt.id, undefined, error instanceof Error ? error.message : "Payment provider request failed"); throw error; });
+    const result = claim.result ?? await execution!.adapter.capture(execution!.context, request).catch(async (error: unknown) => { await this.recordOperationResult(claim.attempt.id, undefined, error instanceof Error ? error.message : "Payment provider request failed"); throw error; });
     if (claim.shouldCallProvider) await this.recordOperationResult(claim.attempt.id, result);
     if (result.status === "FAILED") { await this.restoreIntentStatus(intent.id, intent.status); throw new ConflictException("Payment provider declined capture"); }
 
     try {
       await this.prisma.$transaction(async (tx) => {
+        if (await lockPaymentSettlement(tx, operation)) return;
+        await assertPaymentSettlementPending(tx, intent.id);
         const transaction = await tx.paymentTransaction.create({ data: { paymentIntentId: intent.id, providerId: intent.providerId, parentTransactionId: intent.authorization?.paymentTransactionId, type: "CAPTURE", status: result.status === "SUCCEEDED" ? "SUCCEEDED" : "PROCESSING", amountMinor: amount, currency: intent.currency, externalTransactionId: result.externalId, idempotencyKey: input.idempotencyKey, requestPayload: { ...request, clientIdempotencyKey: input.idempotencyKey } as Prisma.InputJsonValue, responsePayload: result.data as Prisma.InputJsonValue, processedAt: result.status === "SUCCEEDED" ? new Date() : null } });
         if (result.status !== "SUCCEEDED") {
           await tx.paymentIntent.update({ where: { id: intent.id }, data: { status: "PROCESSING" } });
@@ -161,7 +176,11 @@ export class PaymentSettlementService {
         await tx.outboxEvent.create({ data: { aggregateType: "PaymentIntent", aggregateId: intent.id, eventType: fullCapture ? "PaymentCaptured" : "PaymentPartiallyCaptured", payload: { paymentIntentId: intent.id, amountMinor: amount.toString(), capturedAmountMinor: capturedAmount.toString(), currency: intent.currency, provider: intent.provider.code } } });
       }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return this.get(paymentIntentId, context);
+      if (error instanceof Prisma.PrismaClientKnownRequestError
+        && (["P2002", "P2034"].includes(error.code) || (error.code === "P2010" && error.meta?.code === "40001"))) {
+        const completed = await this.prisma.paymentTransaction.findFirst({ where: { paymentIntentId: intent.id, providerId: intent.providerId, type: "CAPTURE", idempotencyKey: input.idempotencyKey } });
+        if (completed) return this.get(paymentIntentId, context);
+      }
       throw error;
     }
     return this.get(paymentIntentId, context);
@@ -274,14 +293,21 @@ export class PaymentSettlementService {
     const clientReplay = intent.transactions.find(({ type, ...transaction }) => type === "VOID" && this.clientReplay(transaction, input.idempotencyKey));
     if (replay || clientReplay || intent.status === "CANCELLED") return intent;
     if (["CAPTURED", "PARTIALLY_CAPTURED", "PARTIALLY_REFUNDED", "REFUNDED"].includes(intent.status)) throw new ConflictException("Captured payment must be corrected through a refund");
-    if (intent.status === "PROCESSING") throw new ConflictException("Another payment operation is already processing; reconcile it before cancelling");
-    const { adapter, context: adapterContext } = this.registry.resolve(intent.provider);
-    const claim = await this.claimOperation(intent.id, intent.providerId, "VOID", intent.id, input.idempotencyKey, { paymentIntentId: intent.id, amountMinor: intent.totalAmountMinor.toString(), currency: intent.currency, reason: input.reason, parentExternalId: intent.authorization?.paymentTransactionId });
-    try { await this.claimIntentProcessing(intent.id, [intent.status], intent.updatedAt); } catch (error) { await this.recordOperationResult(claim.attempt.id, undefined, "Payment state claim was lost"); throw error; }
-    const result = claim.result ?? await adapter.cancel(adapterContext, { paymentIntentId: intent.id, amountMinor: intent.totalAmountMinor.toString(), currency: intent.currency, idempotencyKey: claim.operationKey, reason: input.reason, parentExternalId: intent.authorization?.paymentTransactionId }).catch(async (error: unknown) => { await this.recordOperationResult(claim.attempt.id, undefined, error instanceof Error ? error.message : "Payment provider request failed"); throw error; });
+    const operation = { paymentIntentId: intent.id, providerId: intent.providerId, type: "VOID" as const,
+      operationKey: this.operationKey("VOID", intent.id), clientIdempotencyKey: input.idempotencyKey,
+      request: { paymentIntentId: intent.id, amountMinor: intent.totalAmountMinor.toString(), currency: intent.currency, reason: input.reason, parentExternalId: intent.authorization?.paymentTransactionId } };
+    const recovery = intent.status === "PROCESSING" ? await recoverPaymentOperation(this.prisma, operation) : null;
+    const execution = recovery ? null : this.registry.resolve(intent.provider);
+    const claim = recovery ?? await this.claimOperation(intent.id, intent.providerId, "VOID", intent.id, input.idempotencyKey, operation.request);
+    if (claim.shouldCallProvider) {
+      try { await this.claimIntentProcessing(intent.id, [intent.status], intent.updatedAt); } catch (error) { await this.recordOperationResult(claim.attempt.id, undefined, "Payment state claim was lost"); throw error; }
+    }
+    const result = claim.result ?? await execution!.adapter.cancel(execution!.context, { ...operation.request, idempotencyKey: claim.operationKey }).catch(async (error: unknown) => { await this.recordOperationResult(claim.attempt.id, undefined, error instanceof Error ? error.message : "Payment provider request failed"); throw error; });
     if (claim.shouldCallProvider) await this.recordOperationResult(claim.attempt.id, result);
     if (result.status === "FAILED") { await this.restoreIntentStatus(intent.id, intent.status); throw new ConflictException("Payment provider declined cancellation"); }
     await this.prisma.$transaction(async (tx) => {
+      if (await lockPaymentSettlement(tx, operation)) return;
+      await assertPaymentSettlementPending(tx, intent.id);
       const transaction = await tx.paymentTransaction.create({ data: { paymentIntentId: intent.id, providerId: intent.providerId, parentTransactionId: intent.authorization?.paymentTransactionId, type: "VOID", status: result.status === "SUCCEEDED" ? "SUCCEEDED" : "PROCESSING", amountMinor: intent.totalAmountMinor, currency: intent.currency, externalTransactionId: result.externalId, idempotencyKey: input.idempotencyKey, requestPayload: { paymentIntentId: intent.id, operationKey: claim.operationKey, clientIdempotencyKey: input.idempotencyKey, reason: input.reason } as Prisma.InputJsonValue, responsePayload: result.data as Prisma.InputJsonValue, processedAt: result.status === "SUCCEEDED" ? new Date() : null } });
       if (result.status !== "SUCCEEDED") {
         await tx.paymentIntent.update({ where: { id: intent.id }, data: { status: "PROCESSING" } });
@@ -387,17 +413,31 @@ export class PaymentSettlementService {
     if (!payout) throw new NotFoundException("Payout not found");
     if (payout.merchantAccount.organizationId !== context.organizationId && !(await this.isOperator(context.organizationId))) throw new ForbiddenException("Payout belongs to another supplier");
     if (payout.status === "PAID") return payout;
-    if (payout.status !== "READY" || payout.merchantAccount.payoutStatus !== "READY" || !payout.merchantAccount.externalMerchantId) throw new ConflictException("Payout or merchant account is not ready");
+    if (!payout.merchantAccount.externalMerchantId) throw new ConflictException("Payout or merchant account is not ready");
     if (Number(payout.amountMinor) === 0) throw new ConflictException("Zero payout cannot be processed");
-    const { adapter, context: adapterContext } = this.registry.resolve(payout.merchantAccount.provider);
-    const claim = await this.claimOperation(payout.paymentAllocation.paymentIntentId, payout.merchantAccount.providerId, "PAYOUT", payout.id, input.idempotencyKey, { paymentIntentId: payout.paymentAllocation.paymentIntentId, amountMinor: payout.amountMinor.toString(), currency: payout.currency, paymentAllocationId: payout.paymentAllocationId, merchantExternalId: payout.merchantAccount.externalMerchantId });
-    const payoutClaim = await this.prisma.payout.updateMany({ where: { id: payout.id, status: "READY" }, data: { status: "PROCESSING" } });
-    if (payoutClaim.count !== 1) { await this.recordOperationResult(claim.attempt.id, undefined, "Payout state claim was lost"); throw new ConflictException("Another payout operation is already processing"); }
+    const operation = { paymentIntentId: payout.paymentAllocation.paymentIntentId, providerId: payout.merchantAccount.providerId, type: "PAYOUT" as const,
+      operationKey: this.operationKey("PAYOUT", payout.id), clientIdempotencyKey: input.idempotencyKey,
+      request: { paymentIntentId: payout.paymentAllocation.paymentIntentId, amountMinor: payout.amountMinor.toString(), currency: payout.currency, paymentAllocationId: payout.paymentAllocationId, merchantExternalId: payout.merchantAccount.externalMerchantId } };
+    const recovery = payout.status === "PROCESSING" ? await recoverPaymentOperation(this.prisma, operation) : null;
+    if (!recovery && (payout.status !== "READY" || payout.merchantAccount.payoutStatus !== "READY")) throw new ConflictException("Payout or merchant account is not ready");
+    const execution = recovery ? null : this.registry.resolve(payout.merchantAccount.provider);
+    const claim = recovery ?? await this.claimOperation(payout.paymentAllocation.paymentIntentId, payout.merchantAccount.providerId, "PAYOUT", payout.id, input.idempotencyKey, operation.request);
+    if (claim.shouldCallProvider) {
+      const payoutClaim = await this.prisma.payout.updateMany({ where: { id: payout.id, status: "READY", amountMinor: payout.amountMinor, merchantAccountId: payout.merchantAccountId }, data: { status: "PROCESSING" } });
+      if (payoutClaim.count !== 1) { await this.recordOperationResult(claim.attempt.id, undefined, "Payout state claim was lost"); throw new ConflictException("Another payout operation is already processing"); }
+    }
     const request = { paymentIntentId: payout.paymentAllocation.paymentIntentId, amountMinor: payout.amountMinor.toString(), currency: payout.currency, idempotencyKey: claim.operationKey, paymentAllocationId: payout.paymentAllocationId, merchantExternalId: payout.merchantAccount.externalMerchantId };
-    const result = claim.result ?? await adapter.payout(adapterContext, request).catch(async (error: unknown) => { await this.recordOperationResult(claim.attempt.id, undefined, error instanceof Error ? error.message : "Payment provider request failed"); throw error; });
+    const result = claim.result ?? await execution!.adapter.payout(execution!.context, request).catch(async (error: unknown) => { await this.recordOperationResult(claim.attempt.id, undefined, error instanceof Error ? error.message : "Payment provider request failed"); throw error; });
     if (claim.shouldCallProvider) await this.recordOperationResult(claim.attempt.id, result);
     if (result.status === "FAILED") { await this.prisma.payout.updateMany({ where: { id: payout.id, status: "PROCESSING" }, data: { status: "READY" } }); throw new ConflictException("Payment provider declined payout"); }
     return this.prisma.$transaction(async (tx) => {
+      const completed = await lockPaymentSettlement(tx, operation);
+      await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Payout" WHERE "id" = ${payout.id}::uuid FOR UPDATE`);
+      const current = await tx.payout.findUnique({ where: { id: payout.id } });
+      if (completed && current?.paymentTransactionId === completed.id) return current;
+      if (completed || current?.status !== "PROCESSING" || !current.amountMinor.equals(payout.amountMinor)
+        || current.currency !== payout.currency || current.merchantAccountId !== payout.merchantAccountId)
+        throw new ConflictException("Payout state changed before settlement; reconcile the operation");
       const transaction = await tx.paymentTransaction.create({ data: { paymentIntentId: payout.paymentAllocation.paymentIntentId, paymentAllocationId: payout.paymentAllocationId, providerId: payout.merchantAccount.providerId, type: "PAYOUT", status: result.status === "SUCCEEDED" ? "SUCCEEDED" : "PROCESSING", amountMinor: payout.amountMinor, currency: payout.currency, externalTransactionId: result.externalId, idempotencyKey: input.idempotencyKey, requestPayload: { ...request, clientIdempotencyKey: input.idempotencyKey } as Prisma.InputJsonValue, responsePayload: result.data as Prisma.InputJsonValue, processedAt: result.status === "SUCCEEDED" ? new Date() : null } });
       const paid = await tx.payout.update({ where: { id: payout.id }, data: { paymentTransactionId: transaction.id, status: result.status === "SUCCEEDED" ? "PAID" : "PROCESSING", externalPayoutId: result.externalId, paidAt: result.status === "SUCCEEDED" ? new Date() : null } });
       await tx.paymentAllocation.update({ where: { id: payout.paymentAllocationId }, data: { payoutStatus: paid.status } });
