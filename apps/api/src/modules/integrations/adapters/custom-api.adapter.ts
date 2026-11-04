@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { exactPriceMinor } from "./price-precision";
 import {
   OutboundRequestGateway,
   OutboundRequestPolicyError,
@@ -224,9 +225,8 @@ export class CustomApiIntegrationAdapter implements IntegrationAdapter {
     const items: ExternalPriceItem[] = this.rows(payload).flatMap((value) => {
       const row = asRecord(value);
       const externalId = this.externalId(row);
-      const valueMinor = Number(row.valueMinor ?? row.amountMinor ?? row.price);
-      if (!externalId || !Number.isFinite(valueMinor) || valueMinor < 0)
-        return [];
+      if (!externalId) return [];
+      const valueMinor = exactPriceMinor(row.valueMinor ?? row.amountMinor ?? row.price);
       return [
         {
           externalId,

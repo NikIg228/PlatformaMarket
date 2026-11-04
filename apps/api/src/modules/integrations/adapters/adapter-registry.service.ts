@@ -5,6 +5,7 @@ import { asRecord, type IntegrationAdapterContext } from "./integration-adapter"
 import { MockIntegrationAdapter } from "./mock.adapter";
 import { MoySkladIntegrationAdapter } from "./moysklad.adapter";
 import { CustomApiIntegrationAdapter } from "./custom-api.adapter";
+import { restoreConfiguration } from "../configuration-secrets";
 
 @Injectable()
 export class IntegrationAdapterRegistry {
@@ -21,7 +22,7 @@ export class IntegrationAdapterRegistry {
     const context: IntegrationAdapterContext = {
       connectionId: connection.id,
       credentials: connection.encryptedCredentials ? this.crypto.decrypt(connection.encryptedCredentials) : {},
-      configuration: { ...asRecord(connection.configuration), ...(connection.encryptedConfiguration ? asRecord(this.crypto.decryptJson(connection.encryptedConfiguration)) : {}) },
+      configuration: asRecord(restoreConfiguration(connection.configuration, connection.encryptedConfiguration ? this.crypto.decryptJson(connection.encryptedConfiguration) : {})),
     };
     return { adapter, context };
   }

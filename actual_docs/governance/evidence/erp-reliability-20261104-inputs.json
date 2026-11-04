@@ -1,0 +1,105 @@
+{
+  "base": "b3fdb44b3f9fd869684d6d2d49b3fa5d0186df8a",
+  "inputs": [
+    {
+      "path": "apps/api/src/modules/integrations/adapters/adapter-registry.service.ts",
+      "sha256": "957203aad5e1da34923aa1e216bbf38f25a0e13e0423674416610505e1b5fa44"
+    },
+    {
+      "path": "apps/api/src/modules/integrations/adapters/custom-api.adapter.spec.ts",
+      "sha256": "201fc9ad2095ec5769f53f3751a9c7bfe523106b9454d3efe1f3e2ea6a670584"
+    },
+    {
+      "path": "apps/api/src/modules/integrations/adapters/custom-api.adapter.ts",
+      "sha256": "78e7fbcc09a9ffa423e06308ae97cfc8cb1810b84aa83a0ab2c7a10100707e04"
+    },
+    {
+      "path": "apps/api/src/modules/integrations/adapters/mock.adapter.ts",
+      "sha256": "c67e423788cc5a4e808d2d66c46e8fb0b3c6e24f43f9df19f1a2ca60f6f463b8"
+    },
+    {
+      "path": "apps/api/src/modules/integrations/adapters/moysklad.adapter.ts",
+      "sha256": "de5d0120c92a36bc531e83fd36e6fa19bbe68d38bff61d6b129c2a1aaaf9c6eb"
+    },
+    {
+      "path": "apps/api/src/modules/integrations/integration-execution.service.ts",
+      "sha256": "f46a23ee27e5b59ff3820317bbed4d3a1d8e4d282483af802a9d8946da4ea4c2"
+    },
+    {
+      "path": "apps/api/src/modules/integrations/integration-vat.spec.ts",
+      "sha256": "4dee449fe55d80615e4b86bf5dceb20dd873481b88ea5345c81b45f63fdede29"
+    },
+    {
+      "path": "apps/api/src/modules/integrations/integrations.service.ts",
+      "sha256": "411952194b802f5dd2066644bc1bd926af4a4a6e331ec078b3fe445323c681d9"
+    },
+    {
+      "path": "apps/api/src/modules/integrations/reservation-job-scope.spec.ts",
+      "sha256": "445b8be15381aafa5484ad48bc49d253a71575019a8917a40577ae169a2d8871"
+    },
+    {
+      "path": "apps/api/src/modules/suppliers/suppliers.service.ts",
+      "sha256": "ed0126c1e7744375a82360d126b62d649fead193097d12428df7df511916a35b"
+    },
+    {
+      "path": "apps/api/src/modules/integrations/adapters/price-precision.spec.ts",
+      "sha256": "090ff7c52251124250787201080f40412b4d42a4364c812964a652bf2a7abd0d"
+    },
+    {
+      "path": "apps/api/src/modules/integrations/adapters/price-precision.ts",
+      "sha256": "c61ce301ab72a7e86d1c36bef37d47f835664d4d63a2130f85ccb7bf6a53b72c"
+    },
+    {
+      "path": "apps/api/src/modules/integrations/configuration-secrets.spec.ts",
+      "sha256": "7885a5b83a463eff0023dce5ff9af17dfd9843ff9abb0da12f8b8bfec8b5a34e"
+    },
+    {
+      "path": "apps/api/src/modules/integrations/configuration-secrets.ts",
+      "sha256": "6ee379d99360746d2f2fe903392c677276f711bdd2b5d5f991d8b47aed13a7f1"
+    },
+    {
+      "path": "apps/api/src/modules/suppliers/data-source-secrets.spec.ts",
+      "sha256": "5233ba8eb3898541451c9f26744540daa5bba148a2efc9243faa399ad723e444"
+    },
+    {
+      "path": "scripts/verify-erp-reliability.mjs",
+      "sha256": "cf70588a1be1eac1be2d677080459945dd1476edfe9f8e257ec03c51b5362429"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "e09d97d0ccb0fc45b05ab982d71eeea58b3a58bae4989b46dae0722a82741893"
+    },
+    {
+      "path": "package.json",
+      "sha256": "74c9d7cd4aa32109065281c8879e1154c5c6a8c8e4f108e78d7beddb83ef58a0"
+    },
+    {
+      "path": "apps/api/package.json",
+      "sha256": "65106e0f8bec5f30c57797375cfe63e5b0755a7e3cff6da21e8247cde99d32cb"
+    },
+    {
+      "path": "apps/api/tsconfig.json",
+      "sha256": "aa3fe0618648c0f0fd6535029afc9ef798a5fab32b46464234a003faa0e9df99"
+    },
+    {
+      "path": "apps/api/nest-cli.json",
+      "sha256": "5e10576386da00e0a85b12a00a71e1155d9fb2cf4ceba68b9192bdb92d1c4497"
+    },
+    {
+      "path": "packages/schemas/src/integration-contracts.ts",
+      "sha256": "f696dfcd2dc568f27fe0c129a5c23009840ca2ee8a87c6ad1047ed3edaa606e0"
+    },
+    {
+      "path": "apps/api/src/modules/imports/import-vat.ts",
+      "sha256": "683920193d22c53bd28281673be86b7fe36585d60a0ed58bf320240a1fbc0e52"
+    },
+    {
+      "path": "apps/api/src/modules/inventory/data-freshness.service.ts",
+      "sha256": "b5fa10462efeb57e5b4e328ea8b9280e181369b48141ddbaa0358ebbf1074e49"
+    },
+    {
+      "path": "scripts/verify-postgres-integration.mjs",
+      "sha256": "6537ed6aaac58612c1eb8e4153d8e95e5ed4980dec464d580ca106f22fc5a820"
+    }
+  ]
+}

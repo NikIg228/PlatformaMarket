@@ -5,22 +5,7 @@ import { PrismaService } from "../../platform/prisma/prisma.service";
 import { SupplierAccessService, type SupplierActorContext } from "./supplier-access.service";
 import { IntegrationCryptoService } from "../integrations/integration-crypto.service";
 
-const SENSITIVE_CONFIGURATION_KEY = /(^|_|-)(token|secret|password|passwd|api[-_]?key|access[-_]?key|private[-_]?key|client[-_]?secret|authorization|credential)(_|-|$)/i;
-
-function protectConfiguration(value: unknown): { publicValue: unknown; sensitiveValue: Record<string, unknown> } {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return { publicValue: value, sensitiveValue: {} };
-  const publicValue: Record<string, unknown> = {};
-  const sensitiveValue: Record<string, unknown> = {};
-  for (const [key, item] of Object.entries(value && typeof value === "object" && !Array.isArray(value) ? value : {})) {
-    if (SENSITIVE_CONFIGURATION_KEY.test(key)) sensitiveValue[key] = item;
-    else if (item && typeof item === "object" && !Array.isArray(item)) {
-      const nested = protectConfiguration(item);
-      publicValue[key] = nested.publicValue;
-      if (Object.keys(nested.sensitiveValue).length > 0) sensitiveValue[key] = nested.sensitiveValue;
-    } else publicValue[key] = item;
-  }
-  return { publicValue, sensitiveValue };
-}
+import { protectConfiguration, publicConfiguration } from "../integrations/configuration-secrets";
 
 @Injectable()
 export class SuppliersService {
@@ -28,11 +13,12 @@ export class SuppliersService {
 
   async list(context: SupplierActorContext) {
     const isOperator = await this.prisma.organizationCapability.findUnique({ where: { organizationId_capability: { organizationId: context.organizationId, capability: "MARKETPLACE_OPERATOR" } } });
-    return this.prisma.supplierProfile.findMany({
+    const profiles = await this.prisma.supplierProfile.findMany({
       where: isOperator ? undefined : { organizationId: context.organizationId },
       include: { organization: { include: { capabilities: true } }, warehouses: true, dataSources: { select: { id: true, supplierOrganizationId: true, name: true, type: true, configuration: true, status: true, createdAt: true, updatedAt: true } }, _count: { select: { offers: true, importBatches: true } } },
       orderBy: { organization: { displayName: "asc" } },
     });
+    return profiles.map(profile => ({ ...profile, dataSources: profile.dataSources.map(publicConfiguration) }));
   }
 
   async createProfile(supplierOrganizationId: string, input: CreateSupplierProfileInput, context: SupplierActorContext) {
@@ -87,7 +73,8 @@ export class SuppliersService {
   async dataSources(supplierOrganizationId: string, context: SupplierActorContext) {
     await this.access.assertCanManage(supplierOrganizationId, context);
     await this.access.requireProfile(supplierOrganizationId);
-    return this.prisma.supplierDataSource.findMany({ where: { supplierOrganizationId }, select: { id: true, supplierOrganizationId: true, name: true, type: true, configuration: true, status: true, createdAt: true, updatedAt: true }, orderBy: { createdAt: "desc" } });
+    const sources = await this.prisma.supplierDataSource.findMany({ where: { supplierOrganizationId }, select: { id: true, supplierOrganizationId: true, name: true, type: true, configuration: true, status: true, createdAt: true, updatedAt: true }, orderBy: { createdAt: "desc" } });
+    return sources.map(publicConfiguration);
   }
 
   async createDataSource(supplierOrganizationId: string, input: CreateSupplierDataSourceInput, context: SupplierActorContext) {

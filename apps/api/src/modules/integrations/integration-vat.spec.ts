@@ -6,10 +6,10 @@ import { resolveImportPrice } from "../imports/import-vat";
 vi.mock("../imports/import-vat", () => ({ resolveImportPrice: vi.fn() }));
 const tax = { selection: { mode: "TAXABLE", rate: "16", basis: null }, ruleId: "KZ_STANDARD_2026_V1", profile: { version: 1 } } as VatPriceSnapshot;
 function fixture() {
-  const price = { source: "API", amountMinor: new Prisma.Decimal("11600"), currency: "KZT", taxSnapshot: null };
+  const price = { id: "price", source: "API", amountMinor: new Prisma.Decimal("11600"), currency: "KZT", taxSnapshot: null };
   const db = {
     integrationDataBinding: { findMany: vi.fn().mockResolvedValue([{ configuration: {} }]) },
-    offerPrice: { findFirst: vi.fn().mockResolvedValue(price), updateMany: vi.fn(), create: vi.fn() },
+    offerPrice: { findFirst: vi.fn().mockResolvedValue(price), update: vi.fn(), updateMany: vi.fn(), create: vi.fn() },
     offerPriceHistory: { create: vi.fn() }, supplierOffer: { update: vi.fn() }, outboxEvent: { create: vi.fn() },
     $queryRaw: vi.fn(), $transaction: vi.fn(),
   };
@@ -31,6 +31,12 @@ describe("ERP price tax persistence", () => {
     vi.mocked(resolveImportPrice).mockResolvedValue({ amountMinor: "11600", includesVat: true, vatRate: null, taxSnapshot: Prisma.DbNull, declaration: null });
     expect(await f.run()).toMatchObject({ updated: 0, unchanged: 1 });
     expect(f.db.offerPrice.create).not.toHaveBeenCalled(); expect(f.db.$queryRaw).toHaveBeenCalledOnce();
+    const confirmation = f.db.offerPrice.update.mock.calls[0]?.[0];
+    expect(confirmation).toMatchObject({ where: { id: "price" }, data: { lastConfirmedAt: expect.any(Date), freshnessExpiresAt: expect.any(Date) } });
+    expect(confirmation.data.freshnessExpiresAt.getTime() - confirmation.data.lastConfirmedAt.getTime()).toBe(15 * 60_000);
+    expect(f.db.offerPriceHistory.create).not.toHaveBeenCalled();
+    expect(f.db.supplierOffer.update).not.toHaveBeenCalled();
+    expect(f.db.outboxEvent.create).not.toHaveBeenCalled();
   });
   it("persists a tax-only change even when the payable amount is identical", async () => {
     const f = fixture();

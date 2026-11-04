@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { exactPriceMinor } from "./price-precision";
 import {
   OutboundRequestGateway,
   OutboundRequestPolicyError,
@@ -264,8 +265,7 @@ export class MoySkladIntegrationAdapter implements IntegrationAdapter {
             )
           : prices.slice(0, 1);
       return selected.flatMap((price) => {
-        const valueMinor = Number(price.value);
-        if (!Number.isFinite(valueMinor) || valueMinor < 0) return [];
+        const valueMinor = exactPriceMinor(price.value);
         const priceType = asRecord(price.priceType);
         return [
           {

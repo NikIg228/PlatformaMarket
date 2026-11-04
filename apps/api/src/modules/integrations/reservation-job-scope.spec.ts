@@ -22,7 +22,7 @@ function fixture(type: JobType, options: { foreignConnection?: boolean; foreignS
     inventoryReservation: { supplierOrganizationId: options.foreignSupplier ? otherId : supplierId }, status: options.status ?? "PENDING",
     externalReservationId: "original-local-id", responsePayload: { original: true }, lastError: "previous synthetic failure", lastAttemptAt: null };
   const job = { id: "00000000-0000-4000-8000-000000000004", type, connectionId, connection, status: "RUNNING", attempt: 1, maxAttempts: 5,
-    availableAt: new Date(), lockedBy: `server:${process.pid}`, payload: options.payload ?? { externalReservationRecordId: recordId, inventoryReservationId: inventoryId, quantity: "2", externalReservationId: row.externalReservationId } };
+    idempotencyKey: `${type.toLowerCase()}:${inventoryId}`, availableAt: new Date(), lockedBy: `server:${process.pid}`, payload: options.payload ?? { externalReservationRecordId: recordId, inventoryReservationId: inventoryId, quantity: "2", externalReservationId: row.externalReservationId } };
   const equalId = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
   const matches = (where: Scope) =>
     (where.id === undefined || equalId(where.id, row.id)) &&
@@ -66,6 +66,28 @@ function fixture(type: JobType, options: { foreignConnection?: boolean; foreignS
 }
 
 describe("job-driven external reservation isolation", () => {
+  it.each(jobTypes)("keeps the trusted $type key across a local completion failure", async type => {
+    const f = fixture(type);
+    const effects = new Map<string, { externalId: string; data: { confirmed: boolean; reserved: boolean; released: boolean; externalId: string } }>();
+    const adapterCall = type === "RESERVATION_CREATE" ? f.create : f.release;
+    adapterCall.mockImplementation(async (_context, payload) => {
+      expect(payload.idempotencyKey).toBe(f.job.idempotencyKey);
+      const key = String(payload.idempotencyKey);
+      if (!effects.has(key)) effects.set(key, { externalId: "remote-once", data: { confirmed: true, reserved: true, released: true, externalId: "remote-once" } });
+      return effects.get(key)!;
+    });
+    Object.assign(f.job.payload, { idempotencyKey: "untrusted-payload-key" });
+    const first = await f.execution.execute(f.job as never);
+    f.prisma.integrationSyncJob.update.mockRejectedValueOnce(new Error("Local completion failed"));
+    await expect(f.jobs.complete(f.job.id, `server:${process.pid}`, first)).rejects.toThrow("Local completion failed");
+    f.job.attempt++;
+    const second = await f.execution.execute(f.job as never);
+    await f.jobs.complete(f.job.id, `server:${process.pid}`, second);
+    expect(second).toEqual(first);
+    expect(adapterCall).toHaveBeenCalledTimes(2);
+    expect(effects.size).toBe(1);
+    expect(f.job.status).toBe("SUCCEEDED");
+  });
   const invalidScopes = [
     { name: "another tenant and connection", foreignConnection: true, foreignSupplier: true },
     { name: "another connection of the same tenant", foreignConnection: true },

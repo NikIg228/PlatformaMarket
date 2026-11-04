@@ -37,22 +37,7 @@ const connectionSelect = {
   _count: { select: { jobs: true, webhookEvents: true, reconciliationEntries: true, externalReservations: true } },
 } satisfies Prisma.IntegrationConnectionSelect;
 
-const SENSITIVE_CONFIGURATION_KEY = /(^|_|-)(token|secret|password|passwd|api[-_]?key|access[-_]?key|private[-_]?key|client[-_]?secret|authorization|credential)(_|-|$)/i;
-
-function protectConfiguration(value: unknown): { publicValue: unknown; sensitiveValue: Record<string, unknown> } {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return { publicValue: value, sensitiveValue: {} };
-  const publicValue: Record<string, unknown> = {};
-  const sensitiveValue: Record<string, unknown> = {};
-  for (const [key, item] of Object.entries(value)) {
-    if (SENSITIVE_CONFIGURATION_KEY.test(key)) sensitiveValue[key] = item;
-    else if (item && typeof item === "object" && !Array.isArray(item)) {
-      const nested = protectConfiguration(item);
-      publicValue[key] = nested.publicValue;
-      if (Object.keys(nested.sensitiveValue).length > 0) sensitiveValue[key] = nested.sensitiveValue;
-    } else publicValue[key] = item;
-  }
-  return { publicValue, sensitiveValue };
-}
+import { protectConfiguration, publicConfiguration } from "./configuration-secrets";
 
 @Injectable()
 export class IntegrationsService {
@@ -64,7 +49,8 @@ export class IntegrationsService {
 
   async list(supplierOrganizationId: string, context: SupplierActorContext) {
     await this.access.assertCanManage(supplierOrganizationId, context);
-    return this.prisma.integrationConnection.findMany({ where: { supplierOrganizationId }, select: connectionSelect, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
+    const connections = await this.prisma.integrationConnection.findMany({ where: { supplierOrganizationId }, select: connectionSelect, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
+    return connections.map(publicConfiguration);
   }
 
   async onboardingReadiness(supplierOrganizationId: string, context: SupplierActorContext) {
@@ -107,7 +93,7 @@ export class IntegrationsService {
     await this.access.assertCanManage(supplierOrganizationId, context);
     const connection = await this.prisma.integrationConnection.findFirst({ where: { id: connectionId, supplierOrganizationId }, select: connectionSelect });
     if (!connection) throw new NotFoundException("Integration connection not found");
-    return connection;
+    return publicConfiguration(connection);
   }
 
   async create(supplierOrganizationId: string, input: CreateIntegrationConnectionInput, context: SupplierActorContext) {

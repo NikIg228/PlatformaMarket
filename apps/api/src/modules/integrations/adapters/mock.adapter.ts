@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { exactPriceMinor } from "./price-precision";
 import { createHash } from "node:crypto";
 import { asRecord, type AdapterResult, type CatalogPage, type IntegrationAdapter, type IntegrationAdapterContext, type InventoryPage, type PricePage } from "./integration-adapter";
 
@@ -45,8 +46,7 @@ export class MockIntegrationAdapter implements IntegrationAdapter {
     const currency = typeof context.configuration.currency === "string" ? context.configuration.currency : "KZT";
     const items = configured.flatMap((value, index) => {
       const item = asRecord(value);
-      const valueMinor = Number(item.valueMinor ?? item.priceMinor);
-      if (!Number.isFinite(valueMinor) || valueMinor < 0) return [];
+      const valueMinor = exactPriceMinor(item.valueMinor ?? item.priceMinor);
       return [{
         externalId: String(item.externalId ?? `mock-item-${index + 1}`),
         priceTypeId: typeof item.priceTypeId === "string" ? item.priceTypeId : undefined,

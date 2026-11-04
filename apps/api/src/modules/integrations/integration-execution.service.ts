@@ -123,9 +123,9 @@ export class IntegrationExecutionService {
         return { externalOrderId: result.externalId, ...result.data };
       }
       case "RESERVATION_CREATE":
-        return this.createReservation(payload, connection, context, adapter);
+        return this.createReservation({ ...payload, idempotencyKey: job.idempotencyKey }, connection, context, adapter);
       case "RESERVATION_RELEASE":
-        return this.releaseReservation(payload, connection, context, adapter);
+        return this.releaseReservation({ ...payload, idempotencyKey: job.idempotencyKey }, connection, context, adapter);
       case "WEBHOOK_PROCESS":
         return this.processWebhook(connection.id, payload);
       case "RECONCILIATION":
@@ -435,17 +435,15 @@ export class IntegrationExecutionService {
         );
         continue;
       }
-      const now = new Date();
       const freshnessPolicy = await this.freshness.resolvePolicy(
         supplierOrganizationId,
         "API",
         "PRICE",
       );
-      const freshnessExpiresAt = new Date(
-        now.getTime() + freshnessPolicy.staleAfterMinutes * 60_000,
-      );
       const changed = await this.prisma.$transaction(async (tx) => {
         await tx.$queryRaw`SELECT "id" FROM "SupplierOffer" WHERE "id" = ${target.offer!.id}::uuid FOR UPDATE`;
+        const now = new Date();
+        const freshnessExpiresAt = new Date(now.getTime() + freshnessPolicy.staleAfterMinutes * 60_000);
         const previous = await tx.offerPrice.findFirst({ where: { offerId: target.offer!.id, status: "ACTIVE" }, orderBy: [{ validFrom: "desc" }, { createdAt: "desc" }] });
         if (previous?.source === "MANUAL" && !syncOverride.override && configuration.allowOverwriteManual !== true)
           throw new PermanentIntegrationError("Ручная цена изменилась во время синхронизации. Повторите сверку");
@@ -458,7 +456,10 @@ export class IntegrationExecutionService {
         const previousTax = storedVat(previous?.taxSnapshot);
         if (previous && previous.amountMinor.eq(priceData.amountMinor) && previous.currency === item.currency &&
           JSON.stringify(previousTax?.selection ?? null) === JSON.stringify(declaration?.selection ?? null) &&
-          previousTax?.profile.version === declaration?.profile.version && previousTax?.ruleId === declaration?.ruleId) return false;
+          previousTax?.profile.version === declaration?.profile.version && previousTax?.ruleId === declaration?.ruleId) {
+          await tx.offerPrice.update({ where: { id: previous.id }, data: { lastConfirmedAt: now, freshnessExpiresAt } });
+          return false;
+        }
         await tx.offerPrice.updateMany({
           where: { offerId: target.offer!.id, status: "ACTIVE" },
           data: { status: "INACTIVE", validTo: now },

@@ -13,6 +13,13 @@ const context = {
 };
 
 describe("CustomApiIntegrationAdapter", () => {
+  it.each(["createReservation", "releaseReservation"] as const)("forwards stable %s identity in both HTTP body and header", async method => {
+    const request = vi.fn().mockResolvedValue(new Response(JSON.stringify({ externalId: "remote" })));
+    const adapter = new CustomApiIntegrationAdapter({ request } as never);
+    await adapter[method](context, { idempotencyKey: "reservation-job-key", quantity: 2 });
+    expect(request.mock.calls[0]?.[1].headers["idempotency-key"]).toBe("reservation-job-key");
+    expect(JSON.parse(request.mock.calls[0]?.[1].body)).toMatchObject({ idempotencyKey: "reservation-job-key", quantity: 2 });
+  });
   it("normalizes catalog, price and inventory contract pages", async () => {
     const request = vi
       .fn()
