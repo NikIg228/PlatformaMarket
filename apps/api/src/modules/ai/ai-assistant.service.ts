@@ -107,11 +107,12 @@ export class AiAssistantService {
     await this.enabled(context.organizationId);
     const conversation = await this.conversation(id, context);
     const inspection = this.safety.inspect(input.content);
+    const content = this.safety.redact(input.content);
     const userMessage = await this.prisma.aiMessage.create({
       data: {
         conversationId: id,
         role: "user",
-        content: this.safety.redact(input.content),
+        content,
         safety: inspection,
       },
     });
@@ -172,7 +173,7 @@ export class AiAssistantService {
         conversation.role as AiRole,
         context,
       );
-    const plan = this.tools.plan(conversation.role as AiRole, input.content);
+    const plan = this.tools.plan(conversation.role as AiRole, content);
     await this.tools.assertAuthorized(plan, {
       userId: context.actorId,
       organizationId: context.organizationId,
@@ -210,7 +211,7 @@ export class AiAssistantService {
       id,
       execution.id,
       plan,
-      input.content,
+      content,
       conversation.role as AiRole,
       context,
     );
@@ -246,16 +247,25 @@ export class AiAssistantService {
         role,
       },
     );
-    await this.prisma.aiToolExecution.update({
-      where: { id: execution.id },
+    const claimed = await this.prisma.aiToolExecution.updateMany({
+      where: {
+        id: execution.id,
+        conversationId,
+        organizationId: context.organizationId,
+        userId: context.actorId,
+        status: "AWAITING_CONFIRMATION",
+        requiresConfirmation: true,
+      },
       data: { status: "RUNNING", confirmedAt: new Date(), messageId },
     });
+    if (claimed.count !== 1)
+      throw new ConflictException("AI action has already been confirmed");
     return this.run(
       conversationId,
       execution.id,
       {
         name: execution.toolName,
-        input: execution.input as Record<string, unknown>,
+        input: this.safety.redactValue(execution.input) as Record<string, unknown>,
         requiresConfirmation: true,
       },
       "Подтверждаю действие",
@@ -278,15 +288,15 @@ export class AiAssistantService {
   ) {
     const startedAt = Date.now();
     try {
-      const result = await this.tools.execute(plan, {
+      const result = this.safety.redactValue(await this.tools.execute(plan, {
         userId: context.actorId,
         organizationId: context.organizationId,
         role,
-      });
+      }));
       const model = await this.openai
         .summarize({ role, question, toolName: plan.name, toolOutput: result })
         .catch(() => null);
-      const content = model?.text ?? this.localSummary(plan.name, result);
+      const content = this.safety.redact(model?.text ?? this.localSummary(plan.name, result));
       const message = await this.prisma.$transaction(async (tx) => {
         const created = await tx.aiMessage.create({
           data: {
@@ -328,7 +338,7 @@ export class AiAssistantService {
           durationMs: Date.now() - startedAt,
           error:
             error instanceof Error
-              ? error.message.slice(0, 500)
+              ? this.safety.redact(error.message).slice(0, 500)
               : "Unknown tool error",
         },
       });
