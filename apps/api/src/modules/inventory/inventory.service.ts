@@ -63,16 +63,22 @@ export class InventoryService {
 
   async createLot(supplierOrganizationId: string, input: CreateInventoryLotInput, context: SupplierActorContext) {
     await this.access.assertCanManage(supplierOrganizationId, context);
-    const balance = await this.prisma.inventoryBalance.findFirst({ where: { id: input.inventoryBalanceId, supplierOrganizationId } });
-    if (!balance) throw new NotFoundException("Inventory balance not found");
-    if (input.offerId) {
-      const offer = await this.prisma.supplierOffer.findFirst({ where: { id: input.offerId, supplierOrganizationId, productVariantId: balance.productVariantId } });
-      if (!offer) throw new NotFoundException("Supplier offer not found for this inventory balance");
-    }
-    const allocatedLots = await this.prisma.inventoryLot.aggregate({ where: { inventoryBalanceId: balance.id, status: { notIn: ["DEPLETED", "EXPIRED", "RECALLED"] } }, _sum: { quantityOnHand: true } });
-    if (Number(allocatedLots._sum.quantityOnHand ?? 0) + input.quantityOnHand > Number(balance.quantityOnHand)) throw new BadRequestException("Total lot quantity cannot exceed warehouse balance");
-    const quantityAvailable = input.quantityOnHand - input.quantityReserved;
     return this.prisma.$transaction(async (tx) => {
+      const locked = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM "InventoryBalance"
+        WHERE id = ${input.inventoryBalanceId}::uuid AND "supplierOrganizationId" = ${supplierOrganizationId}::uuid
+        FOR UPDATE
+      `;
+      if (!locked.length) throw new NotFoundException("Inventory balance not found");
+      const balance = await tx.inventoryBalance.findFirstOrThrow({ where: { id: input.inventoryBalanceId, supplierOrganizationId } });
+      if (input.offerId) {
+        const offer = await tx.supplierOffer.findFirst({ where: { id: input.offerId, supplierOrganizationId, productVariantId: balance.productVariantId } });
+        if (!offer) throw new NotFoundException("Supplier offer not found for this inventory balance");
+      }
+      // Read after the balance lock so a waiting creator sees the preceding committed lot.
+      const allocatedLots = await tx.inventoryLot.aggregate({ where: { inventoryBalanceId: balance.id, status: { notIn: ["DEPLETED", "EXPIRED", "RECALLED"] } }, _sum: { quantityOnHand: true } });
+      if (new Prisma.Decimal(allocatedLots._sum.quantityOnHand ?? 0).plus(input.quantityOnHand).gt(balance.quantityOnHand)) throw new BadRequestException("Total lot quantity cannot exceed warehouse balance");
+      const quantityAvailable = new Prisma.Decimal(input.quantityOnHand).minus(input.quantityReserved);
       const lot = await tx.inventoryLot.create({ data: {
         inventoryBalanceId: balance.id,
         supplierOrganizationId,
@@ -95,7 +101,7 @@ export class InventoryService {
       await tx.auditLog.create({ data: { ...context, action: "inventory.lot.created", entityType: "InventoryLot", entityId: lot.id, after: lot } });
       await tx.outboxEvent.create({ data: { aggregateType: "InventoryLot", aggregateId: lot.id, eventType: "InventoryLotCreated", payload: { supplierOrganizationId, lotId: lot.id, balanceId: balance.id } } });
       return lot;
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
   }
 
   async reserveForOrder(supplierOrganizationId: string, balanceId: string, input: CreateInventoryReservationInput, supplierOrderItemId: string, context: SupplierActorContext) {
