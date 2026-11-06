@@ -2174,6 +2174,8 @@ model ProductCandidate {
   @@index([supplierOrganizationId, status])
 }
 
+/// SQL migration 20261106000000 enforces finite, nonnegative quantities and
+/// available + reserved + safetyStock <= onHand (availability may be withheld).
 model InventoryBalance {
   id                     String                      @id @default(uuid()) @db.Uuid
   supplierOrganizationId String                      @db.Uuid
@@ -2256,6 +2258,7 @@ model DataOverride {
   @@index([status, validUntil])
 }
 
+/// SQL CHECKs enforce finite, nonnegative quantities and available + reserved <= onHand.
 model InventoryLot {
   id                      String                 @id @default(uuid()) @db.Uuid
   inventoryBalanceId      String                 @db.Uuid
@@ -2314,6 +2317,7 @@ model LotRecall {
   @@index([inventoryLotId, status])
 }
 
+/// SQL CHECK keeps quantity finite and strictly positive, including terminal reservations.
 model InventoryReservation {
   id                     String                     @id @default(uuid()) @db.Uuid
   inventoryBalanceId     String                     @db.Uuid
