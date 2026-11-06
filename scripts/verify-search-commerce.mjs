@@ -94,6 +94,33 @@ await post(
   `/suppliers/${supplierId}/inventory/overrides/${override.id}/cancel`,
 );
 
+// Legacy catalog fixtures have lots and registration certificates, but no
+// seller credentials. Exercise the ordinary review API before checkout.
+const credentialValidity = {
+  validFrom: new Date(Date.now() - 86_400_000).toISOString(),
+  validTo: new Date(Date.now() + 365 * 86_400_000).toISOString(),
+};
+for (const sellerId of [
+  "00000000-0000-4000-8000-000000000020",
+  "00000000-0000-4000-8000-000000000040",
+  "00000000-0000-4000-8000-000000000060",
+  "00000000-0000-4000-8000-000000000080",
+]) {
+  const credential = await post(`/compliance/organizations/${sellerId}/credentials`, {
+    type: "MEDICAL_DEVICE_SALE_NOTIFICATION",
+    number: "SEARCH-COMMERCE-TEST-NOTIFICATION",
+    issuer: "Isolated verification fixture",
+    ...credentialValidity,
+  });
+  if (credential.status !== "PENDING")
+    throw new Error("Submitted test credential must await operator review");
+  const reviewed = await post(`/compliance/credentials/${credential.id}/review`, {
+    status: "VERIFIED",
+  });
+  if (reviewed.status !== "VERIFIED")
+    throw new Error("Test seller credential was not verified");
+}
+
 const cart = await post(`/buyers/${buyerOrganizationId}/carts`, {
   currency: "KZT",
 });
