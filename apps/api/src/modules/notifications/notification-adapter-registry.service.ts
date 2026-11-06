@@ -2,6 +2,7 @@ import { Injectable, ServiceUnavailableException } from "@nestjs/common";
 import type { NotificationChannel } from "@prisma/client";
 import { HttpNotificationAdapter, InAppNotificationAdapter, WebhookNotificationAdapter } from "./notification-adapters";
 import { OutboundRequestGateway } from "../../platform/security/outbound-request.gateway";
+import { isLimitedTestStand, requireExternalIntegrations } from "../../platform/config/limited-stand";
 
 @Injectable()
 export class NotificationAdapterRegistry {
@@ -13,6 +14,7 @@ export class NotificationAdapterRegistry {
   }
   resolve(channel: NotificationChannel) {
     if (channel === "IN_APP") return this.inApp;
+    requireExternalIntegrations();
     if (channel === "WEBHOOK") return this.webhook;
     const prefix = channel === "EMAIL" ? "EMAIL" : "SMS";
     const endpoint = process.env[`${prefix}_PROVIDER_URL`];
@@ -21,6 +23,7 @@ export class NotificationAdapterRegistry {
   }
 
   capabilities() {
+    if (isLimitedTestStand()) return { channels: ["IN_APP"], emailProviderConfigured: false, smsProviderConfigured: false, webhookSigned: false };
     return { channels: ["IN_APP", "EMAIL", "SMS", "WEBHOOK"], emailProviderConfigured: Boolean(process.env.EMAIL_PROVIDER_URL), smsProviderConfigured: Boolean(process.env.SMS_PROVIDER_URL), webhookSigned: true };
   }
 }

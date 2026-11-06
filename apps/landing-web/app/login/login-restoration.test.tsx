@@ -37,11 +37,13 @@ vi.mock("@marketplace/ui", () => ({ DmButton: "button", DmField: "label", DmInpu
 vi.mock("../auth-components", () => ({ AuthBrand: "brand", AuthNotice: "notice" }));
 vi.mock("./login-heading", () => ({ LoginHeading: "heading" }));
 vi.mock("./workspace-choice", () => ({ LoginWorkspaceChoice: "choice" }));
+vi.mock("./mfa-step", () => ({ MfaStep: "mfa-step" }));
 vi.mock("../auth-client", async original => ({
   ...await original<typeof import("../auth-client")>(),
   resumeAuthSession: auth.resume, availableWorkspaces: auth.contexts, openWorkspace: auth.open, openPersonalWorkspace: auth.personal,
 }));
 import LoginPage from "./login-screen";
+import { MfaRequiredError } from "../auth-client";
 
 function render() {
   hooks.cursor = 0;
@@ -129,4 +131,27 @@ it("shows the form when personal entry has expired", async () => {
   auth.query.set("personal", "1");
   render(); flushEffects();
   await vi.waitFor(() => expect(find(render(), "form")).toBeDefined());
+});
+
+it("keeps a restored password session at MFA until an elevated token opens the workspace", async () => {
+  auth.resume.mockResolvedValue(session);
+  auth.contexts.mockRejectedValue(new MfaRequiredError());
+  render(); flushEffects();
+  await vi.waitFor(() => expect(find(render(), "mfa-step")).toBeDefined());
+  expect(find(render(), "form")).toBeUndefined();
+  expect(auth.open).not.toHaveBeenCalled();
+  auth.contexts.mockResolvedValue([{ organizationId: "org", organizationDisplayName: "Org", capabilities: ["BUYER"] }]);
+  const elevated = { ...session, accessToken: "elevated" };
+  await (find(render(), "mfa-step")?.onComplete as (value: typeof session) => Promise<void>)(elevated);
+  expect(auth.open).toHaveBeenCalledWith(elevated, "BUYER", "org", undefined);
+});
+
+it("can leave MFA to change account and never opens the previous workspace", async () => {
+  auth.resume.mockResolvedValue(session); auth.contexts.mockRejectedValue(new MfaRequiredError());
+  render(); flushEffects();
+  await vi.waitFor(() => expect(find(render(), "mfa-step")).toBeDefined());
+  (find(render(), "mfa-step")?.onCancel as () => void)();
+  expect(find(render(), "mfa-step")).toBeUndefined();
+  expect(find(render(), "form")).toBeDefined();
+  expect(auth.open).not.toHaveBeenCalled();
 });

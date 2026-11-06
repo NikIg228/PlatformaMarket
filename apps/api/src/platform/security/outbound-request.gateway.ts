@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { requireExternalIntegrations } from "../config/limited-stand";
 import { lookup } from "node:dns/promises";
 import { request as httpsRequest } from "node:https";
 import { BlockList, isIP } from "node:net";
@@ -339,6 +340,7 @@ export class OutboundRequestGateway {
   }
 
   async request(input: URL | string, options: OutboundRequestOptions = {}) {
+    requireExternalIntegrations();
     let url: URL;
     try {
       url = input instanceof URL ? new URL(input) : new URL(input);

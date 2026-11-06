@@ -1,0 +1,10 @@
+[Unit]
+Description=Resource boundary for isolated PlatformaMarket test stand
+
+[Slice]
+MemoryAccounting=yes
+MemoryHigh=3584M
+MemoryMax=4G
+CPUAccounting=yes
+CPUQuota=200%
+TasksMax=1024

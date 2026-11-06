@@ -1,4 +1,5 @@
 import { BadGatewayException, Injectable, ServiceUnavailableException } from "@nestjs/common";
+import { requireExternalIntegrations } from "../../../platform/config/limited-stand";
 import type { PaymentAdapterContext, PaymentAdapterResult, PaymentMoneyRequest, PaymentProviderAdapter, PaymentSessionRequest } from "./payment-adapter";
 
 type GatewayResponse = { externalId?: string; status?: string; checkoutUrl?: string; expiresAt?: string; data?: Record<string, unknown>; [key: string]: unknown };
@@ -8,6 +9,7 @@ export class HttpPaymentAdapter implements PaymentProviderAdapter {
   readonly code = "EXTERNAL";
 
   private async invoke(operation: string, context: PaymentAdapterContext, input: Record<string, unknown>) {
+    requireExternalIntegrations();
     const baseUrl = process.env.PAYMENT_GATEWAY_URL;
     const token = process.env.PAYMENT_GATEWAY_TOKEN;
     if (!baseUrl || !token) throw new ServiceUnavailableException("External payment gateway is not configured");

@@ -1,0 +1,139 @@
+name: platformamarket-stand
+
+x-runtime: &runtime
+  restart: unless-stopped
+  init: true
+  read_only: true
+  tmpfs: [/tmp]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  cgroup_parent: platformamarket.slice
+  networks: [market]
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "3" }
+
+services:
+  postgres:
+    <<: *runtime
+    image: ${POSTGRES_IMAGE:?Set pinned PostgreSQL image}
+    user: "70:70"
+    environment:
+      POSTGRES_USER: market_admin
+      POSTGRES_DB: market_stand
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg-admin-password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    command: [postgres, -c, ssl=on, -c, ssl_cert_file=/run/tls/server.crt, -c, ssl_key_file=/run/tls/server.key, -c, hba_file=/etc/postgresql/pg_hba.conf, -c, shared_buffers=64MB, -c, max_connections=40]
+    volumes:
+      - ${SHARED_DIR:?Set Market-only shared directory}/postgres:/var/lib/postgresql/data
+      - ${SHARED_DIR}/tls/postgres:/run/tls:ro
+      - ${SHARED_DIR}/pg-admin-password:/run/secrets/pg-admin-password:ro
+      - ${SHARED_DIR}/init-db.sql:/docker-entrypoint-initdb.d/01-market.sql:ro
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    tmpfs: [/tmp, "/var/run/postgresql:uid=70,gid=70"]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U market_admin -d market_stand"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    mem_limit: 384m
+    cpus: 0.5
+
+  redis:
+    <<: *runtime
+    image: ${REDIS_IMAGE:?Set pinned Redis image}
+    user: "999:1000"
+    command: [redis-server, /run/redis/redis.conf]
+    volumes:
+      - ${SHARED_DIR}/redis:/data
+      - ${SHARED_DIR}/redis.conf:/run/redis/redis.conf:ro
+      - ${SHARED_DIR}/tls/redis:/run/tls:ro
+    mem_limit: 128m
+    cpus: 0.25
+
+  clamav:
+    <<: *runtime
+    image: ${CLAMAV_IMAGE:?Set pinned ClamAV image with signature database}
+    user: "100:101"
+    entrypoint: [clamd, --foreground=true, --config-file=/etc/clamav/market-clamd.conf]
+    volumes:
+      - ./clamd.conf:/etc/clamav/market-clamd.conf:ro
+    tmpfs: [/tmp, "/run/clamav:uid=100,gid=101"]
+    healthcheck:
+      test: [CMD, clamdscan, --config-file=/etc/clamav/market-clamd.conf, --stream, /etc/hosts]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    mem_limit: 1280m
+    cpus: 0.5
+
+  api:
+    <<: *runtime
+    image: ${API_IMAGE:?Set accepted API image digest}
+    user: "1000:1000"
+    command: [/bin/sh, -c, "node node_modules/prisma/build/index.js migrate deploy --schema apps/api/prisma/schema.prisma && exec node apps/api/dist/src/main.js"]
+    env_file: ["${SHARED_DIR}/market.env"]
+    environment: { PROCESS_ROLE: api, NODE_EXTRA_CA_CERTS: /run/tls/ca.crt }
+    networks: { market: { ipv4_address: 172.30.90.10 } }
+    volumes:
+      - ${SHARED_DIR}/tls/ca.crt:/run/tls/ca.crt:ro
+      - ${SHARED_DIR}/files:/data/files
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+      clamav: { condition: service_healthy }
+    healthcheck:
+      test: [CMD, wget, -q, --spider, "http://127.0.0.1:4000/api/health/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    mem_limit: 1024m
+    cpus: 1
+    stop_grace_period: 45s
+
+  worker:
+    <<: *runtime
+    image: ${API_IMAGE}
+    user: "1000:1000"
+    command: [node, apps/api/dist/src/worker.js]
+    env_file: ["${SHARED_DIR}/market.env"]
+    environment: { PROCESS_ROLE: worker, NODE_EXTRA_CA_CERTS: /run/tls/ca.crt }
+    volumes:
+      - ${SHARED_DIR}/tls/ca.crt:/run/tls/ca.crt:ro
+      - ${SHARED_DIR}/files:/data/files
+    depends_on: { api: { condition: service_healthy } }
+    mem_limit: 640m
+    cpus: 0.5
+    stop_grace_period: 45s
+
+  web:
+    <<: *runtime
+    image: ${WEB_IMAGE:?Set accepted web image digest}
+    user: "1000:1000"
+    environment: { INTERNAL_API_URL: "http://api:4000/api" }
+    networks: { market: { ipv4_address: 172.30.90.11 } }
+    depends_on: { api: { condition: service_healthy } }
+    mem_limit: 384m
+    cpus: 0.5
+
+  stand-access:
+    <<: *runtime
+    image: ${GATE_IMAGE:?Set accepted stand-access image digest}
+    env_file: ["${SHARED_DIR}/stand.env"]
+    environment:
+      STAND_PRODUCT: "Market"
+      STAND_ORIGIN: ${MARKET_ORIGIN:?Set canonical HTTPS Market origin}
+      STAND_WEBHOOK_PATHS: "[]"
+      STAND_STATE_FILE: /state/attempts.json
+    networks: { market: { ipv4_address: 172.30.90.12 } }
+    volumes: ["${SHARED_DIR}/gate:/state"]
+    mem_limit: 128m
+    cpus: 0.25
+
+networks:
+  market:
+    internal: true
+    ipam:
+      config: [{ subnet: 172.30.90.0/24 }]

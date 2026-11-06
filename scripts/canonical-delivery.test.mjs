@@ -52,6 +52,14 @@ test("release rejects mixed origins and non-HTTPS settings", () => {
   }
 });
 
+test("limited stand release keeps HTTPS and go_live but forbids social configuration", () => {
+  const stand = { DEPLOYMENT_PROFILE: "go_live", LIMITED_TEST_STAND: "true", PUBLIC_WEB_URL: "https://stand.example.kz" };
+  verifyReleaseWebConfig(stand);
+  for (const delta of [{ LIMITED_TEST_STAND: "false" }, { LIMITED_TEST_STAND: "yes" }, { DEPLOYMENT_PROFILE: "pilot" }, { PUBLIC_WEB_URL: "http://stand.example.kz" }, { GOOGLE_CLIENT_ID: "client" }, { APPLE_CLIENT_ID: "client" }, { APPLE_REDIRECT_URI: "https://stand.example.kz/login" }]) {
+    assert.throws(() => verifyReleaseWebConfig({ ...stand, ...delta }));
+  }
+});
+
 test("CI proves pilot isolation before rebuilding for enabled promotion workspace", () => {
   const steps = load(read(".github/workflows/ci.yml")).jobs.verify.steps;
   const pilot = steps.findIndex(step => step.run === "npm run verify:web");

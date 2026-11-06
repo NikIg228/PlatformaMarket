@@ -4,6 +4,7 @@ import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import { PaymentSettlementService } from "./payment-settlement.service";
+import { isLimitedTestStand, requireExternalIntegrations } from "../../platform/config/limited-stand";
 
 export function paymentWebhookSecret(providerCode: string) {
   if (providerCode !== "MOCK" && process.env.PAYMENT_PROVIDER_MODE === "external") return process.env.PAYMENT_WEBHOOK_SECRET_EXTERNAL;
@@ -16,6 +17,7 @@ export class PaymentWebhooksService {
   constructor(private readonly prisma: PrismaService, private readonly settlement: PaymentSettlementService) {}
 
   async receive(providerCode: string, rawBody: Buffer, headers: Record<string, string | string[] | undefined>) {
+    requireExternalIntegrations();
     if (!rawBody || rawBody.length > 1_048_576) throw new BadRequestException("Payment webhook body is missing or exceeds 1 MB");
     const provider = await this.prisma.paymentProvider.findUnique({ where: { code: providerCode.toUpperCase() } });
     if (!provider || provider.status !== "ACTIVE") throw new UnauthorizedException("Unknown payment provider");
@@ -44,6 +46,7 @@ export class PaymentWebhooksService {
 
   @Cron("*/10 * * * * *")
   async retryInbox() {
+    if (isLimitedTestStand()) return;
     if (this.running) return;
     this.running = true;
     try {
@@ -53,6 +56,7 @@ export class PaymentWebhooksService {
   }
 
   async process(eventId: string) {
+    requireExternalIntegrations();
     const event = await this.prisma.paymentWebhookEvent.findUnique({ where: { id: eventId }, include: { provider: true } });
     if (!event || event.status === "PROCESSED" || event.signatureStatus !== "VERIFIED") return event;
     const claimed = await this.prisma.paymentWebhookEvent.updateMany({ where: { id: event.id, status: { in: ["RECEIVED", "FAILED"] } }, data: { status: "PROCESSING", attempt: { increment: 1 }, lastError: null } });

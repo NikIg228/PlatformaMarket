@@ -3,6 +3,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Injectable } from "@nestjs/common";
 import { access, mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { resolve, sep } from "node:path";
+import { isLimitedTestStand } from "../config/limited-stand";
 
 export type StoredObject = { key: string; size: number; contentType: string };
 
@@ -59,7 +60,7 @@ export class ObjectStorageService {
     try {
       return await readFile(this.safePath(key));
     } catch (error) {
-      if (this.driver !== "local") throw error;
+      if (this.driver !== "local" || isLimitedTestStand()) throw error;
       return readFile(resolve(process.cwd(), "apps/buyer-web/public", key));
     }
   }

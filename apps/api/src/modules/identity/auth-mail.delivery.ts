@@ -3,8 +3,10 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 import type { MarketplaceEnvironment } from "../../platform/config/environment";
+import { isLimitedTestStand } from "../../platform/config/limited-stand";
 
 export function authMailMode(config: MarketplaceEnvironment): "LOCAL_FILE" | "PROVIDER" | "UNAVAILABLE" {
+  if (config.LIMITED_TEST_STAND || isLimitedTestStand()) return "UNAVAILABLE";
   if (config.AUTH_LOCAL_MAIL_ENABLED) {
     if (config.NODE_ENV === "production" || !["127.0.0.1", "::1", "localhost"].includes(config.API_HOST)) throw new ServiceUnavailableException("Локальная доставка запрещена в этом окружении");
     return "LOCAL_FILE";

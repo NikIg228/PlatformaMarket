@@ -23,6 +23,8 @@ export class AuthRequestError extends Error {
   }
 }
 
+export class MfaRequiredError extends Error {}
+
 export type AuthFeedback = {
   kind: "error" | "success";
   title?: string;
@@ -224,7 +226,11 @@ export async function openWorkspace(
 export async function availableWorkspaces(session: AuthSession, capability?: AuthCapability): Promise<WorkspaceContext[]> {
   if (!session.activeOrganizationId && !session.organizationId) throw new Error("У аккаунта нет активной организации");
   const response = await fetch(`${apiUrl}/auth/workspaces`, { headers: { authorization: `Bearer ${session.accessToken}` }, cache: "no-store", signal: AbortSignal.timeout(15_000) });
-  if (!response.ok) throw new Error("Не удалось получить доступные организации. Повторите вход.");
+  if (!response.ok) {
+    const failure = await response.json().catch(() => null) as ApiErrorPayload | null;
+    if (response.status === 401 && failure?.message === "Multi-factor authentication is required") throw new MfaRequiredError();
+    throw new Error("Не удалось получить доступные организации. Повторите вход.");
+  }
   const choices = workspaceChoicesSchema.parse(await response.json()).filter(item => item.capabilities.length && (!capability || item.capabilities.includes(capability)));
   if (!choices.length) throw new Error("У аккаунта нет доступа к выбранному кабинету. Выберите доступную роль.");
   return choices;

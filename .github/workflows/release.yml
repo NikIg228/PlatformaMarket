@@ -50,12 +50,13 @@ jobs:
         env:
           DEPLOYMENT_PROFILE: ${{ vars.DEPLOYMENT_PROFILE }}
           PUBLIC_WEB_URL: ${{ vars.PUBLIC_WEB_URL }}
+          LIMITED_TEST_STAND: ${{ vars.LIMITED_TEST_STAND }}
           GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
           APPLE_CLIENT_ID: ${{ vars.APPLE_CLIENT_ID }}
           APPLE_REDIRECT_URI: ${{ vars.APPLE_REDIRECT_URI }}
         run: |
           case "$DEPLOYMENT_PROFILE" in pilot|go_live) ;; *) echo "DEPLOYMENT_PROFILE must be pilot or go_live" >&2; exit 1;; esac
-          for name in PUBLIC_WEB_URL GOOGLE_CLIENT_ID APPLE_CLIENT_ID APPLE_REDIRECT_URI; do
+          for name in PUBLIC_WEB_URL; do
             test -n "${!name}" || { echo "Missing repository variable: $name" >&2; exit 1; }
           done
           node scripts/verify-release-web-config.mjs

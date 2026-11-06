@@ -1,4 +1,5 @@
 import { createHmac, randomUUID } from "node:crypto";
+import { requireExternalIntegrations } from "../../platform/config/limited-stand";
 import type { OutboundRequestGateway } from "../../platform/security/outbound-request.gateway";
 
 export type NotificationMessage = { id: string; channel: "IN_APP" | "EMAIL" | "SMS" | "WEBHOOK"; destination?: string | null; subject: string; body: string; payload?: unknown };
@@ -17,6 +18,7 @@ export class MockNotificationAdapter implements NotificationAdapter {
 export class HttpNotificationAdapter implements NotificationAdapter {
   constructor(private readonly endpoint: string, private readonly provider: string, private readonly token?: string) {}
   async send(message: NotificationMessage) {
+    requireExternalIntegrations();
     const response = await fetch(this.endpoint, { method: "POST", headers: { "content-type": "application/json", ...(this.token ? { authorization: `Bearer ${this.token}` } : {}) }, body: JSON.stringify(message), signal: AbortSignal.timeout(10_000) });
     if (!response.ok) throw new Error(`${this.provider} returned HTTP ${response.status}`);
     return { externalMessageId: response.headers.get("x-message-id") ?? `${this.provider}-${randomUUID()}`, provider: this.provider, response: { status: response.status } };
@@ -27,6 +29,7 @@ export class WebhookNotificationAdapter implements NotificationAdapter {
   constructor(private readonly outbound: Pick<OutboundRequestGateway, "request">) {}
 
   async send(message: NotificationMessage) {
+    requireExternalIntegrations();
     if (!message.destination || !/^https?:\/\//.test(message.destination)) throw new Error("Webhook notification destination is missing or invalid");
     const body = JSON.stringify({ id: message.id, subject: message.subject, body: message.body, payload: message.payload });
     const secret = process.env.NOTIFICATION_WEBHOOK_SECRET ?? "local-webhook-secret";

@@ -10,6 +10,7 @@ import { calculateRefundAllocation } from "./payment-rules";
 import { MarketplaceAgreementsService } from "../agreements/marketplace-agreements.service";
 import { usableLotWhere } from "../inventory/lot-eligibility";
 import { assertPaymentSettlementPending, confirmedPaymentOperation, lockPaymentSettlement, recoverPaymentOperation } from "./payment-operation-recovery";
+import { requireExternalIntegrations } from "../../platform/config/limited-stand";
 
 @Injectable()
 export class PaymentSettlementService {
@@ -86,6 +87,7 @@ export class PaymentSettlementService {
   }
 
   async authorize(paymentIntentId: string, input: AuthorizePaymentInput, context: SupplierActorContext) {
+    requireExternalIntegrations();
     const intent = await this.get(paymentIntentId, context);
     const replay = intent.transactions.find(({ idempotencyKey, type }) => idempotencyKey === input.idempotencyKey && type === "AUTHORIZATION");
     if (replay) return intent;
@@ -120,6 +122,7 @@ export class PaymentSettlementService {
   }
 
   async capture(paymentIntentId: string, input: CapturePaymentInput, context: SupplierActorContext) {
+    requireExternalIntegrations();
     const intent = await this.get(paymentIntentId, context);
     const replay = intent.transactions.find(({ idempotencyKey, type }) => idempotencyKey === input.idempotencyKey && type === "CAPTURE");
     if (replay) return intent;
@@ -212,6 +215,7 @@ export class PaymentSettlementService {
   }
 
   async applyProviderWebhook(transactionId: string, status: "PENDING" | "PROCESSING" | "SUCCEEDED" | "FAILED" | "CANCELLED", payload: Record<string, unknown>) {
+    requireExternalIntegrations();
     return this.prisma.$transaction(async (tx) => {
       const transaction = await tx.paymentTransaction.findUnique({ where: { id: transactionId } });
       if (!transaction || transaction.status === "SUCCEEDED") return transaction;
@@ -288,6 +292,7 @@ export class PaymentSettlementService {
   }
 
   async cancel(paymentIntentId: string, input: CancelPaymentIntentInput, context: SupplierActorContext) {
+    requireExternalIntegrations();
     const intent = await this.get(paymentIntentId, context);
     const replay = intent.transactions.find(({ idempotencyKey, type }) => idempotencyKey === input.idempotencyKey && type === "VOID");
     const clientReplay = intent.transactions.find(({ type, ...transaction }) => type === "VOID" && this.clientReplay(transaction, input.idempotencyKey));
@@ -325,6 +330,7 @@ export class PaymentSettlementService {
   }
 
   async refund(allocationId: string, input: CreateRefundInput, context: SupplierActorContext) {
+    requireExternalIntegrations();
     const allocation = await this.prisma.paymentAllocation.findUnique({ where: { id: allocationId }, include: { paymentIntent: { include: { provider: true } }, supplierOrder: true, refunds: { where: { status: "COMPLETED" } }, payouts: true } });
     if (!allocation) throw new NotFoundException("Payment allocation not found");
     if (allocation.recipientOrganizationId !== context.organizationId && !(await this.isOperator(context.organizationId))) throw new ForbiddenException("Refund belongs to another supplier");
@@ -409,6 +415,7 @@ export class PaymentSettlementService {
   }
 
   async processPayout(payoutId: string, input: ProcessPayoutInput, context: SupplierActorContext) {
+    requireExternalIntegrations();
     const payout = await this.prisma.payout.findUnique({ where: { id: payoutId }, include: { merchantAccount: { include: { provider: true } }, paymentAllocation: { include: { paymentIntent: true } } } });
     if (!payout) throw new NotFoundException("Payout not found");
     if (payout.merchantAccount.organizationId !== context.organizationId && !(await this.isOperator(context.organizationId))) throw new ForbiddenException("Payout belongs to another supplier");
@@ -449,6 +456,7 @@ export class PaymentSettlementService {
   }
 
   async reconcile(paymentIntentId: string, context: SupplierActorContext) {
+    requireExternalIntegrations();
     const intent = await this.get(paymentIntentId, context);
     const allocationGross = intent.allocations.reduce((sum, allocation) => sum + BigInt(allocation.grossAmountMinor.toString()), 0n);
     const allocationInvariant = intent.allocations.every((allocation) => BigInt(allocation.grossAmountMinor.toString()) === BigInt(allocation.platformFeeMinor.toString()) + BigInt(allocation.netAmountMinor.toString()));
@@ -470,6 +478,7 @@ export class PaymentSettlementService {
   }
 
   async importReconciliation(input: PaymentReconciliationImportInput, context: SupplierActorContext) {
+    requireExternalIntegrations();
     if (!(await this.isOperator(context.organizationId))) throw new ForbiddenException("Marketplace operator access is required");
     const provider = await this.prisma.paymentProvider.findUnique({ where: { code: input.providerCode } });
     if (!provider) throw new NotFoundException("Payment provider not found");

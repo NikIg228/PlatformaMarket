@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { requireExternalIntegrations } from "../../platform/config/limited-stand";
 
 export type SignatureSessionRequest = {
   documentId: string;
@@ -16,6 +17,7 @@ export interface SignatureAdapter {
 
 export class MockSignatureAdapter implements SignatureAdapter {
   async createSession(request: SignatureSessionRequest): Promise<SignatureSessionResult> {
+    requireExternalIntegrations();
     return { externalSessionId: `mock-sign-${randomUUID()}`, signingUrl: null, status: request.method === "SIMPLE" ? "SIGNED" : "SESSION_CREATED", evidence: { adapter: "mock", checksumSha256: request.checksumSha256 } };
   }
 }
@@ -24,6 +26,7 @@ export class ConfiguredSignatureAdapter implements SignatureAdapter {
   constructor(private readonly gatewayUrl: string, private readonly gatewayToken?: string) {}
 
   async createSession(request: SignatureSessionRequest): Promise<SignatureSessionResult> {
+    requireExternalIntegrations();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15_000);
     const payload = {

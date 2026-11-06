@@ -1,11 +1,13 @@
 import { Injectable, ServiceUnavailableException } from "@nestjs/common";
 import type { DocumentSignatureMethod } from "@prisma/client";
 import { ConfiguredSignatureAdapter, MockSignatureAdapter } from "./signature-adapter";
+import { isLimitedTestStand, requireExternalIntegrations } from "../../platform/config/limited-stand";
 
 @Injectable()
 export class SignatureAdapterRegistry {
   private readonly mock = new MockSignatureAdapter();
   resolve(method: DocumentSignatureMethod) {
+    requireExternalIntegrations();
     if (["MOCK", "SIMPLE"].includes(method)) return this.mock;
     const url = process.env.SIGNATURE_GATEWAY_URL;
     if (!url && process.env.NODE_ENV !== "production") return this.mock;
@@ -14,6 +16,7 @@ export class SignatureAdapterRegistry {
   }
 
   capabilities() {
+    if (isLimitedTestStand()) return { methods: [], configuredExternalGateway: false };
     return { methods: ["MOCK", "SIMPLE", "EDS", "EGOV_QR", "EXTERNAL"], configuredExternalGateway: Boolean(process.env.SIGNATURE_GATEWAY_URL) };
   }
 }

@@ -8,6 +8,7 @@ import { useProductReturn } from "../use-product-return";
 import styles from "../auth-split.module.css";
 import { LoginHeading } from "./login-heading";
 import { LoginWorkspaceChoice } from "./workspace-choice";
+import { MfaStep } from "./mfa-step";
 
 import Script from "next/script";
 import { DmButton, DmField, DmInput, LoadingState } from "@marketplace/ui";
@@ -24,6 +25,7 @@ import {
   openPersonalWorkspace,
   availableWorkspaces,
   workspaceOptions, resumeAuthSession, type WorkspaceChoice,
+  MfaRequiredError,
 } from "../auth-client";
 
 declare global {
@@ -68,6 +70,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pendingSession, setPendingSession] = useState<AuthSession | null>(null);
+  const [mfaSession, setMfaSession] = useState<AuthSession | null>(null);
   const [choices, setChoices] = useState<WorkspaceChoice[]>([]);
   const [choiceIndex, setChoiceIndex] = useState(0);
   const [unavailable, setUnavailable] = useState(false);
@@ -85,7 +88,15 @@ export default function LoginPage() {
       if (!await openPersonalWorkspace(session.user.id, personalRequested ? undefined : returnTo)) throw new Error("Не удалось подтвердить личный вход.");
       return true;
     }
-    const contexts = await availableWorkspaces(session);
+    let contexts;
+    try { contexts = await availableWorkspaces(session); }
+    catch (cause) {
+      if (cause instanceof MfaRequiredError) {
+        if (expected === continuation.current) { setMfaSession(session); setPassword(""); }
+        return false;
+      }
+      throw cause;
+    }
     if (expected !== continuation.current) return false;
     const workspaces = workspaceOptions(contexts, returnTo);
     if (workspaces.length === 1) {
@@ -130,7 +141,7 @@ export default function LoginPage() {
 
   const switchAccount = () => {
     continuation.current += 1;
-    setPendingSession(null); setChoices([]); setUnavailable(false); setFallback(false);
+    setPendingSession(null); setMfaSession(null); setChoices([]); setUnavailable(false); setFallback(false);
     setEmail(""); setPassword(""); setFeedback(null);
     // Keep the destination and existing sessions; this explicit form does not auto-resume.
   };
@@ -207,8 +218,8 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
-    if (!restoring && !pendingSession) renderGoogle();
-  }, [restoring, pendingSession]);
+    if (!restoring && !pendingSession && !mfaSession) renderGoogle();
+  }, [restoring, pendingSession, mfaSession]);
 
   const apple = async () => {
     if (!window.AppleID || !hasApple) return;
@@ -254,8 +265,13 @@ export default function LoginPage() {
       </section>
       <section className={`loginPanel ${styles.loginPanel}`} aria-labelledby="login-title">
         <div className="loginCard">
-          <h2 id="login-title">{pendingSession ? "Выберите кабинет" : "Войдите в аккаунт"}</h2>
-          {!pendingSession ? <form className="emailLoginForm" onSubmit={emailLogin}>
+          <h2 id="login-title">{mfaSession ? (locale === "kk" ? "Кіруді растаңыз" : "Подтвердите вход") : pendingSession ? "Выберите кабинет" : "Войдите в аккаунт"}</h2>
+          {mfaSession ? <MfaStep session={mfaSession} locale={locale} onCancel={switchAccount} onComplete={async confirmed => {
+            const expected = continuation.current;
+            await continueSession(confirmed, expected);
+            if (expected === continuation.current) setMfaSession(null);
+          }} /> : null}
+          {!pendingSession && !mfaSession ? <form className="emailLoginForm" onSubmit={emailLogin}>
             <DmField label="Рабочий email" required>
               <DmInput
                 type="email"
@@ -297,7 +313,7 @@ export default function LoginPage() {
               </p>
             </div>
           </form> : null}
-          {hasSocialLogin && !pendingSession ? (
+          {hasSocialLogin && !pendingSession && !mfaSession ? (
             <>
               <div className="divider">
                 <span>или</span>
@@ -320,7 +336,7 @@ export default function LoginPage() {
               </div>
             </>
           ) : null}
-          {pendingSession ? <LoginWorkspaceChoice choices={choices} selected={choiceIndex} unavailable={unavailable}
+          {pendingSession && !mfaSession ? <LoginWorkspaceChoice choices={choices} selected={choiceIndex} unavailable={unavailable}
             busy={busy} onSelect={setChoiceIndex} onContinue={() => void chooseWorkspace()} onSwitchAccount={switchAccount} /> : null}
           {feedback ? <AuthNotice feedback={feedback} /> : null}
         </div>

@@ -51,6 +51,7 @@ const environmentSchema = z
       .enum(["development", "test", "production"])
       .default("development"),
     DEPLOYMENT_PROFILE: deploymentProfileSchema,
+    LIMITED_TEST_STAND: booleanFromString.default(false),
     PROCESS_ROLE: z.enum(["api", "worker", "all"]).default("api"),
     DATABASE_URL: z.string().min(1),
     API_HOST: z.string().default("0.0.0.0"),
@@ -135,6 +136,7 @@ const environmentSchema = z
     APP_SECURITY_ENCRYPTION_KEY: encryptionKeySchema.optional(),
     MEDIA_SIGNING_SECRET: z.string().min(32).optional(),
     OBJECT_STORAGE_DRIVER: z.enum(["local", "s3", "supabase"]).default("local"),
+    LOCAL_STORAGE_PATH: z.string().min(1).optional(),
     SUPABASE_URL: z.string().url().optional(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(20).optional(),
     S3_ENDPOINT: z.string().url().optional(),
@@ -149,7 +151,7 @@ const environmentSchema = z
     NCA_IDENTITY_CLASSPATH: z.string().min(1).optional(),
     NCA_IDENTITY_POLICY_PATH: z.string().min(1).optional(),
     NCA_IDENTITY_POLICY_SHA256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
-    PAYMENT_PROVIDER_MODE: z.enum(["mock", "external"]).default("mock"),
+    PAYMENT_PROVIDER_MODE: z.enum(["mock", "external", "disabled"]).default("mock"),
     PAYMENT_GATEWAY_URL: z.string().url().optional(),
     PAYMENT_GATEWAY_TOKEN: z.string().min(16).optional(),
     PAYMENT_GATEWAY_HEALTHCHECK_URL: z.string().url().optional(),
@@ -179,6 +181,18 @@ const environmentSchema = z
       .default("info"),
   })
   .superRefine((value, context) => {
+    if (value.LIMITED_TEST_STAND) {
+      if (value.NODE_ENV !== "production") context.addIssue({ code: "custom", path: ["LIMITED_TEST_STAND"], message: "Limited stand requires production security controls" });
+      if (value.PAYMENT_PROVIDER_MODE !== "disabled") context.addIssue({ code: "custom", path: ["PAYMENT_PROVIDER_MODE"], message: "Limited stand requires payments disabled" });
+      if (value.SOCIAL_AUTH_ENABLED) context.addIssue({ code: "custom", path: ["SOCIAL_AUTH_ENABLED"], message: "Social authentication is unavailable on the limited stand" });
+      if (value.OBJECT_STORAGE_DRIVER !== "local") context.addIssue({ code: "custom", path: ["OBJECT_STORAGE_DRIVER"], message: "Limited stand requires private local test storage" });
+      if (!value.LOCAL_STORAGE_PATH?.startsWith("/") || value.LOCAL_STORAGE_PATH === "/") context.addIssue({ code: "custom", path: ["LOCAL_STORAGE_PATH"], message: "Limited stand requires an explicit private absolute storage directory" });
+      for (const key of ["PAYMENT_GATEWAY_URL", "PAYMENT_GATEWAY_TOKEN", "PAYMENT_WEBHOOK_SECRET_EXTERNAL", "SIGNATURE_GATEWAY_URL", "SIGNATURE_GATEWAY_TOKEN", "SIGNATURE_CALLBACK_SECRET", "EMAIL_PROVIDER_URL", "EMAIL_PROVIDER_TOKEN", "SMS_PROVIDER_URL", "SMS_PROVIDER_TOKEN", "OPENAI_API_KEY", "SENTRY_DSN", "OTEL_EXPORTER_OTLP_ENDPOINT", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "S3_ENDPOINT", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY", "GOOGLE_CLIENT_IDS", "APPLE_CLIENT_IDS", "SIGNATURE_GATEWAY_HEALTHCHECK_URL", "PAYMENT_GATEWAY_HEALTHCHECK_URL", "EMAIL_PROVIDER_HEALTHCHECK_URL", "SMS_PROVIDER_HEALTHCHECK_URL"] as const) {
+        if (value[key]) context.addIssue({ code: "custom", path: [key], message: "External integration configuration is forbidden on the limited stand" });
+      }
+    } else if (value.PAYMENT_PROVIDER_MODE === "disabled") {
+      context.addIssue({ code: "custom", path: ["PAYMENT_PROVIDER_MODE"], message: "Disabled payments require explicit limited stand mode" });
+    }
     if (value.NODE_ENV === "production" && value.ACCESS_CONTROL_MODE !== "ROLE_BASED")
       context.addIssue({ code: "custom", path: ["ACCESS_CONTROL_MODE"], message: "Production requires role-based access control" });
     if (value.AUTH_LOCAL_MAIL_ENABLED || value.LOCAL_OPERATOR_PASSWORD_LOGIN_ENABLED) {
@@ -345,11 +359,11 @@ const environmentSchema = z
           message: "Media signing secret is required in production",
         });
       if (
-        value.OBJECT_STORAGE_DRIVER !== "s3" ||
+        !value.LIMITED_TEST_STAND && (value.OBJECT_STORAGE_DRIVER !== "s3" ||
         !value.S3_BUCKET ||
         !value.S3_ACCESS_KEY_ID ||
         !value.S3_SECRET_ACCESS_KEY ||
-        !value.S3_SERVER_SIDE_ENCRYPTION
+        !value.S3_SERVER_SIDE_ENCRYPTION)
       )
         context.addIssue({
           code: "custom",
@@ -358,9 +372,9 @@ const environmentSchema = z
             "Encrypted S3-compatible object storage is required in production",
         });
       if (
-        !value.SIGNATURE_GATEWAY_URL ||
+        !value.LIMITED_TEST_STAND && (!value.SIGNATURE_GATEWAY_URL ||
         !value.SIGNATURE_GATEWAY_TOKEN ||
-        !value.SIGNATURE_CALLBACK_SECRET
+        !value.SIGNATURE_CALLBACK_SECRET)
       )
         context.addIssue({
           code: "custom",
@@ -369,10 +383,10 @@ const environmentSchema = z
             "Authenticated external EDS gateway and signed callbacks are required in production",
         });
       if (
-        value.PAYMENT_PROVIDER_MODE !== "external" ||
+        !value.LIMITED_TEST_STAND && (value.PAYMENT_PROVIDER_MODE !== "external" ||
         !value.PAYMENT_GATEWAY_URL ||
         !value.PAYMENT_GATEWAY_TOKEN ||
-        !value.PAYMENT_WEBHOOK_SECRET_EXTERNAL
+        !value.PAYMENT_WEBHOOK_SECRET_EXTERNAL)
       )
         context.addIssue({
           code: "custom",
@@ -380,26 +394,26 @@ const environmentSchema = z
           message:
             "External payment gateway and signed provider webhooks are required in production",
         });
-      if (!value.EMAIL_PROVIDER_URL || !value.EMAIL_PROVIDER_TOKEN)
+      if (!value.LIMITED_TEST_STAND && (!value.EMAIL_PROVIDER_URL || !value.EMAIL_PROVIDER_TOKEN))
         context.addIssue({
           code: "custom",
           path: ["EMAIL_PROVIDER_URL"],
           message: "Transactional email provider is required in production",
         });
-      if (!value.SMS_PROVIDER_URL || !value.SMS_PROVIDER_TOKEN)
+      if (!value.LIMITED_TEST_STAND && (!value.SMS_PROVIDER_URL || !value.SMS_PROVIDER_TOKEN))
         context.addIssue({
           code: "custom",
           path: ["SMS_PROVIDER_URL"],
           message: "Transactional SMS provider is required in production",
         });
-      if (!value.NOTIFICATION_WEBHOOK_SECRET)
+      if (!value.LIMITED_TEST_STAND && !value.NOTIFICATION_WEBHOOK_SECRET)
         context.addIssue({
           code: "custom",
           path: ["NOTIFICATION_WEBHOOK_SECRET"],
           message:
             "Notification webhook signing secret is required in production",
         });
-      if (!value.SENTRY_DSN || !value.OTEL_EXPORTER_OTLP_ENDPOINT)
+      if (!value.LIMITED_TEST_STAND && (!value.SENTRY_DSN || !value.OTEL_EXPORTER_OTLP_ENDPOINT))
         context.addIssue({
           code: "custom",
           path: ["SENTRY_DSN"],

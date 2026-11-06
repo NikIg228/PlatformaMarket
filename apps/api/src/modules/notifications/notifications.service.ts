@@ -22,6 +22,7 @@ import { createHash } from "node:crypto";
 import { NotificationInboxReader } from "./notification-inbox";
 import type { notificationInboxQuerySchema } from "@marketplace/schemas";
 import type { z } from "zod";
+import { isLimitedTestStand, requireExternalIntegrations } from "../../platform/config/limited-stand";
 
 @Injectable()
 export class NotificationsService implements OnModuleInit {
@@ -139,6 +140,7 @@ export class NotificationsService implements OnModuleInit {
 
   async create(input: CreateNotificationInput, context: SupplierActorContext) {
     await this.assertOrganizationAccess(input.recipientOrganizationId, context);
+    if (input.channel !== "IN_APP") requireExternalIntegrations();
     if (input.recipientUserId && !await this.prisma.organizationMembership.findFirst({ where: { organizationId: input.recipientOrganizationId, userId: input.recipientUserId, status: "ACTIVE", user: { status: "ACTIVE" } }, select: { id: true } })) throw new NotFoundException("Active notification recipient not found");
     const idempotencyKey = `manual:${context.organizationId}:${context.actorId}:${createHash("sha256").update(input.idempotencyKey).digest("hex")}`;
     const requestHash = createHash("sha256").update(JSON.stringify(input)).digest("hex");
@@ -353,6 +355,7 @@ export class NotificationsService implements OnModuleInit {
   async processPending() {
     const notifications = await this.prisma.notification.findMany({
       where: {
+        ...(isLimitedTestStand() ? { channel: "IN_APP" as const } : {}),
         status: { in: ["PENDING", "FAILED"] },
         scheduledAt: { lte: new Date() },
       },

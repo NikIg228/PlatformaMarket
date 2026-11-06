@@ -8,9 +8,19 @@ import {
   openWorkspace,
   openPersonalWorkspace,
   workspaceOptions,
+  availableWorkspaces,
+  MfaRequiredError,
 } from "./auth-client";
 
 describe("landing auth contract", () => {
+  it("distinguishes MFA-required from an expired or invalid session", async () => {
+    const session = { accessToken: "password-only", activeOrganizationId: "org", user: { id: "user", displayName: "Test", email: "test@example.invalid" } };
+    const fetcher = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ message: "Multi-factor authentication is required" }), { status: 401 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ message: "Bearer token is invalid or expired" }), { status: 401 }));
+    vi.stubGlobal("fetch", fetcher);
+    await expect(availableWorkspaces(session)).rejects.toBeInstanceOf(MfaRequiredError);
+    await expect(availableWorkspaces(session)).rejects.not.toBeInstanceOf(MfaRequiredError);
+  });
   it("opens the personal cart on the unified app's relative buyer origin", async () => {
     vi.stubEnv("NEXT_PUBLIC_BUYER_APP_URL", "/");
     vi.resetModules();

@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { environment } from "../../platform/config/environment";
+import { isLimitedTestStand } from "../../platform/config/limited-stand";
 import { AiSafetyService } from "./ai-safety.service";
 
 type OpenAiResponse = { id?: string; output_text?: string; output?: Array<{ type?: string; content?: Array<{ type?: string; text?: string }> }>; usage?: Record<string, unknown> };
@@ -9,6 +10,7 @@ export class OpenAiResponsesService {
   constructor(private readonly safety: AiSafetyService) {}
 
   async summarize(input: { role: string; question: string; toolName: string; toolOutput: unknown }) {
+    if (isLimitedTestStand()) return null;
     const config = environment();
     if (!config.OPENAI_API_KEY) return null;
     const response = await fetch(`${config.OPENAI_BASE_URL.replace(/\/$/, "")}/responses`, {

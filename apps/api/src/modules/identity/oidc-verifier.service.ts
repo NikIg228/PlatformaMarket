@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { createPublicKey, type JsonWebKey } from "node:crypto";
 import jwt, { type JwtHeader, type JwtPayload } from "jsonwebtoken";
 import { environment } from "../../platform/config/environment";
+import { requireExternalIntegrations } from "../../platform/config/limited-stand";
 
 type Provider = "GOOGLE" | "APPLE";
 type VerifiedIdentity = { subject: string; email: string; emailVerified: boolean; displayName: string; profile: Record<string, unknown> };
@@ -35,6 +36,7 @@ export class OidcVerifierService {
   }
 
   async verify(provider: Provider, idToken: string): Promise<VerifiedIdentity> {
+    requireExternalIntegrations();
     const config = environment();
     if (!config.SOCIAL_AUTH_ENABLED) throw new UnauthorizedException("Social authentication is disabled");
     const audiences = this.audiences(provider);
