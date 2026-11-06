@@ -1,6 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { productFixture, choose, noOverflow, id, offerId } from "./supplier-products.fixture";
 test.use({ contextOptions: { reducedMotion: "reduce" } });
+const deploymentProfile = process.env.E2E_DEPLOYMENT_PROFILE ?? "pilot";
+if (!["pilot", "go_live"].includes(deploymentProfile)) throw new Error("E2E_DEPLOYMENT_PROFILE must match the frontend build: pilot or go_live");
+const promotionsEnabled = deploymentProfile === "go_live";
 
 for (const width of [1440, 390]) test(`shared focus keeps proposal search typing quiet and Tab visible ${width}`, async ({ page }, testInfo) => {
   await page.setViewportSize({ width, height: 900 });
@@ -80,13 +83,13 @@ const sections = [
   ["proposals", "Заявки на новые товары", "Найти заявку"], ["corrections", "Исправления карточек", "Предложить исправление"],
   ["inventory", "Остатки", "Поиск товара"],
 ] as const;
-for (const width of [1440, 390]) test(`five pilot product pages are reachable and usable at ${width}px`, async ({ page }, testInfo) => {
+for (const width of [1440, 390]) test(`five product pages are reachable and usable at ${width}px`, async ({ page }, testInfo) => {
   await page.setViewportSize({ width, height: 900 });
   const state = await productFixture(page);
   await page.goto("/supplier/products");
   const actions = page.getByRole("group", { name: "Действия с товарами" });
-  await expect(actions).toHaveAttribute("data-promotions", "false");
-  await expect(actions.getByRole("link")).toHaveCount(5);
+  await expect(actions).toHaveAttribute("data-promotions", String(promotionsEnabled));
+  await expect(actions.getByRole("link")).toHaveCount(promotionsEnabled ? 6 : 5);
   for (const [path, title, action] of sections) {
     await actions.locator(`a[href="/supplier/products/${path}"]`).focus(); await page.keyboard.press("Enter");
     await expect(page).toHaveURL(new RegExp(`/supplier/products/${path}$`));
@@ -110,14 +113,15 @@ test("product pages keep permission boundaries before business reads", async ({ 
   expect(state.unexpected).toEqual([]); expect(state.writes).toEqual([]);
 });
 
-test("pilot hides promotions and denies the direct route before business reads", async ({ page }) => {
+test("product promotions route respects the declared build profile", async ({ page }) => {
   const state = await productFixture(page);
   await page.goto("/supplier/products");
-  await expect(page.getByRole("group", { name: "Действия с товарами" }).getByRole("link", { name: "Акции", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("group", { name: "Действия с товарами" }).getByRole("link", { name: "Акции", exact: true })).toHaveCount(promotionsEnabled ? 1 : 0);
   await page.goto("/supplier/products/promotions?mode=new");
-  await expect(page.getByText("Акции недоступны в текущем профиле.", { exact: true })).toBeVisible();
+  if (promotionsEnabled) await expect(page.getByRole("heading", { name: "Создать акцию", exact: true })).toBeVisible();
+  else await expect(page.getByText("Акции недоступны в текущем профиле.", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Новая акция", exact: true })).toHaveCount(0);
-  expect(state.reads.some(path => path.startsWith("/promotions"))).toBe(false);
+  expect(state.reads.some(path => path.startsWith("/promotions"))).toBe(promotionsEnabled);
   expect(state.writes).toEqual([]); expect(state.unexpected).toEqual([]);
 });
 

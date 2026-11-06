@@ -27,6 +27,17 @@ function fixture(operator = false, status = "OPEN") {
 const input = { idempotencyKey: "request", body: "Проверьте, пожалуйста", isInternal: false, attachments: [] };
 
 describe("support workspace", () => {
+  it("adds bounded public previews only for tickets in the authorized page", async () => {
+    const { db, service } = fixture();
+    db.supportTicket.findMany.mockResolvedValue([{ id: "ticket-a" }, { id: "ticket-b" }] as never);
+    db.$queryRaw.mockResolvedValue([{ ticketId: "ticket-a", body: "Latest public reply", hasAttachments: false, createdAt: new Date("2026-11-06T00:00:00Z") }]);
+    const result = await service.list(context);
+    expect(result).toEqual([{ id: "ticket-a", lastPublicMessage: { body: "Latest public reply", hasAttachments: false, createdAt: "2026-11-06T00:00:00.000Z" } }, { id: "ticket-b", lastPublicMessage: null }]);
+    const query = db.$queryRaw.mock.calls[0];
+    expect(query[0].join(" ")).toContain('AND "isInternal" = false');
+    expect(query[1].values).toEqual(["ticket-a", "ticket-b"]);
+    expect(db.supportTicket.findMany.mock.calls[0][0].where.organizationId).toBe(context.organizationId);
+  });
   it("applies tenant, search and status before recent pagination; keeps the operator queue default", async () => {
     const { db, service } = fixture();
     await service.list(context, "OPEN", 50, { q: "SUP-1", sort: "recent" });
@@ -39,6 +50,7 @@ describe("support workspace", () => {
     db.supportMessage.findMany.mockResolvedValue([{ authorId: "operator" }, { authorId: "coworker" }, { authorId: "customer" }] as never);
     const result = await service.get("ticket", context);
     expect(result.messages.map(message => message.authorLabel)).toEqual(["Вы", "Сотрудник организации", "Поддержка"]);
+    expect(result.messages.map(message => message.authorKind)).toEqual(["SELF", "ORGANIZATION", "SUPPORT"]);
     expect(db.supportMessage.findMany.mock.calls[0][0].where).toEqual(expect.objectContaining({ ticketId: "ticket", isInternal: false }));
   });
   it("denies another tenant before any write", async () => {

@@ -14,7 +14,7 @@ export function IdentitySettings() {
   const organizationId = session?.activeOrganizationId ?? session?.organizationId;
   useEffect(() => { let active = true; setError(false); void api.getAccessPolicy().then(value => { if (active) setPolicy(value); }, () => { if (active) setError(true); }); return () => { active = false; }; }, [api, revision]);
   if (error) return <ErrorState description="Не удалось проверить права управления доступом." action={<DmButton onClick={() => setRevision(value => value + 1)}>Повторить</DmButton>} />;
-  if (!policy) return <LoadingState label="Проверяем доступ" />;
+  if (!policy) return <LoadingState label="Загружаем настройки доступа…" />;
   if (!organizationId) return <p>Войдите в аккаунт оператора с активной организацией.</p>;
-  return <PermissionsProvider permissions={policy.permissions} mode={policy.mode}><div className="mp-stack"><MemberManagement api={api} organizationId={organizationId} actorId={session?.user?.id} permissions={policy.permissions} /><SessionManagement api={api} currentSessionId={session?.sessionId} onCurrentRevoked={() => { clearAdminSession(); window.location.assign(workspacePath("ADMIN", "/login")); }} /></div></PermissionsProvider>;
+  return <PermissionsProvider permissions={policy.permissions} mode={policy.mode}><div className="mp-stack"><MemberManagement api={api} organizationId={organizationId} actorId={session?.user?.id} permissions={policy.permissions} /><SessionManagement api={api} currentSessionId={session?.sessionId} onCurrentRevoked={() => { if (session && clearAdminSession(session)) window.location.assign(workspacePath("ADMIN", "/login")); }} /></div></PermissionsProvider>;
 }

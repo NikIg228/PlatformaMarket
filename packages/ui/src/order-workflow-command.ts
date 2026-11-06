@@ -7,6 +7,8 @@ export class WorkflowCommandTracker {
   private pending: { signature: string; command: OrderWorkflowCommand } | null = null;
   constructor(private readonly key = () => crypto.randomUUID()) {}
 
+  retained() { return this.pending?.command ?? null; }
+
   command(action: WorkflowAction, version: number) {
     const signature = JSON.stringify(action);
     if (this.pending && this.pending.signature !== signature)

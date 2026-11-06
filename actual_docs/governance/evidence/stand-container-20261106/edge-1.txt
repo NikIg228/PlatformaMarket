@@ -1,0 +1,15 @@
+Market import ingress: maximum body accepted, one extra byte rejected
+Market: real Caddy edge checks PASS
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+Error: aborted
+    at abortIncoming (node:_http_server:921:17)
+    at socketOnClose (node:_http_server:914:3)
+    at Socket.emit (node:events:526:24)
+    at TCP.<anonymous> (node:net:362:12) {
+  code: 'ECONNRESET'
+}
+
+Node.js v24.22.2

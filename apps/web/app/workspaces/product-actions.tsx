@@ -9,7 +9,7 @@ import { DocumentAdd24Regular } from "@fluentui/react-icons/svg/document-add";
 import { DocumentEdit24Regular } from "@fluentui/react-icons/svg/document-edit";
 import { BoxMultiple24Regular } from "@fluentui/react-icons/svg/box-multiple";
 import { Tag24Regular } from "@fluentui/react-icons/svg/tag";
-import { supplierProductLinks } from "./supplier-product-pages";
+import { supplierProductLinks } from "./supplier-product-links";
 import styles from "./products.module.css";
 
 const sectionIcons = {

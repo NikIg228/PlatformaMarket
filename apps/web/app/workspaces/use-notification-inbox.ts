@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { NotificationInbox, NotificationInboxQuery, NotificationInboxItem } from "@marketplace/schemas";
-import { errorMessage } from "@marketplace/ui";
+import { errorMessage } from "@marketplace/ui/format";
 import { useWorkspace } from "./workspace";
 
 const changedEvent = "marketplace-notifications-read";

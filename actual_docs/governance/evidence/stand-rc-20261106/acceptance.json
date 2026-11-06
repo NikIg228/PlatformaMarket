@@ -1,0 +1,87 @@
+{
+  "base": "f4116d310711c9b59e8d61e21950c89af8137aaa",
+  "buildId": "XHqaH26Aifr6k6_l-ayeh",
+  "profile": "go_live",
+  "status": "LOCAL_PASS_CI_PENDING",
+  "browser": {
+    "canonical": {
+      "uniquePassed": 123,
+      "runs": [
+        {
+          "attempt": 1,
+          "passed": 110,
+          "failed": 13
+        },
+        {
+          "attempt": 2,
+          "passed": 7,
+          "failed": 6
+        },
+        {
+          "attempt": 3,
+          "passed": 5,
+          "failed": 1
+        },
+        {
+          "attempt": 4,
+          "explicitlyAuthorized": true,
+          "passed": 1,
+          "failed": 0
+        }
+      ]
+    },
+    "resourceStatus": {
+      "passed": 4
+    },
+    "sessions": {
+      "passed": 6,
+      "limits": "Synthetic receipts; operator UI remains Russian; mobile browser locale kk-KZ."
+    },
+    "registration": {
+      "passed": 2,
+      "database": "dentmarket_audit_20260914",
+      "mail": "LOCAL_FILE",
+      "limits": "Synthetic owned users; no external email; existing registration text remains Russian on lang=kk route."
+    },
+    "lazy": {
+      "passed": 6,
+      "additionalInspectorRecovery": 2,
+      "limits": "Real production chunks, synthetic API fixtures, no business writes."
+    }
+  },
+  "logs": [
+    {
+      "localPath": ".tmp/stand-rc-kk-20261106/build-resume.log",
+      "sha256": "8d87173b1defc665b3767ef842da9624e030247008d8f594761521a9b882453b"
+    },
+    {
+      "localPath": ".tmp/stand-rc-kk-20261106/promotions-authorized-4.log",
+      "sha256": "7dd59390bc71e09121e31daf0ceced221a9a0a63a51b26c7f67255a7dd6fbce7"
+    },
+    {
+      "localPath": ".tmp/stand-rc-kk-20261106/registration-browser-2.log",
+      "sha256": "e677574d7e15566e45e2e329fb54f5035eb77fbbbd7316d294d8275615bf900c"
+    },
+    {
+      "localPath": ".tmp/stand-rc-kk-20261106/registration-browser-3.log",
+      "sha256": "b31d3919dad340f81f301ff7dbe3f7540bd37fc6d9b9481e396a46935c7bd55e"
+    },
+    {
+      "localPath": ".tmp/stand-rc-kk-20261106/lazy-browser-1.log",
+      "sha256": "853c755590ddc10536ae76bec797e95ab91a033cb9ffb94beadf4260b4ce3eb5"
+    },
+    {
+      "localPath": ".tmp/stand-rc-kk-20261106/lazy-browser-2.log",
+      "sha256": "38f843fcaebfac82abebd446041f55d3840da870c8b30211550cdc8f9a769026"
+    },
+    {
+      "localPath": ".tmp/stand-rc-kk-20261106/inspector-browser-1.log",
+      "sha256": "1a92e93f12627f08d3a8debe7f380bed1a1df65e39ba22d98f2294757dde737e"
+    },
+    {
+      "localPath": ".tmp/stand-rc-kk-20261106/bundle-resume.log",
+      "sha256": "8b80c5e791496da0ff872557db5bf67c0fcf7fd0dfb9bb432a9d6c632da49a3b"
+    }
+  ],
+  "sourceFingerprint": "2eb30db74623080e0d615c2d153c1b5dc0b32e6d3697ccda0e89b387bda56410"
+}

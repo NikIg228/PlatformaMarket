@@ -1,5 +1,0 @@
-{
-  "installCommand": "cd ../.. && npm ci",
-  "buildCommand": "cd ../.. && npm run build --workspace=@marketplace/buyer-web",
-  "outputDirectory": ".next"
-}

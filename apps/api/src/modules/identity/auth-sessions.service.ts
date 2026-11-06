@@ -15,6 +15,9 @@ import { setTimeout as delay } from "node:timers/promises";
 import { verifyProfileEmailChange } from "./profile-email-verification";
 import { lockSessionRows, logoutTargetSession } from "./session-logout";
 import type { SessionLogoutRequest } from "@marketplace/schemas";
+import { unlinkSocialIdentity } from "./social-unlink";
+import { lockIdentityUser, requestRegistrationEmailCorrection, verifyRegistrationEmailCorrection } from "./registration-email";
+import type { RegistrationEmailCorrection } from "@marketplace/schemas";
 
 type RequestMetadata = { ipAddress?: string; userAgent?: string; correlationId?: string };
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -164,17 +167,26 @@ export class AuthSessionsService {
     let onboarding: { organizationId?: string; capability?: string; organizationDisplayName?: string } | null = null;
     let verifiedUser = token.user;
     await this.prisma.$transaction(async (tx) => {
+      await lockIdentityUser(tx, token.userId);
+      const currentUser = await tx.user.findUnique({ where: { id: token.userId } });
+      if (!currentUser || currentUser.status !== "ACTIVE") throw new UnauthorizedException("Ссылка подтверждения недействительна или истекла");
       const claimed = await tx.emailAuthToken.updateMany({ where: { id: token.id, consumedAt: null, expiresAt: { gt: new Date() } }, data: { consumedAt: new Date() } });
       if (claimed.count !== 1) throw new UnauthorizedException("Ссылка подтверждения уже использована или истекла");
       if (token.metadata && typeof token.metadata === "object" && !Array.isArray(token.metadata) && token.metadata.purpose === "profile-email") {
         verifiedUser = await verifyProfileEmailChange(tx, token);
+      } else if (token.metadata && typeof token.metadata === "object" && !Array.isArray(token.metadata) && token.metadata.purpose === "registration-email") {
+        verifiedUser = await verifyRegistrationEmailCorrection(tx, token, currentUser);
       } else {
-        await tx.user.update({ where: { id: token.userId }, data: { emailVerifiedAt: new Date(), failedLoginAttempts: 0, lockedUntil: null } });
+        verifiedUser = await tx.user.update({ where: { id: token.userId }, data: { emailVerifiedAt: new Date(), failedLoginAttempts: 0, lockedUntil: null } });
       }
-    });
-    if (registrationToken) onboarding = await this.onboarding.claim(registrationToken, { id: token.user.id, email: token.user.email, displayName: token.user.displayName });
+      if (registrationToken) onboarding = await this.onboarding.claim(registrationToken, { id: verifiedUser.id, email: verifiedUser.email, displayName: verifiedUser.displayName }, tx);
+    }, { maxWait: 15_000, timeout: 45_000 });
     const result = await this.passwordSession(verifiedUser, metadata);
     return { ...result, ...(onboarding ?? {}), verified: true };
+  }
+
+  correctRegistrationEmail(input: RegistrationEmailCorrection) {
+    return requestRegistrationEmailCorrection(this.prisma, input);
   }
 
   private async passwordSession(user: { id: string; email: string; displayName: string }, metadata: RequestMetadata, preferredOrganizationId?: string, operatorPassword = false) {
@@ -476,12 +488,6 @@ export class AuthSessionsService {
   }
 
   async unlink(userId: string | undefined, provider: "GOOGLE" | "APPLE") {
-    if (typeof userId !== "string" || !userId.trim()) throw new UnauthorizedException("Войдите в аккаунт");
-    const identities = await this.prisma.externalIdentity.findMany({ where: { userId } });
-    if (identities.length <= 1) throw new ConflictException("The only sign-in method cannot be unlinked");
-    const identity = identities.find((item) => item.provider === provider);
-    if (!identity) throw new NotFoundException("Social identity not found");
-    await this.prisma.$transaction([this.prisma.externalIdentity.delete({ where: { id: identity.id } }), this.prisma.authSession.updateMany({ where: { userId, authMethods: { has: provider.toLowerCase() }, status: "ACTIVE" }, data: { status: "REVOKED", revokedAt: new Date(), revokeReason: "identity_unlinked" } }), this.prisma.auditLog.create({ data: { actorId: userId, action: "identity.social.unlinked", entityType: "ExternalIdentity", entityId: identity.id, before: { provider } } })]);
-    return { unlinked: true, provider };
+    return unlinkSocialIdentity(this.prisma, userId, provider);
   }
 }

@@ -1,5 +1,11 @@
 # Импорт, ERP и источники данных
 
+> Профильный технический справочник. Действующие требования и статусы —
+> [roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md), открытые условия —
+> [OPEN_QUESTIONS](../OPEN_QUESTIONS.md). Датированные описания ниже не создают
+> отдельный план и не переопределяют поздние решения.
+
+
 ## Действующие требования 29.10.2026
 
 Self-service wizard обеих ролей с test/capabilities/mapping/полезным first sync,
@@ -14,8 +20,8 @@ CRM exchange опционален, проверяет Organization↔Business и
 назначенным CRM-ролям без отдельного Market-login требуют service access/revoke,
 не public link. Market финпанель не экспортируется. Источник: §20/23, R2/R3/R7.
 
-Полный контракт — [срез объединённого ТЗ](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md);
-[открытая подготовка](../governance/ROADMAP-QUESTIONS-AND-DECISIONS.md#unified-open).
+Полный контракт — [срез объединённого ТЗ](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#approved-requirements);
+[открытая подготовка](../OPEN_QUESTIONS.md).
 Перенос требований не является реализацией или новой приёмкой.
 
 ## Локальные гарантии существующих адаптеров — 04.11.2026

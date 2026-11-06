@@ -392,11 +392,12 @@ export function SupplierControls() {
                   name="minimumQuantity"
                   type="number"
                   min="0.000001"
+                  step="0.000001"
                   required
                 />
               </DmField>
               <DmField label="До количества">
-                <DmInput name="maximumQuantity" type="number" min="0.000001" />
+                <DmInput name="maximumQuantity" type="number" min="0.000001" step="0.000001" />
               </DmField>
               <DmField label="Цена, тиын" required>
                 <DmInput name="unitPriceMinor" type="number" min="0" required />
@@ -425,6 +426,7 @@ export function SupplierControls() {
                   name="minimumQuantity"
                   type="number"
                   min="0.000001"
+                  step="0.000001"
                   defaultValue="1"
                 />
               </DmField>
@@ -446,6 +448,7 @@ export function SupplierControls() {
                   name="quantity"
                   type="number"
                   min="0.000001"
+                  step="0.000001"
                   defaultValue="20"
                   required
                 />

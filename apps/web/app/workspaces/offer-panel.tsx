@@ -1,5 +1,5 @@
 "use client";
-import { ActionFeedback } from "@marketplace/ui";
+import { ActionFeedback } from "@marketplace/ui/action-feedback";
 import { dmLinkButtonProps } from "@marketplace/ui/link-button";
 import { DmAction } from "@marketplace/ui/controls";
 import Link from "next/link";
@@ -8,22 +8,31 @@ import { useEffect, useRef, useState } from "react";
 import type { WorkspaceOffer } from "@marketplace/schemas";
 import { frontendFeatures } from "@marketplace/api-client";
 import { OverlayDrawer, DrawerHeader, DrawerHeaderTitle, DrawerBody, DrawerFooter, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem, MenuItemLink } from "@fluentui/react-components";
-import { DmButton, StatusTag, ProductThumbnail, usePermissions, useUnsavedChanges, formatStatus, formatMoney, formatDate } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/controls";
+import { StatusTag } from "@marketplace/ui/primitives";
+import { ProductThumbnail, useUnsavedChanges } from "@marketplace/ui/product-workflow";
+import { usePermissions } from "@marketplace/ui/permissions";
+import { formatStatus, formatDate } from "@marketplace/ui/format";
+import { formatMoney } from "@marketplace/ui/money";
 import { Dismiss24Regular } from "@fluentui/react-icons/svg/dismiss";
 import { MoreHorizontal24Regular } from "@fluentui/react-icons/svg/more-horizontal";
 import { Tag24Regular } from "@fluentui/react-icons/svg/tag";
 import { DocumentEdit24Regular } from "@fluentui/react-icons/svg/document-edit";
 import { VehicleTruck24Regular } from "@fluentui/react-icons/svg/vehicle-truck";
-import { OfferPriceEditor } from "./offer-price-editor";
-import { OfferDeliveryEditor } from "./offer-delivery-editor";
-import { OfferSettingsEditor } from "./offer-settings-editor";
+import type { OfferEditorProps } from "./offer-editor-shared";
+import { deferredOffer } from "./deferred-offer";
 import { offerAttention } from "./offer-summary";
 import local from "./offer-panel.module.css";
 
 type Mode = "overview" | "price" | "delivery" | "packaging" | "publication";
 const titles: Record<Mode, string> = { overview: "Предложение", price: "Изменение цены", delivery: "Доставка", packaging: "Упаковка предложения", publication: "Публикация" };
 const sourceLabel = (source: string) => ({ MANUAL: "Ручной ввод", IMPORT: "Импорт", API: "API", ERP: "ERP" }[source] ?? formatStatus(source));
-export function OfferPanel({ offer, onClose, onChanged, initiallyEditing = false }: { offer: WorkspaceOffer | null; onClose: () => void; onChanged: () => Promise<void>; initiallyEditing?: boolean }) {
+export type OfferPanelProps = { offer: WorkspaceOffer | null; onClose: () => void; onChanged: () => Promise<void>; initiallyEditing?: boolean };
+const editorLoading = { label: "Загружаем редактор", cancel: (props: OfferEditorProps) => props.onCancel() };
+const OfferPriceEditor = deferredOffer(() => import("./offer-price-editor").then(module => module.OfferPriceEditor), editorLoading);
+const OfferDeliveryEditor = deferredOffer(() => import("./offer-delivery-editor").then(module => module.OfferDeliveryEditor), editorLoading);
+const OfferSettingsEditor = deferredOffer<OfferEditorProps & { mode: "packaging" | "publication" }>(() => import("./offer-settings-editor").then(module => module.OfferSettingsEditor), editorLoading);
+export function OfferPanel({ offer, onClose, onChanged, initiallyEditing = false }: OfferPanelProps) {
   const has = usePermissions();
   const [mode, setMode] = useState<Mode>(initiallyEditing ? "price" : "overview"), [dirty, setDirty] = useState(false);
   const [locked, setLocked] = useState(false), [footer, setFooter] = useState<HTMLElement | null>(null), [notice, setNotice] = useState(""), [refreshError, setRefreshError] = useState(false);

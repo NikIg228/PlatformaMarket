@@ -2,7 +2,7 @@
 
 ## Новый обязательный scope 29.10.2026
 
-[Требования Market](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md#spec-30) расширяют применимую матрицу R9:
+[Требования Market](../architecture/MARKET_TARGET_CONTRACTS.md) расширяют применимую матрицу R9:
 семь P1–P7 с отдельными bank/fiscal/refund/reconciliation receipts, СДЭК/Жанапост/
 supplier delivery/pickup, служебные внешние уведомления, источник актуального
 директора, ERP self-service, desktop/mobile EDS, web/iOS/Android/device и RU/KK.
@@ -14,7 +14,7 @@ RTO≤2ч/RPO обычных≤5мин имеют собственные receipt
 
 ## Место в production roadmap — 2026-10-06
 
-Цель и состав запуска определяются [описанием проекта](../PROJECT_OVERVIEW.md)
+Цель и состав запуска определяются [описанием проекта](../../README.md#functional-state)
 и [roadmap R1/R9](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
 Этот runbook сохраняет критерии выбранного runtime и внешние evidence contracts;
 он не является очередью реализации и не разрешает подключение сервисов сам по себе.

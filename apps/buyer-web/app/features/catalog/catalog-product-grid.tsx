@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { frontendFeatures } from "@marketplace/api-client";
 import { DmButton } from "@marketplace/ui/actions";
@@ -44,7 +45,7 @@ export function CatalogProductGrid({ products, state, returnUrl, imageSource, st
   };
   return <>
     {enabled && promotions.error ? <div className={styles.promotionError}><span>Акции временно недоступны. Товары можно просматривать.</span><DmButton appearance="subtle" onClick={promotions.retry}>Повторить загрузку акций</DmButton></div> : null}
-    {enabled && promotions.loading ? <p role="status">Загружаем акции…</p> : null}
+    {enabled && promotions.loading ? <LoadingState presentation="inline" label="Загружаем акции…" /> : null}
     <div ref={ref} className={styles.grid}>
       {products.map((product, index) => <Fragment key={product.id}>
         {storefront ? <StorefrontProductCard product={product} returnUrl={returnUrl} imageSource={imageSource} locale={state.lang ?? "ru"} /> : <CompactProductCard product={product} returnUrl={returnUrl} imageSource={imageSource} />}

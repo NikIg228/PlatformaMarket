@@ -1,0 +1,3 @@
+Market import ingress: maximum body accepted, one extra byte rejected
+Market: real Caddy edge checks PASS
+Gate outage: fail-closed PASS

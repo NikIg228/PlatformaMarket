@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
 import { useCallback } from "react";
-import { DmHeading, DmButton, ErrorState, LoadingState } from "@marketplace/ui";
+import { DmHeading } from "@marketplace/ui/heading";
+import { DmButton } from "@marketplace/ui/controls";
+import { ErrorState, LoadingState } from "@marketplace/ui/primitives";
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
 import { ResourceStatus } from "./resource-status";

@@ -3,7 +3,7 @@ import type { ClientTransport } from "../transport-contract";
 
 export function createSupportTicket(transport: ClientTransport, input: import("@marketplace/schemas").CreateSupportTicketInput) { return transport.post<import("@marketplace/schemas").SupportTicketSummary>("/support/tickets", input); }
 
-export function supportTickets(transport: ClientTransport, status?: string, offset = 0, options: { q?: string; sort?: "queue" | "recent" } = {}) { const query = new URLSearchParams({ offset: String(offset) }); if (status) query.set("status", status); if (options.q) query.set("q", options.q); if (options.sort) query.set("sort", options.sort); return transport.get<import("@marketplace/schemas").SupportTicketSummary[]>(`/support/tickets?${query}`); }
+export function supportTickets(transport: ClientTransport, status?: string, offset = 0, options: { q?: string; sort?: "queue" | "recent" } = {}) { const query = new URLSearchParams({ offset: String(offset) }); if (status) query.set("status", status); if (options.q) query.set("q", options.q); if (options.sort) query.set("sort", options.sort); return transport.get<import("@marketplace/schemas").SupportTicketListItem[]>(`/support/tickets?${query}`); }
 
 export function supportTicket(transport: ClientTransport, id: string, beforeMessageId?: string) { return transport.get<import("@marketplace/schemas").SupportTicketDetail>(`/support/tickets/${encodeURIComponent(id)}${beforeMessageId ? `?beforeMessageId=${encodeURIComponent(beforeMessageId)}` : ""}`); }
 

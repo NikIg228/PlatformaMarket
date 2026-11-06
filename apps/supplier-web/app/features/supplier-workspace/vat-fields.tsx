@@ -1,6 +1,7 @@
 "use client";
 import { VAT_RATE_RULES, vatSelectionSchema, type VatProfile, type VatSelection } from "@marketplace/schemas";
-import { DmDropdown, DmField, DmInput } from "@marketplace/ui";
+import { DmDropdown } from "@marketplace/ui/dm-dropdown";
+import { DmField, DmInput } from "@marketplace/ui/controls";
 import styles from "./product-forms.module.css";
 
 export type VatDraft = { mode: VatSelection["mode"] | ""; rate: string; basis: string };

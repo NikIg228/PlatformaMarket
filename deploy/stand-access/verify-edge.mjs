@@ -15,9 +15,15 @@ const keep = process.argv.includes('--serve');
 const product = process.env.STAND_TEST_PRODUCT || 'CRM';
 const password = 'isolated-preview-password';
 const app = createServer(async (req, res) => {
-  let body = ''; for await (const chunk of req) body += chunk;
-  res.setHeader('Cache-Control', 'public, max-age=3600');
-  res.setHeader('Content-Type', 'text/plain'); res.end(`private-upstream:${req.url}:${body}`);
+  try {
+    let body = ''; for await (const chunk of req) body += chunk;
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.setHeader('Content-Type', 'text/plain'); res.end(`private-upstream:${req.url}:${body}`);
+  } catch (error) {
+    // Caddy may close the upstream stream after rejecting an oversized body.
+    if (error.code !== 'ECONNRESET') throw error;
+    res.destroy();
+  }
 });
 app.listen(0, '127.0.0.1'); await once(app, 'listening');
 const reserve = createServer(); reserve.listen(0, '127.0.0.1'); await once(reserve, 'listening');
@@ -70,6 +76,22 @@ try {
   assert.equal((await request('/api/integrations/test-webhook', { method: 'POST', body: 'signature-body' })).status, 200);
   assert.equal((await request('/api/integrations/test-webhook')).status, 401);
   assert.equal((await request('/api/integrations/test-webhook/extra', { method: 'POST' })).status, 401);
+  if (product === 'Market') {
+    const maxImportJson = 26_797_740;
+    const maximum = await request('/api/import-boundary', {
+      method: 'POST', headers: { cookie: session, 'content-type': 'application/json' },
+      body: Buffer.alloc(maxImportJson, 32),
+    });
+    assert.equal(maximum.status, 200, 'maximum import JSON passes ingress');
+    assert.equal((await maximum.text()).length, 'private-upstream:/api/import-boundary:'.length + maxImportJson);
+    const oversized = await request('/api/import-boundary', {
+      method: 'POST', headers: { cookie: session, 'content-type': 'application/json' },
+      body: Buffer.alloc(maxImportJson + 1, 32),
+    });
+    assert.equal(oversized.status, 413, 'one byte beyond ingress limit is rejected');
+    await oversized.text();
+    console.log('Market import ingress: maximum body accepted, one extra byte rejected');
+  }
   console.log(`${product}: real Caddy edge checks PASS`);
   if (keep) {
     console.log(`ISOLATED_PREVIEW_URL=${origin}`);

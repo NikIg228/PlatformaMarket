@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 import { DmAction } from "@marketplace/ui/controls";
 
 import { Spinner } from "@fluentui/react-components";
@@ -65,7 +66,7 @@ export function SmartCommercePanel({ buyerId = BUYER_ID, apiContext }: { buyerId
   }, [addressId, api, mode, productId]);
   useEffect(() => { if (addressId && productId) void recommend(mode); }, [addressId, productId]);
 
-  if (loading) return <div className={styles.loading}><Spinner label="Собираем локальные варианты поставки" /></div>;
+  if (loading) return <div className={styles.loading}><LoadingState label="Собираем локальные варианты поставки" /></div>;
   if (error && !addresses.length) return <ErrorState description={error} action={<Button onClick={() => void load()}>Повторить</Button>} />;
   return <div className={styles.stack}>
     <PageHeader eyebrow="Рекомендации" title="Сравните цену, срок и надёжность" description="Выберите товар. Мы покажем полную стоимость, срок поставки и проверенные данные о поставщике." />

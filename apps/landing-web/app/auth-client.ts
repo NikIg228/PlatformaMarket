@@ -135,7 +135,9 @@ export function workspaceHandoffUrl({
     const target = capability === "BUYER" && /^\/(?:products\/|catalog(?:\?|$))/.test(path) ? path : workspacePath(capability, path);
     return `${target}#session=${handoff}`;
   }
-  return `${base.replace(/\/$/, "")}${path}#session=${handoff}`;
+  const prefix = capability === "BUYER" ? "/clinic" : "/supplier";
+  const legacyPath = path === prefix ? "/" : path.startsWith(prefix + "?") ? "/" + path.slice(prefix.length) : path;
+  return `${base.replace(/\/$/, "")}${legacyPath}#session=${handoff}`;
 }
 
 export async function openWorkspace(
@@ -205,6 +207,7 @@ export async function openWorkspace(
     );
   }
 
+  if (capability === "BUYER") window.sessionStorage.setItem("dentmarket:buyer-context", "organization");
   window.location.assign(
     workspaceHandoffUrl({
       capability,

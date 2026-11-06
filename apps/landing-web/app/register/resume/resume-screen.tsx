@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 
 import { DmButton, DmField, DmInput } from "@marketplace/ui";
 import { authClientOptionsSchema, registrationResumeRequestSchema, type RegistrationResumeDetails } from "@marketplace/schemas";
@@ -89,7 +90,7 @@ function ResumeRegistrationForm({ token }: { token: string | null }) {
       <a className="authBackLink" href="/login">Перейти ко входу</a>
     </> : <>
       <p className="authUtilityLead">{token ? "Проверьте исходную заявку. Её email, БИН, роль и согласия не изменяются." : "Закрыли страницу до завершения? Укажите данные начатой заявки — создавать её повторно не нужно. Продолжение доступно только после подтверждения владения email."}</p>
-      {token === null || (token && busy && !details) ? <p role="status">Проверяем ссылку…</p> : null}
+      {token === null || (token && busy && !details) ? <LoadingState presentation="inline" label="Проверяем ссылку…" /> : null}
       {token === "" ? <form onSubmit={submit} className="passwordForm" noValidate>
         <AuthRolePicker value={capability} onChange={setCapability} disabled={busy} />
         <DmField label="Email заявки" hint="Рабочий email, указанный при регистрации. На него придёт защищённая ссылка." required validationState={submitted && errors.email ? "error" : "none"} validationMessage={submitted ? errors.email : undefined}>

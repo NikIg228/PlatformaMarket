@@ -1,0 +1,10 @@
+npm notice run dental-procurement-platform@0.0.0 npx
+npm notice run vitest run --dir src src/modules/notifications/notifications.service.spec.ts src/modules/inventory/reservation-expiry-metrics.spec.ts
+
+ RUN  v4.1.12 C:/Users/user/Desktop/dentmarket-kz-main/apps/api
+
+
+ Test Files  2 passed (2)
+      Tests  13 passed (13)
+   Start at  14:59:15
+   Duration  3.70s (transform 721ms, setup 0ms, import 6.10s, tests 36ms, environment 1ms)

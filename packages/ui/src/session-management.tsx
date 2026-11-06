@@ -4,6 +4,7 @@ import type { IdentitySession } from "@marketplace/schemas";
 import { DmButton } from "./actions";
 import { DmFeedback, LoadingState } from "./primitives";
 import { errorMessage } from "./format";
+import { validateSessionRevocation } from "./session-revocation";
 
 export function SessionManagement({ api, currentSessionId, onCurrentRevoked }: {
   api: { listSessions(): Promise<IdentitySession[]>; revokeSession(id: string): Promise<unknown> };
@@ -26,9 +27,13 @@ export function SessionManagement({ api, currentSessionId, onCurrentRevoked }: {
     if (!selected || lock.current) return;
     lock.current = true; setBusy(true); setError(null);
     try {
-      await api.revokeSession(selected);
-      if (selected === currentSessionId) { onCurrentRevoked(); return; }
-      setSelected(null); setNotice(true); await load();
+      validateSessionRevocation(await api.revokeSession(selected), selected);
+      setSelected(null); setNotice(true);
+      if (selected === currentSessionId) {
+        setSessions(current => current?.filter(session => session.id !== selected) ?? null);
+        onCurrentRevoked(); return;
+      }
+      await load();
     } catch (cause) { setError(errorMessage(cause)); }
     finally { lock.current = false; setBusy(false); }
   }

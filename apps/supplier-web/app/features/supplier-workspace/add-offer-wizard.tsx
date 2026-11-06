@@ -1,11 +1,19 @@
 "use client";
 import { vatLegacyFields, vatLabel, type OfferVatInput, type VatSelection } from "@marketplace/schemas";
 import { OfferVatEditor } from "./offer-vat-editor";
-import { ActionFeedback, DmFeedback } from "@marketplace/ui";
+import { ActionFeedback } from "@marketplace/ui/action-feedback";
+import { DmFeedback } from "@marketplace/ui/primitives";
 import { useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { OfferOption, OfferOptionsResponse, SupplierWarehouseList, SaveOfferCommercialInput, OfferCommercialState } from "@marketplace/schemas";
-import { DmSearch, DmButton, DmDropdown, DmField, DmInput, ErrorState, LoadingState, ProductThumbnail, StatusTag, errorMessage, formatMoney, productWorkflowStyles as s, usePermissions, useUnsavedChanges } from "@marketplace/ui";
+import { DmSearch } from "@marketplace/ui/dm-search";
+import { DmButton, DmField, DmInput } from "@marketplace/ui/controls";
+import { DmDropdown } from "@marketplace/ui/dm-dropdown";
+import { ErrorState, LoadingState, StatusTag } from "@marketplace/ui/primitives";
+import { ProductThumbnail, productWorkflowStyles as s, useUnsavedChanges } from "@marketplace/ui/product-workflow";
+import { errorMessage } from "@marketplace/ui/format";
+import { formatMoney } from "@marketplace/ui/money";
+import { usePermissions } from "@marketplace/ui/permissions";
 import { offerPriceMinor, offerQuantity } from "./offer-editor-model";
 
 export function AddOfferWizard({ api, supplierId }: { api: MarketplaceApiClient; supplierId: string }) {

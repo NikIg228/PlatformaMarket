@@ -1,0 +1,314 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 4.17kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:24-alpine
+#2 DONE 2.4s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 405B done
+#3 DONE 0.1s
+
+#4 [base 1/2] FROM docker.io/library/node:24-alpine@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8
+#4 resolve docker.io/library/node:24-alpine@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8 0.1s done
+#4 sha256:881fc932939efef04ca120ad44bbd2c0917851eb247aa4995428afb1e80ede17 0B / 3.85MB 0.2s
+#4 sha256:60ef5f57e09d3f24d91cfd5547a102a028a7bd629f03e79409f53a202cf9df54 0B / 441B 0.2s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 0B / 57.38MB 0.2s
+#4 sha256:89a151fddb377af33d0dda6a24f40061bbde4b159f82c349fe01208baba8a84f 0B / 1.26MB 0.2s
+#4 sha256:60ef5f57e09d3f24d91cfd5547a102a028a7bd629f03e79409f53a202cf9df54 441B / 441B 0.8s
+#4 sha256:60ef5f57e09d3f24d91cfd5547a102a028a7bd629f03e79409f53a202cf9df54 441B / 441B 0.8s done
+#4 sha256:881fc932939efef04ca120ad44bbd2c0917851eb247aa4995428afb1e80ede17 1.05MB / 3.85MB 1.2s
+#4 sha256:881fc932939efef04ca120ad44bbd2c0917851eb247aa4995428afb1e80ede17 2.10MB / 3.85MB 1.4s
+#4 sha256:881fc932939efef04ca120ad44bbd2c0917851eb247aa4995428afb1e80ede17 3.15MB / 3.85MB 2.0s
+#4 sha256:89a151fddb377af33d0dda6a24f40061bbde4b159f82c349fe01208baba8a84f 1.05MB / 1.26MB 2.0s
+#4 sha256:881fc932939efef04ca120ad44bbd2c0917851eb247aa4995428afb1e80ede17 3.85MB / 3.85MB 2.3s done
+#4 sha256:89a151fddb377af33d0dda6a24f40061bbde4b159f82c349fe01208baba8a84f 1.26MB / 1.26MB 2.0s done
+#4 extracting sha256:881fc932939efef04ca120ad44bbd2c0917851eb247aa4995428afb1e80ede17
+#4 extracting sha256:881fc932939efef04ca120ad44bbd2c0917851eb247aa4995428afb1e80ede17 0.5s done
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 3.15MB / 57.38MB 3.2s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 6.29MB / 57.38MB 4.4s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 9.44MB / 57.38MB 5.1s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 12.58MB / 57.38MB 6.3s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 15.73MB / 57.38MB 7.1s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 18.87MB / 57.38MB 7.5s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 22.02MB / 57.38MB 8.0s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 25.17MB / 57.38MB 8.4s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 28.31MB / 57.38MB 8.9s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 31.46MB / 57.38MB 9.2s
+#4 ...
+
+#5 [internal] load build context
+#5 transferring context: 26.96MB 9.9s
+#5 ...
+
+#4 [base 1/2] FROM docker.io/library/node:24-alpine@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 34.60MB / 57.38MB 9.6s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 37.75MB / 57.38MB 9.9s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 40.89MB / 57.38MB 10.2s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 44.04MB / 57.38MB 10.7s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 47.19MB / 57.38MB 11.1s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 50.33MB / 57.38MB 11.7s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 54.53MB / 57.38MB 12.2s
+#4 sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 57.38MB / 57.38MB 12.6s done
+#4 DONE 13.3s
+
+#5 [internal] load build context
+#5 transferring context: 56.23MB 14.9s
+#5 ...
+
+#4 [base 1/2] FROM docker.io/library/node:24-alpine@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8
+#4 extracting sha256:b72829bc75b7701104d057fde78fe0aef6dc0c3eaf2423e7249e8a14c37ead57 5.4s done
+#4 DONE 18.7s
+
+#5 [internal] load build context
+#5 ...
+
+#4 [base 1/2] FROM docker.io/library/node:24-alpine@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8
+#4 extracting sha256:89a151fddb377af33d0dda6a24f40061bbde4b159f82c349fe01208baba8a84f 0.2s done
+#4 extracting sha256:60ef5f57e09d3f24d91cfd5547a102a028a7bd629f03e79409f53a202cf9df54 0.1s done
+#4 DONE 19.0s
+
+#5 [internal] load build context
+#5 transferring context: 59.84MB 20.0s
+#5 ...
+
+#6 [base 2/2] RUN apk add --no-cache openssl
+#6 3.666 (1/1) Installing openssl (3.5.9-r0)
+#6 3.808 Executing busybox-1.37.0-r31.trigger
+#6 3.824 OK: 11.7 MiB in 20 packages
+#6 DONE 4.2s
+
+#5 [internal] load build context
+#5 ...
+
+#7 [manifests  1/14] WORKDIR /workspace
+#7 DONE 0.2s
+
+#5 [internal] load build context
+#5 transferring context: 64.11MB 25.0s
+#5 transferring context: 69.88MB 30.1s
+#5 transferring context: 93.16MB 35.1s
+#5 transferring context: 116.02MB 40.2s
+#5 transferring context: 133.08MB 45.2s
+#5 transferring context: 143.14MB 50.3s
+#5 transferring context: 144.35MB 50.6s done
+#5 DONE 50.7s
+
+#8 [manifests  2/14] COPY package.json package-lock.json turbo.json ./
+#8 DONE 0.2s
+
+#9 [manifests  3/14] COPY apps/api/package.json apps/api/package.json
+#9 DONE 0.1s
+
+#10 [manifests  4/14] COPY apps/admin-web/package.json apps/admin-web/package.json
+#10 DONE 0.1s
+
+#11 [manifests  5/14] COPY apps/buyer-web/package.json apps/buyer-web/package.json
+#11 DONE 0.1s
+
+#12 [manifests  6/14] COPY apps/supplier-web/package.json apps/supplier-web/package.json
+#12 DONE 0.1s
+
+#13 [manifests  7/14] COPY apps/landing-web/package.json apps/landing-web/package.json
+#13 DONE 0.1s
+
+#14 [manifests  8/14] COPY apps/web/package.json apps/web/package.json
+#14 DONE 0.1s
+
+#15 [manifests  9/14] COPY apps/e2e/package.json apps/e2e/package.json
+#15 DONE 0.1s
+
+#16 [manifests 10/14] COPY packages/api-client/package.json packages/api-client/package.json
+#16 DONE 0.1s
+
+#17 [manifests 11/14] COPY packages/eds-client/package.json packages/eds-client/package.json
+#17 DONE 0.1s
+
+#18 [manifests 12/14] COPY packages/one-c-agent/package.json packages/one-c-agent/package.json
+#18 DONE 0.1s
+
+#19 [manifests 13/14] COPY packages/schemas/package.json packages/schemas/package.json
+#19 DONE 0.1s
+
+#20 [manifests 14/14] COPY packages/ui/package.json packages/ui/package.json
+#20 DONE 0.1s
+
+#21 [workspace 1/3] RUN REDISMS_DISABLE_POSTINSTALL=true npm ci
+#21 ...
+
+#22 [api-dependencies 1/1] RUN REDISMS_DISABLE_POSTINSTALL=true npm ci --omit=dev --workspace=@marketplace/api --workspace=@marketplace/schemas --include-workspace-root=false
+#22 10.82 npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
+#22 11.09 npm warn deprecated prom-client@15.1.3: prom-client has been replaced by @prometheus-io/client
+#22 11.22 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+#22 11.49 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#22 11.83 npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+#22 12.49 npm warn deprecated fstream@1.0.12: This package is no longer supported.
+#22 ...
+
+#21 [workspace 1/3] RUN REDISMS_DISABLE_POSTINSTALL=true npm ci
+#21 13.44 npm warn deprecated prom-client@15.1.3: prom-client has been replaced by @prometheus-io/client
+#21 14.73 npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+#21 15.75 npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
+#21 17.71 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+#21 19.13 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#21 21.60 npm warn deprecated fstream@1.0.12: This package is no longer supported.
+#21 22.48 npm warn deprecated cron-parser@4.9.0: v4 is no longer maintained, upgrade to v5
+#21 ...
+
+#22 [api-dependencies 1/1] RUN REDISMS_DISABLE_POSTINSTALL=true npm ci --omit=dev --workspace=@marketplace/api --workspace=@marketplace/schemas --include-workspace-root=false
+#22 13.58 npm warn deprecated cron-parser@4.9.0: v4 is no longer maintained, upgrade to v5
+#22 21.02 npm warn deprecated @opentelemetry/sdk-trace-node@2.10.0: Use @opentelemetry/sdk-trace package
+#22 25.40 npm warn deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported
+#22 30.85 npm warn deprecated @opentelemetry/propagator-jaeger@2.10.0: Package no longer supported. See https://github.com/open-telemetry/opentelemetry-js/pull/7077
+#22 ...
+
+#21 [workspace 1/3] RUN REDISMS_DISABLE_POSTINSTALL=true npm ci
+#21 34.59 npm warn deprecated @opentelemetry/sdk-trace-node@2.10.0: Use @opentelemetry/sdk-trace package
+#21 ...
+
+#22 [api-dependencies 1/1] RUN REDISMS_DISABLE_POSTINSTALL=true npm ci --omit=dev --workspace=@marketplace/api --workspace=@marketplace/schemas --include-workspace-root=false
+#22 36.05 npm warn deprecated @opentelemetry/sdk-trace-base@2.10.0: Use @opentelemetry/sdk-trace package
+#22 ...
+
+#21 [workspace 1/3] RUN REDISMS_DISABLE_POSTINSTALL=true npm ci
+#21 45.13 npm warn deprecated @opentelemetry/propagator-jaeger@2.10.0: Package no longer supported. See https://github.com/open-telemetry/opentelemetry-js/pull/7077
+#21 46.88 npm warn deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported
+#21 55.46 npm warn deprecated @opentelemetry/sdk-trace-base@2.10.0: Use @opentelemetry/sdk-trace package
+#21 ...
+
+#22 [api-dependencies 1/1] RUN REDISMS_DISABLE_POSTINSTALL=true npm ci --omit=dev --workspace=@marketplace/api --workspace=@marketplace/schemas --include-workspace-root=false
+#22 80.40
+#22 80.40 added 600 packages, and audited 603 packages in 1m
+#22 80.40
+#22 80.40 76 packages are looking for funding
+#22 80.40   run `npm fund` for details
+#22 80.40
+#22 80.40 found 0 vulnerabilities
+#22 80.41 npm notice
+#22 80.41 npm notice New major version of npm available! 11.19.1 -> 12.2.2
+#22 80.41 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+#22 80.41 npm notice To update run: npm install -g npm@12.2.2
+#22 80.41 npm notice
+#22 DONE 81.7s
+
+#21 [workspace 1/3] RUN REDISMS_DISABLE_POSTINSTALL=true npm ci
+#21 ...
+
+#23 [api  2/11] COPY --from=api-dependencies /workspace/node_modules ./node_modules
+#23 DONE 34.9s
+
+#21 [workspace 1/3] RUN REDISMS_DISABLE_POSTINSTALL=true npm ci
+#21 223.6
+#21 223.6 added 948 packages, and audited 961 packages in 4m
+#21 223.6
+#21 223.6 149 packages are looking for funding
+#21 223.6   run `npm fund` for details
+#21 223.6
+#21 223.6 found 0 vulnerabilities
+#21 223.6 npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+#21 223.6 npm warn install-scripts   redis-memory-server@0.17.1 (postinstall: node ./scripts/postinstall)
+#21 223.6 npm warn install-scripts
+#21 223.6 npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+#21 223.6 npm notice
+#21 223.6 npm notice New major version of npm available! 11.19.1 -> 12.2.2
+#21 223.6 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+#21 223.6 npm notice To update run: npm install -g npm@12.2.2
+#21 223.6 npm notice
+#21 DONE 225.3s
+
+#24 [workspace 2/3] COPY . .
+#24 DONE 13.2s
+
+#25 [workspace 3/3] RUN npm run db:generate
+#25 2.323
+#25 2.323 > dental-procurement-platform@0.0.0 db:generate
+#25 2.323 > npm run prisma:generate --workspace=@marketplace/api
+#25 2.323
+#25 3.096
+#25 3.096 > @marketplace/api@0.0.0 prisma:generate
+#25 3.096 > prisma generate
+#25 3.096
+#25 6.166 Prisma schema loaded from prisma/schema.prisma
+#25 16.79
+#25 16.79 ✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/@prisma/client in 3.25s
+#25 16.79
+#25 16.79 Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+#25 16.79
+#25 16.79 Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+#25 16.79
+#25 DONE 16.9s
+
+#26 [api-build 1/1] RUN npm run build --workspace=@marketplace/schemas && npm run build --workspace=@marketplace/api
+#26 0.773
+#26 0.773 > @marketplace/schemas@0.0.0 build
+#26 0.773 > tsc -p tsconfig.build.json
+#26 0.773
+#26 9.141
+#26 9.141 > @marketplace/api@0.0.0 prebuild
+#26 9.141 > prisma generate --schema prisma/schema.prisma
+#26 9.141
+#26 10.41 Prisma schema loaded from prisma/schema.prisma
+#26 12.79 ┌─────────────────────────────────────────────────────────┐
+#26 12.79 │  Update available 6.19.3 -> 8.0.0-rc.30                 │
+#26 12.79 │                                                         │
+#26 12.79 │  This is a major update - please follow the guide at    │
+#26 12.79 │  https://pris.ly/d/major-version-upgrade                │
+#26 12.79 │                                                         │
+#26 12.79 │  Run the following to update                            │
+#26 12.79 │    npm i --save-dev prisma@latest                       │
+#26 12.79 │    npm i @prisma/client@latest                          │
+#26 12.79 └─────────────────────────────────────────────────────────┘
+#26 12.79
+#26 12.79 ✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/@prisma/client in 1.24s
+#26 12.79
+#26 12.79 Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+#26 12.79
+#26 12.79 Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+#26 12.79
+#26 12.83
+#26 12.83 > @marketplace/api@0.0.0 build
+#26 12.83 > nest build
+#26 12.83
+#26 DONE 56.4s
+
+#27 [api  3/11] COPY --from=api-build /workspace/node_modules/.prisma ./node_modules/.prisma
+#27 DONE 4.2s
+
+#28 [api  4/11] COPY package.json ./package.json
+#28 DONE 0.1s
+
+#29 [api  5/11] COPY apps/api/package.json ./apps/api/package.json
+#29 DONE 0.1s
+
+#30 [api  6/11] COPY packages/schemas/package.json ./packages/schemas/package.json
+#30 DONE 0.1s
+
+#31 [api  7/11] COPY --from=api-build /workspace/apps/api/dist ./apps/api/dist
+#31 DONE 0.6s
+
+#32 [api  8/11] COPY --from=api-build /workspace/apps/api/prisma/schema.prisma ./apps/api/prisma/schema.prisma
+#32 DONE 0.1s
+
+#33 [api  9/11] COPY --from=api-build /workspace/apps/api/prisma/migrations ./apps/api/prisma/migrations
+#33 DONE 0.1s
+
+#34 [api 10/11] COPY --from=api-build /workspace/packages/schemas/dist ./packages/schemas/dist
+#34 DONE 0.2s
+
+#35 [api 11/11] COPY --from=api-build /workspace/apps/buyer-web/public ./apps/buyer-web/public
+#35 DONE 0.6s
+
+#36 exporting to image
+#36 exporting layers
+#36 exporting layers 154.3s done
+#36 exporting manifest sha256:2fb30ae43fa1eb181cbee73afc29454c2ac8d7dc56b51120bd39f53e8d88973f 0.1s done
+#36 exporting config sha256:fb16dcc76db45b157a5e33df4520ee9b635db806eae764169d57f50709cdf217 0.1s done
+#36 exporting attestation manifest sha256:faee68f96957e3cd285ddd2c43767cfd064ebaae97bdf08d0a6522849e0a5cfa
+#36 exporting attestation manifest sha256:faee68f96957e3cd285ddd2c43767cfd064ebaae97bdf08d0a6522849e0a5cfa 0.1s done
+#36 exporting manifest list sha256:8a2c537d729c5d0f0f07ea99e1b33ed49d35cec24c4f19aed05a1ee20088f588 0.1s done
+#36 naming to docker.io/library/platformamarket-api:stand-20261106-local1 0.0s done
+#36 unpacking to docker.io/library/platformamarket-api:stand-20261106-local1
+#36 unpacking to docker.io/library/platformamarket-api:stand-20261106-local1 82.1s done
+#36 DONE 237.6s

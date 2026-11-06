@@ -1,5 +1,10 @@
 # Backup/restore runbook
 
+> Конфликт целевых RPO/RTO открыт в [DOC008](../OPEN_QUESTIONS.md#doc008).
+> Числа ниже описывают прежний профиль/измерение; не выбирать одну пару
+> как окончательно согласованную до разрешения конфликта. Процедуры сохраняются.
+
+
 ## 1. Назначение и статус доказательства
 
 PostgreSQL остаётся source of truth, а object storage содержит исходные и
@@ -103,8 +108,8 @@ Docker mode запускает client из `postgres:17-alpine`; database servic
 - оставшиеся drill databases: 0.
 
 На момент этого исторического запуска сравнение выполнялось с RTO 4 часа и
-RPO 15 минут; объём pilot-базы мал, PITR не проверен. Актуальные цели из
-[ТЗ §28](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md#spec-28) — RTO ≤ 2 часа,
+RPO 15 минут; объём pilot-базы мал, PITR не проверен. Ранее указанные цели из
+[ТЗ §28](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#r9) — RTO ≤ 2 часа,
 RPO ≤ 5 минут. Исторические измерения не являются проверкой выбранной Yandex Cloud среды.
 
 ## 6. Production backup artifact

@@ -5,6 +5,7 @@ import { OrderTransferUpload } from "./OrderTransferUpload";
 
 import { OrderDiscrepancyPanel } from "./order-discrepancy-panel";
 import { OrderShipmentReceipts } from "./order-shipment-receipt";
+import { OrderWorkflowFeedback } from "./order-workflow-feedback";
 import type { OrderDiscrepancyApi } from "./order-discrepancy-resource";
 import { DmTabList } from "./controls";
 import {
@@ -251,8 +252,10 @@ function OrderWorkflowSession({
       window.removeEventListener("offline", offline);
     };
   }, [refresh]);
-  const perform = async (action: Action) => {
-    if (!data || working.current || !alive.current || !canAct(action.action))
+  const perform = async (action?: Action) => {
+    const retained = pending.current.retained();
+    const requestedAction = action ?? retained;
+    if (!data || !requestedAction || working.current || !alive.current || !canAct(requestedAction.action))
       return;
     working.current = true;
     setBusy(true);
@@ -261,7 +264,7 @@ function OrderWorkflowSession({
     try {
       const result = await api.executeOrderWorkflow(
         orderId,
-        pending.current.command(action, data.version),
+        action ? pending.current.command(action, data.version) : retained!,
       );
       if (!alive.current) return;
       if (result.cartId) setReordered(true);
@@ -498,21 +501,12 @@ function OrderWorkflowSession({
           }
         />
       ) : null}
-      {error ? (
-        <DmFeedback
-          tone="danger"
-          title="Требуется внимание"
-          description={error}
-          action={
-            <DmButton disabled={busy} onClick={() => void refresh()}>
-              Повторить загрузку
-            </DmButton>
-          }
-        />
-      ) : null}
-      {notice ? (
-        <DmFeedback tone="success" title="Готово" description={notice} />
-      ) : null}
+      <OrderWorkflowFeedback
+        error={error} notice={notice} busy={busy}
+        recovery={pending.current.retained() !== null}
+        canRecover={!!pending.current.retained() && canAct(pending.current.retained()!.action)}
+        retry={() => void perform()} refresh={() => void refresh()}
+      />
       <OrderDetailOverview
         data={data}
         supplier={supplier}

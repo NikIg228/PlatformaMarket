@@ -21,7 +21,7 @@ services:
     environment: { PROCESS_ROLE: api }
     expose: ["4000"]
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4000/api/health/ready"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:4000/api/health/ready"]
       interval: 15s
       timeout: 5s
       retries: 20
@@ -37,6 +37,7 @@ services:
     command: ["npm", "run", "start:worker", "--workspace=@marketplace/api"]
     env_file: ["${ENV_FILE:-.env.production}"]
     environment: { PROCESS_ROLE: worker }
+    depends_on: { api: { condition: service_healthy } }
     stop_grace_period: 45s
     deploy:
       resources:

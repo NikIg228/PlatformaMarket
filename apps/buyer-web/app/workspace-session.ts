@@ -1,6 +1,6 @@
 "use client";
 import { workspaceSessionStore, type ApiContext } from "@marketplace/api-client";
-import { useWorkspaceSession } from "@marketplace/ui";
+import { useWorkspaceSession } from "@marketplace/ui/use-workspace-session";
 import { requireOrganizationMode, useBuyerMode } from "./buyer-context";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4012/api";
 export const sessionStore = workspaceSessionStore(apiUrl, "BUYER");

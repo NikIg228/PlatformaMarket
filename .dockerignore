@@ -16,6 +16,14 @@ coverage
 .turbo
 **/.turbo
 outputs
+output
+.playwright-cli
+test-results
+playwright-report
+blob-report
+**/*.tsbuildinfo
+apps/web/public
+apps/web/generated
 actual_docs
 .local-storage*
 .local-pg*

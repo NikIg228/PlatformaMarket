@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-04",
+  "head": "e9431988eca972967cdad498a3e4f362bb7974bf",
+  "format": "Exact original bytes; .md.txt are historical snapshots, not active instructions.",
+  "files": [
+    {
+      "source": "README.md",
+      "archive": "actual_docs/history/archive/2026-11-04-docs/sources/README.md.txt",
+      "sha256": "605e970744933ed9e5585c3fd07689c53933aada6befa3a4d72b14e8460aefb9",
+      "bytes": 5785
+    },
+    {
+      "source": "actual_docs/README.md",
+      "archive": "actual_docs/history/archive/2026-11-04-docs/sources/actual_docs/README.md.txt",
+      "sha256": "b4e3692b785f37731fd02ad1f6ef04d677df2e11abd9096f69c60ea9bcbe7fe3",
+      "bytes": 9543
+    },
+    {
+      "source": "actual_docs/DOCUMENTATION_INDEX.md",
+      "archive": "actual_docs/history/archive/2026-11-04-docs/sources/actual_docs/DOCUMENTATION_INDEX.md.txt",
+      "sha256": "920d0f091721fe104842798b9058fc652efec45ec00bd5b97c8c1daa6d080b09",
+      "bytes": 22856
+    },
+    {
+      "source": "actual_docs/MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md",
+      "archive": "actual_docs/history/archive/2026-11-04-docs/sources/actual_docs/MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md.txt",
+      "sha256": "a63957a6a3fff94c4297a131d6b6e331b82567142d7096159697ab5e2d57d71e",
+      "bytes": 277712
+    },
+    {
+      "source": "actual_docs/PROJECT_OVERVIEW.md",
+      "archive": "actual_docs/history/archive/2026-11-04-docs/sources/actual_docs/PROJECT_OVERVIEW.md.txt",
+      "sha256": "34ff9040197f2725fde31a16a8948b7d305e012b0aeaef21e56820a4bed6faeb",
+      "bytes": 66838
+    },
+    {
+      "source": "actual_docs/FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md",
+      "archive": "actual_docs/history/archive/2026-11-04-docs/sources/actual_docs/FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md.txt",
+      "sha256": "9a7c460a3d38fe449772d9c36b5e8dc5e86bf71c4abc3b7f2f06355bb2ce9c33",
+      "bytes": 89386
+    },
+    {
+      "source": "actual_docs/UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md",
+      "archive": "actual_docs/history/archive/2026-11-04-docs/sources/actual_docs/UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md.txt",
+      "sha256": "5e5cd606977d503c90846cc17ec69db572f20668dcd6a247339d63e1f9a2fe89",
+      "bytes": 330723
+    },
+    {
+      "source": "actual_docs/BUSINESS_RULES_AND_IMPLEMENTATION.md",
+      "archive": "actual_docs/history/archive/2026-11-04-docs/sources/actual_docs/BUSINESS_RULES_AND_IMPLEMENTATION.md.txt",
+      "sha256": "79dafc95142b9b854f41e87f184967df7821b532cbfa08e932ee2035b6b287c3",
+      "bytes": 136295
+    },
+    {
+      "source": "actual_docs/governance/MARKET-IMPLEMENTATION-QUESTIONNAIRE.md",
+      "archive": "actual_docs/history/archive/2026-11-04-docs/sources/actual_docs/governance/MARKET-IMPLEMENTATION-QUESTIONNAIRE.md.txt",
+      "sha256": "e607666ac313124059ea9ae4608477a08916514d98302115181837263b38ad59",
+      "bytes": 176857
+    },
+    {
+      "source": "actual_docs/governance/ROADMAP-QUESTIONS-AND-DECISIONS.md",
+      "archive": "actual_docs/history/archive/2026-11-04-docs/sources/actual_docs/governance/ROADMAP-QUESTIONS-AND-DECISIONS.md.txt",
+      "sha256": "878f0bbb49c9df524e195bf5b0475396a109c997e36b1db2278218bf89f21f51",
+      "bytes": 88931
+    },
+    {
+      "source": "actual_docs/governance/BUSINESS-LOGIC-QUESTIONS-2026-10-16.md",
+      "archive": "actual_docs/history/archive/2026-11-04-docs/sources/actual_docs/governance/BUSINESS-LOGIC-QUESTIONS-2026-10-16.md.txt",
+      "sha256": "e6f5f7129e8eb806e3e3a1d52b69b58630117c1bf829088ca2a3495943dbe738",
+      "bytes": 43713
+    }
+  ]
+}

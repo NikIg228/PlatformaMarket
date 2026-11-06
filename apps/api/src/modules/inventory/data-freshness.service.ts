@@ -7,6 +7,14 @@ import { PrismaService } from "../../platform/prisma/prisma.service";
 import { SupplierAccessService, type SupplierActorContext } from "../suppliers/supplier-access.service";
 import { AccessControlService } from "../access-control/access-control.service";
 
+function stockQuantity(value: unknown) {
+  try {
+    const quantity = new Prisma.Decimal(String(value));
+    if (quantity.isFinite() && !quantity.isNegative()) return quantity;
+  } catch { /* Invalid decimal input is a validation error. */ }
+  throw new BadRequestException("Inventory quantity must be finite and non-negative");
+}
+
 @Injectable()
 export class DataFreshnessService {
   constructor(private readonly prisma: PrismaService, private readonly access: SupplierAccessService, private readonly permissions: AccessControlService) {}
@@ -54,18 +62,22 @@ export class DataFreshnessService {
     const validUntil = input.validUntil ? new Date(input.validUntil) : null;
     if (validUntil && validUntil <= now) throw new BadRequestException("Override validUntil must be in the future");
     const offer = input.offerId ? await this.prisma.supplierOffer.findFirst({ where: { id: input.offerId, supplierOrganizationId } }) : null;
-    const balance = input.inventoryBalanceId ? await this.prisma.inventoryBalance.findFirst({ where: { id: input.inventoryBalanceId, supplierOrganizationId } }) : null;
     if (input.target === "PRICE" && !offer) throw new NotFoundException("Supplier offer not found");
-    if (input.target === "INVENTORY" && !balance) throw new NotFoundException("Supplier inventory balance not found");
-    const current = await this.prisma.dataOverride.findFirst({ where: { status: "ACTIVE", target: input.target, ...(input.target === "PRICE" ? { offerId: input.offerId } : { inventoryBalanceId: input.inventoryBalanceId }) }, orderBy: { createdAt: "desc" } });
     const value = input.value;
-    if (input.target === "INVENTORY") {
-      const quantityOnHand = Number(value.quantityOnHand);
-      const quantityReserved = balance ? Number(value.quantityReserved ?? balance.quantityReserved) : 0;
-      const safetyStock = balance ? Number(value.safetyStock ?? balance.safetyStock) : 0;
-      if (![quantityOnHand, quantityReserved, safetyStock].every((number) => Number.isFinite(number) && number >= 0) || quantityReserved + safetyStock > quantityOnHand) throw new BadRequestException("Inventory override violates on-hand/reserved/safety-stock invariant");
-    }
     return this.prisma.$transaction(async (tx) => {
+      if (input.target === "INVENTORY") {
+        await tx.$queryRaw`SELECT "id" FROM "InventoryBalance" WHERE "id" = ${input.inventoryBalanceId}::uuid AND "supplierOrganizationId" = ${supplierOrganizationId}::uuid FOR UPDATE`;
+      }
+      const balance = input.target === "INVENTORY" ? await tx.inventoryBalance.findFirst({ where: { id: input.inventoryBalanceId!, supplierOrganizationId } }) : null;
+      if (input.target === "INVENTORY" && !balance) throw new NotFoundException("Supplier inventory balance not found");
+      const stock = balance ? {
+        quantityOnHand: stockQuantity(value.quantityOnHand),
+        quantityReserved: stockQuantity(value.quantityReserved ?? balance.quantityReserved),
+        safetyStock: stockQuantity(value.safetyStock ?? balance.safetyStock),
+      } : null;
+      if (stock && stock.quantityReserved.plus(stock.safetyStock).gt(stock.quantityOnHand))
+        throw new BadRequestException("Inventory override violates on-hand/reserved/safety-stock invariant");
+      const current = await tx.dataOverride.findFirst({ where: { supplierOrganizationId, status: "ACTIVE", target: input.target, ...(input.target === "PRICE" ? { offerId: input.offerId } : { inventoryBalanceId: input.inventoryBalanceId }) }, orderBy: { createdAt: "desc" } });
       if (current) await tx.dataOverride.update({ where: { id: current.id }, data: { status: "CANCELLED", cancelledAt: now } });
       const override = await tx.dataOverride.create({ data: { supplierOrganizationId, offerId: input.offerId, inventoryBalanceId: input.inventoryBalanceId, previousOverrideId: current?.id, target: input.target, mode: input.mode, value: value as Prisma.InputJsonValue, reason: input.reason, validFrom: now, validUntil, createdById: context.actorId } });
       if (input.target === "PRICE" && offer) {
@@ -85,12 +97,10 @@ export class DataFreshnessService {
         await tx.offerPriceHistory.create({ data: { offerId: offer.id, amountMinor, currency, ...taxFields, source: "MANUAL", changedById: context.actorId, reason: `Override ${override.id}: ${input.reason}` } });
         await tx.supplierOffer.update({ where: { id: offer.id }, data: { version: { increment: 1 } } });
       }
-      if (input.target === "INVENTORY" && balance) {
-        const quantityOnHand = Number(value.quantityOnHand);
-        const quantityReserved = Number(value.quantityReserved ?? balance.quantityReserved);
-        const safetyStock = Number(value.safetyStock ?? balance.safetyStock);
-        const quantityAvailable = quantityOnHand - quantityReserved - safetyStock;
-        await tx.inventoryBalance.update({ where: { id: balance.id }, data: { quantityOnHand, quantityReserved, safetyStock, quantityAvailable, availabilityStatus: quantityAvailable <= 0 ? "OUT_OF_STOCK" : quantityAvailable <= Math.max(1, safetyStock) ? "LOW_STOCK" : "IN_STOCK", freshnessStatus: "FRESH", freshnessExpiresAt: validUntil, source: "MANUAL", externalUpdatedAt: now, lastSuccessfulSyncAt: now, version: { increment: 1 } } });
+      if (balance && stock) {
+        const { quantityOnHand, quantityReserved, safetyStock } = stock;
+        const quantityAvailable = quantityOnHand.minus(quantityReserved).minus(safetyStock);
+        await tx.inventoryBalance.update({ where: { id: balance.id }, data: { quantityOnHand, quantityReserved, safetyStock, quantityAvailable, availabilityStatus: quantityAvailable.lte(0) ? "OUT_OF_STOCK" : quantityAvailable.lte(Prisma.Decimal.max(1, safetyStock)) ? "LOW_STOCK" : "IN_STOCK", freshnessStatus: "FRESH", freshnessExpiresAt: validUntil, source: "MANUAL", externalUpdatedAt: now, lastSuccessfulSyncAt: now, version: { increment: 1 } } });
       }
       await tx.auditLog.create({ data: { ...context, action: "data.override.created", entityType: "DataOverride", entityId: override.id, before: current ?? Prisma.JsonNull, after: override } });
       await tx.outboxEvent.create({ data: { aggregateType: "DataOverride", aggregateId: override.id, eventType: "DataOverrideCreated", payload: { supplierOrganizationId, overrideId: override.id, target: override.target, mode: override.mode, offerId: override.offerId, inventoryBalanceId: override.inventoryBalanceId } } });

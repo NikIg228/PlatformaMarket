@@ -87,6 +87,20 @@
     "invalidBorder": "danger.content",
     "disabledFill": "disabled.surface"
   },
+  "loadingState": {
+    "version": "subject-spinner-v1",
+    "adapter": "LoadingState",
+    "blockSpinner": "Fluent.medium",
+    "inlineSpinner": "Fluent.tiny",
+    "blockLayout": "mp-state",
+    "inlineRoot": "span",
+    "labelPosition": "after",
+    "role": "status",
+    "live": "polite",
+    "label": "localized-action-and-subject",
+    "initialWorkspace": "single-cabinet-loading-state",
+    "refresh": "retain-same-context-data-and-show-inline-status"
+  },
   "categoryTabs": {
     "version": "underline-v1",
     "rest": "transparent",

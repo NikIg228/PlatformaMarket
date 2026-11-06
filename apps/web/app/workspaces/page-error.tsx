@@ -1,5 +1,6 @@
 "use client";
-import { DmButton, ErrorState } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/controls";
+import { ErrorState } from "@marketplace/ui/primitives";
 export default function PageError({ reset }: { reset: () => void }) {
   return (
     <ErrorState presentation="inline"

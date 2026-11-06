@@ -29,6 +29,7 @@ function fixture() {
   const audits: unknown[] = [];
   // Model Prisma's omission of undefined filters without connecting to a database.
   const prisma = {
+    $queryRaw: vi.fn(async () => [{ id: owner }]),
     externalIdentity: {
       findMany: vi.fn(async ({ where }: { where: { userId?: string } }) =>
         identities.filter((identity) => where.userId === undefined || identity.userId === where.userId)),
@@ -50,20 +51,21 @@ function fixture() {
       }),
     },
     auditLog: { create: vi.fn(async ({ data }: { data: unknown }) => { audits.push(data); return data; }) },
-    $transaction: vi.fn(async (operations: Promise<unknown>[]) => Promise.all(operations)),
+    $transaction: vi.fn(async (operation: (tx: unknown) => Promise<unknown>) => operation(prisma)),
   };
   const service = new AuthSessionsService(prisma as never, {} as never, {} as never, {} as never);
   const controller = new AuthSessionsController(service);
   const snapshot = () => JSON.stringify({ identities, sessions, audits });
   const expectNoDataAccess = () => {
     expect(prisma.externalIdentity.findMany).not.toHaveBeenCalled();
+    expect(prisma.$queryRaw).not.toHaveBeenCalled();
+    expect(prisma.$transaction).not.toHaveBeenCalled();
     expectNoWrites();
   };
   const expectNoWrites = () => {
     expect(prisma.externalIdentity.delete).not.toHaveBeenCalled();
     expect(prisma.authSession.updateMany).not.toHaveBeenCalled();
     expect(prisma.auditLog.create).not.toHaveBeenCalled();
-    expect(prisma.$transaction).not.toHaveBeenCalled();
   };
   return { identities, sessions, audits, prisma, service, controller, snapshot, expectNoDataAccess, expectNoWrites };
 }
@@ -106,6 +108,7 @@ describe("social identity unlink authorization", () => {
     expect(f.prisma.authSession.updateMany).toHaveBeenCalledWith({ where: { userId: owner, authMethods: { has: provider.toLowerCase() }, status: "ACTIVE" }, data: expect.any(Object) });
     expect(f.audits).toEqual([{ actorId: owner, action: "identity.social.unlinked", entityType: "ExternalIdentity", entityId: `owner-${provider.toLowerCase()}`, before: { provider } }]);
     expect(f.prisma.$transaction).toHaveBeenCalledOnce();
+    expect(f.prisma.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(f.prisma.externalIdentity.findMany.mock.invocationCallOrder[0]);
   });
 
   it("preserves the refusal to unlink the owner's last sign-in method despite other users' identities", async () => {

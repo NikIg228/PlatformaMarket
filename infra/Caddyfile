@@ -21,7 +21,7 @@
   import secure
   handle /api/* {
     request_body {
-      max_size 25MB
+      max_size 26797740
     }
     reverse_proxy api:4000
   }

@@ -13,10 +13,11 @@ type Props = Omit<InputProps, "value" | "defaultValue" | "onChange" | "contentBe
   pending?: boolean;
   /** Fill a catalogue toolbar while preserving the default compact field width. */
   fullWidth?: boolean;
+  copy?: { clear: string; search: string };
 };
 
 /** One search field for workspaces, including autocomplete and nested forms. */
-export function DmSearch({ value, onChange, onSearch, onClear, pending = false, fullWidth = false, disabled, className, onKeyDown, ...props }: Props) {
+export function DmSearch({ value, onChange, onSearch, onClear, pending = false, fullWidth = false, copy = { clear: "Очистить поиск", search: "Найти" }, disabled, className, onKeyDown, ...props }: Props) {
   const root = useRef<HTMLInputElement>(null);
   const search = () => { if (!disabled && !pending) onSearch?.(value.trim()); };
   return <Input {...props} ref={root} value={value} disabled={disabled} data-dm-search-full-width={fullWidth || undefined}
@@ -28,9 +29,9 @@ export function DmSearch({ value, onChange, onSearch, onClear, pending = false, 
       if (event.key === "Enter" && !event.defaultPrevented && onSearch) { event.preventDefault(); search(); }
     }}
     contentAfter={value ? <span className={styles.actions}>
-      <Button density="compact" type="button" appearance="transparent" icon={<Dismiss16Regular />} disabled={disabled} aria-label="Очистить поиск" onClick={() => {
+      <Button density="compact" type="button" appearance="transparent" icon={<Dismiss16Regular />} disabled={disabled} aria-label={copy.clear} onClick={() => {
         onChange(""); if (onClear) onClear(); else onSearch?.(""); root.current?.focus();
       }} />
-      <Button density="compact" type={onSearch ? "button" : "submit"} appearance="transparent" disabled={disabled || pending || !value.trim()} onClick={onSearch ? search : undefined}>Найти</Button>
+      <Button density="compact" type={onSearch ? "button" : "submit"} appearance="transparent" disabled={disabled || pending || !value.trim()} onClick={onSearch ? search : undefined}>{copy.search}</Button>
     </span> : undefined} />;
 }

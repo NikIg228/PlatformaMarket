@@ -1,0 +1,37 @@
+npm notice run dental-procurement-platform@0.0.0 npx
+npm notice run vitest run --dir src src/platform/jobs/background-queue.service.spec.ts
+
+ RUN  v4.1.12 C:/Users/user/Desktop/dentmarket-kz-main/apps/api
+
+ ❯ src/platform/jobs/background-queue.service.spec.ts (4 tests | 1 failed) 23ms
+     × handles a persisted job on its first delivery after every module registered its handler 16ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/platform/jobs/background-queue.service.spec.ts > background queue lifecycle > handles a persisted job on its first delivery after every module registered its handler
+AssertionError: expected Error: No handler registered for backgrou… to deeply equal { processed: true }
+
+- Expected
++ Received
+
+- {
+-   "processed": true,
++ Error {
++   "message": "No handler registered for background job inventory.expiry",
+  }
+
+ ❯ src/platform/jobs/background-queue.service.spec.ts:81:40
+     79|     const app = await start();
+     80|     try {
+     81|       expect(await fixture.completion).toEqual({ processed: true });
+       |                                        ^
+     82|       expect(fixture.handle).toHaveBeenCalledExactlyOnceWith({ persist…
+     83|       expect(await app.get(BackgroundQueueService).health()).toMatchOb…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  14:57:13
+   Duration  3.13s (transform 960ms, setup 0ms, import 2.63s, tests 23ms, environment 0ms)

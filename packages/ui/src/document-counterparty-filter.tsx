@@ -1,6 +1,7 @@
 "use client";
+import { LoadingState } from "./loading-state";
 import { ActionFeedback } from "./action-feedback";
-import { Option, Spinner } from "@fluentui/react-components";
+import { Option } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 import { DmButton, DmCombobox } from "./controls";
 export type DocumentCounterpartyPage = { items: { id: string; name: string }[]; hasMore: boolean };
@@ -29,7 +30,7 @@ export function DocumentCounterpartyFilter({ label, value, load, onChange }: {
       onOptionSelect={(_, data) => { const id = data.optionValue ?? ""; setName(id ? data.optionText ?? "" : ""); onChange(id); setOpen(false); }}>
       <Option value="">{label}</Option>
       {page.items.map(item => <Option key={item.id} value={item.id}>{item.name}</Option>)}
-      {loading ? <Option disabled value="loading" text="Поиск контрагентов"><Spinner size="tiny" label="Поиск контрагентов" /></Option> : null}
+      {loading ? <Option disabled value="loading" text="Поиск контрагентов"><LoadingState presentation="inline" label="Поиск контрагентов" /></Option> : null}
       {!loading && !error && !page.items.length ? <Option disabled value="empty">Контрагенты не найдены</Option> : null}
       {page.hasMore ? <Option disabled value="more">Уточните название для остальных результатов</Option> : null}
     </DmCombobox>

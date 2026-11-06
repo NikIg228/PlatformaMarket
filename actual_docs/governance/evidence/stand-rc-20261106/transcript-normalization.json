@@ -1,0 +1,85 @@
+{
+  "reason": "Trailing whitespace and terminal blank lines only; exact originals retained locally under .tmp/stand-rc-kk-20261106/hygiene-originals. No result text changed.",
+  "files": [
+    {
+      "path": "actual_docs/governance/evidence/full-audit-20261104/backend/batch-011.md",
+      "rawSha256": "566ea063a2b881818968fc478565fd544dffb9646e0192bf93a1e43874fd7f9e",
+      "publishedSha256": "bcfdefae26da95942872dcae88b87de830689363e9a2aaba8185aa3d998627db"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/api-build-1.txt",
+      "rawSha256": "cde91e1262a1e70f83c531b39348594fa9c8ff9136185fb89db0fe51869dd129",
+      "publishedSha256": "334b81124f6320499ed7821298e0abfbe65917b6107c7eadb54fecf93b4bd939"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/api-build-2.txt",
+      "rawSha256": "168b42287028b123042ec18cffdc3a6af3adaddfa49750113b17e504be7ae91a",
+      "publishedSha256": "b790bde4e61261c0de51000040257013fe58da45cfa1d4df9f97a459fe391be7"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/api-build-3.txt",
+      "rawSha256": "8845a5e101dd90ee22878ef2f3bfe1c9963de84de5f292383baed6d92cdbe1cf",
+      "publishedSha256": "103e319d33a7914feaed28ed9ec3d599ee41cfe65a12708da21d4cfb07e71e86"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/cleanup.txt",
+      "rawSha256": "e29591021ac5c6593ef182e81745a980bf0e0f14c3df93464e0be37bfdf29f8e",
+      "publishedSha256": "08022c99818ca10a0fa579c1e749aa6a9f5568a44d8f8c6ce738d0a21d777a9f"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/migrate-idempotent-1.txt",
+      "rawSha256": "608310637ae24673227a503507412f1c6f8218204179f245b76b198b728f62e7",
+      "publishedSha256": "e7513e7d46f98fbabb6ee01dc1adcf4be767bc754b1ef8a91d357f029aa77bdb"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/queue-consumers-1.txt",
+      "rawSha256": "7060a1ef545b8770cbdcaed5b40c91e09e9ad36c48732d11b0ade7bf5c42e9cb",
+      "publishedSha256": "1b87a58f7115aa36029915f1e7742baa302310101811d8102dd8dfdf3dacfc97"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/queue-lifecycle-green.txt",
+      "rawSha256": "e8fc6a30e4ed7688432a55cbafdbb2d867f9302af01ec3cbcfb3aad3572faa41",
+      "publishedSha256": "aaf56b8e02052266856981f590843264e5ed4e1f0997b54c3a6375b46962c6d0"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/queue-lifecycle-red.txt",
+      "rawSha256": "bcd85bdad1a7522e29b50dcebb7a4408125688ed8703e8e52d4c19f4c1e44cd0",
+      "publishedSha256": "228cc0c60219e801b609b8f1184ad57c97ec06da9785743481ad518388f81f2c"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/queue-recovery-final.txt",
+      "rawSha256": "9623b510c0ce4a27d11f8b2c00491cb2094bce39be2eac986c5f0149fcc7846b",
+      "publishedSha256": "e870b1b7d15a3f86c5b2366168483feea9bd017bf37a63301dfb47f6de46dfc8"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/runtime-smoke-final.txt",
+      "rawSha256": "26dd3354aa6190c1ddbdfe7a0695f3d379e9c1f1848d618a36dbcf4d1749d294",
+      "publishedSha256": "c1bafe6369252c3daf98510963ca69093393e60a4437f349dba574ce71d4973a"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/runtime-start-1.txt",
+      "rawSha256": "afaba74cfbc9e316f8847ca4432948f00d4e695fedb555ce62ff77d283785d6c",
+      "publishedSha256": "1375f2a818e7fa27bfdc36036e8125a548b628152d55ad62baa975aeaacb8d49"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/runtime-start-final.txt",
+      "rawSha256": "827cb6a8443db16cf5679b0fbba5803a996f28142aa03635ed2fe72890143106",
+      "publishedSha256": "b194f5f055167c65028ef05032e70f87e7b05b8e327b0b07566c12aaa16a180b"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/web-build-2.txt",
+      "rawSha256": "f88921e8f247b5f7af2c7d6ae6280f84af4a45b9e7450c47f550dfbab5fa49f4",
+      "publishedSha256": "ef3c64482fb5cb5942ee82645144e7036bdc4fb6e147c6c717b8bce7be84e900"
+    },
+    {
+      "path": "actual_docs/governance/evidence/stand-container-20261106/web-smoke-final.txt",
+      "rawSha256": "542d5fd482139e907ac6e68248bd9324e93e50ef88d0f111385404e262af93cc",
+      "publishedSha256": "3f053acf5ff8681ce9c00c9fa55d0735ec04dfeb27aef9d2264956382822f53e"
+    },
+    {
+      "path": "packages/ui/src/conversation-counter.tsx",
+      "rawSha256": "85df57ced57deb009b39447b7e7fa5c302dff98ad62918181a25e0bd10b00619",
+      "publishedSha256": "d40af43a5442dda9bb39d36e86cb6f0a477244e86e20ae2e1306d3cafa5e68e6"
+    }
+  ]
+}

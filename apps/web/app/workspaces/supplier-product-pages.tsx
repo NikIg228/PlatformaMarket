@@ -11,7 +11,6 @@ import { DmSearch, DmButton, DmField, DmInput, ErrorState, LoadingState } from "
 import type { ProductCandidateHistoryResponse } from "@marketplace/schemas";
 import { ProductProposals } from "../../../supplier-web/app/features/supplier-workspace/product-proposals";
 import { ProductCorrectionsPanel } from "../../../supplier-web/app/product-corrections-panel";
-import { AddOfferWizard } from "../../../supplier-web/app/features/supplier-workspace/add-offer-wizard";
 import { ProductProposalForm } from "../../../supplier-web/app/features/supplier-workspace/product-proposal-form";
 import type { SupplierDataSource } from "../../../supplier-web/app/features/supplier-workspace/types";
 import { useWorkspace } from "./workspace";
@@ -19,12 +18,6 @@ import { useResource } from "./use-resource";
 import { ResourceStatus } from "./resource-status";
 import { PermissionBoundary } from "./permission-boundary";
 import styles from "./workspace.module.css";
-
-export const supplierProductLinks = [
-  ["/supplier/products/proposals", "Заявки на новые товары"],
-  ["/supplier/products/corrections", "Исправления карточек"],
-  ["/supplier/products/inventory", "Остатки"],
-] as const;
 
 function Frame({ title, children }: { title: string; children: React.ReactNode }) {
   return <div className={styles.stack} aria-label={title}>{children}</div>;
@@ -69,14 +62,6 @@ export function InventoryPage() {
 }
 export function SourcesPage() {
   return <div className={styles.stack}><Link href="/supplier/settings">← Настройки организации</Link><PermissionBoundary required={["import.manage"]}><SettingsSources /></PermissionBoundary></div>;
-}
-export function AddProductPage() {
-  return <Frame title="Добавить товар"><PermissionBoundary required={["catalog.offer.edit", "catalog.product.view"]}><AddProduct /></PermissionBoundary></Frame>;
-}
-function AddProduct() {
-  const { api, organizationId } = useWorkspace();
-  const request = useSearchParams().get("request") === "1";
-  return request ? <ProductProposalForm api={api} /> : <AddOfferWizard api={api} supplierId={organizationId} />;
 }
 export function ImportProductsPage() {
   return <Frame title="Загрузить из файла"><PermissionBoundary required={["import.manage"]}><ImportProducts /></PermissionBoundary></Frame>;

@@ -29,5 +29,6 @@ try {
   assert.equal(result.services['stand-access'].environment.STAND_STATE_FILE, '/state/attempts.json');
   assert.equal(result.services['stand-access'].environment.STAND_PRODUCT, market ? 'Market' : 'CRM');
   assert.ok(result.services['stand-access'].volumes.some(v => v.target === '/state'));
+  if (market) assert.equal(result.services.worker.depends_on.api.condition, 'service_healthy');
   console.log('Compose merge PASS: only Caddy publishes ports; protected routes and persistent state selected');
 } finally { rmSync(dir, { recursive: true, force: true }); }

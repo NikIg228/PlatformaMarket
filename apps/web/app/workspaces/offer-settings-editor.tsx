@@ -1,7 +1,12 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 import { useEffect, useRef, useState } from "react";
 import type { OfferOption, WorkspaceOffer } from "@marketplace/schemas";
-import { DmButton, DmDropdown, DmField, ErrorState, errorMessage, formatStatus, usePermissions } from "@marketplace/ui";
+import { DmButton, DmField } from "@marketplace/ui/controls";
+import { DmDropdown } from "@marketplace/ui/dm-dropdown";
+import { ErrorState } from "@marketplace/ui/primitives";
+import { errorMessage, formatStatus } from "@marketplace/ui/format";
+import { usePermissions } from "@marketplace/ui/permissions";
 import { useWorkspace } from "./workspace";
 import { offerAttention } from "./offer-summary";
 import { EditorActions, useEditorGuard, type OfferEditorProps } from "./offer-editor-shared";
@@ -32,7 +37,7 @@ export function OfferSettingsEditor(props: OfferEditorProps & { mode: "packaging
   const attention = offerAttention(current), pack = packs.find(item => item.id === selected);
   const ready = Boolean(current.packaging && current.prices.some(item => item.status === "ACTIVE") && !attention.priceWarning && !attention.stockWarning);
   return <div className={styles.form}>
-    {loading ? <p role="status">Загружаем условия предложения…</p> : null}{error ? <ErrorState description={error} /> : null}
+    {loading ? <LoadingState presentation="inline" label="Загружаем условия предложения…" /> : null}{error ? <ErrorState description={error} /> : null}
     {error || mustRefresh ? <DmButton disabled={loading || busy} onClick={() => setAttempt(value => value + 1)}>Повторить загрузку</DmButton> : null}
     {!loading && loaded ? <>{packaging ? <>
       <dl className={styles.readOnly}><div><dt>Артикул поставщика</dt><dd>{current.supplierSku ?? "Не указан"}</dd></div><div><dt>Единица продажи</dt><dd>{current.saleUnit?.nameRu ?? "Не указана"}</dd></div><div><dt>Минимальный заказ</dt><dd>{current.minimumOrderQuantity} {current.saleUnit?.symbol}</dd></div><div><dt>Шаг заказа</dt><dd>{current.orderIncrement} {current.saleUnit?.symbol}</dd></div></dl>

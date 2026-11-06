@@ -1,1 +1,1 @@
-export { AddProductPage as default } from "../../../workspaces/supplier-product-pages";
+export { AddProductPage as default } from "../../../workspaces/add-product-page";

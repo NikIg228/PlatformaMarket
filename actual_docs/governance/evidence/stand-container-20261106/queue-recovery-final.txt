@@ -1,0 +1,3 @@
+ Container market-acceptance-20261106-api-run-62d9c47797db Creating
+ Container market-acceptance-20261106-api-run-62d9c47797db Created
+{"result":"PASS","state":"completed","attemptsMade":1,"returnvalue":{"orders":0,"standalone":0}}

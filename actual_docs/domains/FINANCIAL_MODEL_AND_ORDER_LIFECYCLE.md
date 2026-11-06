@@ -4,7 +4,7 @@
 
 Ниже сохранён статический разбор runtime23.10 и прежних решений, с его формулами/
 ссылками. Он не является текущим контрактом новых P1–P7/B2C/агентов/доставки.
-Действующие требования — [объединённое ТЗ Market](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md), реализация — R0–R9.
+Действующие требования — [объединённое ТЗ Market](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#approved-requirements), реализация — R0–R9.
 Новые отличия: P1 семь дней без резерва, optional proof, paid-part/proposal28А,
 отдельные прямые payments26А и отдельная доставочная сумма Platforma; комиссия10%
 с пятидневным принципом комплекта+отправки; supplier-agent90суток/ставка OPEN/42А;
@@ -21,8 +21,8 @@
 продукта и кода на указанной версии. Оно не вводит новые бизнес-правила, не
 сертифицирует production и не заменяет бухгалтерское или правовое заключение.
 
-Приоритет требований сохраняют [функциональная карта](../FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md)
-и [PROJECT_OVERVIEW](../PROJECT_OVERVIEW.md). Единственный реестр исполнения —
+Приоритет требований сохраняют [функциональная карта](../../README.md#functional-state)
+и [PROJECT_OVERVIEW](../../README.md#functional-state). Единственный реестр исполнения —
 [Main Roadmap R0–R9](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
 Этот документ связывает существующие области в один сценарий, а не создаёт
 параллельный backlog. Последние результаты документов и подписанта необходимо
@@ -1286,7 +1286,7 @@ reseed, новый внешний сервис или deploy.
 
 | Вопрос | Источник |
 | --- | --- |
-| Принятые цели и правила | [Функциональная карта](../FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md), [overview](../PROJECT_OVERVIEW.md) |
+| Принятые цели и правила | [Функциональная карта](../../README.md#functional-state), [overview](../../README.md#functional-state) |
 | Единые статусы исполнения | [Roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md) |
 | Прямые платежи и банк | [payments](payments.md) |
 | 10%, период и открытый долг | [commissions](commissions.md), [ADR-016](../architecture/adr/016-commerce-metric-facts.md) |
@@ -1294,7 +1294,7 @@ reseed, новый внешний сервис или deploy.
 | Агентская программа | [referrals](referrals.md) |
 | Документы, налоги и подписи | [MARKET_DOCUMENT_WORKFLOW](MARKET_DOCUMENT_WORKFLOW.md), [implementation log](document-workflow-implementation-log.md) |
 | Версионная приёмка | [Acceptance Matrix](../governance/PROJECT_ACCEPTANCE_MATRIX.md), [checkpoint](../governance/task-state/PRIMARY-SESSION.md) |
-| Открытые бизнес-решения | [68 вопросов](../governance/BUSINESS-LOGIC-QUESTIONS-2026-10-16.md) |
+| Открытые бизнес-решения | [68 вопросов](../OPEN_QUESTIONS.md) |
 
 Кодовые ссылки по разделам ведут к реализации на исследованной структуре
 репозитория. Для воспроизводимого сравнения следует использовать указанный

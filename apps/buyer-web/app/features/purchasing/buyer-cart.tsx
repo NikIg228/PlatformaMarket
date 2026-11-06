@@ -1,9 +1,9 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 import { ActionFeedback, DmFeedback, useToast, VatLineAmount, VatBreakdown } from "@marketplace/ui";
 import { cartChangeNotice } from "./cart-notice";
 
 import { useEffect, useRef, useState } from "react";
-import { Spinner } from "@fluentui/react-components";
 import { Alert24Regular } from "@fluentui/react-icons/svg/alert";
 import { ArrowSync24Regular } from "@fluentui/react-icons/svg/arrow-sync";
 import { Cart24Regular } from "@fluentui/react-icons/svg/cart";
@@ -53,7 +53,7 @@ function ValidationIcon({
   tone: "neutral" | "success" | "warning" | "danger";
   loading: boolean;
 }) {
-  if (loading) return <Spinner size="tiny" />;
+  if (loading) return <LoadingState presentation="inline" label="Загружаем корзину…" />;
   if (tone === "success") return <CheckmarkCircle24Regular />;
   if (tone === "neutral") return <ArrowSync24Regular />;
   return <Alert24Regular />;

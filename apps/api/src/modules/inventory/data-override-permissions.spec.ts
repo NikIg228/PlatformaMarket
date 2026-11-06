@@ -1,5 +1,6 @@
 import { ForbiddenException, NotFoundException, type ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
+import { Prisma } from "@prisma/client";
 import { createDataOverrideSchema } from "@marketplace/schemas";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AccessControlService } from "../access-control/access-control.service";
@@ -32,6 +33,7 @@ function fixture(grants = ["inventory.adjust"], target: Target = "PRICE", option
     $queryRaw: vi.fn(),
     supplierVatSettings: { findUnique: vi.fn(async () => null) },
     dataOverride: {
+      findFirst: vi.fn(async () => current),
       update: vi.fn(async ({ data }: { data: object }) => ({ ...current, ...data })),
       create: vi.fn(async ({ data }: { data: object }) => ({ id: "new-override", ...data })),
     },
@@ -42,7 +44,7 @@ function fixture(grants = ["inventory.adjust"], target: Target = "PRICE", option
     },
     offerPriceHistory: { create: vi.fn(async () => ({ id: "history" })) },
     supplierOffer: { update: vi.fn(async () => ({ id: offerId })) },
-    inventoryBalance: { update: vi.fn(async () => ({ id: balanceId })) },
+    inventoryBalance: { findFirst: vi.fn(async () => ({ id: balanceId, quantityReserved: 2, safetyStock: 3 })), update: vi.fn(async () => ({ id: balanceId })) },
     auditLog: { create: vi.fn(async () => ({ id: "audit" })) },
     outboxEvent: { create: vi.fn(async () => ({ id: "outbox" })) },
   };
@@ -134,7 +136,7 @@ describe("manual override permissions", () => {
   it("preserves inventory-only creation and cancellation; extra price fields cannot reach price writes", async () => {
     const f = fixture(undefined, "INVENTORY");
     await f.create({ ...inventoryBody(), offerId, value: { quantityOnHand: 20, amountMinor: "1", currency: "KZT" } });
-    expect(f.tx.inventoryBalance.update).toHaveBeenCalledWith({ where: { id: balanceId }, data: expect.objectContaining({ quantityAvailable: 15 }) });
+    expect(f.tx.inventoryBalance.update).toHaveBeenCalledWith({ where: { id: balanceId }, data: expect.objectContaining({ quantityAvailable: new Prisma.Decimal(15) }) });
     expect(f.tx.offerPrice.create).not.toHaveBeenCalled();
     expect(f.tx.offerPrice.updateMany).not.toHaveBeenCalled();
     expect(f.tx.offerPriceHistory.create).not.toHaveBeenCalled();

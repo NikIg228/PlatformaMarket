@@ -560,7 +560,7 @@ export default function SupplierWorkspace() {
       : item,
   );
 
-  if (!handoffChecked) return <LoadingState label="Проверяем вход" />;
+  if (!handoffChecked) return <LoadingState label="Загружаем кабинет…" />;
   if (!handoff) return <ErrorState presentation="inline" title="Войдите в кабинет поставщика" description={sessionError ?? "Кабинет доступен только участникам организации."} action={<><DmButton as="a" href={loginUrl}>Войти</DmButton><DmButton onClick={() => void sessionStore.retry()}>Повторить проверку</DmButton></>} />;
 
   return (

@@ -1,4 +1,4 @@
-import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from "@nestjs/common";
+import { Injectable, Logger, type OnApplicationBootstrap, type OnModuleDestroy } from "@nestjs/common";
 import { Queue, Worker, type JobsOptions } from "bullmq";
 import IORedis from "ioredis";
 import { environment } from "../config/environment";
@@ -8,7 +8,7 @@ type QueuePayload = Record<string, unknown>;
 type QueueHandler = (payload: QueuePayload, jobId: string | undefined) => Promise<unknown>;
 
 @Injectable()
-export class BackgroundQueueService implements OnModuleInit, OnModuleDestroy {
+export class BackgroundQueueService implements OnApplicationBootstrap, OnModuleDestroy {
   private readonly logger = new Logger(BackgroundQueueService.name);
   private readonly handlers = new Map<string, QueueHandler>();
   private queue?: Queue<QueuePayload>;
@@ -25,7 +25,8 @@ export class BackgroundQueueService implements OnModuleInit, OnModuleDestroy {
     this.handlers.set(name, handler);
   }
 
-  async onModuleInit() {
+  // Persisted jobs must wait for all modules to register their handlers.
+  async onApplicationBootstrap() {
     const config = environment();
     const capabilities = runtimeCapabilities(config.PROCESS_ROLE);
     if (!config.BACKGROUND_QUEUE_ENABLED || !config.REDIS_URL) {

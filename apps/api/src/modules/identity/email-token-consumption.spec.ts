@@ -4,7 +4,7 @@ import { AuthSessionsService } from "./auth-sessions.service";
 function fixture(type: "EMAIL_VERIFICATION" | "PASSWORD_RESET", claimed = 1) {
   const token = { id: "token", userId: "user", type, consumedAt: null, expiresAt: new Date(Date.now() + 60_000), metadata: null,
     user: { id: "user", email: "synthetic@example.invalid", displayName: "Synthetic", status: "ACTIVE" } };
-  const tx = { emailAuthToken: { updateMany: vi.fn(async () => ({ count: claimed })) }, user: { update: vi.fn() }, authSession: { updateMany: vi.fn() }, securityEvent: { create: vi.fn() } };
+  const tx = { $queryRaw: vi.fn(async () => []), emailAuthToken: { updateMany: vi.fn(async () => ({ count: claimed })) }, user: { findUnique: vi.fn(async () => token.user), update: vi.fn() }, authSession: { updateMany: vi.fn() }, securityEvent: { create: vi.fn() } };
   const db = { emailAuthToken: { findUnique: vi.fn(async () => token) }, $transaction: vi.fn(async (run: (value: typeof tx) => Promise<unknown>) => run(tx)) };
   const service = new AuthSessionsService(db as never, {} as never, {} as never, {} as never);
   return { token, tx, service };

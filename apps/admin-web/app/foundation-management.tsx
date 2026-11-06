@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useToast, DmButton, DmCheckbox, DmField, DmInput, DmSelect } from "@marketplace/ui";
@@ -192,10 +193,7 @@ export function FoundationManagement({ catalogOnly = false }: { catalogOnly?: bo
 
       </div>
       {loading ? (
-        <div className={styles.loading} aria-label="Загрузка управления">
-          <i />
-          <i />
-        </div>
+        <LoadingState label="Загружаем настройки управления…" />
       ) : (
         <div className={styles.grid}>
         {loadFailed ? <DmButton disabled={loading} onClick={() => void load()}>Повторить загрузку данных</DmButton> : null}

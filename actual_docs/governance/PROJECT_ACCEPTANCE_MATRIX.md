@@ -1,3 +1,134 @@
+## 05.11 — staging cleanup: LOCAL_PREPARED / CONTAINER_BLOCKED
+
+Шесть согласованных областей подготовлены: runtime stages/context, API/schema build
+без tests,9неиспользуемых modules+privateCSS, удаление11Vercel files иpnpm config,
+ограниченное хранение Turbo cache. WorkingDB/catalog/public исходники сохранены.
+Packaging9/cache7/frontendtypes3/bundle/scopedlint и compiled PDF/DOCX PASS;
+предыдущие API/schema/web build/runtime/config PASS переиспользованы по неизменным
+входам.479data/publichashes и версии зависимостей сохранены. Docker отсутствует:
+image sizes и container smoke NOT_RUN; без commit/push/deploy. A04/A07 остаются
+незавершёнными отдельно. [Evidence](evidence/staging-code-cleanup-20261105.md).
+## 04.11 — A07 FE-RECOVERY: BROWSER_BLOCKED
+
+Отдельный replay точной сохранённой workflow-команды остаётся доступным после
+смены status. GET не считается подтверждением записи; новое действие возможно
+после receipt/rejection. UI13/API10, types4, unified build, lint/UI-contract PASS.
+Handler harness использует mock hooks/API, не заменяет браузер. Screenshot,
+computed, keyboard/1440RU390KK NOT_RUN: прежний launch-blocker A04 сохраняется,
+лимит трёх отказов не сбрасывался. Без commit/push/deploy; prior WIP сохранён.
+Подробные commands/attempts/границы: [evidence](evidence/workflow-recovery-20261104.md).
+## 04.11 — A04 после возобновления: BROWSER_BLOCKED
+
+Точная команда frontend3300 отклонена automatic review третий раз до
+CreateProcess: `blocked by policy`, подробная причина отсутствует. Fixture4129
+не запускался; новые browser/screenshot/computed PASS отсутствуют. Обходов нет.
+Следующий шаг — снять ограничение среды; обычное повторное разрешение владельца
+уже было и не изменило исход. [Evidence](evidence/session-recovery-20261104.md).
+
+## 04.11 — A05/B040 после возобновления: LOCAL_PASS
+
+Authorize/capture/cancel/payout восстанавливают durable success без повторного
+PSP. Capture P2010/40001 обрабатывается узко; без committed transaction успех
+не возвращается. Payments43/dependent105, types/build, focused PG3 (stock/lot/
+reservation rollback + две connections), HTTP3 (JWT/role/tenant/input/replay),
+fullPG/runtime/lint/diff PASS. Исходные и возобновлённые failures сохранены в
+[evidence](evidence/payment-recovery-20261104.md). Live PSP/production не приняты.
+Изолированные fixtures очищены, immutable synthetic ledger сохранён в test DB.
+A04 остаётся отдельным незавершённым пунктом; prior WIP/publication не затронуты.
+Scope-only local commit5161af7; исходные staged files сохранены. Push/CI NOT_RUN:
+до задачи уже было шесть local-only outgoing commits другого scope.
+
+## 04.11 — наблюдение при A05: requestId раннего отказа identity
+
+HTTP probe A05 attempt2: запрос с действующим foreign JWT и подставленным
+x-organization-id правильно отклонён401 до платёжного handler; code/path есть,
+requestId отсутствует. Обычные role/tenant отказы проходят отдельным путём.
+Источник: identity middleware/bootstrap до request-id, ApiExceptionFilter
+добавляет requestId только при наличии response header. Это существующая
+граница общего error envelope, не обход доступа и не изменение payment recovery.
+В этой задаче не исправлялась; общего PASS error-envelope не заявляем.
+Evidence: `.tmp/payment-recovery-resume-http-2.log`.
+
+## 04.11 — цикл 6: B032/B033/B035/B044, LOCAL_PASS
+
+203 dependent tests; после финальных уточнений 58 price/reservation и22 secret
+consumer tests PASS. API types3/build3, focused PostgreSQL2, dependent fullPG1,
+runtime1, lint/diff PASS. Failures, изменённые входы и reuse boundaries сохранены
+в [evidence](evidence/erp-reliability-20261104.md). SQL rollback/concurrency,
+safe MAX_SAFE_INTEGER, tenant denial, stable external key и secret encryption
+подтверждены локально. Real ERP dedup/live, self-service и R3 остаются OPEN.
+Working DB/dev/deploy не затронуты; publication/CI заблокированы прежним outgoing.
+Циклы4/5 не закрываются этим PASS.
+
+## 04.11 — цикл 4: FE-SESSION/B029/FE-REG, BROWSER_BLOCKED
+
+Реализация и source-based UI подготовлены; принятие всей задачи остаётся открытым.
+Identity171, correction42, unlink14, schemas9, client6, admin14, receipt6,
+landing21 tests PASS; focused HTTP/PG concurrency/rollback/denial и общий PG PASS,
+core-contract и runtime PASS. Подробные команды, сборки и ограничения в
+[evidence](evidence/session-recovery-20261104.md).
+Browser запуск отклонён automatic review; альтернативы не запускались.
+Скриншоты/computed styles/keyboard/mobile NOT_RUN, не заменены unit PASS.
+Рабочие данные/deploy не затронуты; commit/push/CI не выполнялись для цикла4.
+
+## 04.11 — цикл 3: AI privacy/actions, LOCAL_PASS
+
+B016/B017 исправлены в scope одного provider payload и execution ID.
+36 unit/dependent tests, API types/build,2 focused PG runs (второй добавляет
+rollback), полный PG1/runtime1/lint/diff PASS. Реальные два соединения:
+один ticket/message/audit; concurrent409, replay404, tenant/permission denial,
+rollback и сохранение штатного подтверждения. Провайдер подменён; рабочая БД,
+UI и activation profile не изменены. [Evidence](evidence/ai-privacy-actions-20261104.md).
+Publication/CI NOT_RUN из-за прежних local-only outgoing commits.
+
+## 04.11 — цикл 2: остатки и количества, LOCAL_PASS
+
+Серверный B036: tenant-scoped row lock, чтение текущего reserved/safetyStock и
+Decimal-инвариант внутри Serializable. FE-QUANTITY/NUMBER/FORM-001: минимум+шаг,
+валидные целые/дробные количества, сообщения общей схемы и фокус ошибочного поля.
+60 inventory +20 dependent API +4 quantity tests PASS. API и4 frontend builds,
+7 workspace typechecks, PG3, core-contract1,8 уникальных browser scenarios PASS.
+Fixture failures и границы сохранены в [evidence](evidence/stock-quantities-20261104.md).
+Рабочая БД/deploy не затронуты; процессы закрыты, dev выключен. Push/CI NOT_RUN:
+исходящая история содержит прежние не разрешённые к публикации коммиты аудита.
+
+## 04.11 — цикл 1: видимость предложений и compliance, LOCAL_PASS
+
+B043: compare применяет buyer/city audience в Prisma-запросе до загрузки
+цен/остатков. Public context нельзя заменить query-параметром; допустимые
+покупатели, SQL/JSON null, пустые списки и существующая семантика отсутствующего
+city сохраняются. B026: невыполненные требования определяются условиями,
+а не русским текстом reasons/disclosure; любой документ из каждой группы
+допустим, BLOCKED не ослабляется. Форматы API и действия UI не изменены.
+
+База af714969; собственный diff ограничен search/compliance и regression scripts.
+`npm run test --workspace=@marketplace/api -- src/modules/compliance src/modules/search src/modules/pricing/price-resolver.spec.ts`:
+28 PASS. Первичный regression до исправления: 3 FAIL/10 PASS, включая
+пропущенный any-of и ложный review по disclosure. API typecheck, schemas/API
+build (включая Prisma generate), changed-file ESLint и diff hygiene PASS.
+
+`npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs --catalog-admission-only`:
+PASS attempt2. Attempt1 остановился на отсутствующем городе тестового склада;
+fixture получила reference city с восстановлением. Проверены реальные HTTP
+public/protected compare, foreign buyer denial, variant/city/hidden и malformed
+audience; оригинальный ComplianceService с PostgreSQL проверил publication и
+checkout guards, обе альтернативы, PENDING/expired denial и UNDER_REVIEW.
+Регрессия находится в `scripts/lib/verify-catalog-admission.mjs` и входит в общий PG gate.
+
+После тех же schemas/API build prerequisites выполнены без повторной сборки:
+`npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs` — PASS;
+`npm run db:test -- exec -- node scripts/verify-pilot-backend.mjs --contract-only`
+— PASS: 71 core operations, 209 success-schema operations, 301 components,
+response/error validation и каталог 50/500. Все процессы проверок завершены.
+Среда: disposable dentmarket_audit_20260914, pilot/test/development auth;
+это не production JWT/provider/browser или полная release-приёмка.
+
+Новых миграций, UI и wire-contract изменений нет. Рабочие данные и сохранённые
+старые compliance checks не переписывались; исправлено выполнение новых проверок.
+Dev остановлен по поручению владельца и оставлен выключенным.
+Публикация/CI отдельно: outgoing range содержит прежний local-only аудит,
+разрешение на его публикацию этим циклом не предполагается. Остальные циклы открыты.
+
 ## 04.11 — исправления аудита: scoped LOCAL_PASS
 
 AUD-SEC01/API01/FUNC05: actor/session ownership, отдельная agent-token граница и

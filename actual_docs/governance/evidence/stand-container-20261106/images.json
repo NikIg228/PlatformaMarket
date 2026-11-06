@@ -1,0 +1,29 @@
+[
+  {
+    "Id": "sha256:9fdd059c82261f0b1be39834a90e5b4592461158c2f3e7fb7432d1d84bbad931",
+    "Size": 1294977960,
+    "Architecture": "amd64",
+    "Os": "linux",
+    "RepoTags": [
+      "platformamarket-api:stand-20261106-local2"
+    ]
+  },
+  {
+    "Id": "sha256:9955d2d38746ea6a609425649ab08b23a4424d824a738f947649e8717fc867ae",
+    "Size": 418446501,
+    "Architecture": "amd64",
+    "Os": "linux",
+    "RepoTags": [
+      "platformamarket-web:stand-20261106-local1"
+    ]
+  },
+  {
+    "Id": "sha256:a91dfaf2e01aae7030aba951dd677dd8efe0ab22c5f10953f23eba9484512574",
+    "Size": 459309659,
+    "Architecture": "amd64",
+    "Os": "linux",
+    "RepoTags": [
+      "platformamarket-storage-fixture:20261106"
+    ]
+  }
+]

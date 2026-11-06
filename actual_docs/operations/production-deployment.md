@@ -5,11 +5,11 @@ resource sizes and tariff are not yet selected. The earlier Kazakhstan wording i
 not a current region approval. The owner supplies the cloud account, budget and
 domain decisions; this runbook does not authorize purchases or deployment.
 Recovery targets are **RTO ≤ 2 hours and RPO ≤ 5 minutes** under
-[the accepted requirements §28](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md#spec-28).
+[the accepted requirements §28](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#r9).
 These are targets, not measured guarantees of an available cloud environment.
 
 The earlier 30 October launch date is historical. Current product scope and dates
-are recorded in [PROJECT_OVERVIEW](../PROJECT_OVERVIEW.md); the03.11 audit has no deadline.
+are recorded in [PROJECT_OVERVIEW](../../README.md#functional-state); the03.11 audit has no deadline.
 Owner acceptance sequence: review locally implemented functionality → connect
 required external services and deploy to live hosting/domain/database → pass the
 applicable checks → accept production readiness. Existing isolated/local checks
@@ -32,6 +32,14 @@ does not prove production auth or shared rate limiting.
 
 ## Release contract
 
+Release first resolves the checked-out commit and requires the latest `ci.yml`
+push run on `main` for that exact SHA to have completed successfully. Missing,
+running, failed, cancelled or inaccessible CI blocks image publication; an older
+successful run does not override a newer failure. The images job checks out the
+verified SHA and also publishes a `sha-<40-character SHA>` tag. Record image
+digests alongside that SHA: tags alone do not prevent registry overwrites.
+Release requires `actions: read`; only the publishing job gets `packages: write`.
+
 Production uses an immutable image tag built by `.github/workflows/release.yml` from a `v*` tag or an explicitly authorized manual release. Configure GitHub repository variables `DEPLOYMENT_PROFILE`, `PUBLIC_WEB_URL`, `GOOGLE_CLIENT_ID`, `APPLE_CLIENT_ID`, and `APPLE_REDIRECT_URI`. The web origin must be HTTPS; Apple return must use that origin. Browser API calls use `/api`; Docker's fixed upstream is `http://api:4000/api`. Set `DEPLOYMENT_PROFILE=go_live` for the approved production contour; API and web must use the same profile (see [deployment profiles](deployment-profiles.md)). Copy `.env.production.example` to `.env.production` on the host and replace every placeholder through the secret manager. Set WEB_DOMAIN to the approved host. These instructions do not authorize that deployment.
 
 CI builds both `api` and `web` Docker targets without publishing images and validates production Compose/Caddy with example configuration. Release publishes those two images; worker uses the API image. Docker build context excludes `.env*`, local storage, temporary evidence and session files. No production secrets belong in build arguments.
@@ -49,10 +57,25 @@ URL-encoded bodies retain a 1 MiB limit. Oversized HTTP bodies return the standa
 The Next.js rewrite buffer is bounded by the maximum import JSON size plus 1 MiB
 of stream-chunk headroom, so a legitimate base64 file is not truncated and oversized chunked payloads
 can reach the API's 413 boundary. Route-specific lower limits remain in the API.
+Both current Caddy ingress configurations cap API bodies at **26,797,740 bytes**:
+`ceil(20,000,000 / 3) * 4 + 131,072`, matching the import JSON contract exactly.
+The API retains its lower per-route limits and decoded-file validation.
 
 `compose.production.yaml` starts two processes from the same API image: `PROCESS_ROLE=api` serves HTTP and produces queue jobs without cron/consumers; `PROCESS_ROLE=worker` runs cron and BullMQ consumers without an HTTP listener. `PROCESS_ROLE=all` is rejected in production. The worker performs role-aware dependency readiness before announcing startup and exits when its required database, storage, or queue dependency is unavailable.
 
 ## First deployment
+
+The worker depends on API `service_healthy`. API startup runs `prisma migrate
+deploy && exec ...`; a migration failure prevents API readiness and therefore
+worker startup under Compose. This is a startup dependency, not ongoing worker
+supervision. During upgrades, stop the old worker before changing the release
+and applying migrations, then recreate API/worker together; do not use
+`--no-deps` to bypass this ordering. Keep migrations backward-compatible.
+The healthcheck uses `127.0.0.1`, matching the API IPv4 listener; `localhost`
+can resolve to IPv6 and report a false startup failure in Alpine. Queue
+connections start in `onApplicationBootstrap`, after domain modules register
+their handlers in `onModuleInit`, so persisted jobs do not consume a retry
+while the application is still registering handlers.
 
 1. Create managed PostgreSQL with PITR, managed Redis with TLS, an encrypted S3-compatible private bucket, DNS records, EDS gateway credentials, PSP credentials, transactional email credentials, Sentry and OTLP projects.
 2. Pre-provision the agreed corporate operator users as active members of the `MARKETPLACE_OPERATOR` organization, with verified emails, passwords and the required grants. `/admin/login` uses the separate operator-password flow under the owner's13.10 decision; it does not offer Google/Apple or TOTP enrollment. Verify session, user and operator-membership revocation according to [the current login contract](operations.md).

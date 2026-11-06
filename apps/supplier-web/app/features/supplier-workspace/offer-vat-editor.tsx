@@ -2,7 +2,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import { vatLabel, type OfferVatInput, type SupplierVatSettings, type VatSelection } from "@marketplace/schemas";
-import { DmButton, DmCheckbox, ErrorState, LoadingState, errorMessage } from "@marketplace/ui";
+import { DmButton, DmCheckbox } from "@marketplace/ui/controls";
+import { ErrorState, LoadingState } from "@marketplace/ui/primitives";
+import { errorMessage } from "@marketplace/ui/format";
 import { VatFields, parseVatDraft, vatDraft } from "./vat-fields";
 
 export function OfferVatEditor({ api, supplierId, initial, applyDefault = false, disabled = false, onChange, onDirty }: {

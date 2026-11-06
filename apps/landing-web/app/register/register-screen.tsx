@@ -4,6 +4,7 @@ import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
 import { useProductReturn } from "../use-product-return";
 import styles from "../auth-split.module.css";
 import { RegistrationHeading } from "./registration-heading";
+import { RegistrationEmailCorrection } from "./registration-email-correction";
 
 import {
   DmButton,
@@ -63,6 +64,8 @@ export default function RegisterPage() {
   const [submitted, setSubmitted] = useState(false);
   const [feedback, setFeedback] = useState<AuthFeedback | null>(null);
   const idempotencyKey = useRef<string | null>(null);
+  const registrationToken = useRef<string | null>(null);
+  const [correctingEmail, setCorrectingEmail] = useState(false);
 
   useEffect(() => {
     const role = new URLSearchParams(window.location.search).get("role");
@@ -137,6 +140,7 @@ export default function RegisterPage() {
           "Эта заявка уже завершена или истекла. Войдите в аккаунт либо обратитесь в поддержку.",
         );
       }
+      registrationToken.current = result.registrationToken;
       const accepted = authRegistrationAcceptedSchema.parse(await authRequest("/auth/register", {
         email: form.email,
         displayName: form.ownerDisplayName,
@@ -177,7 +181,11 @@ export default function RegisterPage() {
             <span>{delivery === "LOCAL_FILE" ? "Письмо не отправлялось в интернет. Откройте JSON-файл в папке .tmp/auth-mail локального API или попросите оператора тестового стенда." : "Проверьте папку «Спам», если письма нет во входящих."}</span>
             <span>Ссылка ограничена по времени и используется один раз.</span>
           </div>
-          <div className="registrationActions">
+          {correctingEmail && registrationToken.current ? <RegistrationEmailCorrection
+            initialEmail={registeredEmail} registrationToken={registrationToken.current} password={form.password} returnTo={returnTo}
+            onAccepted={result => { setRegisteredEmail(result.email); setDelivery(result.delivery); setCorrectingEmail(false); }}
+            onCancel={() => setCorrectingEmail(false)}
+          /> : <div className="registrationActions">
             <DmButton as="a" appearance="primary" className="primary registrationPrimary" href={withWorkspaceReturn("/login", returnTo)}>
               Перейти ко входу
             </DmButton>
@@ -185,13 +193,12 @@ export default function RegisterPage() {
               type="button"
               appearance="subtle"
               onClick={() => {
-                setRegisteredEmail(null);
-                setFeedback(null);
+                setCorrectingEmail(true);
               }}
             >
               Исправить email
             </DmButton>
-          </div>
+          </div>}
         </section>
       </main>
     );

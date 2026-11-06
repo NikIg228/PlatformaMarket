@@ -11,6 +11,8 @@ import { completeFixtureOrganization } from "./lib/organization-profile-fixture.
 import { verifyCheckoutSnapshot } from "./lib/verify-checkout-snapshot.mjs";
 import { verifyLotEligibility } from "./lib/verify-lot-eligibility.mjs";
 import { verifyOfferCommercial } from "./lib/verify-offer-commercial.mjs";
+import { verifyCatalogAdmission } from "./lib/verify-catalog-admission.mjs";
+import { verifyStockQuantities } from "./lib/verify-stock-quantities.mjs";
 import { verifyCartRecovery } from "./lib/verify-cart-recovery.mjs";
 import { verifyPersonalCart, verifyPersonalCartUpgrade } from "./lib/verify-personal-cart.mjs";
 import { verifySupplierStorefront, verifyStorefrontUpgrade } from "./lib/verify-supplier-storefront.mjs";
@@ -610,18 +612,20 @@ try {
   const responseOnly = process.argv.includes("--response-only");
   const calendarOnly = process.argv.includes("--calendar-only");
   const commercialOnly = process.argv.includes("--commercial-only");
+  const catalogAdmissionOnly = process.argv.includes("--catalog-admission-only");
+  const stockOnly = process.argv.includes("--stock-quantities-only");
   const requisitesOnly = process.argv.includes("--requisites-only");
   const waybillOnly = process.argv.includes("--waybill-only");
   const discrepanciesOnly = process.argv.includes("--discrepancy-only");
   const resupplyOnly = process.argv.includes("--resupply-only");
   const invoiceOnly = process.argv.includes("--invoice-only") || waybillOnly || discrepanciesOnly || resupplyOnly;
   const vatOnly = process.argv.includes("--vat-only");
-  if (!responseOnly && !calendarOnly && !storefrontOnly && !wave1SecurityOnly && !commercialOnly && !requisitesOnly && !vatOnly && !invoiceOnly) {
+  if (!responseOnly && !calendarOnly && !storefrontOnly && !wave1SecurityOnly && !commercialOnly && !catalogAdmissionOnly && !stockOnly && !requisitesOnly && !vatOnly && !invoiceOnly) {
     await verifyManualPaymentUpgrade(prisma, assert);
     await verifyPromotionUpgrade(prisma, assert);
     await verifyCommerceMetricUpgrade(prisma, assert);
   }
-  if (!responseOnly && !calendarOnly && !storefrontOnly && !wave1SecurityOnly && !commercialOnly && !vatOnly && !invoiceOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
+  if (!responseOnly && !calendarOnly && !storefrontOnly && !wave1SecurityOnly && !commercialOnly && !catalogAdmissionOnly && !stockOnly && !vatOnly && !invoiceOnly) await verifyOrganizationRequisitesUpgrade(prisma, assert);
   const [rollbackOffer, idempotencyOffer, concurrencyOffer, correctionOffer, snapshotOffer, ...lotOffers] =
     (requisitesOnly || wave1SecurityOnly) ? [] : await createFixtureCatalog();
   const [
@@ -646,7 +650,11 @@ try {
   api.stderr.on("data", rememberLog);
   await waitUntilReady();
 
-  if (responseOnly) {
+  if (stockOnly) {
+    await verifyStockQuantities({ prisma, offer: rollbackOffer, supplierId: fixture.supplierId, createBuyer, request, runId, assert });
+  } else if (catalogAdmissionOnly) {
+    await verifyCatalogAdmission({ prisma, offer: rollbackOffer, publicBuyer: tenantOwner, foreignBuyer: foreignTenant, supplierId: fixture.supplierId, request, runId, assert });
+  } else if (responseOnly) {
     await verifyOrderResponseUpgrade(prisma, assert);
     await verifyOrderResponse({ prisma, fixture, request, runId, assert, createBuyer, createCartWithItem, offerId: snapshotOffer.offerId });
   } else if (calendarOnly) {
@@ -675,6 +683,8 @@ try {
       createBuyer, request, runId, assert });
     console.log("Focused PostgreSQL commercial verification PASS");
   } else {
+  await verifyStockQuantities({ prisma, offer: rollbackOffer, supplierId: fixture.supplierId, createBuyer, request, runId, assert });
+  await verifyCatalogAdmission({ prisma, offer: rollbackOffer, publicBuyer: tenantOwner, foreignBuyer: foreignTenant, supplierId: fixture.supplierId, request, runId, assert });
   await verifySupplierCalendarUpgrade(prisma, assert);
   await verifySupplierCalendar({ prisma, fixture, request, runId, assert, createBuyer, createCartWithItem, offerId: snapshotOffer.offerId });
   await verifyOrderResponseUpgrade(prisma, assert);

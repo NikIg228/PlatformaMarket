@@ -37,6 +37,12 @@ export function workspaceContext(transport: ClientTransport) { return transport.
 
 export function registerEmail(transport: ClientTransport, input: AuthEmailRegistration) { return transport.post<AuthRegistrationAccepted>("/auth/register", input); }
 
+export async function correctRegistrationEmail(transport: ClientTransport, input: import("@marketplace/schemas").RegistrationEmailCorrection) {
+  const { registrationEmailCorrectionSchema, authRegistrationAcceptedSchema } = await import("@marketplace/schemas");
+  const body = registrationEmailCorrectionSchema.parse(input);
+  return authRegistrationAcceptedSchema.parse(await transport.post("/auth/registration/email", body));
+}
+
 export function requestPasswordReset(transport: ClientTransport, email: string) { return transport.post<AuthForgotAccepted>("/auth/password/forgot", { email }); }
 
 export function listMembers(transport: ClientTransport, organizationId: string) { return transport.get<IdentityMember[]>(`/organizations/${encodeURIComponent(organizationId)}/memberships`); }

@@ -1,4 +1,5 @@
 "use client";
+import { cabinetLoadingLabel } from "@marketplace/ui/loading-state";
 import { authForgotAcceptedSchema } from "@marketplace/schemas";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -9,7 +10,7 @@ import { LoginHeading } from "./login-heading";
 import { LoginWorkspaceChoice } from "./workspace-choice";
 
 import Script from "next/script";
-import { DmButton, DmField, DmInput } from "@marketplace/ui";
+import { DmButton, DmField, DmInput, LoadingState } from "@marketplace/ui";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { AuthBrand, AuthNotice } from "../auth-components";
 import {
@@ -58,8 +59,10 @@ type BusyAction = "email" | "forgot" | "workspace" | "social" | null;
 
 export default function LoginPage() {
   const returnTo = useProductReturn();
+  const locale = useSearchParams().get("lang");
   const signedOut = useSearchParams().get("signedOut") === "1";
   const personalRequested = useSearchParams().get("personal") === "1";
+  const [restoring, setRestoring] = useState(!signedOut);
   const [busyAction, setBusyAction] = useState<BusyAction>(null);
   const [feedback, setFeedback] = useState<AuthFeedback | null>(null);
   const [email, setEmail] = useState("");
@@ -78,29 +81,36 @@ export default function LoginPage() {
 
   const continueSession = async (session: AuthSession, expected = continuation.current) => {
     if (personalRequested || (!session.activeOrganizationId && !session.organizationId)) {
-      if (expected !== continuation.current) return;
+      if (expected !== continuation.current) return false;
       if (!await openPersonalWorkspace(session.user.id, personalRequested ? undefined : returnTo)) throw new Error("Не удалось подтвердить личный вход.");
-      return;
+      return true;
     }
     const contexts = await availableWorkspaces(session);
-    if (expected !== continuation.current) return;
+    if (expected !== continuation.current) return false;
     const workspaces = workspaceOptions(contexts, returnTo);
-    if (workspaces.length === 1) return openWorkspace(session, workspaces[0].capability, workspaces[0].organizationId, returnTo);
+    if (workspaces.length === 1) {
+      await openWorkspace(session, workspaces[0].capability, workspaces[0].organizationId, returnTo);
+      return true;
+    }
     setPendingSession(session); setChoices(workspaces.length ? workspaces : workspaceOptions(contexts)); setChoiceIndex(0);
     setUnavailable(workspaces.length === 0); setFallback(false);
+    return false;
   };
 
   useEffect(() => {
-    if (signedOut) return;
+    if (signedOut) { setRestoring(false); return; }
     let active = true;
+    let navigating = false;
     const expected = ++continuation.current;
+    setRestoring(true);
     setBusyAction("workspace");
     void resumeAuthSession().then(async session => {
-      if (active && session) { await continueSession(session, expected); return; }
-      if (active && personalRequested) await openPersonalWorkspace();
+      if (!active) return;
+      if (session) { navigating = await continueSession(session, expected); return; }
+      if (personalRequested) navigating = await openPersonalWorkspace();
     })
       .catch(cause => { if (active) setFeedback(feedbackFromError(cause, "Не удалось восстановить вход")); })
-      .finally(() => { if (active) setBusyAction(null); });
+      .finally(() => { if (active) { setBusyAction(null); if (!navigating) setRestoring(false); } });
     return () => { active = false; continuation.current += 1; };
   }, [returnTo, signedOut, personalRequested]);
 
@@ -197,8 +207,8 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
-    renderGoogle();
-  }, []);
+    if (!restoring && !pendingSession) renderGoogle();
+  }, [restoring, pendingSession]);
 
   const apple = async () => {
     if (!window.AppleID || !hasApple) return;
@@ -215,6 +225,8 @@ export default function LoginPage() {
       setFeedback(feedbackFromError(cause, "Apple Sign In не выполнен"));
     }
   };
+
+  if (restoring) return <main className={styles.restoring}><LoadingState label={cabinetLoadingLabel(locale)} /></main>;
 
   return (
     <main className={`loginPage ${styles.split}`}>

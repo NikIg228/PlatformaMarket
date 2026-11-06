@@ -1,4 +1,7 @@
-FROM node:24-alpine AS workspace
+FROM node:24-alpine AS base
+RUN apk add --no-cache openssl
+
+FROM base AS manifests
 
 WORKDIR /workspace
 
@@ -15,6 +18,8 @@ COPY packages/eds-client/package.json packages/eds-client/package.json
 COPY packages/one-c-agent/package.json packages/one-c-agent/package.json
 COPY packages/schemas/package.json packages/schemas/package.json
 COPY packages/ui/package.json packages/ui/package.json
+
+FROM manifests AS workspace
 # Production images use external Redis; the in-memory Redis compiler is test-only.
 # Keep all other dependency lifecycle scripts enabled (Prisma, sharp, etc.).
 RUN REDISMS_DISABLE_POSTINSTALL=true npm ci
@@ -41,9 +46,14 @@ ARG INTERNAL_API_URL=http://api:4000/api
 ENV INTERNAL_API_URL=$INTERNAL_API_URL
 RUN npm run build
 
-FROM unified-build AS web
+FROM base AS web
+WORKDIR /workspace
+ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0
+COPY --from=unified-build /workspace/apps/web/.next/standalone ./
+COPY --from=unified-build /workspace/apps/web/public ./apps/web/public
+COPY --from=unified-build /workspace/apps/web/.next/static ./apps/web/.next/static
 EXPOSE 3000
-CMD ["npm", "run", "start", "--workspace=@marketplace/web"]
+CMD ["node", "apps/web/server.js"]
 
 FROM workspace AS legacy-build
 RUN npm run build:legacy
@@ -51,7 +61,23 @@ RUN npm run build:legacy
 FROM workspace AS api-build
 RUN npm run build --workspace=@marketplace/schemas && npm run build --workspace=@marketplace/api
 
-FROM api-build AS api
+FROM manifests AS api-dependencies
+ENV PRISMA_SKIP_POSTINSTALL_GENERATE=true
+RUN REDISMS_DISABLE_POSTINSTALL=true npm ci --omit=dev --workspace=@marketplace/api --workspace=@marketplace/schemas --include-workspace-root=false
+
+FROM base AS api
+WORKDIR /workspace
+ENV NODE_ENV=production CHECKPOINT_DISABLE=1
+COPY --from=api-dependencies /workspace/node_modules ./node_modules
+COPY --from=api-build /workspace/node_modules/.prisma ./node_modules/.prisma
+COPY package.json ./package.json
+COPY apps/api/package.json ./apps/api/package.json
+COPY packages/schemas/package.json ./packages/schemas/package.json
+COPY --from=api-build /workspace/apps/api/dist ./apps/api/dist
+COPY --from=api-build /workspace/apps/api/prisma/schema.prisma ./apps/api/prisma/schema.prisma
+COPY --from=api-build /workspace/apps/api/prisma/migrations ./apps/api/prisma/migrations
+COPY --from=api-build /workspace/packages/schemas/dist ./packages/schemas/dist
+COPY --from=api-build /workspace/apps/buyer-web/public ./apps/buyer-web/public
 EXPOSE 4000
 CMD ["npm", "run", "start", "--workspace=@marketplace/api"]
 

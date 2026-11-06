@@ -26,6 +26,6 @@ function NotificationList() {
     {inbox.error ? <ActionFeedback tone="error" description={inbox.error} action={<DmButton onClick={() => void inbox.refresh()}>Повторить</DmButton>} /> : null}
     {inbox.newEvents ? <DmButton className={styles.newEvents} onClick={() => void inbox.refresh()}>Есть новые уведомления — показать</DmButton> : null}
     {inbox.loading && !inbox.data ? <LoadingState label="Загружаем уведомления" /> : inbox.data?.items.length ? <NotificationItems items={inbox.data.items} role={role} busy={inbox.busy} onRead={item => void inbox.markRead(item)} /> : !inbox.error ? <EmptyState title={unreadOnly ? "Непрочитанных уведомлений нет" : "Уведомлений пока нет"} description={category ? "Попробуйте другую категорию." : "Здесь появятся изменения заказов, документов и переписки."} /> : null}
-    {inbox.data?.nextCursor ? <div className={styles.loadMore}><DmButton disabled={inbox.loading} onClick={() => void inbox.more()}>{inbox.loading ? "Загружаем…" : "Показать ещё"}</DmButton></div> : null}
+    {inbox.data?.nextCursor ? <div className={styles.loadMore}><DmButton disabled={inbox.loading} onClick={() => void inbox.more()}>{inbox.loading ? <LoadingState presentation="inline" label="Загружаем уведомления…" /> : "Показать ещё"}</DmButton></div> : null}
   </section>;
 }

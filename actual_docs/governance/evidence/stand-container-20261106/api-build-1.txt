@@ -1,0 +1,19 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile:
+#1 transferring dockerfile: 4.17kB 0.0s done
+#1 DONE 0.2s
+
+#2 [internal] load metadata for docker.io/library/node:24-alpine
+#2 ERROR: error getting credentials - err: exec: "docker-credential-desktop": executable file not found in %PATH%, out: ``
+------
+ > [internal] load metadata for docker.io/library/node:24-alpine:
+------
+Dockerfile:1
+--------------------
+   1 | >>> FROM node:24-alpine AS base
+   2 |     RUN apk add --no-cache openssl
+   3 |
+--------------------
+ERROR: failed to build: failed to solve: error getting credentials - err: exec: "docker-credential-desktop": executable file not found in %PATH%, out: ``

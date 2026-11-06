@@ -1,6 +1,6 @@
 "use client";
 import { useRef, type ReactNode } from "react";
-import { PermissionFields, usePermissions } from "@marketplace/ui";
+import { PermissionFields, usePermissions } from "@marketplace/ui/permissions";
 import { useWorkspace } from "./workspace";
 import { workspaceText } from "./workspace-locale";
 

@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "./loading-state";
 import { ActionFeedback } from "./action-feedback";
 import { DmFileInput } from "./controls";
 import { useEffect, useId, useRef, useState, type ReactNode, type Dispatch, type SetStateAction } from "react";
@@ -10,7 +11,8 @@ import { ArrowDownload20Regular } from "@fluentui/react-icons/svg/arrow-download
 import { Image20Regular } from "@fluentui/react-icons/svg/image";
 import { CONVERSATION_FILE_ACCEPT, SUPPORT_FILE_ACCEPT, SUPPORT_FILE_MAX_BYTES, SUPPORT_FILE_MAX_COUNT, type SupportAttachment, type UploadedSupportAttachment, type UploadSupportAttachmentInput } from "@marketplace/schemas";
 import { DmButton } from "./actions";
-import { DmDialog } from "./primitives";
+import { DmDialog, ErrorState } from "./primitives";
+import { fileText } from "./support-file-copy";
 import { errorMessage } from "./format";
 
 type FilesApi = {
@@ -43,12 +45,14 @@ export type SupportQueuedFile = { id: string; file: File; error?: string };
 type Queued = SupportQueuedFile;
 
 /** Uploads are private until an authorized message claims them. */
-export function SupportFilePicker({ api, value, onChange, disabled, onBusyChange, onErrorChange, compact = false, policy = "support", inlineContent, queue: savedQueue, onQueueChange }: {
+export function SupportFilePicker({ api, value, onChange, disabled, onBusyChange, onErrorChange, compact = false, policy = "support", inlineContent, queue: savedQueue, onQueueChange, locale = "ru" }: {
   api: FilesApi; value: UploadedSupportAttachment[]; onChange: (value: UploadedSupportAttachment[]) => void;
   compact?: boolean; disabled?: boolean; onBusyChange: (busy: boolean) => void; onErrorChange?: (invalid: boolean) => void;
   policy?: "support" | "conversation"; inlineContent?: ReactNode;
+  locale?: "ru" | "kk";
   queue?: Queued[]; onQueueChange?: Dispatch<SetStateAction<Queued[]>>;
 }) {
+  const t = (text: string) => fileText(locale, text);
   const styles = useStyles(), hintId = useId();
   const input = useRef<HTMLInputElement>(null), active = useRef(false), mounted = useRef(true);
   const current = useRef(value); current.current = value;
@@ -58,7 +62,7 @@ export function SupportFilePicker({ api, value, onChange, disabled, onBusyChange
   const [uploading, setUploading] = useState(false);
   const resumeQueue = useRef(onQueueChange);
   useEffect(() => {
-    resumeQueue.current?.(items => items.map(item => item.error ? item : { ...item, error: "Загрузка была прервана. Повторите её." }));
+    resumeQueue.current?.(items => items.map(item => item.error ? item : { ...item, error: t("Загрузка была прервана. Повторите её.") }));
   }, []);
   const invalid = queue.some(entry => Boolean(entry.error));
   useEffect(() => { onErrorChange?.(invalid); }, [invalid, onErrorChange]);
@@ -75,7 +79,7 @@ export function SupportFilePicker({ api, value, onChange, disabled, onBusyChange
         setQueue(items => items.filter(item => item.id !== entry.id));
       } catch (cause) {
         if (!mounted.current) break;
-        setQueue(items => items.map(item => item.id === entry.id ? { ...item, error: errorMessage(cause) } : item));
+        setQueue(items => items.map(item => item.id === entry.id ? { ...item, error: locale === "kk" ? t("Не удалось загрузить файл. Повторите попытку.") : errorMessage(cause) } : item));
       }
     }
     active.current = false;
@@ -84,29 +88,30 @@ export function SupportFilePicker({ api, value, onChange, disabled, onBusyChange
   const select = (files: File[]) => {
     if (disabled || active.current) return;
     setError("");
-    if (files.length + value.length + queue.length > SUPPORT_FILE_MAX_COUNT) { setError(`Можно прикрепить не более ${SUPPORT_FILE_MAX_COUNT} файлов.`); return; }
+    if (files.length + value.length + queue.length > SUPPORT_FILE_MAX_COUNT) { setError(locale === "kk" ? `Ең көбі ${SUPPORT_FILE_MAX_COUNT} файл тіркеуге болады.` : `Можно прикрепить не более ${SUPPORT_FILE_MAX_COUNT} файлов.`); return; }
     const extension = policy === "conversation" ? /\.(png|jpe?g|pdf)$/i : /\.(png|jpe?g|pdf|docx|xlsx)$/i;
     const invalid = files.find(file => !extension.test(file.name) || !file.size || file.size > SUPPORT_FILE_MAX_BYTES);
-    if (invalid) { setError(`«${invalid.name}»: выберите ${formats} размером до 10 МБ. Пустые файлы не принимаются.`); return; }
+    if (invalid) { setError(locale === "kk" ? `«${invalid.name}»: өлшемі 10 МБ-қа дейінгі ${formats} файлын таңдаңыз. Бос файлдар қабылданбайды.` : `«${invalid.name}»: выберите ${formats} размером до 10 МБ. Пустые файлы не принимаются.`); return; }
     const entries = files.map(file => ({ id: crypto.randomUUID(), file }));
     setQueue(items => [...items, ...entries]); void upload(entries);
   };
   return <div className={`${styles.root} ${compact ? styles.compact : ""}`}>
-    <DmFileInput ref={input} multiple accept={policy === "conversation" ? CONVERSATION_FILE_ACCEPT : SUPPORT_FILE_ACCEPT} hidden aria-label={policy === "conversation" ? "Файлы сообщения" : "Файлы обращения"} disabled={disabled || uploading}
+    <DmFileInput ref={input} multiple accept={policy === "conversation" ? CONVERSATION_FILE_ACCEPT : SUPPORT_FILE_ACCEPT} hidden aria-label={policy === "conversation" ? t("Файлы сообщения") : t("Файлы обращения")} disabled={disabled || uploading}
       onChange={event => { select(Array.from(event.currentTarget.files ?? [])); event.currentTarget.value = ""; }} />
-    <div className={inlineContent ? styles.line : undefined}><div className={styles.toolbar}><DmButton type="button" appearance="subtle" icon={<Attach20Regular />} aria-label="Прикрепить файл" title={`Прикрепить файл · ${formats} · до 10 МБ · до 10 файлов`} aria-describedby={hintId} disabled={disabled || uploading || value.length + queue.length >= SUPPORT_FILE_MAX_COUNT} onClick={() => input.current?.click()}>{compact ? null : "Прикрепить файл"}</DmButton>
-      <span id={hintId} className={compact ? styles.hiddenHint : styles.hint}>{formats} · до 10 МБ · до 10 файлов</span></div>{inlineContent}</div>
-    {value.length || queue.length ? <ul className={`${styles.list} ${styles.queue}`} aria-label="Прикреплённые файлы">
-      {value.map(file => <li className={styles.card} key={file.assetId}><Document20Regular aria-hidden="true" /><div className={styles.identity}><span className={styles.name}>{file.name}</span><span className={styles.hint}>{size(file.sizeBytes)}</span></div><DmButton type="button" appearance="subtle" size="small" icon={<Dismiss16Regular />} aria-label={`Убрать ${file.name}`} disabled={disabled || uploading} onClick={() => onChange(value.filter(item => item.assetId !== file.assetId))} /></li>)}
-      {queue.map(entry => <li className={styles.card} key={entry.id}><Document20Regular aria-hidden="true" /><div className={styles.identity}><span className={styles.name}>{entry.file.name}</span>{entry.error ? <span className={styles.problem} role="alert">{entry.error}</span> : <span className={styles.hint} role="status">Загружаем и проверяем…</span>}</div>
-        {entry.error ? <><DmButton type="button" size="small" appearance="subtle" disabled={disabled || uploading} onClick={() => void upload([entry])}>Повторить</DmButton><DmButton type="button" size="small" appearance="subtle" icon={<Dismiss16Regular />} aria-label={`Убрать ${entry.file.name}`} disabled={disabled || uploading} onClick={() => setQueue(items => items.filter(item => item.id !== entry.id))} /></> : null}</li>)}
+    <div className={inlineContent ? styles.line : undefined}><div className={styles.toolbar}><DmButton type="button" appearance="subtle" icon={<Attach20Regular />} aria-label={t("Прикрепить файл")} title={`${t("Прикрепить файл")} · ${formats} ${t("· до 10 МБ · до 10 файлов")}`} aria-describedby={hintId} disabled={disabled || uploading || value.length + queue.length >= SUPPORT_FILE_MAX_COUNT} onClick={() => input.current?.click()}>{compact ? null : t("Прикрепить файл")}</DmButton>
+      <span id={hintId} className={compact ? styles.hiddenHint : styles.hint}>{formats} {t("· до 10 МБ · до 10 файлов")}</span></div>{inlineContent}</div>
+    {value.length || queue.length ? <ul className={`${styles.list} ${styles.queue}`} aria-label={t("Прикреплённые файлы")}>
+      {value.map(file => <li className={styles.card} key={file.assetId}><Document20Regular aria-hidden="true" /><div className={styles.identity}><span className={styles.name}>{file.name}</span><span className={styles.hint}>{size(file.sizeBytes)}</span></div><DmButton type="button" appearance="subtle" size="small" icon={<Dismiss16Regular />} aria-label={`${t("Убрать")} ${file.name}`} disabled={disabled || uploading} onClick={() => onChange(value.filter(item => item.assetId !== file.assetId))} /></li>)}
+      {queue.map(entry => <li className={styles.card} key={entry.id}><Document20Regular aria-hidden="true" /><div className={styles.identity}><span className={styles.name}>{entry.file.name}</span>{entry.error ? <span className={styles.problem} role="alert">{entry.error}</span> : <LoadingState presentation="inline" label={t("Загружаем и проверяем файл…")} />}</div>
+        {entry.error ? <><DmButton type="button" size="small" appearance="subtle" disabled={disabled || uploading} onClick={() => void upload([entry])}>{t("Повторить")}</DmButton><DmButton type="button" size="small" appearance="subtle" icon={<Dismiss16Regular />} aria-label={`${t("Убрать")} ${entry.file.name}`} disabled={disabled || uploading} onClick={() => setQueue(items => items.filter(item => item.id !== entry.id))} /></> : null}</li>)}
     </ul> : null}
-    {error ? <ActionFeedback tone="error" description={error} /> : null}
-    {invalid ? <p className={styles.hint}>Повторите загрузку или уберите файлы с ошибкой перед отправкой.</p> : null}
+    {error ? <ActionFeedback tone="error" title={t("Ошибка")} description={error} /> : null}
+    {invalid ? <p className={styles.hint}>{t("Повторите загрузку или уберите файлы с ошибкой перед отправкой.")}</p> : null}
   </div>;
 }
 
-export function SupportAttachmentList({ api, ticketId, messageId, files }: { api: FilesApi; ticketId: string; messageId: string; files: SupportAttachment[] | null }) {
+export function SupportAttachmentList({ api, ticketId, messageId, files, locale = "ru" }: { locale?: "ru" | "kk"; api: FilesApi; ticketId: string; messageId: string; files: SupportAttachment[] | null }) {
+  const t = (text: string) => fileText(locale, text);
   const styles = useStyles();
   const [busy, setBusy] = useState<string | null>(null), [error, setError] = useState("");
   const [preview, setPreview] = useState<{ url: string; name: string } | null>(null);
@@ -124,18 +129,18 @@ export function SupportAttachmentList({ api, ticketId, messageId, files }: { api
       const url = URL.createObjectURL(result.blob);
       if (image) { setPreviewFailed(false); setPreview({ url, name: file.name }); }
       else { const link = document.createElement("a"); link.href = url; link.download = result.fileName ?? file.name; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
-    } catch (cause) { if (mounted.current) setError(errorMessage(cause)); }
+    } catch (cause) { if (mounted.current) setError(locale === "kk" ? t("Не удалось открыть файл.") : errorMessage(cause)); }
     finally { lock.current = false; if (mounted.current) setBusy(null); }
   };
   if (!files?.length) return null;
-  return <div className={styles.root}><ul className={styles.list} aria-label="Вложения сообщения">{files.map(file => <li className={styles.card} key={file.assetId}>
+  return <div className={styles.root}><ul className={styles.list} aria-label={t("Вложения сообщения")}>{files.map(file => <li className={styles.card} key={file.assetId}>
     {file.contentType.startsWith("image/") ? <Image20Regular aria-hidden="true" /> : <Document20Regular aria-hidden="true" />}
-    <div className={styles.identity}><span className={styles.name}>{file.name}</span><span className={styles.hint}>{busy === file.assetId ? "Загружаем…" : size(file.sizeBytes)}</span></div>
-    {file.contentType.startsWith("image/") ? <DmButton type="button" appearance="subtle" size="small" disabled={Boolean(busy)} aria-label={`Посмотреть ${file.name}`} onClick={event => { opener.current = event.currentTarget; void open(file, true); }}>Посмотреть</DmButton> : null}
-    <DmButton type="button" appearance="subtle" size="small" icon={<ArrowDownload20Regular />} disabled={Boolean(busy)} aria-label={`Скачать ${file.name}`} onClick={() => void open(file, false)} />
-  </li>)}</ul>{error ? <ActionFeedback tone="error" description={`${error} Попробуйте открыть файл ещё раз.`} /> : null}
-    <DmDialog open={Boolean(preview)} title={preview?.name ?? "Изображение"} onOpenChange={open => { if (!open) setPreview(null); }} onClosed={() => opener.current?.focus()} actions={<DmButton onClick={() => setPreview(null)}>Закрыть</DmButton>}>
-      {previewFailed ? <ActionFeedback tone="error" description="Не удалось показать изображение. Закройте окно и скачайте файл, чтобы открыть его на устройстве." /> : preview ? <img className={styles.preview} src={preview.url} alt={preview.name} onError={() => setPreviewFailed(true)} /> : null}
+    <div className={styles.identity}><span className={styles.name}>{file.name}</span><span className={styles.hint}>{busy === file.assetId ? <LoadingState presentation="inline" label={t("Загружаем файл…")} /> : size(file.sizeBytes)}</span></div>
+    {file.contentType.startsWith("image/") ? <DmButton type="button" appearance="subtle" size="small" disabled={Boolean(busy)} aria-label={`${t("Посмотреть")} ${file.name}`} onClick={event => { opener.current = event.currentTarget; void open(file, true); }}>{t("Посмотреть")}</DmButton> : null}
+    <DmButton type="button" appearance="subtle" size="small" icon={<ArrowDownload20Regular />} disabled={Boolean(busy)} aria-label={`${t("Скачать")} ${file.name}`} onClick={() => void open(file, false)} />
+  </li>)}</ul>{error ? <ActionFeedback tone="error" title={t("Ошибка")} description={`${error} ${t("Попробуйте открыть файл ещё раз.")}`} /> : null}
+    <DmDialog open={Boolean(preview)} title={preview?.name ?? t("Изображение")} onOpenChange={open => { if (!open) setPreview(null); }} onClosed={() => opener.current?.focus()} actions={<DmButton onClick={() => setPreview(null)}>{t("Закрыть")}</DmButton>}>
+      {previewFailed ? <ErrorState presentation="inline" title={t("Не удалось показать изображение")} description={t("Не удалось показать изображение. Закройте окно и скачайте файл, чтобы открыть его на устройстве.")} /> : preview ? <img className={styles.preview} src={preview.url} alt={preview.name} onError={() => setPreviewFailed(true)} /> : null}
     </DmDialog>
   </div>;
 }

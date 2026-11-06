@@ -1,3 +1,5 @@
+import { supportLocale } from "./support-copy";
+import type { WorkspaceLocale } from "./workspace-locale";
 import type { SupportTicketSummary } from "@marketplace/schemas";
 
 export const supportStatuses: Record<SupportTicketSummary["status"], string> = {
@@ -6,6 +8,6 @@ export const supportStatuses: Record<SupportTicketSummary["status"], string> = {
 export const supportCategories: Record<string, string> = {
   GENERAL: "Общий вопрос", ORDER: "Заказ и доставка", PAYMENT: "Оплата и документы", PRODUCT: "Товары и остатки", TECHNICAL: "Ошибка в работе сервиса",
 };
-export const supportDate = (value: string) => new Intl.DateTimeFormat("ru-KZ", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+export const supportDate = (value: string, locale: WorkspaceLocale = "ru") => new Intl.DateTimeFormat(supportLocale(locale), { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
 export const emptySupportDraft = { category: "GENERAL", subject: "", description: "" };
 export type SupportDraft = typeof emptySupportDraft;

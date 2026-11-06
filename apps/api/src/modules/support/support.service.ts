@@ -47,7 +47,19 @@ export class SupportService {
 
   async list(context: SupplierActorContext, status?: string, offset = 0, options: { q?: string; sort?: "queue" | "recent" } = {}) {
     const operator = await this.isOperator(context.organizationId);
-    return this.prisma.supportTicket.findMany({ where: { organizationId: operator ? undefined : context.organizationId, status: status as never, ...(options.q ? { OR: [{ number: { contains: options.q, mode: "insensitive" as const } }, { subject: { contains: options.q, mode: "insensitive" as const } }] } : {}) }, orderBy: options.sort === "recent" ? [{ updatedAt: "desc" }, { id: "desc" }] : [{ priority: "desc" }, { slaDueAt: "asc" }, { updatedAt: "desc" }, { id: "desc" }], take: 50, skip: offset });
+    const tickets = await this.prisma.supportTicket.findMany({ where: { organizationId: operator ? undefined : context.organizationId, status: status as never, ...(options.q ? { OR: [{ number: { contains: options.q, mode: "insensitive" as const } }, { subject: { contains: options.q, mode: "insensitive" as const } }] } : {}) }, orderBy: options.sort === "recent" ? [{ updatedAt: "desc" }, { id: "desc" }] : [{ priority: "desc" }, { slaDueAt: "asc" }, { updatedAt: "desc" }, { id: "desc" }], take: 50, skip: offset });
+    if (!tickets.length) return [];
+    // Project only the authorized page; internal notes never become list previews.
+    const previews = await this.prisma.$queryRaw<{ ticketId: string; body: string; hasAttachments: boolean; createdAt: Date }[]>`
+      SELECT DISTINCT ON ("ticketId") "ticketId", left(body, 240) AS body,
+        jsonb_array_length(CASE WHEN jsonb_typeof(attachments) = 'array' THEN attachments ELSE '[]'::jsonb END) > 0 AS "hasAttachments",
+        "createdAt"
+      FROM "SupportMessage"
+      WHERE "ticketId" IN (${Prisma.join(tickets.map(ticket => Prisma.sql`${ticket.id}::uuid`))}) AND "isInternal" = false
+      ORDER BY "ticketId", "createdAt" DESC, id DESC
+    `;
+    const byTicket = new Map(previews.map(({ ticketId, ...preview }) => [ticketId, { ...preview, createdAt: preview.createdAt.toISOString() }]));
+    return tickets.map(ticket => ({ ...ticket, lastPublicMessage: byTicket.get(ticket.id) ?? null }));
   }
 
   async get(ticketId: string, context: SupplierActorContext, beforeMessageId?: string) {
@@ -58,7 +70,7 @@ export class SupportService {
     const [messages, links] = await Promise.all([this.prisma.supportMessage.findMany({ where: { ticketId, isInternal: operator ? undefined : false, ...(cursor ? { OR: [{ createdAt: { lt: cursor.createdAt } }, { createdAt: cursor.createdAt, id: { lt: cursor.id } }] } : {}) }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 51 }), this.prisma.supportLink.findMany({ where: { ticketId }, orderBy: { createdAt: "asc" }, take: 20 })]);
     const members = await this.prisma.organizationMembership.findMany({ where: { organizationId: ticket.organizationId, userId: { in: messages.map(message => message.authorId) } }, select: { userId: true } });
     const customerAuthors = new Set([ticket.requesterId, ...members.map(member => member.userId)]);
-    return { ...ticket, messages: messages.slice(0, 50).reverse().map(message => ({ ...message, attachments: supportAttachmentSchema.array().safeParse(message.attachments).data ?? [], authorLabel: message.authorId === context.actorId ? "Вы" : customerAuthors.has(message.authorId) ? "Сотрудник организации" : "Поддержка" })), hasOlder: messages.length > 50, links };
+    return { ...ticket, messages: messages.slice(0, 50).reverse().map(message => ({ ...message, attachments: supportAttachmentSchema.array().safeParse(message.attachments).data ?? [], authorKind: message.authorId === context.actorId ? "SELF" as const : customerAuthors.has(message.authorId) ? "ORGANIZATION" as const : "SUPPORT" as const, authorLabel: message.authorId === context.actorId ? "Вы" : customerAuthors.has(message.authorId) ? "Сотрудник организации" : "Поддержка" })), hasOlder: messages.length > 50, links };
   }
 
   async addMessage(ticketId: string, input: AddSupportMessageInput, context: SupplierActorContext) {

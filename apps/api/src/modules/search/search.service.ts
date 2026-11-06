@@ -370,6 +370,7 @@ export class SearchService {
       [input.productId],
       input.buyerOrganizationId,
       input.quantity,
+      input.cityId,
     );
     const product = products[0];
     if (!product) throw new NotFoundException("Marketplace product not found");
@@ -712,11 +713,22 @@ export class SearchService {
 
   private async loadProducts(
     productIds: string[],
-    buyerOrganizationId?: string,
+    buyerOrganizationId: string,
     quantity = 1,
+    cityId?: string,
   ) {
     const now = new Date();
     const admittedSuppliers = await this.terms.activeSupplierIds();
+    const audience: Prisma.OfferPublicationWhereInput[] = [{ OR: [
+      { allowedBuyerIds: { equals: Prisma.AnyNull } },
+      { allowedBuyerIds: { equals: [] } },
+      { allowedBuyerIds: { array_contains: [buyerOrganizationId] } },
+    ] }];
+    if (cityId) audience.push({ OR: [
+      { allowedCityIds: { equals: Prisma.AnyNull } },
+      { allowedCityIds: { equals: [] } },
+      { allowedCityIds: { array_contains: [cityId] } },
+    ] });
     return this.prisma.product.findMany({
       where: { id: { in: productIds }, status: "ACTIVE" },
       include: {
@@ -745,6 +757,7 @@ export class SearchService {
                   is: {
                     status: { in: ["PUBLISHED", "RESTRICTED"] },
                     marketplaceVisible: true,
+                    AND: audience,
                   },
                 },
               },

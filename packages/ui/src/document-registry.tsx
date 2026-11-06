@@ -1,8 +1,8 @@
 "use client";
+import { LoadingState } from "./loading-state";
 import { ActionFeedback } from "./action-feedback";
 import { ArrowDownload24Regular } from "@fluentui/react-icons/svg/arrow-download";
 import { Filter24Regular } from "@fluentui/react-icons/svg/filter";
-import { Spinner } from "@fluentui/react-components";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { DmAction, DmButton, DmField, DmInput, DmSelect, DmSurface } from "./controls";
 import { DmSearch } from "./dm-search";
@@ -54,7 +54,7 @@ export function DocumentRegistry({ role, organizationId, items, summary, filters
       {filterError ? <p className="dm-registry-message" role="alert">{filterError}</p> : null}
       <div className="dm-registry-views" role="group" aria-label="Состояние документов">{views.map(([value, label]) => <DmAction key={value} variant="tab" aria-pressed={(filters.view ?? "") === value} onClick={() => apply({ ...filters, view: value })}>{label}{summary && value === "AWAITING_SIGNATURE" ? ` · ${summary.awaitingSignature}` : summary && value === "ATTENTION" ? ` · ${summary.attention}` : ""}</DmAction>)}{active ? <DmButton appearance="subtle" onClick={onResetFilters}>Сбросить фильтры</DmButton> : null}</div>
       {error ? <ActionFeedback tone="error" description={error} action={<DmButton onClick={onRefresh}>Повторить</DmButton>} /> : null}
-      {loading && !items.length ? <div className="dm-registry-message"><Spinner label="Загружаем документы" /></div> : null}
+      {loading && !items.length ? <div className="dm-registry-message"><LoadingState label="Загружаем документы" /></div> : null}
       {!loading && !error && !items.length ? <div className="dm-registry-empty"><h3>{active ? "Ничего не найдено" : "Документов пока нет"}</h3><p>{active ? "Измените поиск или сбросьте фильтры." : "Здесь появятся документы по заказам. Вы также можете загрузить свой файл."}</p>{active ? <DmButton onClick={onResetFilters}>Сбросить фильтры</DmButton> : null}</div> : null}
       {items.length ? <div className="dm-registry-table-wrap" aria-busy={loading}><table className="dm-registry-table"><caption className="dm-sr-only">Документы организации</caption><thead><tr><th>Документ</th><th>{role === "clinic" ? "Поставщик" : "Клиника"}</th><th>Заказ</th><th>Дата ↓</th><th>Сумма</th><th>Состояние</th><th><span className="dm-sr-only">Скачать</span></th></tr></thead><tbody>{items.map(item => <tr key={item.id} data-selected={selected === item.id}>
         <td data-label="Документ"><DmAction variant="text" className="dm-registry-document" onClick={event => open(item.id, event.currentTarget)}><strong>{item.title}</strong><span className="dm-registry-muted">{kindLabels[item.kind] ?? item.kind} · № {item.documentNumber}</span></DmAction></td>
@@ -64,7 +64,7 @@ export function DocumentRegistry({ role, organizationId, items, summary, filters
         <td data-label="Состояние"><div className="dm-document-statuses"><DocumentStatus value={item.status} />{item.accountingStatus !== "NOT_APPLICABLE" ? <DocumentStatus value={item.accountingStatus} /> : null}</div></td>
         <td><DmButton appearance="subtle" icon={<ArrowDownload24Regular />} aria-label={`Скачать ${item.title}`} disabled={busyDocumentId === item.id} onClick={() => void actions.onDownload(item).catch(() => undefined)} /></td>
       </tr>)}</tbody></table></div> : null}
-      <footer className="dm-registry-footer"><span className="dm-registry-muted" role="status">{loading ? "Загружаем…" : `Показано документов: ${items.length}`}</span>{nextCursor ? <DmButton disabled={loading} onClick={onLoadMore}>Показать ещё</DmButton> : null}</footer>
+      <footer className="dm-registry-footer">{loading ? items.length ? <LoadingState presentation="inline" label="Загружаем документы…" /> : null : <span className="dm-registry-muted" role="status">{`Показано документов: ${items.length}`}</span>}{nextCursor ? <DmButton disabled={loading} onClick={onLoadMore}>Показать ещё</DmButton> : null}</footer>
     </DmSurface>
     {selected ? <DocumentDetailPanel key={organizationId} id={selected} role={role} organizationId={organizationId} timeZone={calendarTimeZone} onSelect={id => open(id)} onClose={close} {...actions} /> : null}
   </div>;

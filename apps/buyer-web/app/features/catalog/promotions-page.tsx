@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { frontendFeatures } from "@marketplace/api-client";
@@ -85,12 +86,12 @@ export default function PromotionsPage() {
         {([[undefined, "Все акции"], ["PERCENTAGE", "Скидки в процентах"], ["FIXED_AMOUNT", "Скидки в сумме"], ["BUY_X_GET_Y", "Подарки за покупку"]] as const).map(([kind, label]) => <DmAction variant="tab" key={label} aria-pressed={filters.kind === kind} onClick={() => change({ kind })}>{label}</DmAction>)}
       </div>
       {data.error ? <DmFeedback presentation="inline" tone="danger" title="Акции не загружены" description={items.length ? "Уже загруженные предложения сохранены." : "Не удалось загрузить акции. Попробуйте ещё раз."} action={<DmButton onClick={data.retry}>Повторить загрузку акций</DmButton>} /> : null}
-      {!ready || (data.loading && !items.length) || (data.page?.total === 0 && previewProbe.loading) ? <p role="status">Загружаем акции…</p> : displayed.length ? <>
+      {!ready || (data.loading && !items.length) || (data.page?.total === 0 && previewProbe.loading) ? <LoadingState presentation="inline" label="Загружаем акции…" /> : displayed.length ? <>
         <div className={styles.hero}>{displayed.slice(0, 3).map(render)}</div>
         {displayed.length > 3 ? <><h2 className={styles.sectionTitle}>Все действующие акции</h2><div className={styles.feed}>{displayed.slice(3).map((item, i) => <div key={item.id} className={i % 5 === 2 ? styles.wide : undefined}>{render(item, i + 3)}</div>)}</div></> : null}
       </> : !data.error ? <EmptyState title="Действующих акций нет" description="Измените фильтры или вернитесь позже." /> : null}
       {data.page && offset + data.page.items.length < data.page.total ? <div className={styles.more}><DmButton disabled={data.loading || offset >= 9996} onClick={() => setOffset(n => n + 12)}>Показать ещё акции</DmButton></div> : null}
-      {data.loading && items.length ? <p role="status">Загружаем ещё акции…</p> : null}
+      {data.loading && items.length ? <LoadingState presentation="inline" label="Загружаем ещё акции…" /> : null}
     </>}
   </main></>;
 }

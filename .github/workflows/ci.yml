@@ -54,7 +54,7 @@ jobs:
       - name: Verify test database selection and isolation
         run: node --test scripts/local-database-profile.test.mjs scripts/test-database-profile.test.mjs scripts/lib/organization-profile-fixture.test.mjs
       - name: Verify canonical delivery configuration
-        run: node --test scripts/canonical-delivery.test.mjs
+        run: node --test scripts/canonical-delivery.test.mjs scripts/verify-release-ci.test.mjs
       - run: npx --no-install playwright install --with-deps chromium
       - run: npm run db:generate
       - run: npm exec --workspace=@marketplace/api -- prisma migrate deploy
@@ -101,6 +101,8 @@ jobs:
         run: |
           ENV_FILE=.env.production.example docker compose --env-file .env.production.example -f compose.production.yaml config --quiet
           docker run --rm --network none -e WEB_DOMAIN=market.example.kz -v "$PWD/infra/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2.10-alpine caddy adapt --config /etc/caddy/Caddyfile --validate > /dev/null
+          node deploy/stand-access/verify-compose.mjs
+          docker run --rm --network none -e WEB_DOMAIN=preview.example.test -v "$PWD/deploy/stand-access/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2.10-alpine caddy adapt --config /etc/caddy/Caddyfile --validate > /dev/null
       - name: Prepare legacy fixtures in disposable CI PostgreSQL
         timeout-minutes: 5
         env:

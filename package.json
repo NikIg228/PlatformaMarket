@@ -12,6 +12,8 @@
     "packages/*"
   ],
   "scripts": {
+    "cache:prune": "node scripts/prune-turbo-cache.mjs",
+    "cache:prune:apply": "node scripts/prune-turbo-cache.mjs --apply",
     "build": "turbo build --concurrency=1 --filter=!@marketplace/buyer-web --filter=!@marketplace/supplier-web --filter=!@marketplace/admin-web --filter=!@marketplace/landing-web",
     "build:legacy": "turbo build --concurrency=1 --filter=!@marketplace/web",
     "dev": "node scripts/dev-local.mjs unified",

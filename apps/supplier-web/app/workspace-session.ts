@@ -1,6 +1,6 @@
 "use client";
 import { workspaceSessionStore, type ApiContext } from "@marketplace/api-client";
-import { useWorkspaceSession } from "@marketplace/ui";
+import { useWorkspaceSession } from "@marketplace/ui/use-workspace-session";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4012/api";
 export const sessionStore = workspaceSessionStore(apiUrl, "SUPPLIER");
 export const sessionApiContext: ApiContext = { getAccessToken: sessionStore.getAccessToken, onUnauthorized: sessionStore.invalidate };

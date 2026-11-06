@@ -1,5 +1,11 @@
 # Каталог товаров и предложения
 
+> Профильный технический справочник. Действующие требования и статусы —
+> [roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md), открытые условия —
+> [OPEN_QUESTIONS](../OPEN_QUESTIONS.md). Датированные описания ниже не создают
+> отдельный план и не переопределяют поздние решения.
+
+
 ## Действующие требования 29.10.2026
 
 Platforma владеет master, supplier — своим offer. Model/variant/packaging/UOM
@@ -13,8 +19,8 @@ media format/license/quality matrix DG-17 OPEN. Общая оферта для m
 configured compatible promos30Б, списки/избранное/повтор с revalidation обязательны.
 Источник: §5/19/22, R3.3/R7.4/7.5.
 
-Полный контракт — [срез объединённого ТЗ](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md);
-[открытая подготовка](../governance/ROADMAP-QUESTIONS-AND-DECISIONS.md#unified-open).
+Полный контракт — [срез объединённого ТЗ](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#approved-requirements);
+[открытая подготовка](../OPEN_QUESTIONS.md).
 Перенос требований не является реализацией или новой приёмкой.
 
 ## Историческая основа и evidence до синхронизации

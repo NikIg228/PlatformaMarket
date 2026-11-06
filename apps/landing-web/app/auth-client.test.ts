@@ -92,6 +92,15 @@ describe("landing auth contract", () => {
       '"handoffCode":"one-time-code"',
     );
   });
+  it.each([
+    ["BUYER", "/clinic", "/"],
+    ["BUYER", "/clinic?q=Filtek", "/?q=Filtek"],
+    ["SUPPLIER", "/supplier", "/"],
+  ] as const)("maps the canonical %s account entry to its legacy app root", (capability, returnTo, expected) => {
+    const target = new URL(workspaceHandoffUrl({ capability, returnTo, handoffCode: "one-time-code", displayName: "Test", organizationId: "org-1" }));
+    expect(target.pathname + target.search).toBe(expected);
+    expect(target.hash).toMatch(/^#session=/);
+  });
 });
 
 describe("workspace context before handoff", () => {
@@ -99,7 +108,7 @@ describe("workspace context before handoff", () => {
   const session = { accessToken: "synthetic-bearer", activeOrganizationId: organizationId, user: { id: "actor", displayName: "Test", email: "test@example.invalid" } };
   afterEach(() => vi.unstubAllGlobals());
   function setup(context: unknown, status = 200, handoffStatus = 201) {
-    const assign = vi.fn(); vi.stubGlobal("window", { location: { assign } });
+    const assign = vi.fn(); vi.stubGlobal("window", { location: { assign }, sessionStorage: { setItem: vi.fn() } });
     const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(Response.json(context, { status }))
       .mockResolvedValueOnce(Response.json({ handoffCode: "synthetic-one-time-code" }, { status: handoffStatus }));
     vi.stubGlobal("fetch", fetcher); return { assign, fetcher };
@@ -107,6 +116,8 @@ describe("workspace context before handoff", () => {
   it.each(["BUYER", "SUPPLIER"] as const)("opens the actual %s organization without an operator directory lookup", async capability => {
     const { assign, fetcher } = setup({ organizationId, organizationDisplayName: "Test organization", capabilities: [capability] });
     await openWorkspace(session, capability);
+    if (capability === "BUYER") expect(window.sessionStorage.setItem).toHaveBeenCalledWith("dentmarket:buyer-context", "organization");
+    else expect(window.sessionStorage.setItem).not.toHaveBeenCalled();
     expect(fetcher.mock.calls[0][0]).toMatch(/\/auth\/workspace-context$/);
     expect(fetcher.mock.calls[0][1]).toMatchObject({ headers: { authorization: "Bearer synthetic-bearer" }, cache: "no-store" });
     expect(fetcher.mock.calls[1][1]?.body).toBe(JSON.stringify({ capability }));
@@ -154,5 +165,24 @@ describe("workspace context before handoff", () => {
     const { assign } = setup({ organizationId, organizationDisplayName: "Test", capabilities: ["BUYER"] }, 200, 503);
     await expect(openWorkspace(session)).rejects.toThrow("Не удалось открыть кабинет");
     expect(assign).not.toHaveBeenCalled();
+    expect(window.sessionStorage.setItem).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["BUYER", "/clinic"],
+    ["SUPPLIER", "/supplier"],
+  ] as const)("completes a header return into the unified %s workspace", async (capability, returnTo) => {
+    vi.stubEnv("NEXT_PUBLIC_UNIFIED_APP", "true");
+    vi.resetModules();
+    try {
+      const { openWorkspace: openUnifiedWorkspace } = await import("./auth-client");
+      const { assign, fetcher } = setup({ organizationId, organizationDisplayName: "Test", capabilities: [capability] });
+      await openUnifiedWorkspace(session, capability, undefined, returnTo);
+      const target = new URL(assign.mock.calls[0][0], "https://market.example");
+      expect(target.pathname + target.search).toBe(returnTo);
+      expect(target.hash).toMatch(/^#session=/);
+      expect(JSON.parse(decodeURIComponent(target.hash.slice(9)))).toMatchObject({ capability, organizationId, handoffCode: "synthetic-one-time-code" });
+      expect(fetcher.mock.calls[1][1]?.body).toBe(JSON.stringify({ capability }));
+    } finally { vi.unstubAllEnvs(); vi.resetModules(); }
   });
 });

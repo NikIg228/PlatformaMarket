@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 import { DmInput } from "@marketplace/ui/controls";
 import type { OrganizationContact } from "@marketplace/schemas";
 import { useEffect, useRef, useState } from "react";
@@ -129,10 +130,10 @@ export function SupplierOffers({ offers, loginHref, compact = false, productName
             }} /></label>
           {comparison ? <DmButton icon={<Add24Regular />} aria-label={`Увеличить количество у ${offer.supplier.name}`} disabled={busy !== null || !offer.available || !valid || Number(quantity) + step > MAX_SUPPLIER_QUANTITY} onClick={() => changeQuantity(1)} /> : null}
           </div>
-          {!valid ? <small className={styles.quantityNote} role="alert">от 1 до 100 штук</small> : null}
+          {!valid ? <small className={styles.quantityNote} role="alert">{min > MAX_SUPPLIER_QUANTITY ? "Минимум поставщика превышает лимит 100 единиц продажи." : `Укажите от ${min} до ${MAX_SUPPLIER_QUANTITY} единиц продажи с шагом ${step} от минимума.`}</small> : null}
           {comparison && total ? <small className={styles.quantityNote}>Предварительно: {formatCatalogMoney(total, offer.currency)}. Скидки — в корзине.</small> : null}
           <DmButton className={comparison ? styles.buy : undefined} appearance="primary" disabled={!ready || busy !== null || !valid || !offer.available || offer.priceMinor == null} onClick={() => void add(offer)}>
-            {!ready ? "Проверяем вход…" : busy === offer.id ? "Добавляем…" : !offer.available ? comparison ? "Недоступно" : "Под заказ" : offer.priceMinor == null ? "Нет цены" : signedIn ? "В корзину" : "Войти и купить"}
+            {!ready ? <LoadingState presentation="inline" label="Готовим покупку…" /> : busy === offer.id ? "Добавляем…" : !offer.available ? comparison ? "Недоступно" : "Под заказ" : offer.priceMinor == null ? "Нет цены" : signedIn ? "В корзину" : "Войти и купить"}
           </DmButton>
           {session?.organizationId && comparison ? <DmButton appearance="subtle" className={styles.question} onClick={event => { questionTrigger.current = event.currentTarget; setQuestion(offer); }}>Задать вопрос</DmButton> : null}
         </div>

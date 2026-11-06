@@ -1,6 +1,7 @@
 "use client";
+import { LoadingState } from "./loading-state";
 import { ActionFeedback } from "./action-feedback";
-import { OverlayDrawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Spinner } from "@fluentui/react-components";
+import { OverlayDrawer, DrawerBody, DrawerHeader, DrawerHeaderTitle } from "@fluentui/react-components";
 import { ArrowDownload24Regular } from "@fluentui/react-icons/svg/arrow-download";
 import { Dismiss24Regular } from "@fluentui/react-icons/svg/dismiss";
 import { useEffect, useRef, useState } from "react";
@@ -77,7 +78,7 @@ export function DocumentDetailPanel({ id, organizationId, role, timeZone, onSele
     <section><h3>Связанные документы</h3>
       {item.supplierOrder ? <p className="dm-registry-muted">По заказу {item.supplierOrder.orderNumber}</p> : <p className="dm-registry-muted">Документ не связан с заказом.</p>}
       <div className="dm-registry-related">{related.items.filter(row => row.id !== id).map(row => <DmAction key={row.id} variant="row" onClick={() => onSelect(row.id)}><span><strong>{row.title}</strong><span className="dm-registry-muted">{showDate(row.documentDate)}</span></span><DocumentStatus value={row.status} /></DmAction>)}</div>
-      {relatedBusy ? <Spinner size="tiny" label="Загружаем связанные документы" /> : null}
+      {relatedBusy ? <LoadingState presentation="inline" label="Загружаем связанные документы" /> : null}
       {relatedError ? <ActionFeedback tone="error" description="Не удалось загрузить связанные документы." action={<DmButton onClick={() => setRelatedRetry(n => n + 1)}>Повторить</DmButton>} /> : !relatedBusy && orderId && !related.items.some(row => row.id !== id) ? <p className="dm-registry-muted">Других документов по заказу пока нет.</p> : null}
       {related.nextCursor ? <DmButton disabled={relatedBusy} onClick={() => {
         if (!orderId || moreLock.current) return;
@@ -97,7 +98,7 @@ export function DocumentDetailPanel({ id, organizationId, role, timeZone, onSele
     // inside the same desktop panel or mobile modal, keeping Escape reachable.
     if (mobile) closeButton.current?.focus(); else panel.current?.focus();
     setRetry(n => n + 1);
-  }}>Повторить загрузку документа</DmButton>} /> : <Spinner label="Загружаем документ" />;
+  }}>Повторить загрузку документа</DmButton>} /> : <LoadingState label="Загружаем документ" />;
   const close = <DmButton ref={closeButton} appearance="subtle" icon={<Dismiss24Regular />} aria-label="Закрыть документ" onClick={onClose} />;
   return mobile ? <OverlayDrawer className="dm-registry-overlay" open position="end" size="full" onOpenChange={(_, data) => { if (!data.open) onClose(); }}>
     <DrawerHeader><DrawerHeaderTitle action={close}>{item?.title ?? "Документ"}</DrawerHeaderTitle></DrawerHeader><DrawerBody>{content}</DrawerBody>

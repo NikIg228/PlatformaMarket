@@ -1,6 +1,6 @@
 "use client";
 
-import { DmButton, DmFeedback } from "@marketplace/ui";
+import { DmButton, DmFeedback, LoadingState } from "@marketplace/ui";
 
 import { Document20Regular } from "@fluentui/react-icons/svg/document";
 import { Money20Regular } from "@fluentui/react-icons/svg/money";
@@ -172,14 +172,15 @@ export function PlatformAssurance() {
 
         </div>
       </div>
-      <div className={styles.metrics}>
+      {loading && summary === initial ? <LoadingState label="Загружаем показатели платформы…" /> : <div className={styles.metrics}>
         {metrics.map(([label, value]) => (
           <div className={styles.metric} key={label}>
             <span>{label}</span>
-            <strong>{loading ? "..." : value}</strong>
+            <strong>{value}</strong>
           </div>
         ))}
-      </div>
+      </div>}
+      {loading && summary !== initial ? <LoadingState presentation="inline" label="Обновляем показатели платформы…" /> : null}
       <div className={styles.systems}>
         <div className={styles.system}>
           <span className={styles.icon}>

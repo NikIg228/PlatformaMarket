@@ -315,6 +315,7 @@ export class MarketplaceApiClient {
   disableMfa(input: import("@marketplace/schemas").MfaCodeInput) { return identityApi.disableMfa(this, input); }
   workspaceContext() { return identityApi.workspaceContext(this); }
   registerEmail(input: AuthEmailRegistration) { return identityApi.registerEmail(this, input); }
+  correctRegistrationEmail(input: import("@marketplace/schemas").RegistrationEmailCorrection) { return identityApi.correctRegistrationEmail(this, input); }
   requestPasswordReset(email: string) { return identityApi.requestPasswordReset(this, email); }
   listMembers(organizationId: string) { return identityApi.listMembers(this, organizationId); }
   listRoles(organizationId: string) { return identityApi.listRoles(this, organizationId); }

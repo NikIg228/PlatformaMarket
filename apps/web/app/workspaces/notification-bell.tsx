@@ -1,12 +1,13 @@
 "use client";
 import { DmTabList } from "@marketplace/ui/controls";
-import { ActionFeedback } from "@marketplace/ui";
+import { ActionFeedback } from "@marketplace/ui/action-feedback";
 import { useState } from "react";
 import Link from "next/link";
 import { Popover, PopoverSurface, PopoverTrigger, Tab } from "@fluentui/react-components";
 import { Alert24Regular } from "@fluentui/react-icons/svg/alert";
 import { Dismiss20Regular } from "@fluentui/react-icons/svg/dismiss";
-import { DmButton, EmptyState, LoadingState } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/controls";
+import { EmptyState, LoadingState } from "@marketplace/ui/primitives";
 import { useWorkspace } from "./workspace";
 import { useNotificationInbox } from "./use-notification-inbox";
 import { NotificationItems } from "./notification-items";

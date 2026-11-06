@@ -1,9 +1,0 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "cd ../.. && npm ci",
-  "buildCommand": "cd ../.. && npm run build --workspace=@marketplace/api && npm run catalog:sync-production:apply",
-  "functions": {
-    "api/index.ts": { "maxDuration": 60 },
-    "api/[...path].ts": { "maxDuration": 60 }
-  }
-}

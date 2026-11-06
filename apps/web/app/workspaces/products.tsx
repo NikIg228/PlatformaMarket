@@ -4,14 +4,21 @@ import { DmAction } from "@marketplace/ui/controls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { WorkspaceOffer } from "@marketplace/schemas";
-import { DmButton, DmCheckbox, DmDropdown, DmSearch, EmptyState, ErrorState, LoadingState, StatusTag, formatMoney, formatStatus, usePermissions, errorMessage } from "@marketplace/ui";
+import { DmButton, DmCheckbox } from "@marketplace/ui/controls";
+import { DmDropdown } from "@marketplace/ui/dm-dropdown";
+import { DmSearch } from "@marketplace/ui/dm-search";
+import { EmptyState, ErrorState, LoadingState, StatusTag } from "@marketplace/ui/primitives";
+import { formatMoney } from "@marketplace/ui/money";
+import { formatStatus, errorMessage } from "@marketplace/ui/format";
+import { usePermissions } from "@marketplace/ui/permissions";
 import { vatLabel } from "@marketplace/schemas";
 import { OfferVatBulk } from "./offer-vat-bulk";
 import { Tab } from "@fluentui/react-components";
 import { ChevronRight20Regular } from "@fluentui/react-icons/svg/chevron-right";
 import { Filter20Regular } from "@fluentui/react-icons/svg/filter";
 import { ProductActions } from "./product-actions";
-import { OfferPanel } from "./offer-panel";
+import type { OfferPanelProps } from "./offer-panel";
+import { deferredOffer } from "./deferred-offer";
 import { offerAttention, totalAvailable } from "./offer-summary";
 import { useWorkspace } from "./workspace";
 import { useResource } from "./use-resource";
@@ -19,6 +26,11 @@ import { ResourceStatus } from "./resource-status";
 import { PageNavigation } from "./page-navigation";
 import { useProductListState } from "./product-list-state";
 import styles from "./products.module.css";
+
+const OfferPanel = deferredOffer<OfferPanelProps>(
+  () => import("./offer-panel").then(module => module.OfferPanel),
+  { label: "Загружаем предложение", active: props => Boolean(props.offer), cancel: props => props.onClose() },
+);
 
 export default function Products() {
   const { api, organizationId } = useWorkspace();

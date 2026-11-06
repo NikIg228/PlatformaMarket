@@ -138,6 +138,40 @@ async function createDraft(page: Page) {
   await dialog(page).getByRole("textbox", { name: "Причина и описание", exact: true }).fill("Получено 8 вместо 10, упаковка целая");
   await dialog(page).getByRole("button", { name: "Сохранить черновик", exact: true }).click();
 }
+for (const width of [1440, 390]) test(`quantity validation explains errors and preserves draft ${width}`, async ({ page }, info) => {
+  const state = await fixture(page, true);
+  await page.route("**/api/auth/personal-current", route => route.fulfill({ json: null }));
+  await page.setViewportSize({ width, height: 1000 });
+  await visit(page);
+  await page.getByRole("button", { name: "Сообщить о расхождении · PART-1", exact: true }).click();
+  const form = dialog(page), actual = form.getByRole("textbox", { name: /Фактически получено/ }), damaged = form.getByRole("textbox", { name: /Из них повреждено/ });
+  const reason = form.getByRole("textbox", { name: "Причина и описание", exact: true });
+  const save = form.getByRole("button", { name: "Сохранить черновик", exact: true });
+  await reason.fill("Проверка количества при получении");
+  await actual.fill("1"); await damaged.fill("-1");
+  await save.focus(); await page.keyboard.press("Enter");
+  await expect(damaged).toHaveAttribute("aria-invalid", "true"); await expect(damaged).toBeFocused();
+  await expect(damaged).toHaveAccessibleDescription(/без ведущих нулей/);
+  expect(state.requests).toHaveLength(0);
+  await damaged.fill("0"); await actual.fill("01"); await save.click();
+  await expect(actual).toHaveAttribute("aria-invalid", "true"); await expect(actual).toBeFocused();
+  await expect(actual).toHaveAccessibleDescription(/до 6 знаков/);
+  await expect(reason).toHaveValue("Проверка количества при получении");
+  await noOverflow(page);
+  await page.screenshot({ path: info.outputPath(`quantity-error-${width}.png`), animations: "disabled" });
+  const styles = await actual.evaluate(e => { const s = getComputedStyle(e.closest(".dm-input")!); return { height: s.height, radius: s.borderRadius, font: s.fontFamily, size: s.fontSize }; });
+  expect(styles).toMatchObject({ height: "44px", radius: "8px", font: expect.stringContaining("Manrope"), size: "14px" });
+  for (const invalid of ["", "1.0000001", "1000000000000"]) {
+    await actual.fill(invalid); await save.click(); await expect(actual).toHaveAttribute("aria-invalid", "true");
+    expect(state.requests).toHaveLength(0);
+  }
+  await actual.fill("1,5"); await damaged.fill("0,25");
+  await save.focus(); await page.keyboard.press("Enter");
+  await expect.poll(() => state.requests.length).toBe(1);
+  expect(state.requests[0]).toMatchObject({ action: "CREATE", statement: { lines: [{ shipmentItemId: itemId, actualQuantity: "1.5", damagedQuantity: "0.25" }] } });
+  await expect(form.getByRole("button", { name: "Отправить расхождение", exact: true })).toBeVisible();
+  await page.keyboard.press("Escape"); await expect(dialog(page)).toHaveCount(0);
+});
 for (const width of [1440, 390]) test(`clinic draft recovery, immutable submission and explicit conflict review ${width}`, async ({ page }, info) => {
   const state = await fixture(page, true); state.failRead = true;
   await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 }); await visit(page);

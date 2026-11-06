@@ -9,6 +9,7 @@ import { environment } from "../../platform/config/environment";
 import { AuthSessionsService } from "./auth-sessions.service";
 import { Throttle } from "@nestjs/throttler";
 import { sessionLogoutRequestSchema } from "@marketplace/schemas";
+import { registrationEmailCorrectionSchema } from "@marketplace/schemas";
 
 const cookies = (header: string | undefined) => Object.fromEntries((header ?? "").split(";").map((part) => part.trim().split("=")).filter(([key, value]) => key && value).map(([key, value]) => [key, decodeURIComponent(value)]));
 const equal = (left: string, right: string) => { const a = Buffer.from(left); const b = Buffer.from(right); return a.length === b.length && timingSafeEqual(a, b); };
@@ -46,6 +47,16 @@ export class AuthSessionsController {
   async register(@Body() body: unknown, @Req() request: Request) {
     const parsed = emailRegisterSchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
     return this.sessions.registerEmail(parsed.data, this.metadata(request));
+  }
+
+  @Post("registration/email") @Header("Cache-Control", "no-store")
+  @Throttle({ ip: { limit: 5, ttl: 60_000 } })
+  @ApiCoreBody("RegistrationEmailCorrectionRequest") @ApiCoreResponse("AuthRegistrationAcceptedResponse", 201)
+  @ApiCoreErrors() @ApiCoreResponse("ErrorResponse", 429) @ApiCoreResponse("ErrorResponse", 503)
+  correctRegistrationEmail(@Body() body: unknown) {
+    const parsed = registrationEmailCorrectionSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException("Проверьте email и пароль регистрации.");
+    return this.sessions.correctRegistrationEmail(parsed.data);
   }
 
   @Post("login")

@@ -1,6 +1,6 @@
 "use client";
 import { Avatar, Menu, MenuDivider, MenuItem, MenuItemLink, MenuList, MenuPopover, MenuTrigger, Spinner, Tooltip } from "@fluentui/react-components";
-import { DmButton } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/controls";
 import { Person24Regular } from "@fluentui/react-icons/svg/person";
 import { SignOut24Regular } from "@fluentui/react-icons/svg/sign-out";
 import { useWorkspace } from "./workspace";

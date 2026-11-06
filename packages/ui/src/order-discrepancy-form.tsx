@@ -18,10 +18,17 @@ export function DiscrepancyForm({ shipment, initial, disabled, onSave, onUpload,
   const [documentId, setDocumentId] = useState(initial?.source.documentId ?? ""), [receiptId, setReceiptId] = useState(initial?.source.sourceReceiptEventId ?? "");
   const [attachments, setAttachments] = useState(() => initial?.attachments.map(a => ({ id: a.id, name: a.name })) ?? []);
   const [uploading, setUploading] = useState(false), [attempted, setAttempted] = useState(false); const fileId = useId();
-  const parsed = discrepancyStatementSchema.safeParse(value), invalid = attempted && !parsed.success;
+  const parsed = discrepancyStatementSchema.safeParse(value);
+  const issues = attempted && !parsed.success ? parsed.error.issues : [];
+  const quantityError = (index: number, field: "actualQuantity" | "damagedQuantity") => issues.some(issue => issue.path[0] === "lines" && issue.path[1] === index && issue.path[2] === field)
+    ? "Укажите число от 0 без ведущих нулей: до 12 цифр и до 6 знаков после запятой" : undefined;
   const source = initial?.source.lines ?? shipment.lines;
   const setLine = (index: number, key: "actualQuantity" | "damagedQuantity", next: string) => setValue(previous => ({ ...previous, lines: previous.lines.map((line, i) => i === index ? { ...line, [key]: next.replace(",", ".") } : line) }));
-  return <form onSubmit={event => { event.preventDefault(); setAttempted(true); if (parsed.success) void onSave(parsed.data, documentId || null, receiptId || null); }}>
+  return <form onSubmit={event => {
+    event.preventDefault(); setAttempted(true);
+    if (parsed.success) void onSave(parsed.data, documentId || null, receiptId || null);
+    else { const form = event.currentTarget; requestAnimationFrame(() => form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()); }
+  }}>
     <DmFormSections>
       <div><p>Отправление {shipment.number}. Укажите суммарный фактический результат по каждой позиции. Заявление не заменяет подтверждение получения.</p>
         {!initial ? <DmField label="Исходная накладная"><DmDropdown disabled={disabled} value={documentId} onChange={(_, d) => setDocumentId(d.value)}><option value="">Нет доступной выпущенной накладной</option>{shipment.documents.map(doc => <option key={doc.id} value={doc.id}>{doc.title} · версия {doc.version}</option>)}</DmDropdown></DmField> : <p>{initial.source.documentId ? `Накладная: версия ${initial.source.documentVersion}` : "Без выпущенной накладной"}</p>}
@@ -29,8 +36,8 @@ export function DiscrepancyForm({ shipment, initial, disabled, onSave, onUpload,
         {value.kind === "RECEIPT_ERROR" && !initial ? <DmField label="Ошибочное событие получения"><DmDropdown disabled={disabled} value={receiptId} onChange={(_, d) => setReceiptId(d.value)}><option value="">Выберите событие</option>{receiptEvents.map(event => <option key={event.id} value={event.id}>{event.label}</option>)}</DmDropdown></DmField> : null}
       </div>
       {value.lines.map((line, i) => <div key={line.shipmentItemId}><h3>{source.find(s => s.shipmentItemId === line.shipmentItemId)?.name ?? `Позиция ${i + 1}`}</h3><p>Отправлено: {source[i]?.sentQuantity} {source[i]?.uom}. Ранее зарегистрировано получение: {source[i]?.recordedReceivedQuantity}.</p>
-        <DmField label={`Фактически получено — позиция ${i + 1}`} validationState={invalid && !/^\d+(\.\d{1,6})?$/.test(line.actualQuantity) ? "error" : "none"} validationMessage={invalid && !/^\d+(\.\d{1,6})?$/.test(line.actualQuantity) ? "Укажите неотрицательное количество, до 6 знаков после запятой" : undefined}><DmInput disabled={disabled} inputMode="decimal" value={line.actualQuantity} onChange={(_, d) => setLine(i, "actualQuantity", d.value)} /></DmField>
-        <DmField label={`Из них повреждено — позиция ${i + 1}`}><DmInput disabled={disabled} inputMode="decimal" value={line.damagedQuantity} onChange={(_, d) => setLine(i, "damagedQuantity", d.value)} /></DmField></div>)}
+        <DmField label={`Фактически получено — позиция ${i + 1}`} validationState={quantityError(i, "actualQuantity") ? "error" : "none"} validationMessage={quantityError(i, "actualQuantity")}><DmInput disabled={disabled} inputMode="decimal" value={line.actualQuantity} onChange={(_, d) => setLine(i, "actualQuantity", d.value)} /></DmField>
+        <DmField label={`Из них повреждено — позиция ${i + 1}`} validationState={quantityError(i, "damagedQuantity") ? "error" : "none"} validationMessage={quantityError(i, "damagedQuantity")}><DmInput disabled={disabled} inputMode="decimal" value={line.damagedQuantity} onChange={(_, d) => setLine(i, "damagedQuantity", d.value)} /></DmField></div>)}
       <div><DmField label="Причина и описание" required validationState={attempted && value.reason.trim().length < 3 ? "error" : "none"} validationMessage={attempted && value.reason.trim().length < 3 ? "Опишите расхождение, не менее 3 символов" : undefined}><DmTextarea disabled={disabled} value={value.reason} maxLength={3000} onChange={(_, d) => setValue(v => ({ ...v, reason: d.value }))} /></DmField>
         <DmField label="Предлагаемое решение"><DmDropdown disabled={disabled} value={value.requestedResolution} onChange={(_, d) => setValue(v => ({ ...v, requestedResolution: d.value as DiscrepancyStatement["requestedResolution"] }))}>{Object.entries(discrepancyResolutions).filter(([key]) => !["SHORTAGE", "NOT_RECEIVED"].includes(value.kind) || ["RESUPPLY", "REDUCTION"].includes(key)).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</DmDropdown></DmField>
       </div>

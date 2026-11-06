@@ -16,8 +16,13 @@ it.each([["true", "/admin/login"], ["false", "/login"]])("revoking the current s
   visit(file);
   expect(expression).not.toBe("");
   const events: string[] = [];
-  vm.runInNewContext(ts.transpileModule(`(${expression})()`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
-    workspacePath, clearAdminSession: () => events.push("clear"), window: { location: { assign: (url: string) => events.push(url) } },
+  const expected = { sessionId: "session-A" };
+  const run = (matches: boolean) => vm.runInNewContext(ts.transpileModule(`(${expression})()`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
+    session: expected, workspacePath, clearAdminSession: (session: unknown) => { expect(session).toBe(expected); if (matches) events.push("clear"); return matches; }, window: { location: { assign: (url: string) => events.push(url) } },
   });
+  run(true);
   expect(events).toEqual(["clear", target]);
+  events.length = 0;
+  run(false);
+  expect(events).toEqual([]);
 });

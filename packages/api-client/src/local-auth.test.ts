@@ -1,6 +1,18 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { MarketplaceApiClient } from "./index.js";
 afterEach(() => vi.unstubAllGlobals());
+it("corrects pending registration email through a validated POST contract", async () => {
+  const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ ok: true, verificationRequired: true, email: "correct@example.invalid", delivery: "LOCAL_FILE" }));
+  vi.stubGlobal("fetch", fetcher);
+  const client = new MarketplaceApiClient("http://localhost/api", {});
+  const input = { email: "Correct@example.invalid", password: "synthetic-password", registrationToken: "synthetic-proof".repeat(4), returnTo: "/catalog" };
+  expect(await client.correctRegistrationEmail(input)).toMatchObject({ email: "correct@example.invalid" });
+  expect(fetcher.mock.calls[0]).toEqual(["http://localhost/api/auth/registration/email", expect.objectContaining({ method: "POST", cache: "no-store", body: JSON.stringify({ registrationToken: input.registrationToken, password: input.password, email: "correct@example.invalid", returnTo: "/catalog" }) })]);
+  fetcher.mockResolvedValueOnce(Response.json({ ok: true }));
+  await expect(client.correctRegistrationEmail(input)).rejects.toThrow();
+  await expect(client.correctRegistrationEmail({ ...input, email: "invalid" })).rejects.toThrow();
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
 it("uses separate operator endpoints and CSRF-protected logout with cookies", async () => {
   const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => Response.json(null)); vi.stubGlobal("fetch", fetcher);
   const client = new MarketplaceApiClient("http://localhost/api", {});

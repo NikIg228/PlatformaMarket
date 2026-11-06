@@ -12,6 +12,7 @@
     "./controls": "./src/controls.tsx",
     "./link-button": "./src/link-button.ts",
     "./primitives": "./src/primitives.tsx",
+    "./loading-state": "./src/loading-state.tsx",
     "./format": "./src/format.ts",
     "./money": "./src/money.ts",
     "./dm-search": "./src/dm-search.tsx",
@@ -19,7 +20,14 @@
     "./action-feedback": "./src/action-feedback.tsx",
     "./app-shell": "./src/app-shell.tsx",
     "./actions": "./src/actions.tsx",
-    "./native-select": "./src/native-select.tsx"
+    "./native-select": "./src/native-select.tsx",
+    "./dm-dropdown": "./src/dm-dropdown.tsx",
+    "./use-workspace-session": "./src/use-workspace-session.tsx",
+    "./heading": "./src/heading.tsx",
+    "./permissions": "./src/permissions.tsx",
+    "./use-session-logout": "./src/use-session-logout.tsx",
+    "./conversation-counter": "./src/conversation-counter.tsx",
+    "./product-workflow": "./src/product-workflow.tsx"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit",

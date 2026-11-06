@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ConversationCounter } from "./conversation-workspace";
+import { ConversationCounter } from "./conversation-counter";
 
 // Node's CJS entry avoids Tabster's ESM interop; browser tests cover Fluent runtime.
 vi.mock("@fluentui/react-components", async () => {

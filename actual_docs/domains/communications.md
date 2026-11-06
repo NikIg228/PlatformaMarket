@@ -1,5 +1,11 @@
 # Сообщения, уведомления и поддержка
 
+> Профильный технический справочник. Действующие требования и статусы —
+> [roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md), открытые условия —
+> [OPEN_QUESTIONS](../OPEN_QUESTIONS.md). Датированные описания ниже не создают
+> отдельный план и не переопределяют поздние решения.
+
+
 ## Действующие требования 29.10.2026
 
 Контекст OFFER/ORDER, personal read state, safe attachments, drafts/replay сохраняются.
@@ -12,8 +18,8 @@ Service SMS нужны, marketing SMS выключены. Кампании Marke
 не отдельным модулем Market; opt-in/STOP до launch/delivery обязательны, CRM UI/live
 и гонка in-flight требуют отдельной приёмки CRM. Источник: §21/23, R5/R7/R8.
 
-Полный контракт — [срез объединённого ТЗ](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md);
-[открытая подготовка](../governance/ROADMAP-QUESTIONS-AND-DECISIONS.md#unified-open).
+Полный контракт — [срез объединённого ТЗ](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#approved-requirements);
+[открытая подготовка](../OPEN_QUESTIONS.md).
 Перенос требований не является реализацией или новой приёмкой.
 
 ## Историческая основа и evidence до синхронизации

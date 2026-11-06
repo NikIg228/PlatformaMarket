@@ -11,17 +11,41 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
-  images:
+  verified-revision:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      sha: ${{ steps.ci.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Resolve release commit
+        run: echo "RELEASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Require successful CI for the exact revision
+        id: ci
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/verify-release-ci.mjs
+  images:
+    needs: verified-revision
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
         target: [api, web]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verified-revision.outputs.sha }}
       - name: Validate public build configuration
         env:
           DEPLOYMENT_PROFILE: ${{ vars.DEPLOYMENT_PROFILE }}
@@ -49,7 +73,9 @@ jobs:
           context: .
           target: ${{ matrix.target }}
           push: true
-          tags: ghcr.io/${{ steps.image.outputs.namespace }}/marketplace-${{ matrix.target }}:${{ inputs.release || github.ref_name }}
+          tags: |
+            ghcr.io/${{ steps.image.outputs.namespace }}/marketplace-${{ matrix.target }}:${{ inputs.release || github.ref_name }}
+            ghcr.io/${{ steps.image.outputs.namespace }}/marketplace-${{ matrix.target }}:sha-${{ needs.verified-revision.outputs.sha }}
           build-args: |
             DEPLOYMENT_PROFILE=${{ vars.DEPLOYMENT_PROFILE }}
             NEXT_PUBLIC_API_URL=/api

@@ -1,7 +1,10 @@
 "use client";
 import { useRef, useState } from "react";
 import { vatLabel, type ApplyOfferVatInput, type OfferVatInput, type OfferVatPreview } from "@marketplace/schemas";
-import { DmButton, DmDialog, ErrorState, DmFeedback, formatMoney, errorMessage } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/controls";
+import { DmDialog, ErrorState, DmFeedback } from "@marketplace/ui/primitives";
+import { formatMoney } from "@marketplace/ui/money";
+import { errorMessage } from "@marketplace/ui/format";
 import { OfferVatEditor } from "../../../supplier-web/app/features/supplier-workspace/offer-vat-editor";
 import { useWorkspace } from "./workspace";
 import layout from "./requisites.module.css";

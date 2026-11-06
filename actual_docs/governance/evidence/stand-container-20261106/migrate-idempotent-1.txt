@@ -1,0 +1,9 @@
+ Container market-acceptance-20261106-api-run-fad1db46cca3 Creating
+ Container market-acceptance-20261106-api-run-fad1db46cca3 Created
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "dentmarket_test_container_20261106", schema "public" at "fixture-db:5432"
+
+57 migrations found in prisma/migrations
+
+
+No pending migrations to apply.

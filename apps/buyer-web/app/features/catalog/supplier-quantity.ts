@@ -10,12 +10,11 @@ export function quantityRules(offer: QuantityOffer) {
   return { min: Number(offer.minimumOrderQuantity ?? 1), step: Number(offer.orderIncrement ?? 1) };
 }
 export function initialQuantity(offer: QuantityOffer) {
-  const { min, step } = quantityRules(offer);
-  return clampQuantityInput(String(Number((Math.ceil(min / step - 1e-9) * step).toFixed(6))));
+  return clampQuantityInput(String(quantityRules(offer).min));
 }
 export function validQuantity(value: string, offer: QuantityOffer) {
   const n = Number(value);
   const { min, step } = quantityRules(offer);
   return value.trim() !== "" && Number.isFinite(n) && n > 0 && n >= min && n <= MAX_SUPPLIER_QUANTITY && step > 0
-    && Math.abs(n / step - Math.round(n / step)) < 1e-7;
+    && Math.abs((n - min) / step - Math.round((n - min) / step)) < 1e-9;
 }

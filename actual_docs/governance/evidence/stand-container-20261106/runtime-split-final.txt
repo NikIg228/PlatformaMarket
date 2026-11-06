@@ -1,0 +1,21 @@
+npm notice run dental-procurement-platform@0.0.0 verify:runtime-split
+npm notice run npm run build --workspace=@marketplace/api && node scripts/verify-runtime-split.mjs
+npm notice run @marketplace/api@0.0.0 prebuild
+npm notice run prisma generate --schema prisma/schema.prisma
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to .\..\..\node_modules\@prisma\client in 2.46s
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+npm notice run @marketplace/api@0.0.0 build
+npm notice run nest build
+PASS api: {"http":true,"schedules":false,"queueProducer":true,"queueConsumer":false}, ScheduleModule=false
+PASS worker: {"http":false,"schedules":true,"queueProducer":true,"queueConsumer":true}, ScheduleModule=true
+PASS all: {"http":true,"schedules":true,"queueProducer":true,"queueConsumer":true}, ScheduleModule=true
+PASS entrypoint guard: worker rejected by main
+PASS entrypoint guard: api rejected by worker
+PASS production: PROCESS_ROLE=all rejected
+Runtime split smoke test passed.

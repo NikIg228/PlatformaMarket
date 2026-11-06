@@ -34,6 +34,10 @@ it.skipIf(!process.env.POSTGRES_TEST_DATABASE_URL)("support PostgreSQL: tenant, 
     expect(event.payload).toEqual(expect.objectContaining({ organizationId: customerOrg, action: "MESSAGE" }));
     expect(event.payload).not.toHaveProperty("body");
     await service.addMessage(ticket.id, { ...reply, idempotencyKey: randomUUID(), body: "Private note", isInternal: true }, operator);
+    const preview = (await service.list(customer)).find(item => item.id === ticket.id)?.lastPublicMessage;
+    expect(preview).toEqual({ body: "Synthetic reply", hasAttachments: false, createdAt: expect.any(String) });
+    expect(await service.list({ ...customer, organizationId: otherOrg })).toEqual([]);
+    expect((await service.list(operator)).find(item => item.id === ticket.id)?.lastPublicMessage?.body).toBe("Synthetic reply");
     expect((await service.get(ticket.id, customer)).messages.map(message => message.body)).not.toContain("Private note");
     expect((await service.get(ticket.id, customer)).messages[1].authorLabel).toBe("Поддержка");
     expect(await db.outboxEvent.count({ where: { aggregateId: ticket.id, eventType: "SupportTicketUpdated" } })).toBe(1);

@@ -1,7 +1,12 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { OfferCommercialState, SaveOfferPriceInput } from "@marketplace/schemas";
-import { DmButton, DmField, DmInput, ErrorState, errorMessage, formatMoney, usePermissions } from "@marketplace/ui";
+import { DmButton, DmField, DmInput } from "@marketplace/ui/controls";
+import { ErrorState } from "@marketplace/ui/primitives";
+import { errorMessage } from "@marketplace/ui/format";
+import { formatMoney } from "@marketplace/ui/money";
+import { usePermissions } from "@marketplace/ui/permissions";
 import { vatLabel, vatLegacyFields, type OfferVatInput, type VatSelection } from "@marketplace/schemas";
 import { OfferVatEditor } from "../../../supplier-web/app/features/supplier-workspace/offer-vat-editor";
 import { offerPriceMinor, offerPriceText } from "../../../supplier-web/app/features/supplier-workspace/offer-editor-model";
@@ -77,7 +82,7 @@ export function OfferPriceEditor(props: OfferEditorProps) {
     } finally { flight.current = false; setBusy(false); }
   };
   return <form id={formId} className={styles.form} onSubmit={event => { event.preventDefault(); void save(); }}>
-    {loading ? <p role="status">Загружаем текущую цену…</p> : null}
+    {loading ? <LoadingState presentation="inline" label="Загружаем текущую цену…" /> : null}
     {error ? <ErrorState description={error} /> : null}
     {!loading && !state ? <DmButton onClick={() => setAttempt(value => value + 1)}>Повторить загрузку цены</DmButton> : null}
     {state ? <>

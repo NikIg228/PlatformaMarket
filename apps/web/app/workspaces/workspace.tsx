@@ -1,5 +1,5 @@
 "use client";
-import { ActionFeedback } from "@marketplace/ui";
+import { ActionFeedback } from "@marketplace/ui/action-feedback";
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -16,14 +16,11 @@ import {
   type ApiContext,
   type SessionHandoffEnvelope,
 } from "@marketplace/api-client";
-import {
-  DmButton,
-  ConversationCounter,
-  ErrorState,
-  LoadingState,
-  useSessionLogout,
-  useWorkspaceSession,
-} from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/controls";
+import { ConversationCounter } from "@marketplace/ui/conversation-counter";
+import { ErrorState, LoadingState } from "@marketplace/ui/primitives";
+import { useSessionLogout } from "@marketplace/ui/use-session-logout";
+import { useWorkspaceSession } from "@marketplace/ui/use-workspace-session";
 import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
 import * as clinic from "../../../buyer-web/app/workspace-session";
 import * as supplier from "../../../supplier-web/app/workspace-session";
@@ -89,9 +86,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "/api";
 export function Workspace({
   role,
   children,
+  preparing = false,
 }: {
   role: WorkspaceRole;
   children: ReactNode;
+  preparing?: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => {
@@ -117,7 +116,7 @@ export function Workspace({
   const adapter = role === "clinic" ? clinic : supplier;
   const { session: rawSession, ready: sessionReady, error } = useWorkspaceSession(adapter.sessionStore);
   const buyerMode = useBuyerMode();
-  const ready = sessionReady && (role !== "clinic" || (buyerMode !== "loading" && buyerMode !== "switching"));
+  const ready = !preparing && sessionReady && (role !== "clinic" || (buyerMode !== "loading" && buyerMode !== "switching"));
   const personal = role === "clinic" && buyerMode === "personal";
   const session = personal ? null : rawSession;
   const pathname = usePathname();
@@ -217,11 +216,11 @@ export function Workspace({
       ) : null}
       <main id="workspace-content" className={styles.main}>
         {ready && session?.organizationId && !(role === "supplier" && pathname.startsWith("/supplier/legal/")) ? <MessageHeader /> : null}
-        {role === "clinic" ? <BuyerContextBar /> : null}
+        {role === "clinic" ? <BuyerContextBar locale={locale} /> : null}
         {role === "supplier" && pathname.startsWith("/supplier/legal/") ? (
           children
         ) : !ready ? (
-          <LoadingState label={t("Проверяем вход")} />
+          <LoadingState label={t("Загружаем кабинет…")} />
         ) : personal ? <ActionFeedback tone="info" description={personalPurchaseMessage} /> : !session?.organizationId ? (
           <ErrorState presentation="inline"
             title={

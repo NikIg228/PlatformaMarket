@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import type { NotificationInboxItem } from "@marketplace/schemas";
-import { DmButton, formatDate } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/controls";
+import { formatDate } from "@marketplace/ui/format";
 import { Checkmark20Regular } from "@fluentui/react-icons/svg/checkmark";
 import { Document20Regular } from "@fluentui/react-icons/svg/document";
 import { Chat20Regular } from "@fluentui/react-icons/svg/chat";

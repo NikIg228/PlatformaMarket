@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { DmButton } from "@marketplace/ui";
+import { DmButton } from "@marketplace/ui/controls";
 
 export function usePageNavigation() {
   const [cursors, setCursors] = useState<Array<string | undefined>>([undefined]);

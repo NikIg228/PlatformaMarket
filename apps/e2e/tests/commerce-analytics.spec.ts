@@ -15,6 +15,8 @@ test("CORE07: supplier confirmation and three-role analytics at desktop/mobile",
     expect(response.status(), await response.text()).toBe(201); return response.json();
   };
   try {
+    supplier.organizationDisplayName = `Analytics supplier ${fixture.key}`;
+    await db.organization.update({ where: { id: supplier.organizationId }, data: { displayName: supplier.organizationDisplayName } });
     const cart = await post(`/buyers/${buyer.organizationId}/carts`, { currency: "KZT" });
     await post(`/carts/${cart.id}/items`, { offerId: main.id, quantity: 3 });
     const checkout = await post(`/carts/${cart.id}/checkout`, { idempotencyKey: `analytics-${fixture.key}` });
@@ -34,6 +36,7 @@ test("CORE07: supplier confirmation and three-role analytics at desktop/mobile",
       await page.goto(role === "admin" ? "/admin?section=analytics" : `/${role}/analytics`);
       const region = page.getByRole("region", { name: "Аналитика заказов и комиссии", exact: true });
       await region.getByLabel("Набор данных", { exact: true }).selectOption("TEST");
+      if (role === "admin") await region.getByRole("button", { name: supplier.organizationDisplayName, exact: true }).click();
       await expect(region.getByRole("link", { name: order.orderNumber, exact: true }).first()).toBeVisible();
       await expect(region.getByText("Отказ: остаток", { exact: true })).toBeVisible();
       await expect(region.getByText("Не учитывается", { exact: true })).toHaveCount(2);
@@ -48,6 +51,7 @@ test("CORE07: supplier confirmation and three-role analytics at desktop/mobile",
         await expect(page).toHaveURL(new RegExp(`orderId=${order.id}`));
         await page.goto("/admin?section=analytics");
         await region.getByLabel("Набор данных", { exact: true }).selectOption("TEST");
+        await region.getByRole("button", { name: supplier.organizationDisplayName, exact: true }).click();
         await expect(region.getByRole("link", { name: order.orderNumber, exact: true }).first()).toBeVisible();
       } else {
         await expect(page).toHaveURL(new RegExp(`/${role}/orders/${order.id}$`));

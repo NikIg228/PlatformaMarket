@@ -3,6 +3,13 @@ import { emailRegisterSchema } from "./commercial.js";
 export const authMailDeliverySchema = z.enum(["LOCAL_FILE", "PROVIDER"]);
 export const authClientOptionsSchema = z.object({ localOperatorPasswordEnabled: z.boolean(), emailDelivery: z.enum(["LOCAL_FILE", "PROVIDER", "UNAVAILABLE"]) }).strict();
 export const authRegistrationAcceptedSchema = z.object({ ok: z.literal(true), verificationRequired: z.literal(true), email: z.email(), delivery: authMailDeliverySchema }).strict();
+export const registrationEmailCorrectionSchema = z.object({
+  registrationToken: z.string().min(32).max(512),
+  password: z.string().min(12).max(128),
+  email: z.string().trim().pipe(z.email().max(254)).transform(value => value.toLowerCase()),
+  returnTo: emailRegisterSchema.shape.returnTo,
+}).strict();
+export type RegistrationEmailCorrection = z.input<typeof registrationEmailCorrectionSchema>;
 export const authForgotAcceptedSchema = z.object({ ok: z.literal(true), message: z.string(), delivery: authMailDeliverySchema }).strict();
 export const localOperatorLoginSchema = z.object({ email: z.string().trim().pipe(z.email()).transform(v=>v.toLowerCase()), password: z.string().min(1).max(128) }).strict();
 export const localOperatorSessionSchema = z.object({

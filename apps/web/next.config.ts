@@ -6,6 +6,7 @@ import path from "node:path";
 const upstream = new URL(process.env.INTERNAL_API_URL ?? "http://127.0.0.1:4012/api");
 if (!["http:", "https:"].includes(upstream.protocol) || upstream.username || upstream.password || upstream.search || upstream.hash || upstream.pathname.replace(/\/$/, "") !== "/api") throw new Error("INTERNAL_API_URL must be a fixed HTTP(S) API origin with /api path");
 const config: NextConfig = {
+  output: "standalone",
   env: {
     ...frontendDeploymentEnvironment(process.env),
     NEXT_PUBLIC_UNIFIED_APP: "true", NEXT_PUBLIC_API_URL: "/api",

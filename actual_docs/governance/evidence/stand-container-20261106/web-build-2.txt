@@ -1,0 +1,271 @@
+2026/11/06 14:46:57 http2: server: error reading preface from client //./pipe/dockerDesktopLinuxEngine: file has already been closed
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 4.17kB 0.1s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:24-alpine
+#2 DONE 1.6s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 405B done
+#3 DONE 0.0s
+
+#4 [base 1/2] FROM docker.io/library/node:24-alpine@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8
+#4 resolve docker.io/library/node:24-alpine@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8 0.1s done
+#4 DONE 0.1s
+
+#5 [base 2/2] RUN apk add --no-cache openssl
+#5 CACHED
+
+#6 [manifests  1/14] WORKDIR /workspace
+#6 CACHED
+
+#7 [internal] load build context
+#7 transferring context: 512.95kB 1.3s done
+#7 DONE 1.5s
+
+#8 [manifests  2/14] COPY package.json package-lock.json turbo.json ./
+#8 CACHED
+
+#9 [manifests 10/14] COPY packages/api-client/package.json packages/api-client/package.json
+#9 CACHED
+
+#10 [manifests 12/14] COPY packages/one-c-agent/package.json packages/one-c-agent/package.json
+#10 CACHED
+
+#11 [manifests  5/14] COPY apps/buyer-web/package.json apps/buyer-web/package.json
+#11 CACHED
+
+#12 [manifests 13/14] COPY packages/schemas/package.json packages/schemas/package.json
+#12 CACHED
+
+#13 [manifests  9/14] COPY apps/e2e/package.json apps/e2e/package.json
+#13 CACHED
+
+#14 [manifests  6/14] COPY apps/supplier-web/package.json apps/supplier-web/package.json
+#14 CACHED
+
+#15 [manifests 11/14] COPY packages/eds-client/package.json packages/eds-client/package.json
+#15 CACHED
+
+#16 [manifests  4/14] COPY apps/admin-web/package.json apps/admin-web/package.json
+#16 CACHED
+
+#17 [manifests 14/14] COPY packages/ui/package.json packages/ui/package.json
+#17 CACHED
+
+#18 [manifests  7/14] COPY apps/landing-web/package.json apps/landing-web/package.json
+#18 CACHED
+
+#19 [manifests  3/14] COPY apps/api/package.json apps/api/package.json
+#19 CACHED
+
+#20 [workspace 2/3] COPY . .
+#20 CACHED
+
+#21 [manifests  8/14] COPY apps/web/package.json apps/web/package.json
+#21 CACHED
+
+#22 [workspace 1/3] RUN REDISMS_DISABLE_POSTINSTALL=true npm ci
+#22 CACHED
+
+#23 [workspace 3/3] RUN npm run db:generate
+#23 CACHED
+
+#24 [unified-build 1/1] RUN npm run build
+#24 2.646
+#24 2.646 > dental-procurement-platform@0.0.0 build
+#24 2.646 > turbo build --concurrency=1 --filter=!@marketplace/buyer-web --filter=!@marketplace/supplier-web --filter=!@marketplace/admin-web --filter=!@marketplace/landing-web
+#24 2.646
+#24 4.463
+#24 4.463 Attention:
+#24 4.463 Turborepo now collects completely anonymous telemetry regarding usage.
+#24 4.463 This information is used to shape the Turborepo roadmap and prioritize features.
+#24 4.463 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#24 4.463 https://turborepo.dev/docs/telemetry
+#24 4.463
+#24 4.464 • turbo 2.10.12
+#24 5.576
+#24 5.576    • Packages in scope: @marketplace/api, @marketplace/api-client, @marketplace/e2e, @marketplace/eds-client, @marketplace/one-c-agent, @marketplace/schemas, @marketplace/ui, @marketplace/web
+#24 5.576    • Running build in 8 packages
+#24 5.576    • Remote caching disabled
+#24 5.576
+#24 7.075 @marketplace/schemas:build: cache miss, executing 354983d6add61141
+#24 7.648 @marketplace/schemas:build:
+#24 7.648 @marketplace/schemas:build: > @marketplace/schemas@0.0.0 build
+#24 7.648 @marketplace/schemas:build: > tsc -p tsconfig.build.json
+#24 7.648 @marketplace/schemas:build:
+#24 21.46 @marketplace/eds-client:build: cache miss, executing a07cd6a47905fddc
+#24 21.70 @marketplace/eds-client:build:
+#24 21.70 @marketplace/eds-client:build: > @marketplace/eds-client@0.0.0 build
+#24 21.70 @marketplace/eds-client:build: > tsc -p tsconfig.json
+#24 21.70 @marketplace/eds-client:build:
+#24 23.91 @marketplace/api-client:build: cache miss, executing 6a85f4b6d7ec3eb0
+#24 24.09 @marketplace/api-client:build:
+#24 24.09 @marketplace/api-client:build: > @marketplace/api-client@0.0.0 build
+#24 24.09 @marketplace/api-client:build: > tsc -p tsconfig.json
+#24 24.09 @marketplace/api-client:build:
+#24 30.45 @marketplace/api:build: cache miss, executing ea1747e3fdfe65e2
+#24 30.71 @marketplace/api:build:
+#24 30.71 @marketplace/api:build: > @marketplace/api@0.0.0 prebuild
+#24 30.71 @marketplace/api:build: > prisma generate --schema prisma/schema.prisma
+#24 30.71 @marketplace/api:build:
+#24 33.32 @marketplace/api:build: Prisma schema loaded from prisma/schema.prisma
+#24 41.93 @marketplace/api:build: ┌─────────────────────────────────────────────────────────┐
+#24 41.93 @marketplace/api:build: │  Update available 6.19.3 -> 8.0.0-rc.30                 │
+#24 41.93 @marketplace/api:build: │                                                         │
+#24 41.93 @marketplace/api:build: │  This is a major update - please follow the guide at    │
+#24 41.93 @marketplace/api:build: │  https://pris.ly/d/major-version-upgrade                │
+#24 41.93 @marketplace/api:build: │                                                         │
+#24 41.93 @marketplace/api:build: │  Run the following to update                            │
+#24 41.93 @marketplace/api:build: │    npm i --save-dev prisma@latest                       │
+#24 41.93 @marketplace/api:build: │    npm i @prisma/client@latest                          │
+#24 41.93 @marketplace/api:build: └─────────────────────────────────────────────────────────┘
+#24 41.93 @marketplace/api:build:
+#24 41.93 @marketplace/api:build: ✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/@prisma/client in 6.45s
+#24 41.93 @marketplace/api:build:
+#24 41.93 @marketplace/api:build: Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+#24 41.93 @marketplace/api:build:
+#24 41.93 @marketplace/api:build: Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+#24 41.93 @marketplace/api:build:
+#24 42.02 @marketplace/api:build:
+#24 42.02 @marketplace/api:build: > @marketplace/api@0.0.0 build
+#24 42.02 @marketplace/api:build: > nest build
+#24 42.02 @marketplace/api:build:
+#24 111.5 @marketplace/ui:build: cache miss, executing 7598769afd4599e1
+#24 113.7 @marketplace/ui:build:
+#24 113.7 @marketplace/ui:build: > @marketplace/ui@0.0.0 build
+#24 113.7 @marketplace/ui:build: > tsc -p tsconfig.json --noEmit
+#24 113.7 @marketplace/ui:build:
+#24 128.0 @marketplace/one-c-agent:build: cache miss, executing 8be9eef6e62183c6
+#24 128.2 @marketplace/one-c-agent:build:
+#24 128.2 @marketplace/one-c-agent:build: > @marketplace/one-c-agent@0.0.0 build
+#24 128.2 @marketplace/one-c-agent:build: > tsc -p tsconfig.json
+#24 128.2 @marketplace/one-c-agent:build:
+#24 131.3 @marketplace/web:build: cache miss, executing a11f47a6996ef993
+#24 131.6 @marketplace/web:build:
+#24 131.6 @marketplace/web:build: > @marketplace/web@0.0.0 build
+#24 131.6 @marketplace/web:build: > npm run prepare:web && next build --webpack
+#24 131.6 @marketplace/web:build:
+#24 131.9 @marketplace/web:build:
+#24 131.9 @marketplace/web:build: > @marketplace/web@0.0.0 prepare:web
+#24 131.9 @marketplace/web:build: > node ../../scripts/prepare-unified-web.mjs
+#24 131.9 @marketplace/web:build:
+#24 133.1 @marketplace/web:build: Unified assets prepared: 458; auth CSS scoped.
+#24 134.4 @marketplace/web:build: ▲ Next.js 16.4.3 (webpack)
+#24 135.8 @marketplace/web:build: ✓ Running next.config.ts took 1382ms
+#24 135.8 @marketplace/web:build: Attention: Next.js now collects completely anonymous telemetry regarding usage.
+#24 135.8 @marketplace/web:build: This information is used to shape Next.js' roadmap and prioritize features.
+#24 135.8 @marketplace/web:build: You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#24 135.8 @marketplace/web:build: https://nextjs.org/telemetry
+#24 135.8 @marketplace/web:build:
+#24 136.0 @marketplace/web:build: - Experiments (use with caution):
+#24 136.0 @marketplace/web:build:   · optimizePackageImports
+#24 136.0 @marketplace/web:build:   · proxyClientMaxBodySize: 27846316
+#24 136.0 @marketplace/web:build:
+#24 136.1 @marketplace/web:build:   Creating an optimized production build ...
+#24 265.3 @marketplace/web:build: ✓ Compiled successfully in 2.1min
+#24 265.3 @marketplace/web:build:   Running TypeScript ...
+#24 309.7 @marketplace/web:build:   Finished TypeScript in 45s ...
+#24 309.8 @marketplace/web:build:   Collecting page data using 7 workers ...
+#24 315.6 @marketplace/web:build:   Generating static pages using 7 workers (0/50) ...
+#24 318.2 @marketplace/web:build:   Generating static pages using 7 workers (12/50)
+#24 318.2 @marketplace/web:build:   Generating static pages using 7 workers (24/50)
+#24 318.2 @marketplace/web:build:   Generating static pages using 7 workers (37/50)
+#24 318.2 @marketplace/web:build: ✓ Generating static pages using 7 workers (50/50) in 2.7s
+#24 335.5 @marketplace/web:build:   Finalizing page optimization ...
+#24 335.6 @marketplace/web:build:   Collecting build traces ...
+#24 377.0 @marketplace/web:build:
+#24 377.1 @marketplace/web:build: Route (app)
+#24 377.1 @marketplace/web:build: ┌ ƒ /
+#24 377.1 @marketplace/web:build: ├ ƒ /_not-found
+#24 377.1 @marketplace/web:build: ├ ƒ /about
+#24 377.1 @marketplace/web:build: ├ ƒ /admin
+#24 377.1 @marketplace/web:build: ├ ƒ /admin/login
+#24 377.1 @marketplace/web:build: ├ ƒ /catalog
+#24 377.1 @marketplace/web:build: ├ ƒ /catalog-fallback
+#24 377.1 @marketplace/web:build: ├ ƒ /catalog-search
+#24 377.1 @marketplace/web:build: ├ ƒ /catalog/suppliers/[supplierId]
+#24 377.1 @marketplace/web:build: ├ ƒ /clinic
+#24 377.1 @marketplace/web:build: ├ ƒ /clinic/analytics
+#24 377.1 @marketplace/web:build: ├ ƒ /clinic/cart
+#24 377.1 @marketplace/web:build: ├ ƒ /clinic/catalog
+#24 377.1 @marketplace/web:build: ├ ƒ /clinic/documents
+#24 377.1 @marketplace/web:build: ├ ƒ /clinic/messages
+#24 377.1 @marketplace/web:build: ├ ƒ /clinic/notifications
+#24 377.1 @marketplace/web:build: ├ ƒ /clinic/orders
+#24 377.1 @marketplace/web:build: ├ ƒ /clinic/orders/[id]
+#24 377.1 @marketplace/web:build: ├ ƒ /clinic/profile
+#24 377.1 @marketplace/web:build: ├ ƒ /clinic/settings
+#24 377.1 @marketplace/web:build: ├ ƒ /clinic/support
+#24 377.1 @marketplace/web:build: ├ ƒ /dev/product-documents/[productId]/[document]
+#24 377.1 @marketplace/web:build: ├ ƒ /dev/ui-kit
+#24 377.1 @marketplace/web:build: ├ ƒ /documents
+#24 377.1 @marketplace/web:build: ├ ƒ /invitation
+#24 377.1 @marketplace/web:build: ├ ƒ /legal/privacy
+#24 377.1 @marketplace/web:build: ├ ƒ /legal/terms
+#24 377.1 @marketplace/web:build: ├ ƒ /login
+#24 377.1 @marketplace/web:build: ├ ƒ /orders/[id]
+#24 377.1 @marketplace/web:build: ├ ƒ /personal/cart
+#24 377.1 @marketplace/web:build: ├ ƒ /products/[id]
+#24 377.1 @marketplace/web:build: ├ ƒ /promotions
+#24 377.1 @marketplace/web:build: ├ ƒ /register
+#24 377.1 @marketplace/web:build: ├ ƒ /register/resume
+#24 377.1 @marketplace/web:build: ├ ƒ /reset-password
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/analytics
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/documents
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/legal/[code]
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/messages
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/notifications
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/orders
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/orders/[id]
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/products
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/products/corrections
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/products/import
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/products/inventory
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/products/new
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/products/promotions
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/products/proposals
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/profile
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/settings
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/settings/sources
+#24 377.1 @marketplace/web:build: ├ ƒ /supplier/support
+#24 377.1 @marketplace/web:build: ├ ƒ /suppliers
+#24 377.1 @marketplace/web:build: └ ƒ /verify-email
+#24 377.1 @marketplace/web:build:
+#24 377.1 @marketplace/web:build:
+#24 377.1 @marketplace/web:build: ƒ Proxy (Middleware)
+#24 377.1 @marketplace/web:build:
+#24 377.1 @marketplace/web:build: ƒ  (Dynamic)  server-rendered on demand
+#24 377.1 @marketplace/web:build:
+#24 381.5
+#24 381.5  Tasks:    7 successful, 7 total
+#24 381.5 Cached:    0 cached, 7 total
+#24 381.5   Time:    6m17.05s
+#24 381.5
+#24 381.7  WARNING  no output files found for task @marketplace/ui#build. Please check your `outputs` key in `turbo.json`
+#24 DONE 384.9s
+
+#25 [web 2/4] COPY --from=unified-build /workspace/apps/web/.next/standalone ./
+#25 DONE 3.3s
+
+#26 [web 3/4] COPY --from=unified-build /workspace/apps/web/public ./apps/web/public
+#26 DONE 0.8s
+
+#27 [web 4/4] COPY --from=unified-build /workspace/apps/web/.next/static ./apps/web/.next/static
+#27 DONE 0.4s
+
+#28 exporting to image
+#28 exporting layers
+#28 exporting layers 5.8s done
+#28 exporting manifest sha256:45ad007ea34f3d8558ec97c84958a0a6391b2ef23ea32a74526f1d856eb3f70e 0.1s done
+#28 exporting config sha256:ae844f0771b5f960c6bcc5c5c22019b66ff13fbd538ad44808dcc4f5652c64da 0.0s done
+#28 exporting attestation manifest sha256:211b930cd121155c652914cbadb2aaf2c0d5a6000525931056bb217008c3b8ca 0.1s done
+#28 exporting manifest list sha256:9955d2d38746ea6a609425649ab08b23a4424d824a738f947649e8717fc867ae 0.1s done
+#28 naming to docker.io/library/platformamarket-web:stand-20261106-local1 0.0s done
+#28 unpacking to docker.io/library/platformamarket-web:stand-20261106-local1
+#28 unpacking to docker.io/library/platformamarket-web:stand-20261106-local1 6.4s done
+#28 DONE 12.7s

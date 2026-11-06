@@ -1,3 +1,584 @@
+## STAND-RC-KK-20261106 — LOCAL_FIX_PASS / WAITING_POLICY_CHANGE
+
+Owner latest explicitly: fix ResourceStatus KK; diagnose launch block; complete
+browser acceptance and one release SHA. Server/domain excluded. main5161af7f.
+Changed ONLY ResourceStatus + its7tests + workspace-locale4strings: URLlang via
+useSearchParams/workspaceLocale/workspaceText; refresh/offline/error chrome KK,
+servermessage preserved, same adapter/geometry/state order. No caller rewrites.
+PASS1 resource7tests, scoped3filelint, webtypes, UIcontract473+5, webgo_livebuild
+exit0, bundle,diff. EarlierPG/API/core/config/fulltest unaffectedpass reused;
+previouswebimage/sourcefingerprint doesnotinclude thisnewUIchange.
+Read-onlyOpenAIDocs + codex execpolicycheck exactnextstart3300/default.rules:
+matchedRules[],8allow/no deny/prompt. Persistedonrequest/workspacewrite isnot
+proof ofeffectivepolicy. No config/rule changes or bypass/launch retries.
+Askeduser tocheck chatpermissions/manualconfirmation; useranswer 'Проверю
+разрешения чата' only, notconfirmationofchange. Await actualchangedcondition.
+Prepared (NOT RUN) .tmp/stand-rc-kk-20261106/resource-browser.mjs 4profiles
+1440/390RU/KK retaineddata/refresh/error/offline/recovery/focus/screens/styles;
+nodecheckPASS. RemainingRC browser scope inprecedingcheckpoint/evidence.
+Owneddev1184 stoppedforbuild; buildsession37025 finished0. Ordinarydevrestored
+session61216 API4012PID24888/web3000PID8304, launcherreadyHTTP200; solelyforuser,
+not used to bypass production acceptance. Userstillcheckingpermissions.
+No staging/commit/push/releaseSHA/deploy/agents. Existing18indexhash2c3bc037...
+unchanged. Evidence stand-rc-20261106.md appended +loading evidence sourcefix.
+Logs/plan .tmp/stand-rc-kk-20261106. Next: waituserpermissionsresult; onlyafter
+confirmedchangedconditions permittedexactproductionlaunch +remainingUIgates.
+## STAND-RC-20261106 — DRAFT_CANDIDATE / PRODUCTION_BROWSER_BLOCKED
+
+Owner latest: review accumulated WIP, assemble coherent stand RC, fix one release
+SHA after required checks; server/domain explicitly excluded. Canonical main
+5161af7f, fetched origin/main4543fd22 ahead7/behind0. No agents/sourcecopies.
+Inventory669: source199, docs59, history13, durableevidence268, output130.
+Draft selected396/~6.9MB; exclude273 preservedlocal raw artifacts incl2JSON>100MB
+and357MB oldaudit machineevidence. Localdraftmanifest .tmp/stand-rc-20261106/.
+Sourcefingerprint153f5d72...; all2538 container sourcehashes unchanged -> reuse
+scopedLinuxcontainer/runtimePASS. No product edits; reviewedcriticaldiffs.
+PASS1 lint/UIcontract473+5, lintpolicy3, types13tasks, npmtest2254pass7PGskip,
+buildgo_live7tasks exit0, prodconfig, configtests27, authcontract, webbundle,
+realPGall/dependencies+upgrades, core71/210success/302schemas, sessioncorrection/
+unlinkPG+API, directSupportPG1. Aggregateverifyrelease equivalentlydecomposed
+perWorkflow4.2; rate4/filter5PASSwithinfulltests plusAPIbuild/authcontract.
+Docslinks2198PASS; secret-signatureheuristic0matches, not fullsecurityaudit.
+CURRENT exactproductionnextstart3300 INTERNAL_API_URL4129 rejectedbyautomatic
+review beforeCreateProcess: blockedbypolicy,no detail. No retry/alternateport/
+command/devtestbypass. PriorA04threefailures retained; newownerscope/laterChrome
+recovery didnotresolveproductionlaunch. CUAgetStateonly, completioncalled.
+Remaining: productionbrowser A04/A07, account routing/lazyoffers/createforms,
+loaders/loginrestore desktop/mobileRU/KK+keyboard/computed, canonicalverifyweb.
+Sourcefinding: ResourceStatusnewrefreshlabel hardcodedRU,no locale; recordedin
+existingloading evidence. UIrepair/acceptancepausedatblockedlaunch; notfixed.
+Evidence ../evidence/stand-rc-20261106.md +localmanifest/review-summary. FinalJSON
+copy/gateswriter also rejectedbypolicy beforeexecution; no suchartifactscreated.
+NO acceptedreleaseSHA,
+commit/push/tag/deploy/server/domain. Existing18indexcontent hash2c3bc037... kept.
+Owneddev15768tree stopped beforebuild, ordinarynpmrundevisrestored ONLY foruser
+(not browseracceptance workaround): session94460 API4012PID17336/web3000PID4092,
+launcherreadyHTTP200. DBsuitescleanedownfixtures; Dockerremainsstopped.
+No test/buildprocess left; all sessionsdone exceptuserdev. .tmp/stand-rc-20261106
+contains plan/logs/inventory. Next exactstep: resolveenvironmentpolicy rejection
+forproductionfrontendlaunch, thenremainingUIgates/fix andonlythenstagecommitpushCI.
+Do not claim globalRC/productionready or replay unchangedpasses afterdocs.
+## STAND-CONTAINER-20261106 — LOCAL_CONTAINER_PASS / COMMON_RELEASE_SHA_OPEN
+
+Owner latest explicitly: install Docker locally, continue container acceptance and
+stand version preparation; server/domain NEXT STEP, not current blocker/request.
+DockerDesktop4.98 per-user WSL2 installed; engine29.9.2 Compose5.6.1 Linuxamd64.
+Canonical main5161af7f unchanged, old18staged diff hash preserved. No agents,
+sourcecopies, commit/push/deploy or workingdatawrites. Evidence:
+../evidence/stand-container-20261106.md and folder images/source-manifest/logs.
+API image platformamarket-api:stand-20261106-local2 ID9fdd059c... size1294977960;
+web platformamarket-web:stand-20261106-local1 ID9955d2d3... size418446501.
+Both go_live LinuxbuildPASS. Sourceinventory2538files, no immutableGitRC yet.
+Realdefects fixed: prodComposehealth localhost=>127.0.0.1 (IPv6 falsefailure);
+BackgroundQueueService initialization moved onModuleInit=>onApplicationBootstrap
+so persistedjobs wait registeredhandlers. New realNest regression RED1/3PASS then
+4PASS; dependent13+13 =>30 backendPASS. APItypes/lint/runtime-split PASS.
+Canonical3PASS afterhealthfix, finalComposePASS, Caddymax26797740/+1 actualPASS.
+New verify-edge maxbody regression catches expectedupstream ECONNRESET.
+57migrations disposable dentmarket_test_container_20261106 PASS+idempotentreplay;
+read-onlyPrismavalidate/API/worker/web PASS, PDF/DOCX RU/KK/S3 signeddownload and
+anonymous403 PASS. WorkerHTTPabsent; APIproduceronly. Stopworker/enqueue/start
+final persistedjob attempts1 completesonfirstdelivery PASS. Login/static/proxy
+PASS and maxbody reachesAPI401 vs+1 =>413. No role/tenant realbusinesscertification.
+Attempts preserved: API1PATHfail2PASS3newcodePASS; web1cancelmemory2PASS; miniohub
+removed/binary410 => officialsource7aac2a2 builtfixturePASS (<20min). Notnewprod
+storage choice. localcompose oldMinio refs remainknownissue. edge1harnessRESET
+then2PASS; runtime1localhosttimeout2PASS/finalPASS; web1hostcannotinternalnetwork
+theninside2PASS/finalPASS; initialqueue2attempts exposedbug, final1PASS.
+Temporaryproject market-acceptance-20261106 +failedproject removed inclown2volumes;
+DockerDesktop stoppedgracefullytofree8GBhostRAM, images/cache retained. Ownolddev
+npmPID14252tree stoppedafteridentitycheck; now npmrun dev session56251 ON,
+API4012PID16508/web3000PID5856, bothHTTP200, log .tmp/stand-container-20261106/dev-resumed.log.
+Runners and ALLattempts .tmp/stand-container-20261106. No unfinishedtest/build.
+Previous7outgoing+largeWIP notaccepted byscopedcontainerPASS, commonreleaseSHA
+stillopen; final delivery must distinguish localimages frompublishedRC/server.
+Server/domain andliveTLS/providers/AV/roles/backup/rollback deferredbyowner.
+## STAND-RC-FINAL-20261106 — LOCAL_ACCEPTANCE_PASS / CI_PENDING
+
+Owner explicitly authorized additional promotions attempt, remaining registration/
+lazy acceptance, common release SHA and CI; server/domain excluded. Supersedes
+previous STAND-RC browser blockers, preserves attempt history. Base mainf4116d31,
+origin4543fd22/ahead8 after fetch. Inventory lot-race commit reviewed with its
+focused PG/unit/types/build+verify:postgres PASS; other source changes unchanged.
+Unified go_live rebuild/budgetPASS. Promotions authorized attempt4PASS completes
+123unique canonical scenarios (composite110+7+5+1). Registration1440/390PASS with
+actual isolated API/local mail, invalid/cancel/occupied/expired/network/double-submit,
+same user/intent/BIN/consents and verified clinic entry; old/replay proof401.
+DesktopPASS2; mobilePASS3 on own isolated fixture after prior combined5/min limit;
+guards unchanged. Lazy6PASS (4first+2fixture correction), plus2existing uncertain
+price/delivery guard scenariosPASS. Keyboard/screenshots/computed verified.
+UI on KK route retains existing Russian registration/editors; no full KK claim.
+Source fingerprint205paths2eb30db74623080e0d615c2d153c1b5dc0b32e6d3697ccda0e89b387bda56410.
+Candidate404paths includes previously reviewed WIP plus4browser spec and compact
+evidence; raw outputs/generated next-env excluded and preserved. Stage/commit/push
+and exact-SHA CI are next; no overall release/server acceptance before CI.
+Evidence actual_docs/governance/evidence/stand-rc-20261106.md + sibling directory.
+Runtime: ordinary dev stopped; own Next3300 session15173, canonical test APIs and
+registration4129 finished. After final checks restore ordinary dev from canonical
+folder. No deploy/tag/working data changes/new agents. Historical attempts intact.
+
+## STAND-RC-KK-20261106 — BROWSER_PARTIAL / RELEASE_BLOCKED
+
+Same authorized task: ResourceStatus KK, resolve launch restrictions, browser
+acceptance and common release SHA; server/domain excluded. main5161af7f/ahead7,
+prior index hash2c3bc037bfd2b0046ed6cb120531bca7fb01ac90 unchanged; no Git writes.
+Production3300 launch now succeeded via approved tool; current blocker is NOT policy.
+ResourceStatus1440/390 RU/KK4PASS2, retained data/refresh/error/offline/recovery,
+focus/computed/screenshots. Session A04 synthetic raceA→B/wrong receipt/same-A:
+6 unique functionalPASS across1440/390, attempts1–3. Admin UI Russian; mobile
+browser locale kk-KZ does not prove localized operator UI. Toast screenshot in
+transition, no complete visual certification. Registration correction still pending.
+Canonical verify:web:110PASS/13FAIL; focused rerun7PASS/6FAIL; final5PASS/1FAIL.
+122uniquePASS, one promotions profile assertion NOT accepted. Test expected no
+/promotions in go_live; final expectation fixed to declared profile, NOT_RUN.
+Three attempts exhausted for this gate: no fourth run without owner decision.
+Four previously clean browser spec files changed only fixtures/expectations:
+commerce-analytics, settings-profile, supplier-capabilities, workspace-rebuild.
+E2E final types/lint and diffPASS. Production source unchanged in this continuation.
+Remaining: one browser gate, registration-correction + missing lazy chunk failure/
+retry/cancel/direct-link evidence, final manifest composition/SHA/CI. No commit/push.
+Old manifest remains DRAFT with stale hashes; never stage it as accepted evidence.
+Logs/attempts .tmp/stand-rc-kk-20261106; durable evidence stand-rc-20261106.md.
+Owned production PID9748 stopped; ordinary npm run dev restored in session62622,
+log dev-restored-final.log: API health200, web root200, unified ready.
+No working data changes, external mail, deploy, new agents or fourth gate attempt.
+
+## STAND-PREPARATION-20261106 — LOCAL_CONFIG_PASS / CONTAINER_AND_DEPLOY_BLOCKED
+
+Owner explicitly corrected task: continue cited closed-stand preparation list,
+not Support-only results (response annotation1). Scope: candidate composition,
+Caddy limit, worker/migration order, release CI barrier, Linux containers,
+isolated environment/deploy/server checks. main5161af7f; fetch origin/main
+4543fd22 successful, ahead7 behind0. Existing18staged preserved, no Git writes.
+Implemented clean config paths: both Caddy max26797740; worker depends healthy
+API after migrations; release job validates latest main push ci.yml exactSHA,
+rejects missing/pending/failure/APIerror, image checkout pinned verifiedSHA plus
+sha tag. New scripts/verify-release-ci{,.test}.mjs; canonical tests updated;
+CI tests and standCompose/Caddy validation; verify-compose worker assertion.
+production-deployment docs own added sections preserve earlier linkWIP.
+8 focusedPASS1; scopedlintPASS1; completion20PASS afterCI edit; productionconfig
+exit0; nodecheck/diffPASS. No TS app edit, no rebuild/fullreleasePASS implied.
+Read DevOps Automator practices; no delegation. Docker unavailable PATH/standard
+path; known blocker no repeated imagebuild. Asked owner async for LinuxDocker/
+SSHalias and standdomain; no answer yet. Cloud Yandex selected, resources not.
+Workingtreeinventory633 paths hashes .tmp/stand-preparation-20261106:185source/
+config318docs130evidence, plus outgoing/status/index. Inventory not acceptedRC.
+Evidence ../evidence/stand-preparation-20261106.md records scope/gates/blockers.
+No commit/push/deploy/datachange. Need review baselineWIP and unresolvedgates
+before publish; do not publish sevencommits on scopedconfigPASS. Next available
+LinuxDocker acceptance disposableDB/read-only/Prisma/startup/ingress, then env,
+real roles/tenant/files/worker/recovery/rollback. Do not weaken go_live guards.
+## SUPPORT-REMAINING-FIXES-20261106 — LOCAL_VERIFIED / PUBLICATION_BLOCKED
+
+Latest owner explicitly: fix all remaining audit005 findings and recheck desktop/
+mobile inclKK. Canonical main5161af7f, oldWIP/index18 preserved. Findings2–5 now
+locallyfixed: list inlineerror text + separate recoverybutton; list scrolls whole
+column inshortwindows, errorblock doesnotcollapse; brokenpreview persistentinline
+ErrorState within dialog; BuyerContextBar locale +support/file/olderhistorytoast
+titles; firstrequest canonicalURL preserveslang; scrollintent appliedaftermessage
+DOMcommit viauseLayoutEffect, preservesprependanchor/newmessage readingposition.
+No backend/data/dependency/globaltoken changes, agents, deploy or foreignwrites.
+Evidence ../evidence/support-remaining-fixes-20261106.md; audit005 updatedwithout
+erasing historicalfails. Artifacts output/support-remaining-fixes-20261106/;
+before/scope/plan/runners .tmp/support-remaining-fixes-20261106/.
+39unique permanentSupportcases +2touchRU/KK +3errorgeometry PASS. Relevantfinal
+CSS rerun10PASS (8profiles+2dense), geometry2 ratio1 PASS3. Initialdependent1
+26PASS2FAIL retained: createform retry isolatedafterqueryfixPASS; prepend0.5px
+precisionfail correctedto1px roundingtolerance PASS2. InitialE2EtypesTS2488 fixed
+Array.from; finalUI/web/buyer/E2Etypes +lint exit0, UIcontractPASS473files.
+Finalwebgo_livebuild2PASSexit0 afterlastCSS; buyerbuild1PASSexit0inclbundle.
+next-env files restoredcleantobaseline; sourcehashesfinal. No fullreleaseclaim.
+Allownedchecksfinished; devkeptON API4012PID17204/web3000PID7216. MockAPI only;
+physicalphonekeyboard/Safari/screenreader/realstorage notcertified. No newCUA retry.
+No commit/push: existing support depends on earlieruncommittedloadingstate +7
+outgoingcommits requirebaselineacceptance; no stagingforeignwork. Reportlocal
+completion ofselectedfindings, nofurtherproductphase authorized.
+
+## SUPPORT-STATE-LAYOUT-AUDIT-20261106 — AUDIT_COMPLETE / ACCEPTANCE_OPEN
+
+Latest owner: recheck entire Support page across desktop/mobile states after
+missed layout defects. main@5161af7f, canonical folder; prior WIP/index preserved.
+Report anti-slop/audit-005-2026-11-06.md; durable evidence/screens/logs/hashes
+output/support-layout-audit-20261106/; scripts .tmp/support-layout-audit-20261106/.
+Four new defects found: dense rows collapse (locally repaired with one CSS
+grid-auto-rows:max-content declaration +2permanent regressiontests); narrowdesktop
+error wraps oneletterperline OPEN; brokenimage emptydialog OPEN; initiallonghistory
+scroll remains0 OPEN. SharedKK BuyerContextBar/toasttitle untranslated alsoOPEN.
+No sharedfeedback/scrolllogic/localization implementation added by this audit.
+208statecaptures supplier/clinic RU/KK at1440/390; eightedgeviewports320–1920 incl
+760/761 and360height; transientmobiletouchstates. MockAPI only, no workingDBwrites.
+Edges attempt1 FAIL8 then2 PASS8. Matrix1 harnessFAIL8/16PASS, matrix2 devindicator
+hitFAIL2/22PASS, targetedmatrix3 PASS2. No genericvisualPASS: screenshots expose
+additionalerrorlayout defect despite successfulwidthchecks. Transient attempts1–2
+locatorfailures;3 FAIL4 brokenpreviewmissinginlinealert; stop, nofourthattempt.
+PermanentSupportsuite25/27PASS1; focused2 attachmentsPASS/historyscrollFAIL again.
+Unique26/27PASS; initialscroll reproduced twice, no blindthirdretry. New2regressions
+PASS. Finalgo_livewebbuild/typesPASS, E2Etypes/lint/diffPASS. next-env restoredclean.
+AdditionalCUA liveChromeconnectiontimeout beforeactions, no retry/no livePASS.
+Physicalmobilekeyboard/Safari/screenreader/realuploadscanner NOT certified.
+Dev keptON API4012PID17204/web3000PID7216; no commit/push/deploy. Previouspatch
+publicationblocker loading-stateWIP +7outgoingcommits unchanged. No newproductphase.
+Next: deliver audit findings and limits; implementation of remaining findings
+requires selected owner scope. Do not claim Support fullyaccepted or allbugsremoved.
+
+## SUPPORT-PAGE-AUDIT-20261106 — AUDIT_COMPLETE / FINDINGS_OPEN
+
+Owner requested read-only full Support page audit after screenshot of horizontal
+card scroll; explicitly selected Anti Slop AFTER. main@5161af7, canonical folder,
+prior WIP/index preserved. Report anti-slop/audit-004-2026-11-06.md; screenshots,
+color metrics and source hashes output/support-audit-20261106/. Eight findings:
+row grid min-content overflow303→536; KK header selector tied to Russian aria-label;
+height56 vs actual61; untranslated section; disappearing load error; initial-body
+preview; back/compose focus reset; missing new-message live announcement.
+Chrome connection NOW WORKS, prior timeoutMs blocker not current. Live audit RU/KK,
+1536x639/1440x900/390x844/844x390; filters/empty validation/draft navigation inspected.
+No actual message/create/upload/reopen or working DB mutation; no product edits.
+26 focused unit/contract tests PASS; no E2E/build/full DB certification implied.
+Source screenshots inspectable; original Chrome tab restored /supplier/support,
+viewport override reset; temporary draft cleared. No fixes/commit/push/deploy.
+Dev npm run dev restarted by owner request in session8310, log.tmp/dev-request-
+20261106.log, canonical go_live; API4012 and frontend3000 readiness200. Remains ON.
+Prior tasks' browser acceptances remain open: this audit does not close them.
+Next: report findings; no implementation without owner scope selecting fixes.
+
+## LOADING-UNIFICATION-20261106 — LOCAL_PASS / BROWSER_OPEN
+
+Owner explicitly approved unified loaders and mandatory same standard for future
+pages/components. main@5161af7 ahead7, canonical folder. Initial clinic shell now
+uses preparing guard; no separate ClinicEntry screen. Session/rights/profile
+retain checks under stable cabinet caption. Shared LoadingState extracted with
+required label, block/inline Fluent spinner + single polite status; root exports
+preserved, new loading-state subpath. Public/header/editor/document/search/chat/
+load-more consumers use adapter. ResourceStatus retains same-context content on
+refresh; errors remain separate. All28admin lazysections name actual content.
+Future policy in AGENTS/DESIGN_SYSTEM/UIstandard/R7 and component-contract.json.
+No backend/data/dependency change. Scope and hashes .tmp/loading-unification-
+20261106/{source-scope,source-sha256}.json; evidence ../evidence/loading-unification-
+20261106.md. Prior WIP/index preserved, no commit/push pending browser.
+59testsPASS; finaltypes UI+5appsPASS;5buildsPASS incl budgets. Adminfirstbuild
+superseded by finalcaptionedit, secondPASS. Lint/UIcontract/diffPASS. Initial
+Tabster testimport failure fixed via existingCJSfixture; nativebuttonlint fixed
+with DmButton; locale fallback typefailure fixed before finaltypes. Attempts
+retained in evidence. No blind reruns or new browseraccessattempt.
+Prior CUA timeoutMs blocker unresolved; screenshot/computed/mobile/keyboard and
+authenticated acceptance OPEN. Do not bypass nativeURLpolicy or fixturelaunch
+restrictions; no newdelegation or deployment. Next only targetedbrowserafter
+connection recovery, then scopedGit. Shared actionpending states unchanged.
+Old own dev11190 stopped for builds,5next-env snapshots restored exactly before
+restart. New npm run dev session66355 ON, log.tmp/loading-unification-20261106/
+dev-resumed.log. API19628/web15956;5anonymous HTTP200 probes show SSR spinners,
+no old status. Not hydratedbrowserPASS. No newproductcycle inferred.
+## LOGIN-RESTORATION-20261106 — LOCAL_PASS / BROWSER_OPEN
+
+Owner reported login flash from catalog and requested clinic/supplier/personal
+scenario checks. main@5161af7 ahead7, same canonical folder. New scope only:
+landing login/login-screen.tsx, login/login-restoration.test.tsx and
+app/auth-split.module.css. Initial restoring state hides credentials; successful
+auto-handoff keeps shared loader until departure; errors/absent session release
+form; explicit signedOut skips resume; choice/fallback preserved. Personal direct
+cart unchanged. Google initializes when form mounts. No auth/backend/data change.
+47 targeted tests PASS (34landing +13header), landing/web types and builds PASS,
+scopedlint/diff PASS. Evidence ../evidence/login-restoration-20261106.md.
+Browser prior timeoutMs blocker unchanged; no retry/bypass, no browserPASS/commit/
+push. Old WIP/index retained. next-env snapshots restored before restarting dev.
+Old own session83000 stopped; new npm run dev session11190 remains ON,
+.tmp/login-restoration-20261106/dev-resumed.log, API9360/web5688. Readiness200.
+First HTTP probe before startup refused; second after readiness200: login SSR
+contains loader and no password input. This is not hydrated browser acceptance.
+Next after connection recovery: actual clinic/supplier/personal transitions,
+expired/error/choice, desktop/mobile keyboard and screenshot, then scopedGit.
+## ACCOUNT-ROUTING-20261105 — LOCAL_PASS / BROWSER_BLOCKED
+
+Owner explicitly requested correct clinic/personal/supplier routing plus audit.
+Canonical main@5161af7 ahead7. Read-only DB confirmed owner-identified user's
+active SUPPLIER membership; no account/data change. Source scope9files listed in
+../evidence/account-routing-20261105.md. Header uses verified current workspace,
+not purchase mode/stale buyer cache; errors fail closed, dual role→choice.
+Role-scoped login continuation creates correct handoff; personal→existingcart,
+no new B2Cprofile. Clinic entry resets preference once, not after recoveryfailures.
+BUYERhandoff resets mode after issuance; legacy canonical roots normalize.
+Focused tests62PASS; scopedlintPASS. Intermediate header filterfailure fixed;
+interimtypes TS6053 due concurrent build generation explicitly NOTPASS, then
+sequential finaltypes3PASS. Finalbuild3PASS incl buyerbundle. Cancellationrace
+hypothesis unconfirmed: existing abortguard proved by1newtest; runtime unchanged.
+Original owned devsession34526 stopped for builds, ports3000/4012 freed. Exact
+webnext-env snapshot restored; buyer/landing untouched. npm run dev resumed
+session83000, log.tmp/account-routing-20261105/dev-resumed.log. API4012/PID18068
+readiness200; catalog3000/PID19636 HTTP200. Devgo_live restoredON, no browserPASS.
+No newbrowserattempt: existing getTabtimeoutMs/nativeURLpolicy blockers persist.
+No commit/push pending requiredbrowseracceptance; all prior WIP/index preserved.
+README/roadmap/evidence own additions; no implementationacceptance promoted.
+Final scoped review/diffPASS; report localresults and remaining browserblocker.
+Next only after connection recovery: roleentry/handoff/clinicpersonalreset,
+dualchoice/errors and1440RU390KKkeyboard browser checks, then scopedGit.
+No newproductcycles authorized.
+
+## BROWSER-RECONNECT-20261105 — STILL_BLOCKED
+
+Owner clarified actual Chrome profile and explicitly reported reinstalling
+extension. Local State confirms owner's account is Default (display label
+Настройки Chrome); prior recommendation Profile2 was wrong, another account.
+Corrected this to owner; do not direct them to Profile2 or repeat reinstall.
+Inventory proves new extension/browser4 (old3 gone). Recovery attempt1 after
+this actual state change: getTab1634119776 browser4 still fails undefinedtimeoutMs
+before pageaccess. No further attempts/alternativebrowser. Browser acceptance
+and production browser timings remain blocked; static5route pilotartifact
+metrics remain available in .tmp/production-baseline-20261105/report.txt.
+No source/data/process changes in this clarification. Existing dev remainsON.
+
+## PRODUCTION-LOADING-BASELINE-20261105 — BROWSER_BLOCKED / WAIT_RECONNECT
+
+Owner «приступай» approved recommendations1–2: close prior browser acceptance
+and measure production five screens (catalog/detail/supplierproducts/orders/admin).
+Not authorized new caching/images/backend. Chromeinventory works; fresh current
+tab1634119776 getTab still failed undefinedtimeoutMs before pageaccess. Prior3
+failures preserved; this scoped recovery attempt1failed, no alternatives/retries.
+Async asked owner restartconnection; owner asks extensionname. Installed local
+manifest confirmed ChatGPT / Control your browser with ChatGPT. / version
+1.26.1102.11740 / Profile2. Told owner chrome://extensions toggle ChatGPT and
+sayготово. Await reply; do not assume reconnect. No browser acceptance yet.
+Independent productionmanifest inventory5routes done (attempt2 after decoding
+percentencoded dynamic filename); buildUSAeqdK5D2gJUdRJ4UYob, PILOT (devgo_live).
+.tmp/production-baseline-20261105/{route-assets.json,report.txt}. Catalog357686,
+detail563275,products576203,orders573011,admin393429 summedgzip bytes. These
+are artifact sizes, NOT network/paint/interaction or go_live acceptance.
+No runtimeproduction launch or timing yet. Dev/API existingON6676/11616,
+launcher34526. No code/data/dependencies/commit/push/newprocesses.
+Next after reconnection: browser access, then isolated knownfixtures/profile
+for changedflows and productionloading; no bypass of earlier fixture launch
+policyblocker or auth. Preserve all earlier WIP and open browser gates.
+
+## PRODUCT-LIST-LAZY-20261105 — LOCAL_PREPARED / BROWSER_BLOCKED
+
+Latest owner «Приступай» approved proposed1–3 (links/lazy panel+editors/narrowUI),
+not data cache/images/admin. Implemented supplier-product-links, local deferred
+module/component+8tests; products/offerpanel deferred imports retain closed drawer
+for exit-navigation. Seven consumers narrowUI; editor bodies unchanged.
+Evidence ../evidence/product-list-lazy-20261105.md. Devmanifest14.22→11.66MB,
+UI78→28; panel/editors/siblingfeatures absent. Production2.124MB raw/576203gzip,
+35JS, no before or speedup claim. Types/webbuild/lint/tests13/diff PASS1.
+Browser prior3 internal timeoutMs failures persist, no newattempt/no acceptance.
+No commit/push/data/deploy. Prior WIP/index preserved, ownA/B snapshots only
+restored taskfiles with content checks. next-env restored cleanprebuildHEAD.
+Next after browser recovery: loading/cancel/retry/directedit/dirtylock/focus/
+exitnavigation at1440RU390KK, then scopedGit. DevON session34526, log
+.tmp/dev-request-resumed-20261105.log. No extra processes from this task.
+
+## PRODUCT-CREATE-IMPORTS-20261105 — LOCAL_PREPARED / BROWSER_BLOCKED
+
+Latest owner «приступай» authorizes separate AddProductPage+narrow UI imports,
+after compilation audit/deep analysis. Scope implemented: new entry/test, route
+re-export, remove old AddProductPage; five dependencies import-only; UI adds only
+product-workflow subpath preserving previous exports WIP. Evidence
+../evidence/product-create-imports-20261105.md. Manifest13.81→11.57MB,UI78→29;
+sibling editors absent. No proven comparable cold speedup (after4.969s).
+Types3/tests9/lint/supplier+webbuild+supplierbundle/diff PASS1. Browser still
+blocked by3earlier internal timeoutMs failures; no new attempt, no screenshot/
+computed/keyboard/mobile/authenticated acceptance. No commit/push, source WIP
+and stagedindex preserved. Next after tool recovery: both creation modes and
+role denial, legacy consumer, keyboard/mobile, then scope/Git closure.
+Dev ON npm run dev session34526, log .tmp/dev-request-resumed-20261105.log.
+Previous profiling servers stopped; API11616/frontend6676 at restore.
+Build next-env restored to original clean HEAD. No backend/data/admin changes.
+
+## DEV-COMPILATION-20261105 — IMPLEMENTED / BROWSER_BLOCKED
+
+Current explicit owner request: «приступай» after profiling supplier dashboard/
+products and narrowing imports proposal. Replaces cleanup work, no other cycles.
+13 reachable shell files use public subpaths; UI adds6exports; ConversationCounter
+moved verbatim with compatibility re-export. No design/logic/dependency change.
+Evidence ../evidence/dev-compilation-20261105.md, exact file list
+.tmp/dev-compilation-changed.json plus UI package/counter/workspace/test.
+Initial unauthenticated dev shell13.4MB vs16.6MB (-19.3%),24UI modules vs77.
+Not all authenticated chunks, no comparable coldCPU timing or production speedup.
+Fourtypes/counter2/scopedlint PASS; all3builds+buyer/supplier bundle PASS1.
+Log .tmp/dev-compilation-build.log. Diff check PASS.
+Browser3tool failures before page access (undefined timeoutMs); stop attempts.
+No browser/screenshot/computed acceptance, no commit/push; prior WIP preserved.
+Dev remains requested ON3000/API4012, original launcher session61896.
+Generated next-env restored to pre-task clean HEAD baseline. Remain browserBLOCKED
+until tool recovery; next authenticated supplier+buyer shell browser check, then
+scope review/Git closure. No alternate auth/test bypass.
+
+## STAGING-CODE-CLEANUP-20261105 — LOCAL_PREPARED / CONTAINER_BLOCKED
+
+Owner explicitly requested safe implementation of all six reviewed cleanup points,
+including retiring unused Vercel path. Current task replaces product-cycle work;
+A04/A07 browser blockers preserved, no next product cycle inferred.
+main@5161af7 ahead7, canonical folder. Earlier SIDE cleanup changes already existed:
+Docker/build configs, nine dead modules + private CSS, pnpm removal. Preserved and
+verified; own continuation removed11Vercel config/ingress files, preserved HTTP
+probe serverless option, added API public-resource copy and bounded Turbo retention.
+Evidence ../evidence/staging-code-cleanup-20261105.md; operational guide
+../../operations/staging-artifact-hygiene.md. No staging/deploy/workingDB changes.
+REUSED API/schema/web builds, API/schema types, runtime/config PASS from unchanged
+inputs. New frontend types3, packaging9, bundle, cache7, scopedlint PASS; compiled
+PDF/DOCX and479catalog/publichashes PASS. All lock versions unchanged. Cache dryrun
+empty, no real apply. Historical artifact-smoke1 rawindexhash mismatch recorded;
+smoke2 checks18preflightstagedpaths instead. No gitadd/commit/reset/push performed.
+Prior schemas/dist cleanup policy denial not retried; freshDocker build excludesdist.
+Docker CLI absent: image build/size/Linux smoke NOT_RUN, acceptance BLOCKED.
+No owned processes left after checks. Source WIP and staged files preserved;
+next-env generatedimports restored from saved exact prebuild file.
+Next exact step after Docker becomes available: build api/web, measure images and
+isolated API/worker/web/migration/font/assets smoke with disposable DB/Redis/S3.
+No full-project rerun just for docs, no installDocker or frontend launch workaround.
+## WORKFLOW-RECOVERY-20261104 — A07 BROWSER_BLOCKED
+
+Owner: «Ничего, отлично, приступай» after explicit skip A04/start A07 proposal.
+Current chat request recovered and verified; A04 remains BROWSER_BLOCKED.
+main@5161af7 ahead7. A07 FE-RECOVERY implemented retained-command accessor,
+status-independent replay feedback, same payload/version/key, permission check,
+one in-flight write. Files packages/ui/src/order-workflow-{command.ts,
+command.test.ts,workspace.tsx,feedback.tsx,recovery.test.tsx}. Existing A02 covers
+FE-FORM-001 unchanged. Evidence ../evidence/workflow-recovery-20261104.md.
+UI13 PASS attempt3 (first import/Tabster harness fail, second12 PASS), API10,
+fourworkspace types/build/lint/UIcontract/diff PASS1. No browser attempted:
+A04 launch restriction persists (3 rejected before process, blocked by policy),
+no workaround/new port. Screenshot/computed/keyboard1440RU390KK NOT_RUN.
+No own processes, DB/live calls/agents/commit/push/CI/deploy. Previous WIP and
+staged index preserved. Next only after launch restriction resolved: browser
+lost committed response→poll hides original action→replay→next action.
+A08+ NOT authorized. Current implementation prepared, acceptance OPEN.
+## A05-A04-RESUME-20261104 — A05 LOCAL_PASS / A04 BROWSER_BLOCKED
+
+Owner explicitly «Окей, бро, давай начинать тогда» after A05 repair + A04 retry
+discussion. Same canonical repo; main@5161af7, ahead7. No agents/nextA07–11.
+A05 fixed narrow capture PrismaP2010/meta40001 committed-result lookup;
+payments43/dependent105, API types/build1, focusedPG3 (first2 fixture failures),
+HTTP3 (first2 expected-code/envelope assertions), fullPG/runtime/lint/diff PASS.
+Fouroperations rollback/recovery/race, stock/lot consumption once, JWT/role/tenant
+denial and input/replay proved. Evidence ../evidence/payment-recovery-20261104.md.
+Own8files committed5161af7; no push/CI due prior6outgoing unrelatedscope.
+Shared roadmap/Matrix/checkpoint stay unstaged beside pre-existing staged docs.
+HTTP early forgedtenant401 lacks requestId: recorded inMatrix, no scope expansion.
+
+A04 frontend3300 exact originalcommand retried attempt3 after owner authorization;
+tool rejected before CreateProcess, `blocked by policy`, no detailed reason.
+No frontend/fixture4129 started; no browser/screenshot/computed PASS or workaround.
+Evidence ../evidence/session-recovery-20261104.md. Need policy resolution/support
+response before another launch; user approval alone did not remove restriction.
+Owned API/DB fixture processes fromA05 done; synthetic immutable ledger/revoked
+testusers retained only in disposable auditDB. WorkingDB/dev/deploy untouched.
+Docs consolidation and all previous product WIP preserved. No nextcycle authorized.
+
+## DOCS-CONSOLIDATION-20261104 — LOCAL_DONE
+
+Owner04.11 authorized three main product docs: root README, single approved
+requirements roadmap and OPEN_QUESTIONS. Implemented; technical references kept.
+11 exact source snapshots,7 COMPAT routes,792 coverage records,187 rules,
+139 named+3 unnamed R marks preserved;43 open V plus DOC008/TAX-GOODS/network.
+Evidence ../evidence/docs-consolidation-20261104.md; validator attempt2 PASS,
+final attempt3 report in its verification-result.json. Diff and2441 product
+file hashes PASS; no app/build/DB/browser/deploy/agents; prior index preserved.
+DOC001–006 corrected;DOC007 filters corrected/network decision OPEN;DOC008 OPEN.
+main@e9431988 ahead6. No commit: overlapping pre-existing staged roadmap/checkpoint
+preserved; no partial broken-link commit. No push of prior outgoing history/CI.
+Product cycles4/5 stay BLOCKED. No next product cycle authorized.
+
+## ERP-RELIABILITY-20261104 — cycle6 LOCAL_PASS
+
+Owner04.11 explicitly «приступаем к циклу 6»; original list verified B032/033/035/044.
+Implemented trusted job key reserve/release; unchanged price confirmation under
+offer lock; exact adapter minor-unit validation; recursive configuration protection,
+safe legacy reads and deep secret restoration. Evidence ../evidence/erp-reliability-20261104.md.
+Dependent203 + final affected58 + secret consumers22 PASS. Types3/build3/focusedPG2,
+dependent fullPG1/runtime1/lint/diff PASS; failures and precise reuse in evidence.
+All owned test processes done/fixtures cleaned; no agents/liveERP/workingDB/dev/deploy.
+Prior cycle1/2/4/5 and other staged/unstaged WIP preserved. Cycle4 BROWSER_BLOCKED,
+cycle5 BLOCKED remain. Cycle7 NOT authorized. Publication blocked by existing
+local-only outgoing commits (fetch ahead5 before own commit). Own scope committed
+e943198 on main, ahead6; no push/CI. Shared roadmap/Matrix/checkpoint remain unstaged
+beside earlier staged documentation; excluded from own commit to preserve prior WIP.
+
+## PAYMENT-RECOVERY-20261104 — cycle5 BLOCKED
+
+Owner explicitly04.11: «приступаем к циклу 5», after proposal to leave cycle4
+browser acceptance open. Authorized B040 only: stored provider success + local
+commit failure -> same-command safe recovery without repeat external effect.
+Scope authorize/capture/cancel/payout; refund existing recovery regression.
+Plan ../evidence/payment-recovery-20261104.md. main@b3fdb44b ahead5; prior WIP
+preserved; no agents/livePSP/workingDB/deploy, dev staysOFF. Source read and
+pre-implementation plan done. Implemented saved-success recovery and locking for
+authorize/capture/cancel/payout; new helper + two specs + focused PG script.
+Payments39tests/API types/build PASS; diff PASS. Focused PG3 FAIL, attempt limit
+reached: capture serializable row lock emits Prisma P2010/meta40001, catch only
+P2002/P2034. Authorize/cancel rollback+two-connection recovery PASS. Payout PG not
+reached. Earlier PG1 active-cart fixture fail, PG2 immutable-ledger cleanup fail;
+all logs .tmp/payment-recovery-*.log. Cleanup fixed without disabling constraints;
+owned leftover fixture group cleaned, synthetic immutable ledger retained in testDB.
+No further gate attempts. Next on owner continuation: targeted capture40001 replay
+handling+regression, focused PG, stock/HTTP/dependent/fullPG/runtime/lint evidence.
+No commit/push; no cycle6. Detailed plan/results in evidence above.
+
+## SESSION-RECOVERY-20261104 — cycle4 BROWSER_BLOCKED
+
+Owner authorized cycle4 FE-SESSION/B029/FE-REG from original12-cycle list.
+Annotation directive when final addresses list: :codex-annotation{index="1"}.
+Payments cycle5 NOT authorized. Owner explicitly: «Да, подготовить UI; приёмку
+не закрывать». Automatic review rejected frontend3300 launch: blocked by policy,
+no detailed reason. Owner later explicitly «попробуй заново»: exact command
+retry2 rejected again before CreateProcess, `blocked by policy`, no details.
+No alternate tool/profile/port; no server started; ownedSSRfixture14088 stopped.
+Owner then authorized Feedback: sent via app, UI confirmed «Отзыв отправлен»,
+ID01a16825-8a4d-75a1-a457-bba2416c518f. Exact command+two denials; documents,
+diagnostic logs/browser attachments disabled. No resolution received yet.
+Browser baseline/acceptance NOT_RUN: no screenshot/computed/mobile/keyboard PASS.
+No new agents, workingDB, deploy, frontend server, commit or push in this cycle.
+
+Implementation/evidence: ../evidence/session-recovery-20261104.md.
+B029 social-unlink.ts serializes user row, identity count/delete/session revoke/
+audit transaction. FE-REG schema+POST/auth/registration/email+OpenAPI+client,
+registration-email.ts binds original token+password, rejects occupied/expired/
+claimed/verified, rotates proof; address stays old until confirmation. verifyEmail
+locks user and commits email/proof/onboarding claim atomically. Failed delivery
+consumes ownproof and permits retry. UI inline correction retains organization/
+consents/password/token, no second registration. Shared receipt validates target;
+admin clearAdminSession(expected) preserves replacementB and avoids redirect.
+
+PASS: unlink14/correction42/allidentity171/schema9/client6/admin14/receipt6/
+landing21 tests (landing handler tests mock hooks, not browser). Schemas/API/client
+builds1, UI/admin/landing types1 (landing2 after test addition), web types1,
+landing/admin/web builds1 incl adminbundle, focusedHTTP/PG1 and fullPG1,
+core-contract1/runtime1/lint(UIcontract)1. Logs .tmp/session-*.log; detailed older
+commands/evidence in file. Build-generated web/next-env.d.ts reverted to baseline.
+No active owned sessions; dev remains OFF. Final git diff --check PASS.
+Source review completed: proof/lock/claim/receipt/expected-session paths, no new
+confirmed issue. React review completed. Antislop delivery BLOCKED on browser,
+not waived or PASS. Roadmap/Matrix record BROWSER_BLOCKED, no overall acceptance.
+
+main@b3fdb44b ahead5. All prior staged/unstaged cycle1/2/other WIP preserved.
+Cycle4 code/docs remain unstaged/untracked; do not stage other writers' changes.
+Next only after policy blocker resolved: approved isolated browser fixture to
+verify correction delivery/retry/cancel and revokeA->storeB->releaseA retention,
+sameA control, malformed receipt,1440RU/390KK keyboard/screenshots/computed.
+Do not start cycle5. No publication inferred for previous local-only history.
+Private notes/history backend failed; this is recovery checkpoint.
+## AI-PRIVACY-ACTIONS-20261104 — cycle3 LOCAL_PASS
+
+Owner04.11: «Приступай к AI: конфиденциальность и повторные действия».
+B016/B017 fixed: pre-plan/storage/provider redaction, nested credentials;
+scoped atomic confirmation CAS prevents duplicate execution.36focused/dependent
+tests, API types/build, focused PG2 (rollback extension), fullPG1/runtime1/lint
+and diff PASS. Evidence ../evidence/ai-privacy-actions-20261104.md.
+No agents/UI/activation/provider calls/working DB/deploy; test fixtures cleaned,
+dev remains OFF. Prior cycles/staged WIP preserved. No next cycle. Publication
+blocked by previous four local-only outgoing commits; no inferred authorization.
+Own code/tests/evidence committed b3fdb44b on main; fetch confirmed ahead5.
+Shared roadmap/Matrix/checkpoint updates remain unstaged alongside pre-existing
+staged documentation, deliberately excluded from the scope-only commit.
+
+## STOCK-QUANTITIES-20261104 — cycle2 LOCAL_PASS
+
+Owner explicitly chose cycle2 «Остатки и количества», antislop DURING.
+B036 + FE-QUANTITY/NUMBER/FORM-001 fixed;80 API+4buyer tests, API/four web builds,
+7workspace types, PG3/core-contract1/8browser scenarios/lint/UI-contract PASS.
+Failures and exact commands: ../evidence/stock-quantities-20261104.md.
+Dev remains OFF; owned test processes stopped; working DB/deploy untouched.
+Cycle1 and pre-existing WIP preserved. Publication blocked by prior four local-only
+outgoing audit/remediation commits; no authorization inferred to publish them.
+This is scoped local acceptance, not production certification. No next cycle.
+
 ## P04-ORDER-PROPOSALS-20261103 — delivery contract preparation
 
 Owner authorized П04 after П01–03 review, then explicitly chose to define the
@@ -182,6 +763,148 @@ No backend/DB/deploy change in this UI task. Publication and CI tracked separate
 > действующими инструкциями. Продуктовый scope, результаты и блокеры сохраняются.
 
 # PRIMARY-SESSION — PlatformaMarket
+
+## SUPPLIER-STOREFRONT-20261030 — DONE (scoped, CI GREEN)
+
+Актуальный checkpoint30.10 23:10: реализация и локальные gates PASS.
+Публичная витрина/редактор/логотип, scoped availability, API/client/UI готовы;
+full PostgreSQL, core-contract2, runtime, API build4, web build4, buyer build5,
+types/focused tests/lint/UI-contract и browser flow PASS. Buyer budget22files,
+1335852raw/400486gzip; limits не менялись. Details и сохранённые FAIL:
+`actual_docs/governance/evidence/supplier-storefront-20261030.md`.
+Runtime fixtures/dev/prod-smoke остановлены и очищены. Feature06025fa и test-fix
+ba55190 опубликованы в main; staging только storefront hunks, B2C WIP сохранён.
+Первый CI41104608567 выявил TS2353 в новом client test:userId вместо actorId.
+Исправлено; client types/build/test повторно PASS. CI41105317325 и Security
+41105317288 completed/success на ba55190: verify/PG/API-web containers/CodeQL/dependencies.
+Scoped задача завершена; рабочая БД не менялась, deployment не выполнялся.
+Ниже — история промежуточных результатов, прежние blockers уже устранены.
+
+Последнее решение владельца: «выполняй сколько угодно циклов…» — разрешены
+необходимые повторные исправления/проверки этой задачи без нового approval на
+каждый rerun; продуктовый scope прежний. Attempts5–8 диагностировали отсутствие
+доступных offers. Причина доказана read-only SQL: session TimeZone Asia/Qyzylorda,
+Prisma timestamps UTC без timezone, NOW() неявно интерпретировал их как local.
+В catalog-sale-query/storefront-availability сравнения приведены к timezone('UTC', NOW()).
+Build API attempt3 выполняется; далее focused PG attempt9. Логи всех FAIL сохранены.
+
+Разрешённый владельцем один повтор выполнен30.10: attempt4 FAIL,
+`npm run db:test -- exec -- node scripts/verify-postgres-integration.mjs --storefront-only`.
+Лог .tmp/storefront-postgres-focused-4.log. БД dentmarket_audit_20260914.
+Права editor/reader, HTTP validation/tenant, save/CAS/replay/audit rollback,
+logo validation/upload/admission прошли до поиска товаров. Поиск вернул404
+Buyer organization not found: testEnvironment не задавал PUBLIC_CATALOG_ORGANIZATION_ID.
+Подготовлено исправление: перед spawn API использовать tenantOwner.organizationId
+из созданной disposable fixture. Рабочая БД/guards не менялись. Attempt5 не запускался;
+новый повтор требует решения владельца. Полного PostgreSQL PASS нет; UI ожидает gate.
+
+Повторное поручение владельца30.10 подтверждает публичный маршрут внутри каталога,
+не кабинет поставщика. Восстановление на HEAD568f6c5: backend/contracts WIP есть,
+UI витрины ещё не реализован. Найдены сохранённые логи .tmp/storefront-*:
+service/request-body27 PASS; API build attempt2 PASS. PostgreSQL focused attempts1–3
+FAIL:1 OpenAPI import initialization;2 HTTP401 вместо403;3 HTTP403 вместо400
+на invalid-input запросе редактора. Лимит3 исчерпан, новый запуск не выполнялся.
+Текущая fixture уже содержит organization-scoped editor/reader roles; добавлена
+проверка grants до HTTP, чтобы отделить ошибку fixture от server guard.
+Следующий шаг: после явного решения владельца один повтор на disposable DB
+с preflight grants; guards/ожидаемые статусы не ослаблять. Backend gate не PASS,
+зависимая UI-реализация и commit/push пока не завершены. Рабочая БД не менялась.
+
+Поручение владельца: каталог → карточка товара → клик/тап имени или логотипа
+поставщика → публичная витрина в оболочке каталога, без перехода в кабинет.
+Маршрут /catalog/suppliers/[supplierId]; шапка (логотип, название, описание,
+график, доставка, расположение), ниже только актуальные доступные товары этого
+поставщика. Неактивные и без доступного остатка не показывать.
+База89ec5f8, main; canonical root проверен. Незавершённый personal-cart diff
+сохранён; не закрывать/публиковать его под видом витрины. Несвязанные изменения
+login-screen/apps/web/AGENTS и output сохранить. Делегирования нет.
+План до кода: shared schemas → public projection + scoped available search →
+typed client → витрина/кликабельные поставщики + минимальный редактор её сведений
+в настройках поставщика. Данные шапки сейчас отсутствуют: additive поля профиля,
+изолированная migration; логотип через существующий upload quarantine/scanner.
+Риски: утечка резервных контактов/закрытых предложений, чужой owner записи,
+сброс фильтра поставщика, stale stock/price, потеря контекста при Back/товаре.
+Проверки: focused schemas/API/client/UI после coherent изменений, API/web/buyer
+types/build; scoped browser desktop1440/mobile390/keyboard/RU-KK, screenshot и
+computed styles; PostgreSQL + upgrade/tenant/CAS/rollback, core-contract/runtime
+по фактическому server impact; lint/UI-contract/diff hygiene. Лимит3/gate,
+probe2m/start5m/command20m/blocker15m. Рабочую БД не мигрировать.
+UI паспорт: market-components-v1 / platforma-semantic-light-v1, Manrope14/1.5,
+controls44/radius8, DmSurface12, gaps12/16/24; layout из public-catalog,
+CompactCatalog/CompactProductCard, header MarketplaceHeader; шапка DmHeading,
+avatar Fluent, детали semantic dl. Editor использует settings-organization/profile
+и shared adapters. Только композиционный CSS, без изменения shared tokens.
+Применяется Development Toolkit (backend/frontend/verification). Генерации
+картинки нет; исходный runtime и ближайшие экраны проверить до UI-кода.
+
+## B2C-PERSONAL-CART-20261030 — IN_PROGRESS (PostgreSQL blocker resolved)
+
+Владелец поручил реализацию первого пакета личной корзины («приступай»).
+База5fe2602, main=origin/main; canonical root проверен, tracked clean.
+Несвязанные output-пути сохранены. Работа только в этом чате, без делегирования.
+Scope: R7.1.1 personal session → server-owned cart → catalog/personal cart UI.
+Без checkout/order/payment/reserve, рабочих миграций и внешних интеграций.
+План до кода: общие схемы/ошибки; отдельный PersonalCart с User owner и unique
+current cart, сохранение Cart/Checkout B2B; verified personal identity без
+organization requirement только на личных routes; общий расчёт snapshots;
+version/CAS и replay; typed client/UI; целевая совместная приёмка.
+Риски: чужой owner, private organization price, stale acceptance/concurrency,
+регрессия B2B и auth. Focused tests после каждого backend поведения, до UI.
+Completion: schemas/client/API/buyer-web/web types, affected tests, migration
+upgrade на disposable DB, verify:postgres/core-contract/runtime-split,
+web build, targeted personal/B2B browser RU/KK/mobile/keyboard + screenshots/styles,
+scope lint/diff hygiene; commit/push только после PASS, отдельно CI.
+Лимит3 попытки/gate; budget probe2m/start5m/command20m/blocker15m.
+Все gates пока NOT_RUN. Применяются Development Toolkit и Backend Architect
+(контракты/least privilege/expand migration), без создания агентов.
+
+Промежуточно: schemas19 PASS; auth24 PASS; cart/rules/checkout31 PASS;
+resolver+auth+cart40 PASS; client B2B/session15 PASS, personal4 PASS после исправления
+повторно использованного Response в fixture (attempt2). API types/build PASS.
+Prisma generate attempt1 EPERM: dev держал DLL; владелец явно разрешил временно
+остановить и восстановить стенд. Launcher19008 + descendants остановлены,
+generate attempt2 PASS. Validate attempt1 без DATABASE_URL FAIL; db:test attempt2 PASS.
+PG attempt1 FAIL startup import ordering, исправлено; attempt2 FAIL JSON null
+current cart (Nest empty body), исправлено + regression13 PASS. Attempt3 предстоит.
+Логи .tmp/personal-cart-postgres-{1,2}.log. Миграция только disposable DB.
+Для восстановления обычного dev launcher понадобится отдельное разрешение
+миграции рабочей БД: schema guard не обходить. Сначала довести проверяемый пакет.
+
+UI паспорт: HEAD5fe2602 + personal-cart diff, /personal/cart, роль физлицо.
+Аналоги: features/purchasing/buyer-cart.tsx и features/catalog/supplier-offers.tsx;
+public MarketplaceHeader, без sidebar организации. component-contract market-components-v1,
+semantic-light platforma-semantic-light-v1: Manrope body14/1.5, heading через
+PageHeader/DmHeading, controls44/radius8, Section radius12, gap12/16/24.
+Shared DmButton/DmInput/DmField/DmDropdown/Section/Feedback/EmptyState; CSS только
+композиция с tokens, max-width1200, mobile390 и desktop1440, RU/KK.
+Новый route: нет исходного screenshot. Текущий runtime остановлен для серверных
+проверок; ближайший экран изучен в коде, старые screenshots не считаются baseline.
+Обязательна финальная browser screenshot/computed styles проверка нового экрана.
+
+Checkpoint30.10: verify:postgres attempt3 FAIL; лимит3 исчерпан, четвёртый запуск
+не выполнялся. Лог .tmp/personal-cart-postgres-3.log: personal cart additive upgrade
+и HTTP/PostgreSQL checks PASS (owner/header forgery, concurrent create/CAS/replay,
+rollback, price acceptance, multi-org privacy, checkout denial, no reserve/revocation).
+Общий gate НЕ PASS: далее verifyLocalPermissions → createBuyer → prisma.user.create
+получил unique constraint; точное поле ограничения в ошибке не названо.
+Следующий шаг: устранить коллизию идентификаторов fixture createBuyer между
+сценариями verify-postgres-integration; новый запуск только после решения владельца
+по исчерпанному лимиту. Не считать частичный PASS полной приёмкой.
+Добавлен незавершённый UI personal-cart (items/copy/CSS/route), personal session,
+catalog/header/login integration. Логи types buyer1/landing1/web2 без ошибок;
+web1 FAIL по Promise<boolean> callback, затем исправлен. Browser/screenshots,
+completion build/core-contract/runtime-split и итоговый review ещё не завершены.
+Рабочая БД не мигрировалась; обычный dev-стенд не восстановлен (schema guard).
+На checkpoint процессы node с canonical path/dev-local/verify-postgres не найдены.
+Изменения сохранены незакоммиченными; commit/push запрещены до обязательных PASS.
+
+Владелец явно разрешил один повтор после лимита: «Да, повторить с исправлением».
+Fixture personal cart использует98/99 вместо занятых91/92. Выполнен полный
+`npm run verify:postgres`, attempt4, exit0 PASS; лог .tmp/personal-cart-postgres-4.log.
+База только disposable dentmarket_audit_20260914; рабочая БД не менялась.
+Блокер PostgreSQL снят; прежние FAIL сохранены выше как история попыток.
+Остальные незавершённые gates и UI-приёмка сохраняются; пакет ещё не ACCEPTED.
+
 
 ## B2C-FLOW-FIRST-PACKAGE-20261030 — COMPLETE (preparation only)
 
@@ -4995,6 +5718,68 @@ Changed gate-only checks replace unrelated full-project suites; existing Compose
 checks reused unchanged. Server still needs real HTTPS domain and secret provisioning
 with compose.stand.yaml. No roadmap acceptance or production readiness implied.
 
+## REFACTOR-20261030 — implementation in progress
+
+Owner authorized the complete technical remediation plan in the audit chat, one
+continuous cycle with proportional checks. No Security scan, product-scope expansion,
+legacy retirement, deployment or working DB changes. Plan/report are in
+C:/Users/user/Documents/Codex/2026-10-30/crm-market-security/outputs/.
+P00: preserve all pre-existing WIP; current snapshot recorded in that chat's work/implementation.
+Behavior/risk: fix stale integration reads, mismatched prefetch, legacy admin return;
+then verified cleanup and extraction. Shared routes/state/contracts need affected consumers.
+Focused checks before dependent changes; completion requires affected types/build and
+reachable flow/browser evidence where required. No claims from aggregate old PASS.
+This is a progress checkpoint, not publication or acceptance. Other work is preserved.
+
+### REFACTOR-20261030 — verified local state, open acceptance gates
+
+Integrations, documents/order/import/corrections, route screens, core schemas and
+CSS decomposed. 375 schema tests and isolated core-contract PASS; document upload
+retry/mobile, component, integration stale-read, public/auth/product route and
+unified/legacy logout browser checks PASS. 7 unused Market files removed.
+Final admin build/budget PASS:1045737 raw/318842 gzip; landing build PASS.
+Unified compiles but public bundle FAIL:2234288 raw/604613 gzip,29 files.
+Buyer bundle FAIL:2217994 raw/606005 gzip,28 files; supplier FAIL:2075782 raw/
+569603 gzip,23 files. Budgets unchanged; failures not classified as baseline.
+Direct component imports reduced buyer/supplier bundles but did not close limits.
+Shared schemas/index.ts and api-client/index.ts decomposition and landing login
+route move deferred where active B2C changes overlap. Additional order/conversation
+browser checks unverified: production server start rejected by automatic approval
+review including loopback retry; no detailed reason supplied. Historical catalog-
+reference/product-detail fixtures remain failed; targeted route fixtures pass.
+Both working-tree git diff --check: no whitespace errors (CRLF warnings only).
+CRM final isolated build and affected interaction checks PASS; see CRM checkpoint.
+No commit/push/deploy or working DB changes. Mixed WIP not staged/published.
+Overall plan NOT accepted/complete. Next: remaining bundle dependency graphs,
+missing browser evidence, concrete B2C overlaps, then scoped publication.
+Detailed status/report and profile matrix:
+C:/Users/user/Documents/Codex/2026-10-30/crm-market-security/outputs/implementation-status.json
+C:/Users/user/Documents/Codex/2026-10-30/crm-market-security/outputs/implementation-report.html
+Logs: same task work/implementation/. No transfer of other task ownership.
+
+### REFACTOR-20261030 — continuation verified, publication pending
+
+Supersedes earlier open bundle/decomposition/browser entries for this task.
+Market: buyer/supplier/admin/unified production builds and unchanged bundle budgets
+PASS. Gzip bytes: buyer396585, supplier350261, admin318916, unified363908 (24 JS).
+Schema index291 declarations/18 domains and API client192 implementations extracted;
+375schema tests, isolated core-contract71 operations, 104client tests,246request
+comparisons PASS. Owner-approved login relocation preserves B2C source;17auth tests PASS.
+Catalog pilot expectation and explicit auth fixtures corrected. Chat viewport accounts
+for buyer-context height; existing desktop/tablet/mobile send/retry/file/focus flows PASS.
+29 unique final-matrix Market browser scenarios supported by current or unchanged-input
+evidence. Four component contracts PASS in separate bounded dev config; production
+samples intentionally404. Interrupted wrong-mode run retained, not claimed wholly PASS.
+CRM daily-workspaces6 PASS; previously accepted CRM build and focused flows unchanged.
+Historical CRM entity-workspaces/appearance failures remain recorded; no full release claim.
+Both repo diff hygiene PASS; no working DB changes, dependency install, commit/push/deploy.
+Publication BLOCKED: preserved B2C personal-cart/session and relocated login changes,
+and CRM notification prerequisites, were foreign WIP before task. Do not stage/publish
+whole mixed files. After their owners publish those prerequisites, isolate and validate
+our remaining diff against that base before commit/push. No transfer of task ownership.
+Authoritative current report: C:/Users/user/Documents/Codex/2026-10-30/crm-market-security/outputs/implementation-report.html
+Status/evidence: same outputs/implementation-status.json and publication-review.json.
+
 ### REFACTOR-20261030 — итоговая проверка и публикация
 
 Supersedes earlier REFACTOR publication blockers. All owned P01–P18 product code
@@ -5005,3 +5790,31 @@ Roadmap updated without closing live/product gates; P19 mapping only.
 Evidence: [final audit](../evidence/refactor-20261030.md).
 Foreign working source and documentation preserved; only own docs added to index.
 No deployment, production DB change or foreign WIP publication.
+
+## SUPPORT-FIXES-20261106 — локальная приёмка, публикация заблокирована
+
+Явное поручение: исправить все 8 замечаний anti-slop/audit-004-2026-11-06.md
+и провести браузерную приёмку. Все восемь реализованы; 22 уникальных browser
+сценария с PASS, 28 unit/contract + 1 isolated PostgreSQL scenario PASS,
+API/web/UI/E2E types, API/web/schema build, scoped lint, UI contract/diff PASS.
+Живой Chrome подтвердил реальное последнее сообщение, 303/303px карточку,
+390×844 без внешнего скролла и RU/KK; рабочие сообщения/файлы не менялись.
+Dev восстановлен npm run dev, каноническая папка, API4012/web3000; оставлен владельцу.
+HEAD5161af7f/main; основной index с чужим stock scope сохранён.
+Commit/push не выполнялись: собственный patch не применим к HEAD в support.tsx,
+support-ticket.tsx/support-files.tsx из-за прежних loading-state hunks; после fetch
+также 7 прежних исходящих commits. Следующий шаг — принять эту базу и отдельно
+проверить исходящий диапазон, затем scoped support commit/push. CI NOT_RUN.
+Evidence: actual_docs/governance/evidence/support-fixes-20261106.md.
+Логи, before snapshots, план и publication-check: .tmp/support-fixes-20261106/.
+Long-history gate прошёл на третьей попытке; остальные исправленные проверки PASS.
+Новых запусков полного проекта или следующей продуктовой фазы не требуется.
+
+### SUPPORT-FIXES-20261106 — follow-up ширины по скриншоту
+
+Исправлен пропущенный случай без ticketId: scoped margin-right0 убирает
+унаследованный auto-margin у flex-main. Live Chrome: до main x200..955.91,
+после x200..1536 при viewport1536. Три новых browser regression на1536/1024/390
+прошли list/detail/compose/back/first-ticket. E2E types/lint, isolated go_live web
+build+types и diff PASS. Dev не останавливался. Прежняя публикационная блокировка
+не изменилась. Evidence дополнен разделом Follow-up; логи width-* в прежней .tmp.

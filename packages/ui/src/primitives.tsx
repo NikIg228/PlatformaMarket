@@ -3,7 +3,7 @@ import { DmButton } from "./actions";
 import { ToastScope } from "./save-toast";
 import { ActionFeedback } from "./action-feedback";
 import { DmHeading } from "./heading";
-import { Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Spinner, Tag, Tooltip, type DropdownProps } from "@fluentui/react-components";
+import { Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Tag, Tooltip, type DropdownProps } from "@fluentui/react-components";
 import { Dismiss24Regular } from "@fluentui/react-icons/svg/dismiss";
 import { FeedbackSurface } from "./feedback-surface";
 import type { ReactNode } from "react";
@@ -246,17 +246,7 @@ export function StatusTag({
   );
 }
 
-export function LoadingState({
-  label = "Загружаем данные",
-}: {
-  label?: string;
-}) {
-  return (
-    <div className="mp-state">
-      <Spinner size="medium" label={label} />
-    </div>
-  );
-}
+export { LoadingState } from "./loading-state";
 
 export function EmptyState({
   icon,

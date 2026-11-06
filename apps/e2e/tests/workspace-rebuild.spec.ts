@@ -156,10 +156,10 @@ test("A15 order PDF boundaries and retry preserve the file and workflow identity
   await send.click(); await expect(page.getByText("Содержимое не является PDF", { exact: true })).toBeVisible();
   expect(commands).toHaveLength(0);
   await file.setInputFiles({ name: "invoice.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.7\nfixture") });
-  await send.click(); await expect(page.getByText("Повторите подтверждение", { exact: true })).toBeVisible();
-  await expect(send).toBeEnabled();
+  await send.click(); await expect(page.getByText("Результат действия пока не подтверждён", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Восстановить результат", exact: true })).toBeEnabled();
   expect(await file.evaluate(element => (element as HTMLInputElement).files?.[0]?.name)).toBe("invoice.pdf");
-  await send.click();
+  await page.getByRole("button", { name: "Восстановить результат", exact: true }).click();
   await expect(page.getByText("Изменение сохранено. Обе стороны увидят обновлённый статус.", { exact: true })).toBeVisible();
   expect(commands).toHaveLength(2); expect(commands[1]).toEqual(commands[0]); expect(uploads).toHaveLength(4);
 });
@@ -186,9 +186,9 @@ for (const width of [1440, 390]) test(`CORE02 supplier exact payment review and 
   const acknowledgement = page.getByRole("checkbox", { name: /Проверено по счёту поставщика/ });
   await acknowledgement.focus(); await page.keyboard.press("Space");
   await expect(confirm).toBeEnabled(); await confirm.click();
-  await expect(page.getByText("Ответ проверки потерян. Повторите действие.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Результат действия пока не подтверждён", { exact: true })).toBeVisible();
   await expect(amount).toHaveValue("90071992547409,93");
-  await confirm.click();
+  await page.getByRole("button", { name: "Восстановить результат", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Перевод 1 · Поступление подтверждено" })).toBeVisible();
   expect(commands).toHaveLength(2); expect(commands[0]).toEqual(commands[1]);
   expect(commands[1].receivedAmountMinor).toBe("9007199254740993");
@@ -281,8 +281,9 @@ for (const width of [1440, 390]) test(`CORE03 refund receipt requires consent an
   await expect(receive).toBeDisabled();
   const consent = page.getByRole("checkbox", { name: "Деньги в указанной сумме поступили на счёт клиники" });
   await consent.focus(); await page.keyboard.press("Space"); await receive.click();
-  await expect(page.getByText("Ответ потерян. Повторите подтверждение.", { exact: true })).toBeVisible();
-  await expect(consent).toBeChecked(); await receive.click();
+  await expect(page.getByText("Результат действия пока не подтверждён", { exact: true })).toBeVisible();
+  await expect(consent).toBeChecked();
+  await page.getByRole("button", { name: "Восстановить результат", exact: true }).click();
   await expect(page.getByText("Клиника подтвердила получение денег", { exact: true })).toBeVisible();
   expect(commands[0]).toEqual(commands[1]); expect(commands[1].action).toBe("RECEIVE_MANUAL_REFUND");
   await page.getByRole("button", { name: "Создать корзину для повторной закупки", exact: true }).click();
@@ -578,10 +579,13 @@ for (const width of [1440, 390]) test(`A08 orders retain data offline, deduplica
   const before = count;
   await page.evaluate(() => { for (let i = 0; i < 5; i++) window.dispatchEvent(new Event("focus")); });
   await expect.poll(() => count).toBe(before + 1);
-  await expect(page.getByText(/Обновляем данные|Данные обновлены/)).toHaveCount(0);
+  const refreshing = page.getByRole("status", { name: "Обновляем данные…", exact: true });
+  await expect(refreshing).toHaveCount(1);
+  await expect(refreshing).toBeVisible();
   await expect(page.getByRole("link", { name: "A08-2", exact: true })).toBeVisible();
   release!(); release = undefined;
   await expect(page.getByRole("link", { name: "A08-3", exact: true })).toBeVisible();
+  await expect(refreshing).toHaveCount(0);
 });
 
 test("A08 an old page response cannot replace the product list", async ({ page }) => {

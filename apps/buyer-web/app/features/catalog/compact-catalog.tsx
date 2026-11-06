@@ -84,12 +84,12 @@ export function CompactCatalog({ result, state, returnUrl, loading, error, loadi
         <DmButton appearance="subtle" onClick={reset}>Сбросить фильтры</DmButton>
       </div> : null}
       {error && !result?.items.length ? <DmFeedback presentation="inline" tone="danger" title="Не удалось загрузить каталог" description={error} action={<DmButton onClick={onRetry}>Повторить загрузку</DmButton>} />
-        : loading ? <div role="status" className={styles.message}>Загружаем актуальные предложения…</div>
+        : loading ? <div className={styles.message}><LoadingState label="Загружаем актуальные предложения…" /></div>
         : result?.items.length ? <CatalogProductGrid storefront={storefront} products={result.items} state={state} returnUrl={returnUrl} imageSource={imageSource} />
         : <div className={styles.message}><h2>Ничего не найдено</h2><p>Измените запрос или условия поиска. Город доставки меняется в шапке.</p><DmButton onClick={reset}>Сбросить фильтры</DmButton><DmButton onClick={openAll}>Все фильтры</DmButton></div>}
       {!loading && result && (result.nextOffset ?? result.items.length) < result.total ? <div className={styles.more}>
         {error ? <DmFeedback presentation="inline" tone="danger" title="Не удалось загрузить ещё товары" description="Уже загруженные товары сохранены." action={<DmButton onClick={onMore} disabled={loadingMore}>Повторить загрузку товаров</DmButton>} />
-          : <DmButton onClick={onMore} disabled={loadingMore}>{loadingMore ? "Загружаем…" : "Показать ещё"}</DmButton>}
+          : <DmButton onClick={onMore} disabled={loadingMore}>{loadingMore ? <LoadingState presentation="inline" label="Загружаем товары…" /> : "Показать ещё"}</DmButton>}
       </div> : null}
     </div>
     {open ? <CatalogFilterDialog storefront={storefront} initial={{ ...filters, sort: state.sort }} initialOptions={cachedOptions.current?.categoryId === filters.categoryId ? options : undefined}

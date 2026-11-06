@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePermissions } from "@marketplace/ui";
+import { usePermissions } from "@marketplace/ui/permissions";
 import { QuestionCircle24Regular } from "@fluentui/react-icons/svg/question-circle";
 import { Settings24Regular } from "@fluentui/react-icons/svg/settings";
 import { useWorkspace } from "./workspace";

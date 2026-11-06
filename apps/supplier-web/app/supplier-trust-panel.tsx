@@ -1,6 +1,6 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 
-import { Spinner } from "@fluentui/react-components";
 import { MarketplaceApiClient, type ApiContext } from "@marketplace/api-client";
 import { DmButton as Button, DmFeedback, EmptyState, ErrorState, PageHeader, Section, StatusTag, errorMessage, formatDate, formatStatus } from "@marketplace/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -26,7 +26,7 @@ export function SupplierTrustPanel({ supplierId, apiContext }: { supplierId: str
   const load = useCallback(async () => { setLoading(true); setError(null); try { const [nextRating, nextReviews, nextIncidents, nextWarehouses] = await Promise.all([api.get<Rating>(`/trust/ratings/suppliers/${supplierId}`), api.get<Review[]>(`/trust/suppliers/${supplierId}/reviews`), api.get<Incident[]>("/trust/incidents"), api.get<Warehouse[]>(`/suppliers/${supplierId}/warehouses`)]); setRating(nextRating); setReviews(nextReviews); setIncidents(nextIncidents.filter(({ impactedOrganizationId }) => impactedOrganizationId === supplierId)); setWarehouses(nextWarehouses); } catch (cause) { setError(errorMessage(cause)); } finally { setLoading(false); } }, [api, supplierId]);
   useEffect(() => { void load(); }, [load]);
   const recompute = async () => { setBusy(true); setError(null); try { setRating(await api.post<Rating>(`/trust/ratings/suppliers/${supplierId}/recompute`, {})); } catch (cause) { setError(errorMessage(cause)); } finally { setBusy(false); } };
-  if (loading) return <div className={styles.loading}><Spinner label="Собираем подтверждённые показатели" /></div>;
+  if (loading) return <div className={styles.loading}><LoadingState label="Собираем подтверждённые показатели" /></div>;
   if (error && !rating) return <ErrorState description={error} action={<Button onClick={() => void load()}>Повторить</Button>} />;
   const score = rating?.status === "CALCULATED" && rating.score != null ? Number(rating.score) : null;
   return <div className={styles.stack}>

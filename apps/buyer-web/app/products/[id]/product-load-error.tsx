@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -16,7 +17,7 @@ export default function ProductLoadError({ returnTo }: { returnTo: string }) {
       <ErrorState title="Не удалось загрузить предложения"
         description="Сервис временно недоступен. Повторите загрузку. Выбранный город и фильтры сохранены."
         action={<DmButton disabled={pending} onClick={() => startTransition(() => router.refresh())}>
-          {pending ? "Загружаем…" : "Повторить загрузку"}
+          {pending ? <LoadingState presentation="inline" label="Загружаем товар…" /> : "Повторить загрузку"}
         </DmButton>} />
     </main>
   </div>;

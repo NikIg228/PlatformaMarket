@@ -1,9 +1,13 @@
 "use client";
-import { ActionFeedback } from "@marketplace/ui";
+import { ActionFeedback } from "@marketplace/ui/action-feedback";
 import { useRef, useState } from "react";
 import type { MarketplaceApiClient } from "@marketplace/api-client";
 import type { ProductCandidateSummary } from "@marketplace/schemas";
-import { DmButton, DmField, DmInput, DmTextarea, ErrorState, errorMessage, usePermissions, useUnsavedChanges, productWorkflowStyles as s } from "@marketplace/ui";
+import { DmButton, DmField, DmInput, DmTextarea } from "@marketplace/ui/controls";
+import { ErrorState } from "@marketplace/ui/primitives";
+import { errorMessage } from "@marketplace/ui/format";
+import { usePermissions } from "@marketplace/ui/permissions";
+import { useUnsavedChanges, productWorkflowStyles as s } from "@marketplace/ui/product-workflow";
 
 export function ProductProposalForm({ api, initial, onDone, onCancel }: { api: MarketplaceApiClient; initial?: ProductCandidateSummary; onDone?: () => void; onCancel?: () => void }) {
   const has = usePermissions();

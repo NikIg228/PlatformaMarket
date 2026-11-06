@@ -17,6 +17,7 @@ describe("DataFreshnessService manual price override", () => {
       $queryRaw: vi.fn(),
       supplierVatSettings: { findUnique: vi.fn().mockResolvedValue(null) },
       dataOverride: {
+        findFirst: vi.fn().mockResolvedValue(null),
         update: vi.fn(),
         create: vi.fn().mockResolvedValue({
           id: "override-1",

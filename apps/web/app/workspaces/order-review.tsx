@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 import { useCallback, useRef, useState } from "react";
 import { ActionFeedback, DmButton, DmDisclosureSummary, DmField, DmSelect, DmTextarea, Section } from "@marketplace/ui";
 import { MarketplaceApiError, type MarketplaceApiClient } from "@marketplace/api-client";
@@ -44,7 +45,7 @@ export function OrderReview({ api, orderId }: { api: MarketplaceApiClient; order
     {state && resource.error ? <ActionFeedback tone="error" description="Не удалось обновить состояние отзыва."
       action={<DmButton onClick={() => void resource.refresh()}>Повторить проверку</DmButton>} /> : null}
     {!state ? resource.error ? <ActionFeedback tone="error" description="Не удалось проверить право на отзыв."
-      action={<DmButton onClick={() => void resource.refresh()}>Повторить проверку</DmButton>} /> : <p role="status">Проверяем получение заказа…</p> :
+      action={<DmButton onClick={() => void resource.refresh()}>Повторить проверку</DmButton>} /> : <LoadingState presentation="inline" label="Проверяем получение заказа…" /> :
       state.review ? <div role="status"><p>Отзыв сохранён. {statuses[state.review.status]} · {state.review.overallRating} из 5</p><p>{state.review.comment}</p></div> :
       !state.eligible ? <p>Отзыв станет доступен после полного фактического получения заказа. Завершать подписание документов для этого не нужно.</p> :
         <form className={styles.stack} onSubmit={event => { event.preventDefault(); void submit(); }}>

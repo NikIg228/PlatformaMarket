@@ -1,3 +1,4 @@
+import { LoadingState } from "./loading-state";
 import { ActionFeedback } from "./action-feedback";
 
 import {
@@ -232,7 +233,7 @@ export function DocumentArchiveDetail({
                   }
                 />
               ) : (
-                <p role="status">Загружаем документ…</p>
+                <LoadingState presentation="inline" label="Загружаем документ…" />
               )}
             </DialogContent>
           )}

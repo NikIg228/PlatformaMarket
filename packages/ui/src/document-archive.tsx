@@ -1,11 +1,11 @@
 "use client";
+import { LoadingState } from "./loading-state";
 import { DocumentArchiveDetail } from "./DocumentArchiveDetail";
 import { DocumentArchiveTable } from "./DocumentArchiveTable";
 import { DocumentArchiveFilterForm } from "./DocumentArchiveFilterForm";
 
 import { ActionFeedback } from "./action-feedback";
 
-import { Spinner } from "@fluentui/react-components";
 import { DmButton as Button, DmSurface } from "./controls";
 
 import { Document24Regular } from "@fluentui/react-icons/svg/document";
@@ -196,7 +196,7 @@ export function DocumentArchiveWorkspace({
       ) : null}
       {loading && !items.length ? (
         <div className="dm-document-loading">
-          <Spinner label="Загружаем документы" />
+          <LoadingState label="Загружаем документы" />
         </div>
       ) : null}
       {!loading && !error && !items.length ? (
@@ -223,7 +223,7 @@ export function DocumentArchiveWorkspace({
       {nextCursor ? (
         <div className="dm-document-load-more">
           <Button onClick={onLoadMore} disabled={loading}>
-            {loading ? "Загружаем…" : "Показать ещё"}
+            {loading ? <LoadingState presentation="inline" label="Загружаем документы…" /> : "Показать ещё"}
           </Button>
         </div>
       ) : null}

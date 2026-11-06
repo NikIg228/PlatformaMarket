@@ -169,6 +169,7 @@ for (const width of [1440,390]) test(`supplier-order contact presentation and na
   const official = { contactName: "Официальный представитель", phone: "+77000000000", email: "office@example.invalid" };
   const reserves = [1,2].map(n=>({contactName:`Резервный сотрудник ${n}`,phone:`+7700000000${n}`,email:`reserve${n}@example.invalid`}));
   await page.route(`**/api/supplier-orders/${id}/invoices`, route=>route.fulfill({json:{orderId:id,orderVersion:order.version,currentDocumentId:null,canPrepare:false,issues:[],invoices:[]}}));
+  await page.route(`**/api/trust/orders/${id}/review-state`, route=>route.fulfill({json:{orderId:id,eligible:false,review:null}}));
   await page.route(`**/api/supplier-orders/${id}/discrepancies`, route=>route.fulfill({json:{orderId:id,orderVersion:order.version,party:"BUYER",canWrite:false,shipments:[],discrepancies:[]}}));
   await page.route(`**/api/supplier-orders/${id}/workflow`, route=>route.fulfill({json:{orderId:id,order,version:1,status:order.status,paymentStatus:order.paymentStatus,invoiceDocumentId:null,claims:[],events:[],supplierContacts:{official,reserves}}}));
   await page.goto(`/clinic/orders/${id}`);

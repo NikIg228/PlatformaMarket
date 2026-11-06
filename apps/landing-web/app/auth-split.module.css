@@ -1,3 +1,10 @@
+.restoring {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--dm-space-6);
+}
+
 .rotatingHeading {
   display: grid;
 }

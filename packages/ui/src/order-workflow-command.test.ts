@@ -3,6 +3,26 @@ import { WorkflowCommandTracker } from "./order-workflow-command";
 
 const action = { action: "ACCEPT_COMPOSITION" as const };
 describe("workflow command outcome tracking", () => {
+  it("exposes the original payload for recovery after polling hides its action", () => {
+    const key = vi.fn().mockReturnValueOnce("original").mockReturnValueOnce("next");
+    const tracker = new WorkflowCommandTracker(key);
+    expect(tracker.retained()).toBeNull();
+    const sent = tracker.command({ action: "REQUEST_PAYMENT_DETAILS", comment: "Исходный текст" }, 3);
+    tracker.rejected(new Error("response lost"));
+    expect(tracker.retained()).toBe(sent);
+    tracker.rejected({ status: 503 });
+    expect(tracker.retained()).toEqual({ action: "REQUEST_PAYMENT_DETAILS", comment: "Исходный текст", expectedVersion: 3, idempotencyKey: "original" });
+    expect(key).toHaveBeenCalledTimes(1);
+    tracker.succeeded();
+    expect(tracker.retained()).toBeNull();
+    expect(tracker.command(action, 5).idempotencyKey).toBe("next");
+  });
+  it.each([400, 403, 409, 422])("clears recovery after definitive rejection %i", status => {
+    const tracker = new WorkflowCommandTracker(() => "key");
+    tracker.command(action, 1);
+    tracker.rejected({ status });
+    expect(tracker.retained()).toBeNull();
+  });
   it("uses the displayed new version and a new key after a definitive conflict", () => {
     const tracker = new WorkflowCommandTracker(vi.fn().mockReturnValueOnce("old").mockReturnValueOnce("new"));
     expect(tracker.command(action, 1)).toMatchObject({ expectedVersion: 1, idempotencyKey: "old" });

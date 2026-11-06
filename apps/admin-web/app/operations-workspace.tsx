@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 import { DmAction } from "@marketplace/ui/actions";
 
 
@@ -122,7 +123,7 @@ export default function OperationsWorkspace() {
   const { state, valid, write } = useAdminQuery();
   const active = state.section;
   const navigate = (id: SectionId) => write(adminSectionQuery(state, id));
-  if (!access.ready) return <main className={styles.authLoading}>{access.error ? <ActionFeedback tone="error" description={access.error} action={<DmButton onClick={access.retry}>Повторить проверку</DmButton>} /> : "Проверяем вход…"}</main>;
+  if (!access.ready) return <main className={styles.authLoading}>{access.error ? <ActionFeedback tone="error" description={access.error} action={<DmButton onClick={access.retry}>Повторить проверку</DmButton>} /> : <LoadingState label="Загружаем кабинет…" />}</main>;
 
   const meta = sectionMeta[active];
 

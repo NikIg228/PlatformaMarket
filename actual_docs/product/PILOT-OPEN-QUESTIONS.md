@@ -1,7 +1,7 @@
 # Архивный адрес документа
 
 Этот адрес сохранён для совместимости ссылок. Рабочее описание —
-[PlatformaMarket](../PROJECT_OVERVIEW.md), очередь —
+[PlatformaMarket](../../README.md#functional-state), очередь —
 [Main Roadmap to Production](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md).
 
 Не читать архив первым и не исполнять его планы. Открывать исходник только

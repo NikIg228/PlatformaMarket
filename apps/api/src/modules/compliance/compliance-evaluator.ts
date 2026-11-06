@@ -48,6 +48,11 @@ export function evaluateCompliance(rules: ComplianceRuleInput[], facts: Complian
   let riskLevel: keyof typeof riskWeight = "GREEN";
   const reasons: string[] = [];
   const missingCredentials = new Set<string>();
+  let unmetRequirements = false;
+  const requireReview = (reason: string) => {
+    unmetRequirements = true;
+    reasons.push(reason);
+  };
 
   if (facts.lot && ["BLOCKED", "RECALLED", "EXPIRED"].includes(facts.lot.status)) {
     decision = "BLOCKED";
@@ -70,17 +75,17 @@ export function evaluateCompliance(rules: ComplianceRuleInput[], facts: Complian
     for (const group of credentialGroups) {
       const alternatives = strings(group);
       if (alternatives.length > 0 && !alternatives.some((type) => facts.verifiedCredentialTypes.includes(type))) {
-        reasons.push(`Требуется один из разрешительных документов: ${alternatives.join(" или ")}`);
+        requireReview(`Требуется один из разрешительных документов: ${alternatives.join(" или ")}`);
       }
     }
-    if (requirements.lotRequired === true && !facts.lot) reasons.push("Для товара требуется назначенная партия");
-    if (requirements.registrationCertificateRequired === true && !facts.lot?.registrationCertificate) reasons.push("Отсутствует регистрационное удостоверение партии");
-    if (requirements.serialNumberRequired === true && !facts.lot?.serialNumber) reasons.push("Отсутствует серийный номер");
-    if (requirements.verifiedOriginRequired === true && !facts.lot?.originSource) reasons.push("Не подтверждён источник происхождения");
-    if (requirements.officialDistributorRequired === true && !facts.officialDistributor) reasons.push("Не подтверждён статус официального дистрибьютора");
+    if (requirements.lotRequired === true && !facts.lot) requireReview("Для товара требуется назначенная партия");
+    if (requirements.registrationCertificateRequired === true && !facts.lot?.registrationCertificate) requireReview("Отсутствует регистрационное удостоверение партии");
+    if (requirements.serialNumberRequired === true && !facts.lot?.serialNumber) requireReview("Отсутствует серийный номер");
+    if (requirements.verifiedOriginRequired === true && !facts.lot?.originSource) requireReview("Не подтверждён источник происхождения");
+    if (requirements.officialDistributorRequired === true && !facts.officialDistributor) requireReview("Не подтверждён статус официального дистрибьютора");
     if (typeof requirements.minimumRemainingShelfLifeDays === "number") {
-      if (!facts.lot?.expirationDate) reasons.push("Не указан срок годности партии");
-      else if (facts.lot.expirationDate.getTime() - facts.at.getTime() < requirements.minimumRemainingShelfLifeDays * 86_400_000) reasons.push(`Остаточный срок годности меньше ${requirements.minimumRemainingShelfLifeDays} дней`);
+      if (!facts.lot?.expirationDate) requireReview("Не указан срок годности партии");
+      else if (facts.lot.expirationDate.getTime() - facts.at.getTime() < requirements.minimumRemainingShelfLifeDays * 86_400_000) requireReview(`Остаточный срок годности меньше ${requirements.minimumRemainingShelfLifeDays} дней`);
     }
     if (rule.disclosureText) reasons.push(rule.disclosureText);
   }
@@ -90,7 +95,6 @@ export function evaluateCompliance(rules: ComplianceRuleInput[], facts: Complian
     if (riskWeight[riskLevel] < riskWeight.ORANGE) riskLevel = "ORANGE";
     reasons.push(`Не хватает подтверждённых документов: ${[...missingCredentials].join(", ")}`);
   }
-  const unmetRequirements = reasons.some((reason) => /требуется|Отсутствует|Не подтверждён|Не указан|меньше/.test(reason));
   if (unmetRequirements && decisionWeight[decision] < decisionWeight.MANUAL_REVIEW) decision = "MANUAL_REVIEW";
   if (unmetRequirements && riskWeight[riskLevel] < riskWeight.ORANGE) riskLevel = "ORANGE";
   const status = decision === "BLOCKED" ? "BLOCKED" : decision === "MANUAL_REVIEW" ? "REVIEW_REQUIRED" : "PASSED";

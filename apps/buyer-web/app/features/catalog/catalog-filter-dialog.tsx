@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@marketplace/ui/loading-state";
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogSurface, DialogBody, DialogTitle, DialogContent, DialogActions } from "@fluentui/react-components";
 import { ActionFeedback } from "@marketplace/ui/action-feedback";
@@ -71,7 +72,7 @@ export function CatalogFilterDialog({ initial, initialOptions, onLoadOptions, on
             <PriceFields filters={draft} onChange={change} error={priceValidation} />
             <FilterChoice label="Бренд" value={draft.brandId} items={options?.brands ?? []}
               onChange={brandId => change({ brandId, brand: "" })} disabled={!options} />
-            {loading ? <p role="status">Загружаем параметры категории…</p> : null}
+            {loading ? <LoadingState presentation="inline" label="Загружаем параметры категории…" /> : null}
             <ToastScope />
             {error ? <><ActionFeedback tone="error" title="Не удалось загрузить фильтры" description="Повторите попытку." /><div><p>{error}</p><DmButton onClick={() => setRetry(value => value + 1)}>Повторить</DmButton></div></> : null}
             {attributes.length ? <fieldset className={styles.attributeGroup}><legend>Характеристики</legend>

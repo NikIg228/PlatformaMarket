@@ -15,12 +15,18 @@ describe("supplier quantity selection", () => {
   });
   it("retains supplier minimum and increments within the limit", () => {
     const offer = { minimumOrderQuantity: "3", orderIncrement: "2" };
-    expect(initialQuantity(offer)).toBe("4");
+    expect(initialQuantity(offer)).toBe("3");
     expect(validQuantity("2", offer)).toBe(false);
-    expect(validQuantity("3", offer)).toBe(false);
-    expect(validQuantity("100", offer)).toBe(true);
+    for (const value of ["3", "5", "7", "99"]) expect(validQuantity(value, offer)).toBe(true);
+    for (const value of ["4", "6", "100"]) expect(validQuantity(value, offer)).toBe(false);
     expect(validQuantity("102", offer)).toBe(false);
     expect(validQuantity("0.25", { minimumOrderQuantity: "0.25", orderIncrement: "0.25" })).toBe(true);
     expect(validQuantity(initialQuantity({ minimumOrderQuantity: "101" }), { minimumOrderQuantity: "101" })).toBe(false);
+  });
+  it("uses the same minimum offset for fractional steps", () => {
+    const offer = { minimumOrderQuantity: "0.3", orderIncrement: "0.2" };
+    expect(initialQuantity(offer)).toBe("0.3");
+    for (const value of ["0.3", "0.5", "0.7"]) expect(validQuantity(value, offer)).toBe(true);
+    for (const value of ["0.2", "0.4", "0.6"]) expect(validQuantity(value, offer)).toBe(false);
   });
 });

@@ -1,84 +1,15 @@
-## Где искать действующую бизнес-логику
-
-Начать с [единого свода бизнес-правил и состояния реализации](BUSINESS_RULES_AND_IMPLEMENTATION.md).
-В нём требования собраны по направлениям, для каждого указаны «выполнено»,
-«требуется решение» или «не выполнено», фактический задел и остаток с R-ID.
-Функциональная карта сохраняет приоритет; domains — подробные контракты,
-roadmap — единственный реестр исполнения. Свод не объявляет production PASS.
-Для согласования заказа актуальны [25 решений 31.10 и таблица переходов](domains/orders.md#order-agreement-20261031).
-Они связаны с R4.1.2–3; принятый бизнес-выбор отделён от проекта API и факта реализации.
-
 # Документация PlatformaMarket
 
-Актуализация29.10: [scope R0–R9](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#unified-sync)
-синхронизирован с [требованиями объединённого ТЗ](UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md). Принятые решения
-и [открытая подготовка](governance/ROADMAP-QUESTIONS-AND-DECISIONS.md#unified-open)
-разделены; старый desktop-only/1% клиник не текущие требования.
+Работа начинается с трёх источников:
 
-Рабочий маршрут с 8 октября 2026: приоритетная функциональная карта → подробное
-описание и выбранный R-ID → профильный контракт/справочник → evidence.
-Старые Product V2 и Foundation
-перенесены в архив; прежние адреса служат только переходами.
+1. [Корневой README](../README.md) — продукт, участники, сценарии, устройство и границы реализации.
+2. [Roadmap](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md) — утверждённые требования, пакеты и единственные статусы исполнения.
+3. [Открытые вопросы](OPEN_QUESTIONS.md) — только нерешённые условия и внешние входы.
 
-## Основные документы
+[AGENTS](../AGENTS.md) и [Workflow](governance/DEVELOPMENT_WORKFLOW.md) определяют
+порядок работы и проверки. [Индекс](DOCUMENTATION_INDEX.md) помогает выбрать
+технический контракт, ADR, runbook или evidence по теме задачи.
 
-Аудит03.11: [результаты, находки и границы проверки](governance/evidence/comprehensive-audit-20261103.md),
-[матрица требований](governance/evidence/comprehensive-audit-20261103-requirements.csv)
-и [журнал архивирования четырёх устаревших карточек](history/archive/2026-11-03-audit/README.md).
-Аудит не является production-допуском и не закрывает roadmap общим PASS.
-
-| Нужно понять | Читать |
-| --- | --- |
-| Приоритет №1: функционал, незакрытые связи и целевой roadmap | [Функциональная карта и roadmap](FUNCTIONAL_AUDIT_AND_ROADMAP_2026-10-08.md) |
-| Что за проект, для кого, какие правила и интеграции | [PROJECT_OVERVIEW](PROJECT_OVERVIEW.md) |
-| Полная финансовая цепочка от регистрации клиники до доставки и расчётов | [Финансовая модель и жизненный цикл заказа](domains/FINANCIAL_MODEL_AND_ORDER_LIFECYCLE.md): код на 23.10, принятые правила, примеры и пробелы R4–R7 |
-| Как устроено отдельное звено продукта и какие решения по нему открыты | [Документы направлений](domains/README.md): доставка, оплата, комиссия, каталог и другие области |
-| Где находимся и что осталось до production | [Актуальный scope29.10 и Main Roadmap to Production](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#unified-sync) |
-| Какие бизнес-вопросы решаем сами, а какие — с партнёрами | [68 вопросов по бизнес-логике](governance/BUSINESS-LOGIC-QUESTIONS-2026-10-16.md); материал для обсуждения, не второй backlog |
-| Полный документальный процесс и его приёмка | [Workflow документооборота](domains/MARKET_DOCUMENT_WORKFLOW.md), исполнение R7.6 |
-| Переработка всех разделов Admin, API и операторских прав | [Admin roadmap](applications/admin-roadmap.md), исполнение R7.7 |
-| Как выполнять задачу и выбирать проверки | [AGENTS](../AGENTS.md), [Workflow](governance/DEVELOPMENT_WORKFLOW.md) |
-| Что принято на конкретной версии | [Acceptance Matrix](governance/PROJECT_ACCEPTANCE_MATRIX.md) |
-| Краткие технические результаты этапов | [Admin](applications/admin-implementation-log.md), [документооборот](domains/document-workflow-implementation-log.md) |
-| Возникшие вопросы и принятые варианты | [Журнал вопросов и решений](governance/ROADMAP-QUESTIONS-AND-DECISIONS.md) |
-| Контекст выбранной задачи | [Checkpoint](governance/task-state/PRIMARY-SESSION.md), актуальная карточка задачи; объём задаёт пользователь |
-| Классификация всех материалов | [Documentation index](DOCUMENTATION_INDEX.md) |
-
-Для реализации документов/Admin после выбранного R-ID читать
-[порядок и зависимости](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#documents-admin-execution),
-[модель/пакеты документов](domains/MARKET_DOCUMENT_WORKFLOW.md#implementation-contract),
-[структуру/пакеты Admin](applications/admin-roadmap.md#implementation-contract) и только
-относящиеся к сценарию [открытые входы](governance/ROADMAP-QUESTIONS-AND-DECISIONS.md#documents-admin-readiness).
-Эти разделы задают границы исполнения; результат всё ещё требует кода и evidence.
-
-Запрос пользователя определяет разрешённый scope. Наличие R0–R9 не поручает
-выполнить все этапы. Старый PASS ограничен своими inputs, незавершённый WIP
-не считается принятым или опубликованным. Историческая задача пересборки:
-[DOCS-REFRESH](governance/task-state/DOCS-REFRESH-2026-10-06.md).
-
-## Справочники по необходимости
-
-| Область | Адрес |
-| --- | --- |
-| Архитектурное решение | [ADR](architecture/adr) — выбрать относящийся к задаче |
-| API и данные | [Schemas](../packages/schemas/src), [API client](../packages/api-client/src), [Prisma](../apps/api/prisma), [OpenAPI](../apps/api/src/platform/openapi/core-openapi.ts) |
-| UI | [Дизайн-система: компоненты и токены](ui-ux/DESIGN_SYSTEM.md), [UX стандарт](ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md) |
-| Ролевой code map | [Клиника](applications/buyer-web.md), [поставщик](applications/supplier-web.md), [оператор](applications/admin-web.md); маршруты сверять с кодом |
-| Обращения в поддержку | [Общий экран и контракты](applications/support-workspace.md) |
-| Запуск | [Unified frontend](runbooks/UNIFIED-FRONTEND.md), [local database](runbooks/LOCAL-DEV-DATABASE.md) |
-| Интеграции | [Readiness registry](integrations/connector-readiness.md), [канальные runbooks](integrations/runbooks) |
-| Production и эксплуатация | [Deployment](operations/production-deployment.md), [live readiness](operations/live-provider-readiness.md), [наблюдаемость](operations/observability-runbook.md), [восстановление](operations/backup-restore-runbook.md) |
-| Безопасность | [Security](security/security.md) |
-
-Нормативный ADR или runbook не архивируется лишь потому, что соответствующий
-код уже написан. Команды из всех справочников не суммируются в обязательный suite.
-Датированный статус справочника не заменяет текущий roadmap и evidence.
-
-## Архив
-
-[Архив 06.10 и карта сохранённых материалов](history/archive/2026-10-06/README.md)
-нужны только для конкретного вопроса о прошлом решении, версии или доказательстве.
-Открывать их последними, если действующие источники не отвечают на этот вопрос.
-Не включать `history/` и датированные UI references в обычный поиск реализации.
-Архивные планы, старые «следующие шаги» и незакрытые чекбоксы не создают задач.
-Сохраняемый остаток сопоставлен с R0–R9 в roadmap; архивирование не означает DONE.
+Прежние ТЗ, карта, своды и анкеты имеют статус COMPAT. Их исторические редакции
+и основания доступны в [архиве 04.11](history/archive/2026-11-04-docs/README.md);
+они не добавляют поручений и не меняют текущие требования.

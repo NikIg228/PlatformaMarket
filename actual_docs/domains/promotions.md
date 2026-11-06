@@ -1,5 +1,11 @@
 # Акции поставщиков
 
+> Профильный технический справочник. Действующие требования и статусы —
+> [roadmap](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md), открытые условия —
+> [OPEN_QUESTIONS](../OPEN_QUESTIONS.md). Датированные описания ниже не создают
+> отдельный план и не переопределяют поздние решения.
+
+
 ## Действующие требования 29.10.2026
 
 Quantity tiers применяются ко всему количеству позиции (all-units29А).
@@ -10,8 +16,8 @@ delivery30Б; это не blanket stacking. Правила/приоритет/в
 Reduction/return не вводят произвольную новую цену/удержание подарка. Персональные
 цены отдельной клинике, paid promotion и рекомендации — позже. Источник: §5/22, R2/R7.5.
 
-Полный контракт — [срез объединённого ТЗ](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md);
-[открытая подготовка](../governance/ROADMAP-QUESTIONS-AND-DECISIONS.md#unified-open).
+Полный контракт — [срез объединённого ТЗ](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#approved-requirements);
+[открытая подготовка](../OPEN_QUESTIONS.md).
 Перенос требований не является реализацией или новой приёмкой.
 
 ## Историческая основа и evidence до синхронизации
@@ -123,6 +129,6 @@ Viewport возвращён к обычному; вкладка оставлен
 Рекомендации, платные подписки и реклама/платное продвижение —
 **планируется реализация в будущем**, вне пилота; акции не означают их включение.
 
-[Product overview](../PROJECT_OVERVIEW.md#акции),
+[Product overview](../../README.md#functional-state),
 [shared promotion workspace](../../packages/ui/src/promotion-workspace.tsx),
 [заказы](orders.md), [комиссия](commissions.md), [каталог](catalog.md).

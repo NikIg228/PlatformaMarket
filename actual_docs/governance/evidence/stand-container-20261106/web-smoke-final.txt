@@ -1,0 +1,3 @@
+ Container market-acceptance-20261106-api-run-457618f3696c Creating
+ Container market-acceptance-20261106-api-run-457618f3696c Created
+{"result":"PASS","login":200,"staticAssets":3,"apiProxy":"ready","maximumImport":401,"oversizedImport":413}

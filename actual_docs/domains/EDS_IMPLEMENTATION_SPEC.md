@@ -2,7 +2,7 @@
 
 ## Действующая граница 29.10.2026
 
-[Новое ТЗ](../UNIFIED_SPEC_MARKET_REQUIREMENTS_2026-10-29.md#spec-25) включает mobile EDS и web/iOS/Android в цель27.11
+[Новое ТЗ](../MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md#rules-ops) включает mobile EDS и web/iOS/Android в цель27.11
 с ориентиром подачи около10.11. Прежний mobile POST_PILOT не действует для новой
 цели; desktop NCALayer/реальный prototype и identity/admission остаются scoped
 evidence. Legacy signingUrl/gateway — задел, не принятый mobile provider/runtime.

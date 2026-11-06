@@ -1,5 +1,5 @@
 "use client";
-import { usePermissions } from "@marketplace/ui";
+import { usePermissions } from "@marketplace/ui/permissions";
 import { NotificationBell } from "./notification-bell";
 import { ProfileMenu } from "./profile-menu";
 import { useEffect, useState } from "react";
