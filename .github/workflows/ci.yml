@@ -58,6 +58,8 @@ jobs:
       - run: npx --no-install playwright install --with-deps chromium
       - run: npm run db:generate
       - run: npm exec --workspace=@marketplace/api -- prisma migrate deploy
+      - run: npm run verify:prisma-sql
+      - run: node --test scripts/prisma-sql-contract.test.mjs
       - run: npm run db:seed
       - name: Assert test profile is isolated from pilot data
         run: SEED_PROFILE_ASSERT_NO_PILOT=true npm run db:seed:test

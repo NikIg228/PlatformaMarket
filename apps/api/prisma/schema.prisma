@@ -1038,7 +1038,7 @@ model EmailAuthToken {
 }
 
 model UserMfaFactor {
-  id                 String          @id @default(uuid()) @db.Uuid
+  id                 String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId             String          @unique @db.Uuid
   status             MfaFactorStatus @default(PENDING)
   encryptedSecret    String
@@ -1049,7 +1049,7 @@ model UserMfaFactor {
   lockedUntil        DateTime?
   user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  updatedAt          DateTime        @default(now()) @updatedAt
 
   @@index([status, lockedUntil])
 }
@@ -1569,6 +1569,7 @@ model Product {
   updatedAt          DateTime                @updatedAt
 
   @@index([canonicalName])
+  @@index([canonicalName(ops: raw("gin_trgm_ops"))], map: "Product_canonicalName_trgm_idx", type: Gin)
   @@index([gtin])
 }
 
@@ -1769,6 +1770,8 @@ model ProductSearchDocument {
   productId               String   @id @db.Uuid
   searchableText          String
   normalizedText          String
+  /// STORED generated column maintained by SQL migrations; never replace with a DEFAULT.
+  searchVector            Unsupported("tsvector")? @default(dbgenerated("to_tsvector('simple'::regconfig, \"normalizedText\")"))
   facets                  Json
   minPrice                Decimal? @db.Decimal(18, 2)
   maxPrice                Decimal? @db.Decimal(18, 2)
@@ -1786,6 +1789,9 @@ model ProductSearchDocument {
   projectionVersion       Int      @default(1)
   product                 Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   updatedAt               DateTime @updatedAt
+
+  @@index([normalizedText(ops: raw("gin_trgm_ops"))], map: "ProductSearchDocument_normalizedText_trgm_idx", type: Gin)
+  @@index([searchVector], type: Gin)
 }
 
 model SupplierProfile {
@@ -1988,8 +1994,8 @@ model SupplierMappingMemory {
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 
-  @@unique([supplierOrganizationId, externalKey, version])
-  @@index([supplierOrganizationId, externalKey, status, version])
+  @@unique([supplierOrganizationId, externalKey, version], map: "SupplierMappingMemory_supplier_key_version_key")
+  @@index([supplierOrganizationId, externalKey, status, version], map: "SupplierMappingMemory_supplier_key_status_version_idx")
 }
 
 model SupplierItemMatchCandidate {
@@ -3323,9 +3329,9 @@ model BuyerSupplierAgreement {
   createdAt              DateTime                     @default(now())
   updatedAt              DateTime                     @updatedAt
 
-  @@unique([supplierOrganizationId, buyerOrganizationId, status])
-  @@index([supplierOrganizationId, buyerOrganizationId, status, endsAt])
-  @@index([buyerOrganizationId, status, endsAt])
+  @@unique([supplierOrganizationId, buyerOrganizationId, status], map: "BuyerSupplierAgreement_parties_status_key")
+  @@index([supplierOrganizationId, buyerOrganizationId, status, endsAt], map: "BuyerSupplierAgreement_parties_status_ends_idx")
+  @@index([buyerOrganizationId, status, endsAt], map: "BuyerSupplierAgreement_buyer_status_ends_idx")
 }
 
 model DocumentSignature {

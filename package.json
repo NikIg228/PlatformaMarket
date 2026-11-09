@@ -66,6 +66,7 @@
     "verify:outbox": "npm exec --workspace=@marketplace/api -- vitest run --dir src src/platform/outbox/outbox-dispatcher.service.spec.ts src/modules/integrations/payment-captured.outbox-handler.spec.ts src/modules/operations/operations.service.spec.ts",
     "verify:seed-profiles": "npm run db:seed:reference && npm run db:seed:operator && npm run db:seed:test && npm run db:seed:pilot",
     "verify:postgres": "npm run build --workspace=@marketplace/schemas && npm run build --workspace=@marketplace/api && node scripts/with-test-database.mjs exec -- node scripts/verify-postgres-integration.mjs",
+    "verify:prisma-sql": "node scripts/verify-prisma-sql.mjs",
     "verify:pilot-backend": "npm run build --workspace=@marketplace/schemas && npm run build --workspace=@marketplace/api && node scripts/with-test-database.mjs exec -- node scripts/verify-pilot-backend.mjs",
     "verify:trust-geo": "node scripts/verify-trust-geo.mjs",
     "verify:onboarding-agreement": "node scripts/verify-onboarding-agreement.mjs",

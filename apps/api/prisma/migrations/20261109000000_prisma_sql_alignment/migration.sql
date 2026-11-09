@@ -1,0 +1,4 @@
+-- Metadata reconciliation only: schema.prisma now describes the existing SQL
+-- index names, MFA defaults, searchVector and GIN indexes. No DDL is needed.
+-- searchVector remains GENERATED ALWAYS ... STORED, not an ordinary DEFAULT.
+-- PostgreSQL CHECK constraints remain owned by their original SQL migrations.
