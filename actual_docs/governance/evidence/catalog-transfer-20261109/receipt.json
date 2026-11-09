@@ -1,0 +1,103 @@
+{
+  "status": "LIVE_CATALOG_TRANSFER_PASS",
+  "sourceHash": "20f3b86cc2d688fd195a7ede0c5a5347a1e3eee21084530fd804f2b850d3851b",
+  "bundleHash": "b4c5e988a3305fd49f7732440213105545b6ca15102be7ce24a9d545f0971a2e",
+  "counts": {
+    "country": 0,
+    "region": 0,
+    "city": 0,
+    "industry": 0,
+    "brand": 13,
+    "manufacturer": 12,
+    "unitOfMeasure": 0,
+    "attributeGroup": 1,
+    "attributeDefinition": 9,
+    "attributeOption": 0,
+    "category": 28,
+    "categoryAttributeRule": 15,
+    "organization": 15,
+    "organizationCapability": 16,
+    "supplierProfile": 15,
+    "warehouse": 15,
+    "product": 505,
+    "productVariant": 686,
+    "productPackaging": 38,
+    "productCategory": 505,
+    "productIndustry": 505,
+    "productAttributeValue": 0,
+    "variantAttributeValue": 15,
+    "productMedia": 500,
+    "supplierOffer": 576,
+    "offerPublication": 576,
+    "offerPrice": 576,
+    "offerPriceTier": 0,
+    "inventoryBalance": 576,
+    "inventoryLot": 9,
+    "offerDeliveryOption": 1142,
+    "documentTemplate": 0,
+    "document": 15,
+    "marketplaceAgreement": 15,
+    "productSearchDocument": 505
+  },
+  "changes": {
+    "product.status": 441,
+    "productVariant.status": 441,
+    "inventoryBalance.quantityAvailable": 2
+  },
+  "confirmedAt": "2026-11-09T07:53:50.027Z",
+  "validUntil": "2026-12-09T07:53:50.027Z",
+  "api": {
+    "status": "PASS",
+    "products": 54,
+    "expectedPublicOffers": 574,
+    "verifiedPrices": 574,
+    "search": "Tokuyama Palfique Omnichroma",
+    "comparisonOffers": 10,
+    "database": "ok",
+    "anonymousGate": 401,
+    "verifiedComparisonStockRows": 8
+  },
+  "browser": [
+    {
+      "width": 1440,
+      "url": "https://platformamarket.kz/products/b2563897-7096-44a1-a413-ba0df6e0c090?returnTo=%2Fcatalog%3Fq%3DOmnichroma",
+      "total": 54,
+      "shown": 24,
+      "first": "NSK ENDO-MATE TC2",
+      "errors": [],
+      "searchTotal": 1,
+      "detailLoaded": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "url": "https://platformamarket.kz/products/b2563897-7096-44a1-a413-ba0df6e0c090?returnTo=%2Fcatalog%3Fq%3DOmnichroma",
+      "total": 54,
+      "shown": 24,
+      "first": "NSK ENDO-MATE TC2",
+      "errors": [],
+      "searchTotal": 1,
+      "detailLoaded": true,
+      "overflow": false
+    }
+  ],
+  "database": {
+    "status": "PASS",
+    "mode": "--verify",
+    "sha256": "b4c5e988a3305fd49f7732440213105545b6ca15102be7ce24a9d545f0971a2e",
+    "counts": {
+      "products": 505,
+      "variants": 686,
+      "offers": 576,
+      "prices": 576,
+      "balances": 576,
+      "users": 3,
+      "mfa": 2
+    },
+    "rollback": false,
+    "validUntil": "2026-12-09T07:53:50.027Z"
+  },
+  "backupRestore": "PASS 3/3/2/0",
+  "crmServiceIdentity": "UNCHANGED",
+  "missingSourceAgreementFiles": 5
+}
