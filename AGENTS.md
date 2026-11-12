@@ -10,24 +10,16 @@
 
 ## Единственная рабочая папка — решение владельца 2026-09-21
 
-- Код Platforma.Market изменяется только в
-  `C:\Users\user\Desktop\dentmarket-kz-main`. До записи проверить фактический
-  корень репозитория, ветку, HEAD, dirty files и владельца текущей задачи.
-- Не создавать и не использовать другие worktrees, клоны и копии для разработки.
-  Старые деревья — только read-only источники консолидации/восстановления до
-  отдельной приёмки и уборки. Это отменяет прежнее правило отдельного clean worktree.
-- При конкретном конфликте в затронутых файлах приостановить эту операцию
-  и сообщить пользователю; сохранить несвязанные изменения.
-- Сохранять пользовательские изменения. Не переключать грязный checkout;
-  изменение ветки только в согласованной Git-операции. Ветка не требует новой папки.
-- Dev API/frontend/workers запускаются из этой папки; проверять источник
-  процесса и профиль, а не только localhost. Не останавливать чужие процессы.
-  Изолированные тестовые БД и generated build artifacts допустимы, но не являются
-  альтернативным исходным кодом и не разрешают изменения рабочей БД.
-- Commit/push выполняются по постоянному разрешению из §8 после проверок.
-  Изменение рабочих данных и удаление деревьев требуют отдельного scope.
-  Само правило не является технической блокировкой.
-- Контекст выбранной задачи: `actual_docs/governance/task-state/PRIMARY-SESSION.md`.
+Only `C:\Users\user\Desktop\dentmarket-kz-main` is writable source. Before edits,
+verify root, branch/HEAD, dirty files and task scope; preserve others' changes.
+No development worktrees/clones/copies: old trees are read-only recovery sources
+until separately accepted/retired. Do not switch a dirty checkout; branch changes
+need an agreed Git operation. Stop only a concrete affected-path conflict.
+Run API/frontend/workers from this root; verify source/profile, not just localhost.
+Do not stop others' processes. Disposable test DBs/build artifacts are allowed;
+working-data changes or tree removal need separate scope. Commit/push follows §8.
+These are agent rules, not technical locks. Selected task context:
+`actual_docs/governance/task-state/PRIMARY-SESSION.md`.
 
 ## Task scope and continuity
 
@@ -283,9 +275,9 @@ in the final response, without product-status or other-task checkpoint edits.
 
 ## 10. Обязательные project playbooks
 
-Every task uses AGENTS and relevant sections of
-`actual_docs/governance/DEVELOPMENT_WORKFLOW.md`; UI tasks also use
-`actual_docs/ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md`.
+Every task uses AGENTS and relevant Workflow sections. UI skill routing and
+evidence: [UI standard](actual_docs/ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md#применение-ui-скиллов).
+Before reopening work, apply the personal `Preserve completed work` rule and §3.
 
 Select relevant professional guidance from
 `C:\Users\user\Desktop\Agentic Skills\agency-agents-main`: backend architect
@@ -296,9 +288,7 @@ catalog; reuse unchanged instructions in the same context. Report only roles/
 practices actually read and applied, with their purpose. If unavailable, make one
 targeted search, then disclose the limitation and use an applicable fallback.
 
-Use installed Taste Skill/Anti Slop for UI under personal preferences; apply the
-app-screen route and existing design system to B2B workspaces, tables and forms.
-`Leonxlnx/taste-skill` brief-first/art direction serves public pages and redesign
-within authorized scope. External stack commands, "NEVER SKIP", mandatory redesign
-cycles, screenshots for every task or ideal scores do not override project scope
-or risk-based Workflow gates. A role checklist never authorizes spawning agents.
+External stack commands, "NEVER SKIP", mandatory redesign cycles and ideal scores
+do not override authorized scope or risk-based Workflow gates. Role checklists do
+not authorize spawning agents. UI direction and skill selection follow the linked
+UI standard, not a second copy of the personal skill rules.
