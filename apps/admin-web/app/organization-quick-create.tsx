@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   DmButton,
   DmCheckbox,
@@ -22,11 +22,17 @@ const capabilities = [
 
 export function OrganizationQuickCreate() {
   const [open, setOpen] = useState(false);
+  const [formVersion, setFormVersion] = useState(0);
   const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">(
     "idle",
   );
   const [message, setMessage] = useState("");
   const triggerContainerRef = useRef<HTMLSpanElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (formVersion > 0) formRef.current?.querySelector<HTMLInputElement>('[name="legalName"]')?.focus();
+  }, [formVersion]);
 
   const changeOpen = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -70,7 +76,7 @@ export function OrganizationQuickCreate() {
         );
       setStatus("success");
       setMessage("Организация создана. Audit и outbox записаны.");
-      event.currentTarget.reset();
+      setFormVersion((version) => version + 1);
     } catch (error) {
       setStatus("error");
       const detail = error instanceof Error ? error.message : "";
@@ -110,7 +116,7 @@ export function OrganizationQuickCreate() {
           </>
         }
       >
-        <form id="organization-quick-create-form" className={styles.form} onSubmit={submit}>
+        <form key={formVersion} ref={formRef} id="organization-quick-create-form" className={styles.form} onSubmit={submit}>
               <DmField label="Юридическое название" required>
                 <DmInput name="legalName" required minLength={2} />
               </DmField>

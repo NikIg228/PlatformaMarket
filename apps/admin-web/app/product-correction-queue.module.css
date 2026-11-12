@@ -38,6 +38,12 @@
   gap: var(--dm-space-3);
 }
 
+.recovery {
+  padding: var(--dm-space-1);
+  border-radius: var(--dm-radius-card);
+  background: var(--dm-surface);
+}
+
 .item {
   display: grid;
   grid-template-columns: minmax(230px, 0.75fr) minmax(360px, 1.25fr) auto;

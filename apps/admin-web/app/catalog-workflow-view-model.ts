@@ -56,6 +56,15 @@ export function correctionDecisionLabel(draft: string, proposedValue: string) {
   return draft.trim() === proposedValue.trim() ? "Принять" : "Принять с редактурой";
 }
 
+export function retainPendingCorrectionDrafts(
+  pending: ReadonlyArray<{ id: string }>,
+  drafts: Readonly<Record<string, string>>,
+): Record<string, string> {
+  return Object.fromEntries(
+    pending.filter(({ id }) => Object.hasOwn(drafts, id)).map(({ id }) => [id, drafts[id]]),
+  );
+}
+
 export function catalogQualityGapCount(quality: CatalogQualitySummary) {
   return quality.missingVariants + quality.missingCategories + quality.missingIndustries;
 }

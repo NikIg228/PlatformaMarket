@@ -85,7 +85,8 @@ export function FoundationManagement({ catalogOnly = false }: { catalogOnly?: bo
 
   async function submitRole(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       await request(`/organizations/${organizationId}/roles`, {
         method: "POST",
@@ -98,7 +99,7 @@ export function FoundationManagement({ catalogOnly = false }: { catalogOnly?: bo
             .filter(Boolean),
         }),
       });
-      event.currentTarget.reset();
+      formElement.reset();
       await load();
       notify("Роль создана.");
     } catch (error) {
@@ -132,7 +133,8 @@ export function FoundationManagement({ catalogOnly = false }: { catalogOnly?: bo
 
   async function submitAttribute(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       await request("/catalog/attributes", {
         method: "POST",
@@ -145,7 +147,7 @@ export function FoundationManagement({ catalogOnly = false }: { catalogOnly?: bo
           isFilterable: form.get("isFilterable") === "on",
         }),
       });
-      event.currentTarget.reset();
+      formElement.reset();
       await load();
       notify("Определение атрибута создано.");
     } catch (error) {

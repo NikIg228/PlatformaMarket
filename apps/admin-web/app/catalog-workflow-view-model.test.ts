@@ -6,6 +6,7 @@ import {
   correctionDecisionLabel,
   createCatalogImportSlug,
   noResultQueries,
+  retainPendingCorrectionDrafts,
 } from "./catalog-workflow-view-model";
 
 describe("admin catalog workflow view model", () => {
@@ -49,5 +50,22 @@ describe("admin catalog workflow view model", () => {
         { query: "редкий товар", searches: 3, noResults: 2, avgResults: 0 },
       ]),
     ).toHaveLength(1);
+  });
+
+  it("retains another pending correction's edited value and drops the decided row", () => {
+    const edits = { decided: "Принятое значение", pending: "Несохранённая редакция" };
+    expect(retainPendingCorrectionDrafts([{ id: "pending" }, { id: "new" }], edits)).toEqual({
+      pending: "Несохранённая редакция",
+    });
+    expect(edits.decided).toBe("Принятое значение");
+  });
+
+  it("preserves a deliberately empty draft instead of restoring the proposed value", () => {
+    expect(retainPendingCorrectionDrafts([{ id: "pending" }], { pending: "" })).toEqual({ pending: "" });
+  });
+
+  it("keeps unedited rows absent so refreshed server proposals remain authoritative", () => {
+    expect(retainPendingCorrectionDrafts([{ id: "unedited" }], {})).toEqual({});
+    expect(retainPendingCorrectionDrafts([], { removed: "Комментарий" })).toEqual({});
   });
 });

@@ -15,6 +15,7 @@ import { adminAuthHeaders } from "./admin-auth";
 import {
   canDecideCorrection,
   correctionDecisionLabel,
+  retainPendingCorrectionDrafts,
 } from "./catalog-workflow-view-model";
 import styles from "./product-correction-queue.module.css";
 
@@ -65,9 +66,8 @@ export function ProductCorrectionQueue() {
       if (!response.ok) throw new Error("API отклонил запрос очереди");
       const data = (await response.json()) as Correction[];
       setItems(data);
-      setDrafts(
-        Object.fromEntries(data.map((item) => [item.id, item.proposedValue])),
-      );
+      setDrafts((current) => retainPendingCorrectionDrafts(data, current));
+      setComments((current) => retainPendingCorrectionDrafts(data, current));
     } catch (reason) {
       setError(
         reason instanceof Error
@@ -94,7 +94,7 @@ export function ProductCorrectionQueue() {
           method: "POST",
           headers: adminAuthHeaders(),
           body: JSON.stringify({
-            acceptedValue: action === "approve" ? drafts[item.id] : undefined,
+            acceptedValue: action === "approve" ? drafts[item.id] ?? item.proposedValue : undefined,
             moderatorComment: comments[item.id]?.trim() || undefined,
           }),
         },
@@ -131,12 +131,15 @@ export function ProductCorrectionQueue() {
       ) : null}
       {error ? (
         <ErrorState
+          presentation="inline"
           title="Очередь правок недоступна"
           description={error}
           action={
-            <DmButton appearance="secondary" onClick={() => void load()}>
-              Повторить
-            </DmButton>
+            <div className={styles.recovery}>
+              <DmButton appearance="secondary" fullWidth onClick={() => void load()}>
+                Повторить
+              </DmButton>
+            </div>
           }
         />
       ) : null}
@@ -151,7 +154,7 @@ export function ProductCorrectionQueue() {
       {!loading && !error && items.length ? (
         <div className={styles.list}>
           {items.map((item) => {
-            const draft = drafts[item.id] ?? "";
+            const draft = drafts[item.id] ?? item.proposedValue;
             const comment = comments[item.id] ?? "";
             const itemBusy = busy === item.id;
             return (
