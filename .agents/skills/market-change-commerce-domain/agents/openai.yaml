@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlatformaMarket Commerce Changes"
+  short_description: "Change Market commerce through domain contracts"
+  default_prompt: "Use $market-change-commerce-domain to implement or review PlatformaMarket order, pricing, inventory, payment, agreement or document behavior across NestJS services, Prisma transactions and shared API contracts."

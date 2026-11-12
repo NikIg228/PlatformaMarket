@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlatformaMarket Performance"
+  short_description: "Measure and improve Market performance safely"
+  default_prompt: "Use $market-review-performance to measure and improve PlatformaMarket API, Prisma, worker or Next.js performance while preserving tenant, money and transaction correctness."

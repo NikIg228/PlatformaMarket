@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlatformaMarket Access Review"
+  short_description: "Review Market tenant and authorization boundaries"
+  default_prompt: "Use $market-review-access to review PlatformaMarket NestJS and Prisma access paths for tenant isolation, actor binding, role permissions and protected data."

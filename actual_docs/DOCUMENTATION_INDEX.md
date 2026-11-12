@@ -10,6 +10,7 @@
 | [Roadmap](MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md) | Единственный реестр требований/исполнения R0–R9, пакетов и исправлений аудита |
 | [OPEN_QUESTIONS](OPEN_QUESTIONS.md) | Единственный активный список нерешённых условий |
 | [AGENTS](../AGENTS.md), [Workflow](governance/DEVELOPMENT_WORKFLOW.md) | Правила исполнения, рисковые проверки, Git и сохранение чужого WIP |
+| [Проектные skills](../.agents/skills) | 12 прикладных workflows Market: продукт, домен, доступ, review, frontend/UI-аудит, интеграции/AI, performance, observability, инциденты и проверки. Выбирать по задаче; не заменяют AGENTS, персональные правила или контракты и не разрешают дополнительные действия |
 
 ## Технические справочники по выбранной задаче
 

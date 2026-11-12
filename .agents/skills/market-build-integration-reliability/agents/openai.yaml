@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlatformaMarket Integrations"
+  short_description: "Build reliable Market provider integrations"
+  default_prompt: "Use $market-build-integration-reliability to implement or review PlatformaMarket ERP, import, payment, signing or delivery adapters for authentication, idempotency, recovery and provider evidence."

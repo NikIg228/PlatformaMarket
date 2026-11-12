@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlatformaMarket Frontend"
+  short_description: "Build and review Market workspace interfaces"
+  default_prompt: "Use $market-review-frontend to implement or review PlatformaMarket Next.js interfaces using shared Fluent UI controls, typed API clients, localized states and browser evidence."

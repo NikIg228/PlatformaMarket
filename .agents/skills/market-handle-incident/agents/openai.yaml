@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlatformaMarket Incident Response"
+  short_description: "Diagnose and contain Market incidents safely"
+  default_prompt: "Use $market-handle-incident to diagnose PlatformaMarket deployment, database, queue or provider incidents."

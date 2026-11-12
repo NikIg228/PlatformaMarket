@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlatformaMarket Code Review"
+  short_description: "Review Market changes for concrete regressions"
+  default_prompt: "Use $market-review-code to review a PlatformaMarket diff or scoped implementation for correctness, contract compatibility and regressions."

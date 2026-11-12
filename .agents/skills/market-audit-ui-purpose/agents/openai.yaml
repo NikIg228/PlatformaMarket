@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlatformaMarket UI Audit"
+  short_description: "Audit Market interface purpose and usability"
+  default_prompt: "Use $market-audit-ui-purpose to audit PlatformaMarket UI purpose, consistency and accessibility using source and browser evidence."

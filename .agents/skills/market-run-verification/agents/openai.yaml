@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlatformaMarket Verification"
+  short_description: "Select and run risk-based Market checks"
+  default_prompt: "Use $market-run-verification to select and report PlatformaMarket checks for docs, NestJS APIs, Prisma, Next.js UI, integrations or release candidates."

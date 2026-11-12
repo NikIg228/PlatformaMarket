@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlatformaMarket Observability"
+  short_description: "Plan useful Market runtime signals and alerts"
+  default_prompt: "Use $market-plan-observability to design or review PlatformaMarket API, worker, outbox and provider observability for actionable signals and safe telemetry."

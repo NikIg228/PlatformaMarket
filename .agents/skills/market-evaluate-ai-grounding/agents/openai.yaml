@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlatformaMarket AI Grounding"
+  short_description: "Review Market AI import grounding and approval"
+  default_prompt: "Use $market-evaluate-ai-grounding to implement or review PlatformaMarket AI-assisted import standardization for source grounding, user review, tenant isolation and provider failures."

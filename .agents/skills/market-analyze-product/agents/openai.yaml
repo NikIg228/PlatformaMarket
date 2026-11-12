@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlatformaMarket Product Analysis"
+  short_description: "Assess Market workflows and evidence gaps"
+  default_prompt: "Use $market-analyze-product to analyze PlatformaMarket workflow completeness and evidence-backed product gaps."
