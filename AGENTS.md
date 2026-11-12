@@ -4,7 +4,7 @@
 продуктовое ТЗ или архитектурные ADR: он определяет, **как** безопасно
 менять проект и как доказывать готовность результата.
 
-Маршрут документации актуализирован 2026-11-04. Главный принцип: **одна согласованная
+Правила сокращены и согласованы 2026-11-12; маршрут документации от 2026-11-04. Главный принцип: **одна согласованная
 задача → минимальное изменение → достаточные проверки → остановка**.
 Наличие backlog, skill или команды в runbook само по себе не разрешает её выполнять.
 
@@ -29,88 +29,58 @@
   Само правило не является технической блокировкой.
 - Контекст выбранной задачи: `actual_docs/governance/task-state/PRIMARY-SESSION.md`.
 
-## Работа по поручению пользователя — решение 14.10.2026
+## Task scope and continuity
 
-Каждый чат выполняет явное поручение пользователя в согласованном объёме и
-отчитывается пользователю в этом же чате. Название чата не определяет его роль
-или право выполнять задачу. Межчатовая координация, назначение/освобождение writer,
-согласования с primary, обязательные отчёты другим чатам и ожидание их ответа отменены.
-Не назначать другим чатам работу, не опрашивать их и не создавать межчатовые
-напоминания или автоматические продолжения без отдельного поручения пользователя.
+The current user task defines scope; clarifications/status questions supplement it,
+not replace it. Keep unfinished requirements until explicit cancellation/change of
+goal. Instructions, skills, old plans and chat names grant no new work. Report in
+this chat; no inter-chat assignments, polling, writer registry, approval chains,
+reminders, automation or delegation without an explicit request. Unrelated WIP or
+an open chat is not a blocker; stop only a concrete conflicting operation.
 
-Перед изменениями сверить Git и затронутые файлы, сохранить чужие изменения.
-При конкретном конфликте в изменяемом участке остановить только затронутую
-операцию и сообщить пользователю. Открытый чат или чужой несвязанный diff сами
-по себе не требуют согласования. Правила проверок, Git и канонической папки сохраняются.
-
-При явном поручении передать задачу в другой чат передать подробное описание:
-цель и разрешённый объём, требования и решения пользователя, что сделано,
-что осталось, точные файлы, branch/HEAD и незакоммиченные изменения, выполненные
-проверки с результатами, ошибки/блокеры, собственные незавершённые процессы и
-следующий шаг. Не включать секреты. Передачу незавершённой задачи описывать честно:
-полное завершение, публикация или зелёный CI не являются условием передачи контекста.
-Переданная задача больше не продолжается отправителем без нового поручения.
-Не нужны подтверждения владения, смена реестра, цепочка согласований или ответный отчёт.
-Создание/архивация чатов и фоновые расписания не входят в обычную передачу.
-
-После сжатия контекста восстановить ту же задачу по checkpoint и продолжить
-согласованный объём. Сжатие не запускает передачу, создание чатов или следующий этап.
-
-### Восстановление контекста
-
-Прочитать выбранный checkpoint и релевантные правила Workflow. Сверить Git,
-сохранить выполненное, evidence и число попыток. Продолжить тот же разрешённый
-объём; наличие backlog само по себе не разрешает новую задачу.
+After compaction, restore the selected checkpoint, Git delta, evidence and attempt
+history, then continue the same authorized scope. Do not restart closed work or
+create/transfer/archive chats. On explicit handoff include scope/decisions, done/
+remaining work, exact files, branch/HEAD/dirty ownership, checks/failures/blockers,
+owned processes and next step without secrets. Incomplete work can be handed off;
+no green CI/publication/ownership handshake is required. The sender stops that work
+until newly instructed; chat creation/archival/schedules are separate actions.
 
 ## 1. Источники правды — решение владельца 04.11.2026
 
-Последний явный запрос владельца определяет разрешённую задачу. Основных
-продуктовых документов три; позднее явное решение не отменяется старым пересказом:
+Текущая задача и явные решения владельца определяют scope. Источники:
 
-1. [Корневой README](README.md) — подробное описание продукта, участников,
-   сценариев, устройства и границ реализации. Отличать утверждённое, принятое
-   в узком scope, нереализованное и требующее решения.
-2. [Roadmap](actual_docs/MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md) — единственный
-   реестр утверждённых требований, R0–R9, пакетов П01–П40 и исправлений аудита.
-   Принятый ответ переносится сюда, а не остаётся отдельной задачей в старом ТЗ.
-3. [Открытые вопросы](actual_docs/OPEN_QUESTIONS.md) — единственный активный список
-   нерешённых условий и внешних входов. Не спрашивать повторно выбранные правила;
-   внешняя подготовка и готовность реализации учитываются отдельно.
+- [README](README.md): продукт, участники, сценарии, устройство и границы реализации.
+- [Roadmap](actual_docs/MAIN_ROADMAP_TO_PRODUCTION_2026-10-06.md): единственный реестр
+  принятых требований R0–R9, П01–П40 и исправлений аудита.
+- [OPEN_QUESTIONS](actual_docs/OPEN_QUESTIONS.md): нерешённые условия и внешние входы;
+  не спрашивать повторно уже выбранные правила.
+- [Workflow](actual_docs/governance/DEVELOPMENT_WORKFLOW.md): процедура и проверки;
+  [индекс](actual_docs/DOCUMENTATION_INDEX.md): профильные ADR/API/UI/runbooks;
+  [Matrix](actual_docs/governance/PROJECT_ACCEPTANCE_MATRIX.md): evidence конкретного
+  scope/версии. Технические справочники не создают альтернативный backlog.
 
-AGENTS и [Workflow](actual_docs/governance/DEVELOPMENT_WORKFLOW.md) определяют
-как работать и проверять. [Индекс](actual_docs/DOCUMENTATION_INDEX.md) ведёт к
-профильным ADR, схемам/API/OpenAPI, дизайн-системе и runbooks. Технические
-справочники уточняют выбранный сценарий, не задают альтернативный backlog.
-[Matrix](actual_docs/governance/PROJECT_ACCEPTANCE_MATRIX.md) и evidence хранят
-доказательства на конкретных версиях; прошлый PASS не сертифицирует изменённое дерево.
+Читать только запись выбранной задачи/checkpoint, нужный раздел README, пункт
+roadmap и его OPEN_QUESTIONS, затем применимые Workflow/контракт/код/ADR/evidence.
+Не загружать всю историю. Старые PROJECT_OVERVIEW, функциональная карта, ТЗ,
+свод правил, журнал решений и анкеты являются COMPAT-переходами, не обязательным
+входом. Архив открывать лишь для названного вопроса/версии, если текущих источников
+недостаточно; исключать history, датированные references и snapshot .md.txt из
+обычного поиска. Архив 04.11 хранит трассировку, не действующие поручения.
 
-ERP подключается самостоятельно в кабинетах клиники/поставщика; заявка в поддержку
-не штатный обязательный путь. Нужный UI входит в ту же задачу, что и новая логика.
-CORE-01–09 имеют историческую внутреннюю приёмку; не начинать их повторно по архиву.
-Production с реальными участниками остаётся целью, не подтверждённой готовностью.
-Профили pilot/go_live, договор площадка–поставщик и production guards не отменяются
-редакцией документов. Roadmap не разрешает автоматически подключение сервисов,
-следующие этапы, рабочие данные, отправку сообщений партнёрам или deploy.
+Принятое решение переносить со смыслом/условиями/датой в существующий roadmap;
+при изменении продукта обновлять README, закрытый вопрос убирать из активного
+списка, исходный ответ сохранять в истории. Конфликт оставить в OPEN_QUESTIONS;
+код или дата файла не выбирают бизнес-политику. Не создавать второй backlog.
+Различать требование, реализацию, scoped acceptance и внешнюю готовность; принятие
+текста или старый PASS не подтверждают новую версию/production.
 
-### Порядок чтения и история
-
-1. Прочитать текущий запрос, AGENTS и checkpoint выбранной задачи; сверить Git,
-   разрешённый scope и затронутые файлы.
-2. Прочитать нужный раздел README, выбранный пункт roadmap и его конкретные
-   OPEN_QUESTIONS зависимости. Затем Workflow, код/контракт, профильный ADR/runbook
-   и относящееся evidence. Не читать все карточки и исторические записи.
-3. Прежние PROJECT_OVERVIEW, функциональная карта, объединённое ТЗ, свод правил,
-   журнал решений и анкеты — COMPAT-переходы. Они больше не обязательный вход.
-   Архив 04.11 сохраняет исходные редакции и трассировку, а не действующие поручения.
-4. Архив открывать последним и только для конкретного основания/сравнения/версии,
-   если текущих источников недостаточно. Сначала назвать вопрос, затем нужный раздел.
-   В обычном поиске исключать history, датированные references и snapshot .md.txt.
-
-При новом решении перенести смысл/условия/дату в существующий пункт roadmap,
-обновить README при изменении продукта и убрать закрытый вопрос из активного списка.
-Исходный ответ сохранять в истории. Не повышать implementation/acceptance статус
-из-за принятия текста. Неразрешённый конфликт сохранить в OPEN_QUESTIONS;
-не выбирать бизнес-правило по коду или дате файла. Не создавать второй свод/backlog.
+ERP подключается самостоятельно в кабинетах клиники/поставщика, не через
+обязательную заявку в поддержку; нужный UI входит в задачу вместе с логикой.
+CORE-01–09 имеют историческую внутреннюю приёмку: архив не открывает их заново.
+Production с реальными участниками остаётся целью. Профили pilot/go_live,
+договор площадка–поставщик и production guards сохраняются. Roadmap не разрешает
+подключать сервисы, менять рабочие данные, писать партнёрам, начинать этапы или deploy.
 
 ## 2. Карта репозитория
 
@@ -128,46 +98,35 @@ Production с реальными участниками остаётся цел�
 
 ## 3. Обязательный маршрут задачи
 
-1. Проверьте Git, прочитайте эти правила, Workflow, нужный раздел корневого
-   README, выбранный
-   пункт roadmap и релевантные ADR/код. Архив открывайте по правилу §1.
-2. Сформулируйте границу: пользователь, сценарий, входы, ожидаемый выход,
-   ограничения, ID принятой задачи и Definition of Done. Укажите точные gates,
-   окружение/fixtures и критерий остановки. Для короткой задачи достаточно
-   краткого brief; новый файл ТЗ и повторное согласование уже ясного запроса не нужны.
-3. Для изменения доменных данных или HTTP API сначала измените общую схему и
-   контракт, затем реализацию и клиент, затем необходимый интерфейс — в рамках
-   одной задачи и совместного DoD. Зафиксируйте связь сценарий → сущности/API →
-   маршрут/компонент → состояния → evidence. Backend-only не закрывает функцию,
-   если пользователю нужны действие, состояние или результат в UI. «UI не нужен»
-   требует явного обоснования. R7 не разрешает отложить UI результатов R2–R6.
-4. Делайте минимальный связный change set. Не смешивайте рефакторинг,
-   редизайн, удаление данных и новую бизнес-функцию в одном коммите.
-5. Для изменения поведения добавьте или обновите целевой regression-тест на риск задачи. Для обратимой правки текста/стилей достаточно проверки затронутого UI; не создавать тесты, повторяющие CSS.
-6. Выполните проверки из `actual_docs/governance/DEVELOPMENT_WORKFLOW.md`, соответствующие
-   затронутой области.
-7. Обновите документацию, если изменились контракт, бизнес-правило, команда,
-   эксплуатационный процесс или архитектурное решение.
-8. Перед коммитом проверьте `git diff --check`, рабочее дерево и состав
-   staged-файлов. В финале сообщайте фактические команды и результаты, а не
-   предполагаемый статус.
+1. Follow the targeted reading route in §1 and check Git before editing.
+2. Record user/scenario, inputs/output, constraints, task ID, DoD, risk, exact gates,
+   environment/fixtures and stopping criterion. A short brief suffices for a small
+   task; no new specification or repeated approval of clear scope is needed.
+3. Domain/HTTP changes proceed schema/contract → implementation/client → required UI
+   under one DoD. Trace scenario → entities/API → route/component → states → evidence.
+   Backend-only cannot close a feature needing a user action/state/result; justify
+   any "no UI needed" decision. R7 does not defer UI required by R2–R6.
+4. Make the smallest coherent change; do not mix unrelated refactoring, redesign,
+   deletion and new features. Check existing code/contracts/tests first; if already
+   implemented, supply only missing evidence or the necessary fix, not a rewrite.
+5. Add targeted regression coverage for changed behavior. Reversible copy/styles
+   need affected UI verification, not tests mirroring CSS. Run applicable Workflow
+   gates, update changed contracts/rules/commands/operations/architecture docs, then
+   review working/staged diff and `git diff --check` before commit.
 
 ### 3.1 Граница исполнения
 
-- Выполняйте последний запрос, не накопленный список прежних «продолжай».
-  «Продолжай» относится к текущей карточке/явно разрешённой последовательности,
-  а не ко всем незакрытым чекбоксам. Новый запрос на аудит правил не запускает backend.
-- Сначала проверьте существующие код, контракт и тест: если outcome уже
-  реализован, добавьте только недостающее доказательство/исправление, не rewrite.
-- Новая функция, интеграция, зависимость, смена стека, редизайн, массовая чистка
-  или инфраструктура требуют основания в задаче. «Можно улучшить» не основание.
-- Сторонний дефект фиксируйте один раз в существующей карточке/Acceptance Matrix.
-  Не превращайте его в автоматический follow-up. Критический риск сообщите,
-  остановите затронутый путь; не расширяйте молча scope.
-- Не создавайте агентов/новые задачи без явного запроса на делегирование.
-  Название роли Agency не означает поручение запускать отдельного агента.
-- При достигнутом DoD завершите задачу. Следующую фазу начинайте только в явно
-  разрешённой последовательности и после зелёных обязательных gates текущей.
+Preserve the original task and unfinished requirements; clarifications/status
+questions supplement it. Replace the goal only on explicit cancellation/change.
+"Continue" covers the current card/authorized sequence, not all backlog. Auditing
+rules does not start backend work. New functions/integrations/dependencies/stack,
+redesign, broad cleanup and infrastructure require task authorization.
+
+Record an unrelated defect once in the existing card/Acceptance Matrix, not an
+automatic follow-up. Report critical risk and stop only its affected path. Do not
+spawn agents/tasks without explicit delegation; Agency roles are guidance, not
+permission to launch agents. Stop at DoD; another phase needs an explicitly
+authorized sequence and the current phase's required passed gates.
 
 ## 4. Backend и данные
 
@@ -202,92 +161,44 @@ Production с реальными участниками остаётся цел�
 
 ## 6. Frontend, UI и UX
 
-Полный стандарт находится в `actual_docs/ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md`.
+Read `actual_docs/ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md` and
+[DESIGN_SYSTEM](actual_docs/ui-ux/DESIGN_SYSTEM.md) before UI implementation or
+reference generation (owner decision 07.10.2026). Follow its mandatory workflow,
+both JSON contracts and the current screen. Before generation record the parameter
+passport, pass it to the generator and inspect the image before calling it an
+approved reference. Image approval/"one-to-one" does not override shared contracts
+without an explicit decision. Resolve actual conflicts before implementation;
+no repeated approval when there is no conflict. Acceptance includes screenshots
+and computed styles, not static/tests alone.
 
-Решение владельца07.10.2026: перед любой UI-реализацией **и генерацией
-референса** обязателен [единый источник истины](actual_docs/ui-ux/DESIGN_SYSTEM.md),
-его раздел «Обязательный порядок UI-задачи и генерации референса», два JSON
-контракта и сверка с текущим экраном. До генерации зафиксировать паспорт
-параметров, передать их генератору и проверить полученную картинку до показа
-как готового эталона. Одобрение картинки/«один в один» не отменяет общие
-контракты без явного решения по конкретным изменениям. Конфликт предъявить
-до реализации; при отсутствии конфликта повторного approval не требуется.
-Приёмка включает screenshot/computed styles, не только static/test PASS.
-Стандартные controls и их состояния реализуются только через shared adapters
-и tokens дизайн-системы. Локальные копии и overrides стандартных компонентов
-запрещены, даже с валидными tokens. Feature CSS допускается для композиции;
-недостающий вариант расширяется в общем адаптере с проверкой consumers по
-порядку DESIGN_SYSTEM.md, без самовольной смены общих параметров.
-
-
-
-- Кабинеты покупателя, поставщика и оператора используют Fluent UI v9 и
-  общие примитивы из `packages/ui`. Не вводите второй design system или
-  библиотеку иконок для одной страницы.
-- Любая асинхронная поверхность имеет loading, empty, error и success/action
-  feedback состояния. Ошибка должна объяснять действие пользователя, а не
-  только технический текст.
-- Решение владельца06.11.2026: новые и изменяемые страницы/компоненты используют
-  общий `LoadingState` из `@marketplace/ui/loading-state`: спиннер и локализованная
-  подпись действия с предметом («Загружаем остатки…»). Голый текст загрузки,
-  локальные спиннеры и «Проверяем вход» вместо загрузки содержимого запрещены.
-  Первичная подготовка кабинета — единый «Загружаем кабинет…»; загрузка раздела
-  не скрывает оболочку, фоновое обновление сохраняет данные того же контекста.
-  Варианты block/inline, ошибки и доступность — по разделу «Единые лоадеры»
-  [дизайн-системы](actual_docs/ui-ux/DESIGN_SYSTEM.md#единые-лоадеры).
-- Формы доступны с клавиатуры, имеют label, видимый focus, валидацию около
-  поля и не теряют введённые данные при recoverable ошибке.
-- Для плотных рабочих экранов приоритетны ясная иерархия, фильтры, таблицы,
-  статусы и адаптивность, а не декоративная анимация.
-- Не увеличивайте существующие очень большие route-файлы. Новую логику
-  выносите в feature-компоненты, hooks, сервисы или pure utilities с тестами.
-- Публичный landing может применять принципы Taste Skill только как
-  арт-дирекцию. Они не отменяют доступность, существующую IA, SEO, аналитику
-  или бренд. Не копируйте чужие SKILL.md и не применяйте маркетинговые паттерны
-  к кабинетам.
-
-### Proportional verification — owner decision 2026-10-02
-
-Choose checks by behavior, blast radius and failure impact, not file count. Before
-implementation record a short plan: changed behavior, risk, focused checks and
-completion checks. These are verification levels, not extra approval phases.
-
-- Docs/rules: diff hygiene, links, examples and consistency only; no app installs,
-  builds, database or browser suites just for Markdown.
-- Local visual/copy change: inspect existing tokens, typography, spacing, sizes
-  and layout; verify the affected component/page at relevant viewport/locale and
-  keyboard states. Do not audit/redesign unrelated pages or create E2E tests that
-  merely mirror CSS. Run frontend build/types once at completion where required.
-- Functional frontend: targeted component/interaction tests and the changed
-  reachable flow, including applicable loading/error/empty/recovery states.
-  Use targeted browser tests for critical flows, not the whole E2E suite.
-- Backend: after each coherent service/API/state transition, run focused automated
-  tests before building dependent behavior. Never defer backend validation until
-  the entire backend or a large phase is written. At completion run affected and
-  dependent suites plus required system/schema/migration checks in isolation.
-  Prove happy path and invalid input; where applicable prove role denial, tenant
-  isolation, lifecycle invariants, transaction rollback, money/stock correctness,
-  concurrency, idempotency, retries and recovery. UI screenshots do not prove these.
-- Shared tokens/components/contracts: inspect callers and test representative
-  affected consumers. Broaden only for demonstrated shared impact; auth, permissions,
-  payments, migrations and shared infrastructure are high risk even in a one-line diff.
-- Full-project/E2E gates: release candidates, explicitly authorized comprehensive
-  certification, or a documented cross-cutting risk needing that scope. A routine
-  task completion, commit, push or context restoration alone is not that reason.
-
-Reuse PASS only while relevant code, dependencies, configuration and fixtures are
-unchanged. Run affected checks again after relevant fixes; do not repeat unaffected
-suites. Do not reinstall dependencies locally if the validated environment and lock
-inputs are unchanged; retain deterministic installation in clean CI. Prefer concise
-success summaries and bounded failure logs. Read the selected checkpoint and relevant
-contracts, not entire historical records. Keep required failures visible; these rules
-do not waive existing release acceptance or retroactively turn a failed gate green.
-
+- Buyer/supplier/operator use Fluent UI v9 and `packages/ui`. Standard controls and
+  states use shared adapters/tokens only: no local copies/overrides, second design
+  system or icon library for one page. Feature CSS is for composition; extend a
+  missing shared variant and verify consumers under DESIGN_SYSTEM, without an
+  unauthorized change to shared parameters.
+- Async surfaces require loading/empty/error/success-action feedback. Explain
+  recoverable actions and preserve form input; keyboard, labels, visible focus
+  and inline validation are mandatory.
+- Changed/new UI uses `LoadingState` from `@marketplace/ui/loading-state` (06.11.2026):
+  spinner plus localized action/object, e.g. «Загружаем остатки…». No bare loading
+  text, local spinners or «Проверяем вход» for content loading. Initial workspace:
+  «Загружаем кабинет…»; section loading preserves the shell, background refresh
+  preserves data in the same context. Block/inline/error/accessibility variants:
+  [Единые лоадеры](actual_docs/ui-ux/DESIGN_SYSTEM.md#единые-лоадеры).
+- Work screens prioritize hierarchy, filters, tables, status and responsiveness
+  over decorative motion. Do not grow oversized route files; put new logic in
+  feature components, hooks, services or tested pure utilities.
+- Taste Skill guides public/landing art direction; preserve accessibility, IA,
+  SEO, analytics and brand. Do not copy external SKILL.md files or apply marketing
+  patterns to workspaces. Preserve the established product design system.
 
 ## 7. Проверки
 
-Проверки выбираются по риску и затронутому поведению, а не для всего проекта
-при каждом TypeScript change. Обязательны `git diff --check`, проверка типов
+Полная политика пропорциональных проверок и точные gates находятся в
+[Workflow §4](actual_docs/governance/DEVELOPMENT_WORKFLOW.md#4-матрица-проверок),
+включая поэтапные backend-тесты, shared consumers и переиспользование PASS.
+Она обязательна и без персональных инструкций Codex. Проверять риск изменения,
+не весь проект при каждом TypeScript change. Обязательны `git diff --check`, проверка типов
 затронутого приложения/пакета и применимые целевые тесты. Проверить реальные
 scripts/конфигурацию перед выбором команды; если scoped typecheck отсутствует,
 использовать существующий общий typecheck. Общий `npm test` не является минимумом
@@ -314,20 +225,15 @@ Docs-only: ссылки/согласованность правил, сохра�
 
 ### 7.1 Защита от циклов
 
-- До команды: зачем она нужна, какие входы/профиль проверяет, что изменилось
-  после прошлого запуска. Если нового основания нет — не повторять.
-- Максимум **3 попытки на один gate/блокер** (первичная + 2 с обоснованием),
-  включая другие CLI/браузеры и новые сессии. Смена инструмента не сбрасывает счётчик.
-- При одинаковом сбое без новой гипотезы остановитесь раньше лимита. Третья
-  неуспешная попытка или исчерпанный time budget → blocked, отчёт и один следующий
-  точный шаг; это не pass и не разрешение пропустить обязательную проверку.
-- Полная сборка/тестовый набор не повторяются после docs-only правки, чтения
-  логов, смены заголовка задачи или оформления коммита. Повторяется только
-  проверка, входы которой действительно изменились.
-- Ошибка инструмента/сессии не является доказательством дефекта приложения.
-  Не обходите permissions, auth, CSP, freshness или ограничения файлов ради теста.
-- Таймауты, журнал запусков, preflight и cleanup — Workflow §4.1–4.4.
-  Эти правила ограничивают работу исполнителя, не меняют retries бизнес-очередей.
+[Workflow §4.3](actual_docs/governance/DEVELOPMENT_WORKFLOW.md#43-ограниченные-повторы-и-время)
+владеет лимитом: 3 попытки на тот же воспроизводимый блокер, не на имя gate за
+всю задачу. Содержательное исправление подтверждённой причины требует целевой
+проверки; история не стирается. Смена CLI/браузера/чата или гипотеза без изменения
+предпосылок не сбрасывает лимит. После исчерпания остановить затронутый путь,
+сохранить диагностику и следующий шаг; продолжать независимую разрешённую работу.
+Не повторять PASS без изменения входов. Ошибка инструмента не доказывает дефект
+продукта; не обходить permissions/auth/CSP/freshness ради теста. Таймауты,
+preflight, журналы и cleanup — Workflow §4.1–4.4; бизнес-retries не меняются.
 
 ## 8. Git и безопасность
 
@@ -345,9 +251,14 @@ Docs-only: ссылки/согласованность правил, сохра�
 - Перед staging отделить собственный scope от чужого/незавершённого WIP,
   проверить весь outgoing range, секреты и приватные данные. Добавлять только
   проверенные пути/hunks; не использовать бездумный `git add .`.
-- До push получить актуальный remote и проверить fast-forward. Неизвестная
-  целевая ветка, конфликт, несвязанная история, failed gate или параллельная
-  запись блокируют публикацию; не выбирать main и не сливать чужой код молча.
+- Сохранять текущую ветку; `main` — согласованная remote-цель, не разрешение
+  переключить checkout. После fetch доказать fast-forward и разрешённость всего
+  outgoing range. При чужих/непроверенных коммитах сохранить свой локальный commit
+  и сообщить блокер: не публиковать чужое, не обходить историю cherry-pick/rebase
+  или новой копией. Общая интеграция требует явного решения и нужных checks.
+- Неоднозначная цель, конфликт, расхождение истории, failed gate или конкурентная
+  запись в публикуемый scope блокируют push. Несвязанный dirty diff сам по себе
+  не блокирует задачу. Не сливать чужой код молча.
 - После push сверить remote SHA с ожидаемым локальным commit и отдельно CI.
   При ошибке сохранить commit и сообщить «локально закоммичено, не отправлено».
   Новые PR, release/tag/deploy и рабочие миграции этим правилом не разрешаются.
@@ -363,41 +274,31 @@ Docs-only: ссылки/согласованность правил, сохра�
 
 ## 9. Формат завершения задачи
 
-В конце сообщите кратко: что изменено, какие пользовательские/технические
-инварианты теперь обеспечены, какие команды прошли, что не запускалось и
-почему, commit hash и branch. Не называйте работу завершённой при известном
-непроверенном критическом риске.
-
-Для незавершённой задачи укажите конкретный блокер, число попыток и один
-следующий шаг. После прерывания/смены контекста продолжайте с этого checkpoint,
-сначала проверив изменившиеся входы; не начинайте весь аудит или набор команд заново.
+Report the requested outcome, ensured invariants, exact checks/results/skips and
+reasons, branch/commit, actual publication/CI and remaining risks. Do not call a
+known unverified critical result complete. For unfinished work preserve blocker,
+attempts and next step in the selected checkpoint; resume after checking changed
+inputs, not by restarting the entire audit. Rule-only maintenance records evidence
+in the final response, without product-status or other-task checkpoint edits.
 
 ## 10. Обязательные project playbooks
 
-Для **каждой** задачи исполнитель использует этот `AGENTS.md` и
-`actual_docs/governance/DEVELOPMENT_WORKFLOW.md`. Если затронут интерфейс,
-дополнительно обязателен
+Every task uses AGENTS and relevant sections of
+`actual_docs/governance/DEVELOPMENT_WORKFLOW.md`; UI tasks also use
 `actual_docs/ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md`.
 
-Внешние материалы являются обязательным набором профессиональных практик, а
-не набором инструкций, которые нужно бездумно складывать в один prompt:
+Select relevant professional guidance from
+`C:\Users\user\Desktop\Agentic Skills\agency-agents-main`: backend architect
+for domain boundaries, frontend developer for implementation, UI designer/UX
+architect for UI, code reviewer for risks, Git workflow master for history and
+testing roles for evidence. Read the selected instruction fully, not the entire
+catalog; reuse unchanged instructions in the same context. Report only roles/
+practices actually read and applied, with their purpose. If unavailable, make one
+targeted search, then disclose the limitation and use an applicable fallback.
 
-- `C:\Users\user\Desktop\Agentic Skills\agency-agents-main` — выбирайте
-  релевантные роли: backend architect для модели/границ, frontend developer
-  для реализации, UI designer и UX architect для интерфейса, code reviewer
-  для рисков, Git workflow master для истории, testing roles для доказательств.
-- `Leonxlnx/taste-skill` — применяйте его brief-first и anti-generic подход к
-  публичным страницам, landing и visual redesign. Не используйте его как
-  дизайн-систему для B2B-кабинетов, data tables или сложных форм.
-
-В task report укажите, какие роли/практики были применены и почему. Нельзя
-объявлять использование роли или skill, если соответствующий чек-лист или
-инструкция фактически не были прочитаны и применены.
-
-Используйте только релевантные роли/skills, не весь каталог. После выбора
-прочитайте инструкцию полностью; повторное чтение неизменённой инструкции
-в том же контексте не требуется. При недоступном пути выполните один целевой
-поиск; затем сообщите ограничение и используйте применимый fallback.
-Внешние примеры команд другого стека, «NEVER SKIP», обязательные 2–3 redesign
-цикла, screenshots для любой задачи и идеальные scores не становятся правилами
-DentMarket. Они не расширяют scope и не отменяют risk-based проверки Workflow.
+Use installed Taste Skill/Anti Slop for UI under personal preferences; apply the
+app-screen route and existing design system to B2B workspaces, tables and forms.
+`Leonxlnx/taste-skill` brief-first/art direction serves public pages and redesign
+within authorized scope. External stack commands, "NEVER SKIP", mandatory redesign
+cycles, screenshots for every task or ideal scores do not override project scope
+or risk-based Workflow gates. A role checklist never authorizes spawning agents.
