@@ -14,7 +14,7 @@
 Обязательные safety-инварианты не ослабляются ради экономии запусков.
 
 Решение владельца 2026-09-21: единственная writable source folder —
-`C:\Users\user\Desktop\dentmarket-kz-main`.
+`C:\Users\user\Desktop\PlatformaMarket`.
 Не создавать другие worktrees/клоны для кода; старые деревья только read-only.
 Перед правками сверять корень/HEAD/dirty files согласно AGENTS.md.
 Изоляция тестовых данных/портов сохраняется; она не требует второй копии исходников.

@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "projectName": "Platforma.Market",
   "projectId": "local-affe45ff7ccd29c6dcc081e3663d7082",
-  "canonicalRoot": "C:\\Users\\user\\Desktop\\dentmarket-kz-main",
+  "canonicalRoot": "C:\\Users\\user\\Desktop\\PlatformaMarket",
   "checkpointPath": "actual_docs/governance/task-state/PRIMARY-SESSION.md",
   "contextTransferPath": "actual_docs/governance/SESSION_ROLLOVER.md",
   "policy": "User-directed tasks; explicit context transfer only. No thread ownership or automatic coordination."

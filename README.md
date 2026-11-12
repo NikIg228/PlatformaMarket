@@ -214,7 +214,7 @@ Web/iOS/Android, mobile EDS и RU/KK входят в целевой выпуск
 
 ## Локальная работа и проверка
 
-Единственная рабочая папка — `C:\Users\user\Desktop\dentmarket-kz-main`.
+Единственная рабочая папка — `C:\Users\user\Desktop\PlatformaMarket`.
 Версии Node/npm и команды заданы в [package.json](package.json), package manager — npm.
 `npm ci` нужен для чистой установки; неизменённое проверенное окружение не
 переустанавливается. `npm run dev` запускает canonical API/web, `dev:pilot`

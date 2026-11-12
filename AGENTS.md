@@ -10,7 +10,9 @@
 
 ## Единственная рабочая папка — решение владельца 2026-09-21
 
-Only `C:\Users\user\Desktop\dentmarket-kz-main` is writable source. Before edits,
+Owner-approved rename 2026-11-12: `Desktop\dentmarket-kz-main` is a compatibility
+junction to `Desktop\PlatformaMarket`, not another source copy. Use the new path
+for new work. Only `C:\Users\user\Desktop\PlatformaMarket` is writable source. Before edits,
 verify root, branch/HEAD, dirty files and task scope; preserve others' changes.
 No development worktrees/clones/copies: old trees are read-only recovery sources
 until separately accepted/retired. Do not switch a dirty checkout; branch changes

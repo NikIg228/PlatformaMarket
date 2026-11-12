@@ -129,7 +129,7 @@ Once Linux is available, provision Linux Node.js and Linux JDK8 (Windows binarie
 are not valid Linux evidence), then run from the same mounted canonical checkout:
 
 ```bash
-cd /mnt/c/Users/user/Desktop/dentmarket-kz-main
+cd /mnt/c/Users/user/Desktop/PlatformaMarket
 export NCA_SDK_ROOT='/mnt/c/Users/user/Downloads/SDK/SDK/SDK/SDK/SDK 2.0'
 export NCA_JAVA_HOME='<Linux JDK8 directory>'
 # Set NCA_TEST_KEY_PASSWORD locally from the public SDK README.
