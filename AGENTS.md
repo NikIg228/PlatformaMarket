@@ -108,10 +108,9 @@ Production с реальными участниками остаётся цел�
 
 ### 3.1 Граница исполнения
 
-Preserve the original task and unfinished requirements; clarifications/status
-questions supplement it. Replace the goal only on explicit cancellation/change.
-"Continue" covers the current card/authorized sequence, not all backlog. Auditing
-rules does not start backend work. New functions/integrations/dependencies/stack,
+The continuity rules above apply. "Continue" covers the current card/authorized
+sequence, not all backlog; auditing rules does not start backend work.
+New functions/integrations/dependencies/stack,
 redesign, broad cleanup and infrastructure require task authorization.
 
 Record an unrelated defect once in the existing card/Acceptance Matrix, not an
@@ -186,83 +185,59 @@ and computed styles, not static/tests alone.
 
 ## 7. Проверки
 
-Полная политика пропорциональных проверок и точные gates находятся в
-[Workflow §4](actual_docs/governance/DEVELOPMENT_WORKFLOW.md#4-матрица-проверок),
-включая поэтапные backend-тесты, shared consumers и переиспользование PASS.
-Она обязательна и без персональных инструкций Codex. Проверять риск изменения,
-не весь проект при каждом TypeScript change. Обязательны `git diff --check`, проверка типов
-затронутого приложения/пакета и применимые целевые тесты. Проверить реальные
-scripts/конфигурацию перед выбором команды; если scoped typecheck отсутствует,
-использовать существующий общий typecheck. Общий `npm test` не является минимумом
-для любой правки UI. Точные границы — матрица Workflow §4.
+[Workflow §4](actual_docs/governance/DEVELOPMENT_WORKFLOW.md#4-матрица-проверок)
+owns mandatory risk-based gates, staged backend tests, shared consumers and PASS
+reuse, including when personal instructions are unavailable. Verify actual scripts
+and prerequisites; use supported scoped types/tests, or the smallest enclosing gate.
+Do not default to full `npm test`/E2E for a local UI change.
 
-Дополнительно выбирайте проверку по риску, а не по удобству:
-
-- контракт покупки — `npm run verify:core-contract`;
-- checkout, tenant isolation, rollback или конкурентный остаток —
-  `npm run verify:postgres`;
-- runtime API/worker — `npm run verify:runtime-split`;
-- production environment — `npm run verify:production-config`;
-- затронутый UI critical flow — целевые browser-тесты с необходимыми fixtures;
-  общий `npm run verify:web` — для composition/release границ по Workflow §4;
-- релизная готовность — `npm run verify:release`.
-
-Docs-only: ссылки/согласованность правил, сохранность истории и `git diff --check`;
-не запускать TS/build/DB/browser/security suites без соответствующего изменения.
-
-Не ставьте `[x]` без фактического pass выбранного gate. Успешная проверка
-переиспользуется для тех же входов по Workflow §4.2; истечение времени или
-новый чат сами по себе не требуют полного rerun. Исторический pass без
-проверяемых входов не сертифицирует новый checkout.
+Required boundaries remain: purchase contract → `verify:core-contract`;
+checkout/tenant/rollback/concurrent stock → `verify:postgres`; API/worker runtime →
+`verify:runtime-split`; production config → `verify:production-config`; changed
+critical UI → targeted browser checks; composition/release → `verify:web` where
+Workflow requires it; release → `verify:release`. These are existing npm scripts.
+Docs-only requires links/consistency/history preservation and diff hygiene, not
+TS/build/DB/browser/security suites. Never check off unpassed acceptance or use
+historical PASS without verified unchanged inputs.
 
 ### 7.1 Защита от циклов
 
 [Workflow §4.3](actual_docs/governance/DEVELOPMENT_WORKFLOW.md#43-ограниченные-повторы-и-время)
-владеет лимитом: 3 попытки на тот же воспроизводимый блокер, не на имя gate за
-всю задачу. Содержательное исправление подтверждённой причины требует целевой
-проверки; история не стирается. Смена CLI/браузера/чата или гипотеза без изменения
-предпосылок не сбрасывает лимит. После исчерпания остановить затронутый путь,
-сохранить диагностику и следующий шаг; продолжать независимую разрешённую работу.
-Не повторять PASS без изменения входов. Ошибка инструмента не доказывает дефект
-продукта; не обходить permissions/auth/CSP/freshness ради теста. Таймауты,
-preflight, журналы и cleanup — Workflow §4.1–4.4; бизнес-retries не меняются.
+owns retry limits, process timeouts and diagnostic checkpoints. Three attempts
+apply to the same reproducible blocker, not a gate name forever. Preserve failures;
+recheck actual fixes, do not reset counters by changing tools/chats. Stop only the
+blocked path and continue independent authorized work. Tool failure is not product
+failure; never bypass permissions/auth/CSP/freshness. Business retries are unchanged.
+Preflight, logs, evidence reuse and cleanup follow Workflow §4.1–4.4.
 
 ## 8. Git и безопасность
 
-- Согласованная владельцем цель: `origin`
-  (`https://github.com/NikIg228/PlatformaMarket.git`), ветка `main`.
-- Перед работой смотрите `git status --short --branch` и сохраняйте чужие
-  незакоммиченные изменения.
-- Одна логическая задача — один понятный conventional commit
-  (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`).
-- Решение владельца 2026-09-21: после каждой разрешённой задачи реализации
-  или документации, review её состава и PASS обязательных gates сразу сделать
-  понятный commit и обычный push в согласованную remote/ветку. Это постоянное
-  разрешение: повторно спрашивать о каждом push не требуется. Read-only и явное
-  «без commit/push» имеют приоритет. Точный порядок — Workflow §5.1.
-- Перед staging отделить собственный scope от чужого/незавершённого WIP,
-  проверить весь outgoing range, секреты и приватные данные. Добавлять только
-  проверенные пути/hunks; не использовать бездумный `git add .`.
-- Сохранять текущую ветку; `main` — согласованная remote-цель, не разрешение
-  переключить checkout. После fetch доказать fast-forward и разрешённость всего
-  outgoing range. При чужих/непроверенных коммитах сохранить свой локальный commit
-  и сообщить блокер: не публиковать чужое, не обходить историю cherry-pick/rebase
-  или новой копией. Общая интеграция требует явного решения и нужных checks.
-- Неоднозначная цель, конфликт, расхождение истории, failed gate или конкурентная
-  запись в публикуемый scope блокируют push. Несвязанный dirty diff сам по себе
-  не блокирует задачу. Не сливать чужой код молча.
-- После push сверить remote SHA с ожидаемым локальным commit и отдельно CI.
-  При ошибке сохранить commit и сообщить «локально закоммичено, не отправлено».
-  Новые PR, release/tag/deploy и рабочие миграции этим правилом не разрешаются.
-- npm — выбранный package manager. Не возвращайтесь к выбору npm/pnpm и не
-  меняйте lockfiles в несвязанной задаче; остаточный housekeeping имеет свой scope.
-- Не используйте `git reset --hard`, принудительный push, удаление данных или
-  production migration без явной задачи и проверки точной цели.
-- Секреты, `.env`, production URLs, customer data и реальные ключи не
-  попадают в git, логи, фикстуры или ответы.
-- Push в ветку сам по себе не доказывает CI: проверить запуск и результат.
-  Если CI не настроен на ветку — сообщить NOT_RUN, не открывать PR и не менять
-  workflow без соответствующего запроса. Pending CI не означает PASS.
+Approved destination: `origin` (`https://github.com/NikIg228/PlatformaMarket.git`),
+remote branch `main`. Keep the current checkout branch; this destination does not
+authorize switching it. Standing owner authorization (2026-09-21) requires one
+meaningful conventional commit and prompt normal push after scope review and
+required PASS; read-only/no-push and safety blockers override it. Follow
+[Workflow §5.1](actual_docs/governance/DEVELOPMENT_WORKFLOW.md#51-commit-и-немедленный-push-после-проверенной-задачи).
+
+Before staging check root/branch/HEAD/dirty ownership; review the whole commit and
+outgoing range for unrelated work, secrets/private data and unintended artifacts.
+Stage explicit reviewed paths/hunks, never blind `git add .`. Fetch and prove
+fast-forward to the agreed destination. Foreign/unverified outgoing commits,
+ambiguous target, divergent history, affected-path conflict, failed required gate
+or concurrent writes to the published scope block push. Unrelated dirty work does
+not itself block the task. Retain the task-only local commit and report blockers;
+no silent merge/rebase/cherry-pick workaround, reset/force-push or new source copy.
+Integrating others' commits needs explicit authorization and applicable checks.
+
+Read back remote SHA and inspect actual CI: pending/NOT_RUN is not PASS. If CI is
+not configured, report that; do not create a PR/change workflows to obtain a run.
+Failed push means local commit only. Permission excludes new PRs, releases/tags,
+deploy, working migrations, data deletion and new tasks. Destructive Git/data
+operations require explicit scope and exact-target verification.
+
+Use npm; do not reopen package-manager selection or alter unrelated lockfiles.
+Secrets, `.env`, production URLs, customer data and real keys must not enter Git,
+logs, fixtures or replies. Check first-push deployment effects under Workflow.
 
 ## 9. Формат завершения задачи
 
@@ -279,14 +254,10 @@ Every task uses AGENTS and relevant Workflow sections. UI skill routing and
 evidence: [UI standard](actual_docs/ui-ux/UI_UX_IMPLEMENTATION_STANDARD.md#применение-ui-скиллов).
 Before reopening work, apply the personal `Preserve completed work` rule and §3.
 
-Select relevant professional guidance from
-`C:\Users\user\Desktop\Agentic Skills\agency-agents-main`: backend architect
-for domain boundaries, frontend developer for implementation, UI designer/UX
-architect for UI, code reviewer for risks, Git workflow master for history and
-testing roles for evidence. Read the selected instruction fully, not the entire
-catalog; reuse unchanged instructions in the same context. Report only roles/
-practices actually read and applied, with their purpose. If unavailable, make one
-targeted search, then disclose the limitation and use an applicable fallback.
+Agency guidance (`C:\Users\user\Desktop\Agentic Skills\agency-agents-main`) is
+optional when it adds task-relevant requirements beyond selected project/skill
+instructions; do not stack roles for formality. Read chosen guidance and report
+only actual use. If unavailable, search once then disclose the limitation/fallback.
 
 External stack commands, "NEVER SKIP", mandatory redesign cycles and ideal scores
 do not override authorized scope or risk-based Workflow gates. Role checklists do
