@@ -38,6 +38,7 @@
 | [Acceptance Matrix](governance/PROJECT_ACCEPTANCE_MATRIX.md) | Доказательства конкретного scope/SHA, failures, публикации и CI; не второй план |
 | [PRIMARY-SESSION](governance/task-state/PRIMARY-SESSION.md) | Незавершённая выбранная задача, attempts/blockers/процессы; не назначение владельца другим чатам |
 | [Evidence](governance/evidence) | Подробные результаты проверок и границы версий |
+| [Подготовка переноса Q01–Q50, 13.11](governance/evidence/production-answers-preparation-20261113.md) | Сверка предоставленных ответов, исходный файл и предлагаемые редакции; ещё не изменения действующих требований |
 | [Лог документов](domains/document-workflow-implementation-log.md), [лог Admin](applications/admin-implementation-log.md) | Датированные результаты соответствующих R-пунктов |
 | [Аудит 04.11](governance/evidence/full-audit-20261104/audit-report.md) | Исходные находки и ограничения аудита; актуальные исправления в roadmap/evidence |
 | [Консолидация 04.11](governance/evidence/docs-consolidation-20261104.md) | Проверка переноса требований, ссылок и истории |
