@@ -11,6 +11,7 @@ import styles from "./workspace.module.css";
 import { frontendFeatures } from "@marketplace/api-client";
 import { OrderReview } from "./order-review";
 import { OrderResponseDeadline } from "./order-response-deadline";
+import { CdekSandboxPanel } from "./cdek-sandbox-panel";
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -94,6 +95,7 @@ export default function OrderDetail() {
         }
       />
       {role === "clinic" && frontendFeatures.trust ? <PermissionFields required={["trust.review.create"]}><OrderReview key={`${organizationId}:${id}`} api={api} orderId={id} /></PermissionFields> : null}
+      {process.env.NEXT_PUBLIC_CDEK_SANDBOX === "true" ? <PermissionFields required={["delivery.view"]}><CdekSandboxPanel key={`cdek:${organizationId}:${id}`} api={api} orderId={id} locale={locale} /></PermissionFields> : null}
     </div>
   );
 }

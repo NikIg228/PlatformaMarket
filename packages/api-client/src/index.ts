@@ -1,3 +1,5 @@
+import * as cdekSandboxApi from "./domains/cdek-sandbox";
+import type { CdekSandboxQuoteInput } from "@marketplace/schemas";
 import * as integrationsApi from "./domains/integrations";
 import * as supplierImportsApi from "./domains/supplier-imports";
 import * as workspacesApi from "./domains/workspaces";
@@ -466,6 +468,9 @@ export class MarketplaceApiClient {
   updateCatalogProduct(productId: string, input: UpdateProductInput) { return catalogApi.updateCatalogProduct(this, productId, input); }
 
   getOrderWorkflow(orderId: string) { return ordersApi.getOrderWorkflow(this, orderId); }
+  cdekSandboxStatus(orderId: string) { return cdekSandboxApi.cdekSandboxStatus(this, orderId); }
+  cdekSandboxCities(orderId: string, city: string) { return cdekSandboxApi.cdekSandboxCities(this, orderId, city); }
+  cdekSandboxQuote(orderId: string, input: CdekSandboxQuoteInput) { return cdekSandboxApi.cdekSandboxQuote(this, orderId, input); }
   getOrderReviewState(orderId: string) { return ordersApi.getOrderReviewState(this, orderId); }
   createOrderReview(orderId: string, input: CreateVerifiedReviewInput) { return ordersApi.createOrderReview(this, orderId, input); }
 
