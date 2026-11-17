@@ -31,7 +31,7 @@ const config: NextConfig = {
   },
   // Keep bounded headroom for a streaming chunk beyond the API limit: Next drops
   // the entire chunk crossing its clone cap, so one extra byte is insufficient.
-  experimental: { optimizePackageImports: ["@marketplace/ui"], proxyClientMaxBodySize: IMPORT_UPLOAD_MAX_JSON_BYTES + 1_048_576 },
+  experimental: { agentUpgrade: "security", optimizePackageImports: ["@marketplace/ui"], proxyClientMaxBodySize: IMPORT_UPLOAD_MAX_JSON_BYTES + 1_048_576 },
   allowedDevOrigins: ["localhost", "127.0.0.1"],
   async rewrites() { return [{ source: "/api/:path*", destination: `${upstream.href.replace(/\/$/, "")}/:path*` }]; },
   async headers() { return [{ source: "/(.*)", headers: [
