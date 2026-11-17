@@ -1,0 +1,33 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+const effects = vi.hoisted(() => [] as Array<() => void | (() => void)>);
+vi.mock("react", () => ({ useEffect: (effect: () => void | (() => void)) => effects.push(effect), useSyncExternalStore: (_subscribe: unknown, snapshot: () => unknown) => snapshot() }));
+import { useWorkspaceSession } from "./use-workspace-session";
+afterEach(() => { effects.length = 0; vi.useRealTimers(); vi.unstubAllGlobals(); });
+describe("workspace session liveness", () => {
+  it("checks visible idle tabs and focus, tolerates network failure and cleans up listeners", async () => {
+    vi.useFakeTimers();
+    const windowTarget = new EventTarget(), documentTarget = new EventTarget();
+    let visibility = "visible";
+    vi.stubGlobal("window", { setInterval, clearInterval, addEventListener: windowTarget.addEventListener.bind(windowTarget), removeEventListener: windowTarget.removeEventListener.bind(windowTarget) });
+    vi.stubGlobal("document", { get visibilityState() { return visibility; }, addEventListener: documentTarget.addEventListener.bind(documentTarget), removeEventListener: documentTarget.removeEventListener.bind(documentTarget) });
+    const token = vi.fn().mockRejectedValue(new Error("offline"));
+    const start = vi.fn().mockResolvedValue(undefined);
+    useWorkspaceSession({ subscribe: () => () => {}, getSnapshot: () => "session", getServerSnapshot: () => "session", start, getAccessToken: token });
+    const cleanup = effects.map(effect => effect());
+    expect(start).toHaveBeenCalledOnce();
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(token).toHaveBeenCalledTimes(1);
+    visibility = "hidden";
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(token).toHaveBeenCalledTimes(1);
+    visibility = "visible";
+    windowTarget.dispatchEvent(new Event("focus"));
+    documentTarget.dispatchEvent(new Event("visibilitychange"));
+    await Promise.resolve();
+    expect(token).toHaveBeenCalledTimes(3);
+    cleanup.forEach(fn => fn?.());
+    await vi.advanceTimersByTimeAsync(30_000);
+    windowTarget.dispatchEvent(new Event("focus"));
+    expect(token).toHaveBeenCalledTimes(3);
+  });
+});

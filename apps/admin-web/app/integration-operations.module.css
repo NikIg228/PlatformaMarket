@@ -222,6 +222,10 @@
 
 .error {
   display: grid;
+  width: fit-content;
+  max-width: min(100%, 48rem);
+  box-sizing: border-box;
+  justify-self: start;
   gap: var(--dm-space-1);
   margin-top: var(--dm-space-3);
   padding: var(--dm-space-3) var(--dm-space-3);

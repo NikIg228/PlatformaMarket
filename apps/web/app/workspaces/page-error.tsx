@@ -3,7 +3,7 @@ import { DmButton } from "@marketplace/ui/controls";
 import { ErrorState } from "@marketplace/ui/primitives";
 export default function PageError({ reset }: { reset: () => void }) {
   return (
-    <ErrorState presentation="inline"
+    <ErrorState presentation="page"
       title="Не удалось открыть раздел"
       description="Повторите загрузку или выберите другой раздел кабинета. Сохранённые данные не изменены."
       action={<DmButton onClick={reset}>Повторить загрузку</DmButton>}

@@ -60,7 +60,7 @@ export function ResupplyDocumentPanel({ api, orderId, discrepancyId, revision }:
     <DmFeedback presentation="note" tone="warning" title="Формы ещё не утверждены" description="Это рабочие черновики без подписей. Они доступны обеим сторонам, сохраняют историю и не закрывают расхождение. Подписание станет доступно после утверждения форм, полномочий и подключения НУЦ." />
     {loading && !data ? <LoadingState label="Загружаем рабочие документы" /> : null}
     {error ? <><DmFeedback presentation="inline" tone="danger" title="Документы не обновлены" description={error} />{!uncertain && !conflict ? <DmButton disabled={busy || loading} onClick={() => void load()}>Повторить загрузку документов</DmButton> : null}</> : null}
-    {notice ? <DmFeedback presentation="inline" tone="success" title="Черновик сохранён" description={notice} /> : null}
+    {notice ? <DmFeedback presentation="toast" tone="success" title="Черновик сохранён" description={notice} /> : null}
     {uncertain ? <><p>Результат подготовки пока неизвестен. Повтор сохранит тот же запрос.</p><DmButton disabled={busy} onClick={() => pending.current && void prepare(pending.current.kind)}>Повторить подготовку черновика</DmButton></> : null}
     {conflict ? <><p>Партии или заявление изменились. Сверьте актуальные количества перед новой подготовкой.</p><DmButton disabled={loading} onClick={() => void load()}>Сверить данные документов</DmButton>{reviewed ? <DmButton onClick={() => { setConflict(false); setError(""); }}>Данные документов проверены</DmButton> : null}</> : null}
     {data ? <>

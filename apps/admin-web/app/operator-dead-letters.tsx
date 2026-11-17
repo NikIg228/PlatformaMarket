@@ -63,7 +63,7 @@ export function OperatorDeadLetters({ canReplay, onReplayed }: { canReplay: bool
   return <section className={styles.section} aria-label="События с исчерпанными попытками"><h3 ref={heading} tabIndex={-1}>События с исчерпанными попытками</h3>
     <p>Повтор возвращает одно событие outbox в очередь, сбрасывает счётчик попыток и сохраняет его содержимое. Причина и действие записываются в журнал.</p>
     {!canReplay ? <p>Повтор недоступен: требуется право на повтор и актуальное техническое состояние.</p> : null}
-    {notice ? <DmFeedback presentation="inline" tone="success" title="Событие поставлено в очередь" description={notice} /> : null}
+    {notice ? <DmFeedback presentation="toast" tone="success" title="Событие поставлено в очередь" description={notice} /> : null}
     {pending && !open ? <DmFeedback presentation="inline" tone="warning" title="Есть незавершённый запрос" description={`Событие ${pending.event.id}. Проверьте результат перед другим повтором.`} action={<DmButton onClick={() => setOpen(true)}>Вернуться к запросу</DmButton>} /> : null}
     {error && !open ? <DmFeedback presentation="inline" tone="danger" title="Действие требует внимания" description={error} /> : null}
     <DmSurface variant="filters"><form className={styles.filters} onSubmit={event => { event.preventDefault(); const valid = outboxDeadLetterQuerySchema.safeParse({ eventType: eventType.trim() || undefined, eventId: eventId.trim() || undefined }).success; setInvalid(!valid); if (valid) { try { write({ ...state, outboxEventType: eventType.trim(), outboxEventId: eventId.trim(), outboxOffset: 0 }); } catch { setInvalid(true); } } }}>

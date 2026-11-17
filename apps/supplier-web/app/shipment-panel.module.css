@@ -9,6 +9,6 @@
 .error, .success, .notice { padding: var(--dm-space-3) var(--dm-space-3); border-radius: var(--dm-radius-card); font-size: var(--dm-font-size-caption); }
 .error { border: 1px solid var(--dm-danger-text); background: var(--dm-danger-surface); color: var(--dm-danger-text); }
 .success { border: 1px solid var(--dm-success-text); background: var(--dm-success-surface); color: var(--dm-success-text); }
-.notice { background: var(--colorNeutralBackground1); }
+.notice { width: fit-content; max-width: min(100%, 72ch); justify-self: start; box-sizing: border-box; background: transparent; padding: 0; }
 @media (max-width: 900px) { .form { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 650px) { .form { grid-template-columns: 1fr; } .header, .shipmentMain { align-items: flex-start; } }

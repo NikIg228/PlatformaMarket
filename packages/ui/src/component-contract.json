@@ -59,7 +59,14 @@
     "--dm-tab-indicator-height": "3px"
   },
   "notificationCards": {
-    "version": "solid-card-v1",
+    "version": "contextual-feedback-v2",
+    "inlineMaxWidth": "48rem",
+    "pageMaxWidth": "40rem",
+    "noteMaxWidth": "72ch",
+    "pageFill": "surface.default",
+    "noteFill": "transparent",
+    "inlineShadow": "none",
+    "actionGap": "--dm-space-2",
     "radius": "--dm-radius-card",
     "padding": "--dm-space-4",
     "gap": "--dm-space-3",

@@ -53,7 +53,7 @@ export function ShipmentWaybillPanel({ api, orderId, shipmentId, shipmentVersion
       actions={<><DmButton disabled={busy} onClick={() => setOpen(false)}>Закрыть</DmButton><DmButton appearance="primary" disabled={busy || loading || outerBusy || !data?.canPrepare} onClick={() => void prepare()}>
         {busy ? "Формируем…" : request.current ? "Повторить формирование" : selected ? "Новая версия" : "Подготовить предпросмотр"}</DmButton></>}>
       {error ? <DmFeedback presentation="inline" tone="danger" title="Накладная не обновлена" description={error} alert action={!data ? <DmButton disabled={loading} onClick={() => void reload()}>Повторить загрузку</DmButton> : undefined} /> : null}
-      {notice ? <DmFeedback presentation="inline" tone="success" title="Черновик готов" description={notice} /> : null}
+    {notice ? <DmFeedback presentation="toast" tone="success" title="Черновик готов" description={notice} /> : null}
       {loading ? <LoadingState label="Загружаем накладные партии…" /> : null}
       {data?.issues.map((issue, i) => <DmFeedback presentation="inline" key={`${i}:${issue}`} tone="warning" title="Проверьте данные партии" description={issue} />)}
       {selected ? <div className="dm-stack">

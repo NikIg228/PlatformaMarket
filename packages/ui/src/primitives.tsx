@@ -126,7 +126,7 @@ export function DmFeedback({
   action?: ReactNode;
   details?: ReactNode;
   alert?: boolean;
-  presentation?: "inline" | "toast" | "note";
+  presentation?: "inline" | "toast" | "note" | "page";
 }) {
   if (presentation === "toast" || (presentation == null && (tone === "success" || tone === "danger"))) {
     return <ActionFeedback tone={tone} title={title} description={description} action={action} />;
@@ -278,10 +278,10 @@ export function ErrorState({
   title?: string;
   description: string;
   action?: ReactNode;
-  presentation?: "inline" | "toast";
+  presentation?: "inline" | "toast" | "page";
 }) {
   if (presentation === "toast") return <ActionFeedback tone="error" title={title} description={description} action={action} />;
-  return <DmFeedback presentation="inline" tone="danger" alert title={title} description={description} action={action} />;
+  return <DmFeedback presentation={presentation} tone="danger" alert title={title} description={description} action={action} />;
 }
 
 export function Section({

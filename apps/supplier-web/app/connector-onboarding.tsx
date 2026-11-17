@@ -1,5 +1,7 @@
 "use client";
 import { LoadingState } from "@marketplace/ui/loading-state";
+import { ErrorState } from "@marketplace/ui/primitives";
+import { DmButton } from "@marketplace/ui/controls";
 
 import { ProgressBar } from "@fluentui/react-components";
 
@@ -17,7 +19,7 @@ export function ConnectorOnboarding({ supplierId, apiContext }: { supplierId: st
   const [data, setData] = useState<Readiness | null>(null); const [error, setError] = useState("");
   const load = useCallback(() => { setError(""); void api.get<Readiness>(`/suppliers/${supplierId}/integrations/onboarding/readiness`).then(setData).catch((cause) => setError(cause instanceof Error ? cause.message : "Не удалось проверить подключение")); }, [api, supplierId]);
   useEffect(() => { load(); window.addEventListener("dentmarket:onboarding-changed", load); return () => window.removeEventListener("dentmarket:onboarding-changed", load); }, [load]);
-  if (error) return <div className={styles.error}>{error}</div>;
+  if (error) return <ErrorState presentation="inline" description={error} action={<DmButton onClick={load}>Повторить проверку подключения</DmButton>} />;
   if (!data) return <div className={styles.loading}><LoadingState presentation="inline" label="Загружаем состояние подключения…" /></div>;
   const target = data.channel ? data.timeTargets[data.channel] : null;
   return <section className={styles.panel} aria-labelledby="connector-wizard-title"><header><div><p>Подготовка к продажам</p><h2 id="connector-wizard-title">Готово {data.completedSteps} из {data.totalSteps}</h2><small>{data.channel ? `Способ загрузки: ${data.channel}` : "Выберите способ загрузки товаров"}{target ? `. Срок: ${target}` : ""}</small></div><div className={styles.percent}><strong>{data.progressPercent}%</strong></div></header><ProgressBar value={data.progressPercent / 100} /><div className={styles.steps}>{data.steps.map((step) => <article key={step.id} data-complete={step.complete}><span>{step.complete ? <CheckmarkCircle20Regular /> : <Circle20Regular />}</span><div><strong>{step.label}</strong><p>{step.evidence}</p></div></article>)}</div><footer>Проверьте заказ, подпишите договор и подтвердите товары. Если работаете в 1С, мы поможем с подключением.</footer></section>;

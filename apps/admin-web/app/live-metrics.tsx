@@ -27,7 +27,7 @@ export function LiveMetrics() {
     </div>
     {loading && !data ? <LoadingState label="Загружаем показатели" /> : null}
     {error ? data ? <DmFeedback presentation="inline" tone="danger" title="Показатели не обновлены" description={`${error} Показаны ранее загруженные значения.`} alert />
-      : <ErrorState presentation="inline" title="Показатели недоступны" description={error} action={<DmButton onClick={() => void refresh()}>Повторить загрузку показателей</DmButton>} /> : null}
+      : <ErrorState presentation="page" title="Показатели недоступны" description={error} action={<DmButton onClick={() => void refresh()}>Повторить загрузку показателей</DmButton>} /> : null}
     {partial ? <DmFeedback tone="warning" title="Не все показатели удалось обновить" description="Недоступный источник отмечен отдельно. Повторите загрузку." /> : null}
     {data ? <div className={styles.metrics}>{metrics.map(([key, label, detail, section, link]) => <DmSurface key={key}>
       <dl className={styles.metric}><dt>{label}</dt><dd>{formatOperatorCount(data[key])}</dd></dl>

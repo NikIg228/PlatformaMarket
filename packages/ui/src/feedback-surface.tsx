@@ -13,11 +13,11 @@ export function FeedbackSurface({ tone = "info", title, description, icon, actio
   presentation = "inline", alert = tone === "danger", className = "", ...props
 }: Omit<ComponentPropsWithRef<"div">, "title" | "children"> & {
   tone?: FeedbackTone; title?: string; description: ReactNode; icon?: ReactNode;
-  action?: ReactNode; details?: ReactNode; presentation?: "inline" | "note" | "toast"; alert?: boolean;
+  action?: ReactNode; details?: ReactNode; presentation?: "inline" | "note" | "page" | "toast"; alert?: boolean;
 }) {
   const Icon = icons[tone];
   return <div {...props} className={`dm-notice ${presentation === "toast" ? "dm-save-toast" : `dm-feedback dm-feedback-${tone}`}${presentation === "note" ? " dm-feedback-note" : ""} ${className}`.trim()}
-    data-tone={tone === "danger" ? "error" : tone} role={alert ? "alert" : "status"} aria-atomic="true">
+    data-presentation={presentation} data-tone={tone === "danger" ? "error" : tone} role={alert ? "alert" : "status"} aria-atomic="true">
     <span className="dm-feedback-icon" aria-hidden="true">{icon ?? <Icon />}</span>
     <div className="dm-feedback-copy">{title ? <strong>{title}</strong> : null}<span>{description}</span>{details}</div>
     {action ? <div className="dm-feedback-action">{action}</div> : null}

@@ -16,7 +16,7 @@ export function SettingsCalendar({ onDirtyChange, locale }: { onDirtyChange: (di
   const { api, organizationId } = useWorkspace(), t = calendarCopy[locale];
   const load = useCallback(() => api.getSupplierCalendar(), [api]);
   const resource = useResource(load, { automatic: false });
-  if (!resource.data) return resource.error ? <ErrorState presentation="inline" title={workspaceText(locale, "Не удалось загрузить календарь")} description={locale === "ru" ? resource.error : workspaceText(locale, "Повторите попытку. Сохранённый календарь не изменён.")} action={<DmButton onClick={() => void resource.refresh()}>{t.retry}</DmButton>} /> : <LoadingState label={t.loading} />;
+  if (!resource.data) return resource.error ? <ErrorState presentation="page" title={workspaceText(locale, "Не удалось загрузить календарь")} description={locale === "ru" ? resource.error : workspaceText(locale, "Повторите попытку. Сохранённый календарь не изменён.")} action={<DmButton onClick={() => void resource.refresh()}>{t.retry}</DmButton>} /> : <LoadingState label={t.loading} />;
   return <CalendarEditor key={organizationId} initial={resource.data} onDirtyChange={onDirtyChange} locale={locale} />;
 }
 

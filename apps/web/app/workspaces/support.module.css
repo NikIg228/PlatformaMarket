@@ -57,7 +57,7 @@
 .validation { color: var(--dm-danger-text); margin: 0; font-size: var(--dm-font-size-body); }
 .closed { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: var(--dm-space-4); border-top: 1px solid var(--dm-border); padding: var(--dm-space-6) var(--dm-space-6); }
 .closed p { margin: var(--dm-space-2) 0 0; color: var(--dm-text-secondary); font-size: var(--dm-font-size-body); }
-.notice { margin: 0; padding: var(--dm-space-3) var(--dm-space-4); border-radius: var(--dm-radius-card); background: var(--dm-surface-subtle); font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); overflow-wrap: anywhere; }
+.notice { margin: 0; width: fit-content; max-width: min(100%, 72ch); box-sizing: border-box; justify-self: start; color: var(--dm-text-secondary); font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); overflow-wrap: anywhere; }
 .notice[role="alert"] { border: 1px solid var(--dm-border); }
 .detail > .notice { margin: 0 var(--dm-space-6) var(--dm-space-3); }
 .newMessages { align-self: center; margin-bottom: var(--dm-space-2); }

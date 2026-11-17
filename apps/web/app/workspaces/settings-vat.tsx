@@ -16,7 +16,7 @@ export function SettingsVat({ onDirtyChange }: { onDirtyChange: (dirty: boolean)
   const { api, organizationId } = useWorkspace();
   const load = useCallback(() => api.getSupplierVatSettings(organizationId), [api, organizationId]);
   const resource = useResource(load, { automatic: false });
-  if (!resource.data) return resource.error ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : <LoadingState label="Загружаем настройки НДС" />;
+  if (!resource.data) return resource.error ? <ErrorState presentation="page" description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : <LoadingState label="Загружаем настройки НДС" />;
   return <VatSettingsEditor key={organizationId} initial={resource.data} onDirtyChange={onDirtyChange} />;
 }
 function VatSettingsEditor({ initial, onDirtyChange }: { initial: SupplierVatSettings; onDirtyChange: (dirty: boolean) => void }) {

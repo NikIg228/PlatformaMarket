@@ -90,7 +90,7 @@ export default function Cart() {
   if (resource.error && !resource.data)
     return (
       <ErrorState
-        presentation="inline"
+        presentation="page"
         title="Не удалось загрузить корзину"
         description={resource.error}
         action={

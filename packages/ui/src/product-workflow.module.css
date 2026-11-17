@@ -32,7 +32,7 @@
 .identity strong { display: block; overflow-wrap: anywhere; font-weight: var(--dm-font-weight-semibold); }
 .identity small { display: block; color: var(--dm-text-secondary); margin-top: var(--dm-space-1); }
 .hint { color: var(--dm-text-secondary); font-size: var(--dm-font-size-body); line-height: var(--dm-line-relaxed); }
-.notice { background: var(--dm-brand-surface); color: var(--dm-brand-deep); padding: var(--dm-space-3) var(--dm-space-4); border-radius: var(--dm-radius-card); line-height: var(--dm-line-relaxed); }
+.notice { width: fit-content; max-width: min(100%, 72ch); justify-self: start; box-sizing: border-box; color: var(--dm-text-secondary); line-height: var(--dm-line-relaxed); }
 .toolbar { display: flex; gap: var(--dm-space-3); align-items: center; min-width: 0; flex-wrap: wrap; }
 .toolbar > :first-child { flex: 1; min-width: 180px; }
 .toolbar button { flex-shrink: 0; }

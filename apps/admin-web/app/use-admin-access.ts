@@ -12,7 +12,7 @@ export function useAdminAccess() {
   const [attempt, setAttempt] = useState(0);
   const retry = useCallback(() => setAttempt(value => value + 1), []);
   useEffect(() => {
-    const ended = () => { setReady(false); setError("Сессия завершена или аккаунт изменён. Войдите снова."); };
+    const ended = () => { setReady(false); setError(""); };
     window.addEventListener(ADMIN_SESSION_ENDED, ended);
     const channel = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("dentmarket:session-revoked") : null;
     if (channel) channel.onmessage = (event: MessageEvent<unknown>) => {

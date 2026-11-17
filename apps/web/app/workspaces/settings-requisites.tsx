@@ -21,7 +21,7 @@ export function SettingsRequisites({ onDirtyChange }: { onDirtyChange: (dirty: b
     return result;
   }, [api, organizationId]);
   const resource = useResource(load, { automatic: false });
-  if (!resource.data) return resource.error ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : <LoadingState label="Загружаем реквизиты организации" />;
+  if (!resource.data) return resource.error ? <ErrorState presentation="page" description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : <LoadingState label="Загружаем реквизиты организации" />;
   return <RequisitesEditor key={organizationId} initial={resource.data} onDirtyChange={onDirtyChange} />;
 }
 

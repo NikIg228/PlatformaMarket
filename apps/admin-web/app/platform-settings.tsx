@@ -29,7 +29,7 @@ export function PlatformSettings({ onNavigate }: { onNavigate?: (target: Target)
     </div>
     {loading && !data ? <LoadingState label="Проверяем возможности платформы" /> : null}
     {error ? data ? <DmFeedback presentation="inline" tone="danger" title="Возможности не обновлены" description={`${error} Показаны ранее загруженные сведения.`} alert />
-      : <ErrorState presentation="inline" title="Возможности недоступны" description={error} action={<DmButton onClick={() => void refresh()}>Повторить загрузку возможностей</DmButton>} /> : null}
+      : <ErrorState presentation="page" title="Возможности недоступны" description={error} action={<DmButton onClick={() => void refresh()}>Повторить загрузку возможностей</DmButton>} /> : null}
     {mismatch ? <DmFeedback tone="warning" title="Профили интерфейса и API различаются" description="Ниже показана конфигурация API. Часть функций может быть недоступна в интерфейсе. Обратитесь к администратору платформы для согласования профилей." alert /> : null}
     {data && capabilityProjectionPartial(data) ? <DmFeedback tone="warning" title="Часть источников недоступна" description="Неизвестные значения отмечены отдельно. Повторите загрузку." /> : null}
     {data ? <>

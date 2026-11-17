@@ -19,6 +19,17 @@ function browser(value?: object, hash = "") {
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 describe("verified workspace session", () => {
+  it.each([401, 403])("classifies definitive current-session rejection %s", async status => {
+    browser(); vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({}, { status })));
+    const store = createWorkspaceSession("/api", "SUPPLIER"); await store.start();
+    expect(store.getSnapshot()).toMatchObject({ ready: true, session: null, termination: status === 401 ? "expired" : "access-denied" });
+  });
+  it("does not mark a server outage as session termination", async () => {
+    browser(); vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({}, { status: 503 })));
+    const store = createWorkspaceSession("/api", "SUPPLIER"); await store.start();
+    expect(store.getSnapshot().error).toBeTruthy();
+    expect(store.getSnapshot().termination).toBeUndefined();
+  });
   it("rejects a token-bearing URL without authenticating it or replacing stored credentials", async () => {
     const saved = { ...response, accessToken: "existing-token", accessTokenExpiresAt: Date.now() + 900000 };
     const data = browser(saved, "#session=" + encodeURIComponent(JSON.stringify({ ...response, accessToken: "attacker-token" })));

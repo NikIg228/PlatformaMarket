@@ -25,7 +25,7 @@ export function OrganizationSettings({ onDirtyChange }: { onDirtyChange: (dirty:
     return { profile, cities };
   }, [api, organizationId]);
   const resource = useResource(load, { automatic: false });
-  if (!resource.data) return resource.error ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : <LoadingState label="Загружаем настройки организации" />;
+  if (!resource.data) return resource.error ? <ErrorState presentation="page" description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : <LoadingState label="Загружаем настройки организации" />;
   return <OrganizationEditor key={organizationId} initial={resource.data.profile} cities={resource.data.cities} onDirtyChange={onDirtyChange} />;
 }
 function OrganizationEditor({ initial, cities, onDirtyChange }: { initial: OrganizationProfileResponse; cities: SettingsCity[]; onDirtyChange: (dirty: boolean) => void }) {

@@ -50,7 +50,7 @@ function Corrections() {
     return { ...page, selected };
   }, [api, navigation.cursor, q, offerId]);
   const resource = useResource(load, { retainDataOnChange: true });
-  if (resource.error && !resource.data) return <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} />;
+  if (resource.error && !resource.data) return <ErrorState presentation="page" description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} />;
   if (!resource.data) return <LoadingState label="Загружаем карточки" />;
   return <>{resource.error || resource.loading || resource.offline ? <ResourceStatus resource={resource} /> : null}<ProductCorrectionsPanel hideHeading api={api} supplierId={organizationId} offers={resource.data.items} initialOffer={resource.data.selected ?? undefined} createMode={createMode}
     onModeChange={create => router.replace(`/supplier/products/corrections${create ? "?mode=new" : ""}`)}
@@ -70,5 +70,5 @@ function ImportProducts() {
   const { api, organizationId } = useWorkspace();
   const load = useCallback((signal: AbortSignal) => api.get<SupplierDataSource[]>(`/suppliers/${organizationId}/data-sources`, { signal }), [api, organizationId]);
   const sources = useResource(load);
-  return <>{sources.error && !sources.data ? <ErrorState description={sources.error} action={<DmButton onClick={() => void sources.refresh()}>Повторить</DmButton>} /> : !sources.data ? <LoadingState label="Загружаем настройки импорта" /> : <SpreadsheetImport hideHeading api={api} supplierId={organizationId} sources={sources.data} onChanged={sources.refreshAfterWrite} />}</>;
+  return <>{sources.error && !sources.data ? <ErrorState presentation="page" description={sources.error} action={<DmButton onClick={() => void sources.refresh()}>Повторить</DmButton>} /> : !sources.data ? <LoadingState label="Загружаем настройки импорта" /> : <SpreadsheetImport hideHeading api={api} supplierId={organizationId} sources={sources.data} onChanged={sources.refreshAfterWrite} />}</>;
 }

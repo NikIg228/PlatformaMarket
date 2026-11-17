@@ -44,7 +44,7 @@ export function OrderDiscrepancyPanel({ api, orderId, orderVersion, events, onCh
   };
   const feedback = <>
     {resource.error ? <DmFeedback presentation="inline" tone="danger" title="Действие не завершено" description={resource.error} /> : null}
-    {resource.notice ? <DmFeedback presentation="inline" tone="success" title="Готово" description={resource.notice} /> : null}
+    {resource.notice ? <DmFeedback presentation="toast" tone="success" title="Готово" description={resource.notice} /> : null}
     {resource.uncertain ? <><p>Результат запроса пока неизвестен. Повторите то же действие для сверки; введённые данные сохранены.</p><DmButton disabled={resource.busy} onClick={() => void resource.retry().then(completed)}>Повторить действие</DmButton></> : null}
     {resource.conflict ? <><p>Сначала обновите данные и сравните количества и историю. Ввод сохранён.</p><DmButton disabled={resource.loading} onClick={() => void resource.reload()}>Обновить данные расхождения</DmButton>{resource.reviewReady ? <DmButton onClick={() => { setEditingVersion(selected?.version ?? null); resource.reviewed(); }}>Данные проверены, продолжить</DmButton> : null}</> : null}
   </>;

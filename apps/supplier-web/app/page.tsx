@@ -1,5 +1,6 @@
 "use client";
 import { ActionFeedback } from "@marketplace/ui";
+import { SessionRequired } from "@marketplace/ui/session-required";
 import { workspacePath } from "@marketplace/api-client";
 
 import { useVerifiedSession, sessionApiContext, sessionStore, logoutSession } from "./workspace-session";
@@ -113,7 +114,7 @@ const navigation: NavigationItem[] = [
 
 export default function SupplierWorkspace() {
   const router = useRouter();
-  const { session: handoff, ready: handoffChecked, error: sessionError } = useVerifiedSession();
+  const { session: handoff, ready: handoffChecked, error: sessionError, termination } = useVerifiedSession();
   const apiContext = sessionApiContext;
   const api = useMemo(() => new MarketplaceApiClient(API_URL, apiContext), [apiContext]);
   const supplierId = handoff?.organizationId ?? "";
@@ -561,7 +562,7 @@ export default function SupplierWorkspace() {
   );
 
   if (!handoffChecked) return <LoadingState label="Загружаем кабинет…" />;
-  if (!handoff) return <ErrorState presentation="inline" title="Войдите в кабинет поставщика" description={sessionError ?? "Кабинет доступен только участникам организации."} action={<><DmButton as="a" href={loginUrl}>Войти</DmButton><DmButton onClick={() => void sessionStore.retry()}>Повторить проверку</DmButton></>} />;
+  if (!handoff) return <SessionRequired error={sessionError} termination={termination} loginUrl={loginUrl} retry={() => void sessionStore.retry()} />;
 
   return (
     <AppShell

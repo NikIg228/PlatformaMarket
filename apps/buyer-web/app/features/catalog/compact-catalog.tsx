@@ -83,7 +83,7 @@ export function CompactCatalog({ result, state, returnUrl, loading, error, loadi
         {active.length > 3 ? <DmButton appearance="subtle" onClick={openAll}>Ещё {active.length - 3}</DmButton> : null}
         <DmButton appearance="subtle" onClick={reset}>Сбросить фильтры</DmButton>
       </div> : null}
-      {error && !result?.items.length ? <DmFeedback presentation="inline" tone="danger" title="Не удалось загрузить каталог" description={error} action={<DmButton onClick={onRetry}>Повторить загрузку</DmButton>} />
+      {error && !result?.items.length ? <DmFeedback presentation="page" tone="danger" title="Не удалось загрузить каталог" description={error} action={<DmButton onClick={onRetry}>Повторить загрузку</DmButton>} />
         : loading ? <div className={styles.message}><LoadingState label="Загружаем актуальные предложения…" /></div>
         : result?.items.length ? <CatalogProductGrid storefront={storefront} products={result.items} state={state} returnUrl={returnUrl} imageSource={imageSource} />
         : <div className={styles.message}><h2>Ничего не найдено</h2><p>Измените запрос или условия поиска. Город доставки меняется в шапке.</p><DmButton onClick={reset}>Сбросить фильтры</DmButton><DmButton onClick={openAll}>Все фильтры</DmButton></div>}

@@ -11,7 +11,7 @@ export function SettingsStorefront({ onDirtyChange }: { onDirtyChange: (dirty: b
   const { api, organizationId } = useWorkspace();
   const load = useCallback(() => api.supplierStorefrontSettings(organizationId), [api, organizationId]);
   const resource = useResource(load, { automatic: false });
-  if (!resource.data) return resource.error ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : <LoadingState label="Загружаем сведения витрины" />;
+  if (!resource.data) return resource.error ? <ErrorState presentation="page" description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : <LoadingState label="Загружаем сведения витрины" />;
   return <StorefrontEditor key={organizationId} initial={resource.data} onDirtyChange={onDirtyChange} />;
 }
 const fields = [

@@ -18,10 +18,10 @@ import {
 } from "@marketplace/api-client";
 import { DmButton } from "@marketplace/ui/controls";
 import { ConversationCounter } from "@marketplace/ui/conversation-counter";
-import { ErrorState, LoadingState } from "@marketplace/ui/primitives";
+import { LoadingState } from "@marketplace/ui/primitives";
+import { SessionRequired } from "@marketplace/ui/session-required";
 import { useSessionLogout } from "@marketplace/ui/use-session-logout";
 import { useWorkspaceSession } from "@marketplace/ui/use-workspace-session";
-import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
 import * as clinic from "../../../buyer-web/app/workspace-session";
 import * as supplier from "../../../supplier-web/app/workspace-session";
 import { Grid24Regular } from "@fluentui/react-icons/svg/grid";
@@ -114,7 +114,7 @@ export function Workspace({
     return () => mobile.removeEventListener("change", resize);
   }, []);
   const adapter = role === "clinic" ? clinic : supplier;
-  const { session: rawSession, ready: sessionReady, error } = useWorkspaceSession(adapter.sessionStore);
+  const { session: rawSession, ready: sessionReady, error, termination } = useWorkspaceSession(adapter.sessionStore);
   const buyerMode = useBuyerMode();
   const ready = !preparing && sessionReady && (role !== "clinic" || (buyerMode !== "loading" && buyerMode !== "switching"));
   const personal = role === "clinic" && buyerMode === "personal";
@@ -222,32 +222,7 @@ export function Workspace({
         ) : !ready ? (
           <LoadingState label={t("Загружаем кабинет…")} />
         ) : personal ? <ActionFeedback tone="info" description={personalPurchaseMessage} /> : !session?.organizationId ? (
-          <ErrorState presentation="inline"
-            title={
-              error
-                ? t("Не удалось проверить вход")
-                : t(role === "clinic" ? "Войдите в кабинет клиники" : "Войдите в кабинет поставщика")
-            }
-            description={
-              (error && locale === "ru" ? error : null) ?? t("Выберите организацию с доступом к этому кабинету.")
-            }
-            action={
-              <>
-                <DmButton
-                  as="a"
-                  href={withWorkspaceReturn(
-                    hrefFor("/login"),
-                    pathname + (query ? `?${query}` : ""),
-                  )}
-                >
-                  {t("Войти")}
-                </DmButton>
-                <DmButton onClick={() => void adapter.sessionStore.retry()}>
-                  {t("Повторить проверку")}
-                </DmButton>
-              </>
-            }
-          />
+          <SessionRequired error={error} termination={termination} locale={locale} loginUrl={hrefFor("/login")} retry={() => void adapter.sessionStore.retry()} />
         ) : (
           <>{logout.logoutError ? <ActionFeedback tone="error" description={logout.logoutError} /> : null}{pageContent}</>
         )}

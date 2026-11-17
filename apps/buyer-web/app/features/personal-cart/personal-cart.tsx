@@ -8,6 +8,7 @@ import { MarketplaceHeader } from "../marketplace-header/marketplace-header";
 import { buyerMode, setBuyerMode, useBuyerMode } from "../../buyer-context";
 import { personalApiFor, personalSessionStore, usePersonalSession } from "../../personal-session";
 import { loginUrl } from "../../public-links";
+import { SessionRequired } from "@marketplace/ui/session-required";
 import { PersonalCartItem } from "./cart-item";
 import { personalCartCopy, type PersonalCartCopy } from "./copy";
 import styles from "./personal-cart.module.css";
@@ -103,8 +104,6 @@ export default function PersonalCartPage() {
     {!personal.ready || mode !== "personal" ? <LoadingState label={t.loading} /> : personal.session ? <>
       <p className={styles.text}>{t.buyer}: {personal.session.user.displayName}</p>
       <CartContents key={personal.session.sessionId} session={personal.session} t={t} />
-    </> : personal.error ? <ErrorState presentation="inline" title={t.error} description={t.failed}
-      action={<DmButton onClick={() => void personalSessionStore.retry()}>{t.retry}</DmButton>} /> : <Section><EmptyState title={t.loginTitle} description={t.loginText}
-      action={<DmButton as="a" href={loginHref} appearance="primary">{t.login}</DmButton>} /></Section>}
+    </> : <SessionRequired error={personal.error} loginUrl={loginHref} locale={locale} personal retry={() => void personalSessionStore.retry()} />}
   </main></>;
 }

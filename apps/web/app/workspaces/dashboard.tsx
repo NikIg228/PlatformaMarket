@@ -16,7 +16,7 @@ export default function Dashboard() {
   return <div className={styles.stack}>
 
     <ResourceStatus resource={resource} />
-    {resource.error && !resource.data ? <ErrorState description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : resource.initialLoading ? <LoadingState label="Загружаем сводку" /> : null}
+    {resource.error && !resource.data ? <ErrorState presentation="page" description={resource.error} action={<DmButton onClick={() => void resource.refresh()}>Повторить</DmButton>} /> : resource.initialLoading ? <LoadingState label="Загружаем сводку" /> : null}
     <div className={styles.cards}>
       <section className={styles.panel}>
         <h2>Заказы</h2>

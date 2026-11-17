@@ -2,7 +2,7 @@ import { parseSessionHandoff, type SessionHandoffEnvelope } from "./session-hand
 import { revokeWorkspaceSession } from "./session-logout";
 
 type Capability = "BUYER" | "SUPPLIER";
-export type WorkspaceSessionSnapshot = { session: SessionHandoffEnvelope | null; ready: boolean; error: string | null };
+export type WorkspaceSessionSnapshot = { session: SessionHandoffEnvelope | null; ready: boolean; error: string | null; termination?: "expired" | "access-denied" | "identity-changed" };
 const initial: WorkspaceSessionSnapshot = { session: null, ready: false, error: null };
 const loginAgain = "Сессия истекла или доступ к организации изменился. Войдите заново.";
 
@@ -22,7 +22,12 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
     snapshot = { session, ready, error: null };
     for (const notify of listeners) notify();
   };
-  const invalidate = () => { generation += 1; window.sessionStorage.removeItem(key); publish(null, loginAgain); };
+  const invalidate = (termination: WorkspaceSessionSnapshot["termination"] = "expired") => {
+    generation += 1;
+    window.sessionStorage.removeItem(key);
+    snapshot = { session: null, ready: true, error: loginAgain, termination };
+    for (const notify of listeners) notify();
+  };
   async function call(path: string, init: RequestInit) {
     try {
       return await fetch(`${apiUrl.replace(/\/$/, "")}${path}`, { ...init, cache: "no-store", signal: AbortSignal.timeout(15_000) });
@@ -48,7 +53,7 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
     const result = workspaceRefreshResponseSchema.safeParse(await response.json());
     if (started !== generation || snapshot.session?.sessionId !== current.sessionId) throw new Error(loginAgain);
     if (!result.success || result.data.sessionId !== current.sessionId || result.data.activeOrganizationId !== current.organizationId) {
-      invalidate(); throw new Error(loginAgain);
+      invalidate("identity-changed"); throw new Error(loginAgain);
     }
     // Never replace a newer login when a delayed refresh completes.
     if (snapshot.session?.sessionId !== current.sessionId) throw new Error(loginAgain);
@@ -78,6 +83,8 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
       if (!session && !fromHash) {
         const response = await call(`/auth/current?workspace=${capability}`, { credentials: "include" });
         if (started !== generation) return;
+        if (response.status === 401) { invalidate(); return; }
+        if (response.status === 403) { invalidate("access-denied"); return; }
         if (!response.ok) throw new Error("Не удалось восстановить вход. Повторите проверку после восстановления сервера.");
         const raw: unknown = await response.json();
         if (started !== generation) return;
@@ -86,7 +93,8 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
         if (started !== generation) return;
         const result = currentSessionSchema.safeParse(raw);
         const workspace = result.success ? result.data.workspaces.find(value => value.organizationId === result.data.activeOrganizationId && value.capabilities.includes(capability)) : undefined;
-        if (!result.success || !workspace) { invalidate(); return; }
+        if (!result.success) { invalidate("identity-changed"); return; }
+        if (!workspace) { invalidate("access-denied"); return; }
         session = { ...result.data, ...workspace, capability, actorId: result.data.user.id, displayName: result.data.user.displayName,
           accessTokenExpiresAt: Date.now() + result.data.accessTokenExpiresIn * 1000 };
       }
@@ -97,10 +105,11 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
         const response = await call("/auth/handoff/exchange", { method: "POST", credentials: "include",
           headers: { "content-type": "application/json" }, body: JSON.stringify({ handoffCode: session.handoffCode }) });
         if (started !== generation) return;
-        if (!response.ok) throw new Error("Не удалось завершить переход в кабинет. Вернитесь на страницу входа и войдите заново.");
+        if (response.status === 401 || response.status === 403 || response.status === 400) { invalidate(); return; }
+        if (!response.ok) throw new Error("Не удалось завершить переход в кабинет. Повторите проверку после восстановления сервера.");
         const result = workspaceSessionSchema.safeParse(await response.json());
         if (started !== generation) return;
-        if (!result.success || result.data.capability !== capability || result.data.organizationId !== session.organizationId) throw new Error(loginAgain);
+        if (!result.success || result.data.capability !== capability || result.data.organizationId !== session.organizationId) { invalidate("identity-changed"); return; }
         session = { ...result.data, actorId: result.data.user.id, displayName: result.data.user.displayName,
           accessTokenExpiresAt: Date.now() + result.data.accessTokenExpiresIn * 1000 };
         window.sessionStorage.setItem(key, JSON.stringify(session));
@@ -117,11 +126,13 @@ export function createWorkspaceSession(apiUrl: string, capability: Capability) {
         response = await call("/auth/workspace-context", { headers: { authorization: `Bearer ${token}` } });
         if (started !== generation) return;
       }
-      if (response.status === 401 || response.status === 403) { invalidate(); return; }
+      if (response.status === 401) { invalidate(); return; }
+      if (response.status === 403) { invalidate("access-denied"); return; }
       if (!response.ok) throw new Error("Не удалось проверить доступ. Сервер временно недоступен — повторите попытку.");
       const context = workspaceContextSchema.safeParse(await response.json());
       if (started !== generation) return;
-      if (!context.success || context.data.organizationId !== session.organizationId || !context.data.capabilities.includes(capability)) { invalidate(); return; }
+      if (!context.success || context.data.organizationId !== session.organizationId) { invalidate("identity-changed"); return; }
+      if (!context.data.capabilities.includes(capability)) { invalidate("access-denied"); return; }
       save({ ...snapshot.session, ...context.data, capability, accessToken: token });
     } catch (error) { if (started === generation) publish(null, error instanceof Error ? error.message : "Не удалось проверить вход. Войдите заново."); }
   }

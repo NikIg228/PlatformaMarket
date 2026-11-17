@@ -101,12 +101,16 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
 .dm-feedback-copy strong { color: inherit; font-size: var(--dm-font-size-body); font-weight: var(--dm-font-weight-semibold); }
 .dm-feedback-copy > span { font-size: var(--dm-font-size-body); line-height: var(--dm-line-body); }
 .dm-feedback-copy small { font-size: var(--dm-font-size-caption); }
-.dm-feedback-action { align-self: center; }
+.dm-feedback-action { align-self: center; display: flex; flex-wrap: wrap; align-items: center; gap: var(--dm-space-2); min-width: 0; }
+.dm-feedback:not(.dm-feedback-note) { width: fit-content; max-width: min(100%, 48rem); box-sizing: border-box; justify-self: start; align-self: start; box-shadow: none; }
+.dm-feedback[data-presentation="page"] { width: 100%; max-width: 40rem; margin-inline: auto; grid-template-columns: 20px minmax(0, 1fr); background: var(--dm-surface); color: var(--dm-text-primary); border-color: var(--dm-border); }
+.dm-feedback[data-presentation="page"] .dm-feedback-icon { color: var(--dm-danger-text); }
+.dm-feedback[data-presentation="page"] .dm-feedback-action { grid-column: 2; }
 
 @media (max-width: 640px) {
   .dm-feedback { grid-template-columns: 20px minmax(0, 1fr); }
-  .dm-feedback .dm-feedback-action { grid-column: 1 / -1; width: 100%; }
-  .dm-feedback .dm-feedback-action > * { width: 100%; }
+  .dm-feedback .dm-feedback-action { grid-column: 1 / -1; max-width: 100%; }
+  .dm-feedback .dm-feedback-action > * { max-width: 100%; }
   .dm-table,
   .dm-table tbody { display: block; width: 100%; }
   .dm-table thead { display: none; }
@@ -119,8 +123,8 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
   .dm-table td[colspan]::before { content: none; }
 }
 
-/* Persistent notices share the same card; only placement/lifetime differ. */
-.dm-feedback.dm-feedback-note { width: 100%; }
+/* Explanatory notes stay with the content without a second coloured surface. */
+.dm-feedback.dm-feedback-note { width: fit-content; max-width: min(100%, 72ch); box-sizing: border-box; justify-self: start; align-self: start; background: transparent; color: var(--dm-text-secondary); box-shadow: none; padding: var(--dm-space-2) 0; border: 0; }
 .dm-feedback-note .dm-feedback-copy strong { color: inherit; }
 .dm-feedback-note .dm-feedback-copy { min-width: 0; max-width: 72ch; overflow-wrap: anywhere; }
 .dm-feedback-note .dm-feedback-action { grid-column: 3; width: auto; justify-self: end; }

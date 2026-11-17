@@ -20,7 +20,7 @@ import {
   type SessionHandoffEnvelope,
 } from "@marketplace/api-client";
 import {
-  AppShell, DmButton, ErrorState, LoadingState,
+  AppShell, LoadingState,
   DocumentArchiveUpload,
   DocumentArchiveWorkspace,
   documentOrderOptions,
@@ -32,7 +32,7 @@ import {
 } from "@marketplace/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
+import { SessionRequired } from "@marketplace/ui/session-required";
 import { loginUrl } from "../public-links";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4012/api";
@@ -51,7 +51,7 @@ const initialFilters: DocumentArchiveFilters = { q: "", category: "", status: ""
 
 export default function BuyerDocumentsPage() {
   const router = useRouter();
-  const { session: handoff, ready: sessionReady, error: sessionError } = useVerifiedSession();
+  const { session: handoff, ready: sessionReady, error: sessionError, termination } = useVerifiedSession();
   const [items, setItems] = useState<DocumentArchiveItem[]>([]);
   const [summary, setSummary] = useState<DocumentArchiveSummaryResponse | null>(null);
   const [filters, setFilters] = useState<DocumentArchiveFilters>(initialFilters);
@@ -135,7 +135,7 @@ export default function BuyerDocumentsPage() {
   };
 
   if (!sessionReady) return <LoadingState label="Загружаем кабинет…" />;
-  if (!handoff) return <ErrorState presentation="inline" title="Войдите в кабинет" description={sessionError ?? "Документы доступны после входа."} action={<><DmButton as="a" href={withWorkspaceReturn(loginUrl, workspacePath("BUYER", "/documents"))}>Войти</DmButton><DmButton onClick={() => void sessionStore.retry()}>Повторить проверку</DmButton></>} />;
+  if (!handoff) return <SessionRequired error={sessionError} termination={termination} loginUrl={loginUrl} returnTo={workspacePath("BUYER", "/documents")} retry={() => void sessionStore.retry()} />;
 
   return <AppShell productName="PlatformaMarket" productMark="PM" workspaceLabel="Кабинет клиники" userName={handoff?.displayName ?? "Участник организации"} userMeta={handoff?.organizationDisplayName ?? "Клиника"} navigation={navigation} activeNavigation="documents" contextLabel="Документолог" onNavigate={(id) => { if (id !== "documents") router.push(workspacePath("BUYER")); }} {...logout}>
     <DocumentArchiveWorkspace

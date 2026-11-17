@@ -27,7 +27,7 @@ export function OperatorDocumentException({ id }: { id: string }) {
   return <section className={styles.section} aria-label="Документальное расхождение" aria-busy={resource.loading || resource.busy}>
     <div className={styles.header}><h2 ref={heading} tabIndex={-1}>Документальное расхождение{data ? ` · ${data.order.number}` : ""}</h2><DmButton disabled={resource.busy || resource.loading} onClick={() => void resource.refresh()}>Обновить расхождение</DmButton></div>
     {resource.error ? <DmFeedback presentation="inline" tone="danger" title="Не удалось завершить действие" description={resource.error} /> : null}
-    {resource.notice ? <DmFeedback presentation="inline" tone="success" title="Рекомендация опубликована" description={resource.notice} /> : null}
+    {resource.notice ? <DmFeedback presentation="toast" tone="success" title="Рекомендация опубликована" description={resource.notice} /> : null}
     {resource.loading && !data ? <LoadingState label="Открываем документальное расхождение" /> : null}
     {!data && !resource.loading ? <DmButton onClick={() => void resource.refresh()}>Повторить загрузку расхождения</DmButton> : null}
     {resource.uncertain ? <DmSurface variant="section" className={styles.section}><p>Результат запроса неизвестен. Введённая рекомендация сохранена; повтор отправит ту же команду.</p><p>{reason}</p><p>Следующий шаг: {nextStep}</p><DmButton disabled={resource.busy || resource.loading} onClick={() => void publish(true)}>Повторить публикацию</DmButton></DmSurface> : null}

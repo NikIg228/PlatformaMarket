@@ -26,6 +26,7 @@
     "./heading": "./src/heading.tsx",
     "./permissions": "./src/permissions.tsx",
     "./use-session-logout": "./src/use-session-logout.tsx",
+    "./session-required": "./src/session-required.tsx",
     "./conversation-counter": "./src/conversation-counter.tsx",
     "./product-workflow": "./src/product-workflow.tsx"
   },
