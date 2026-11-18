@@ -799,12 +799,9 @@ test("guest cannot load organization data", async ({ page }) => {
     return route.fulfill({ json: null });
   });
   await page.goto("/supplier/products");
-  await expect(
-    page.getByText("Войдите в кабинет поставщика", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "Войти", exact: true }),
-  ).toHaveAttribute("href", "/login?returnTo=%2Fsupplier%2Fproducts");
+  await expect(page).toHaveURL(url => url.pathname === "/login"
+    && url.searchParams.get("signedOut") === "1" && url.searchParams.get("returnTo") === "/supplier/products");
+  await expect(page.getByRole("heading", { name: "Войдите в аккаунт", exact: true })).toBeVisible();
   expect(calls.every((path) => path === "/api/auth/current")).toBe(true);
 });
 

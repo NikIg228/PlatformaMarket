@@ -30,6 +30,7 @@ import { verifyConversations } from "./lib/verify-conversations.mjs";
 import { verifyOrganizationRequisites } from "./lib/verify-organization-requisites.mjs";
 import { verifyOrganizationRequisitesUpgrade } from "./lib/verify-organization-requisites-upgrade.mjs";
 import { verifySupplierVat } from "./lib/verify-supplier-vat.mjs";
+import { postgresVerifyPort } from "./lib/postgres-verify-port.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const apiDirectory = path.join(root, "apps", "api");
@@ -43,9 +44,7 @@ const databaseSchema = parsedDatabaseUrl.searchParams.get("schema") ?? "public";
 const runId = `b04_${Date.now()}_${process.pid}`;
 const triggerFunction = `b04_reject_${process.pid}`;
 const storageRoot = path.join(root, ".tmp", "postgres-integration", runId);
-const port = Number(
-  process.env.POSTGRES_VERIFY_API_PORT ?? 4400 + (process.pid % 1000),
-);
+const port = postgresVerifyPort(process.env.POSTGRES_VERIFY_API_PORT);
 const apiBase = `http://127.0.0.1:${port}/api`;
 const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
 const fixture = {
@@ -128,6 +127,7 @@ async function expectStatus(route, options, expectedStatus) {
 
 async function waitUntilReady(timeoutMs = 60_000) {
   const startedAt = Date.now();
+  let lastFailure = "No readiness response";
   while (Date.now() - startedAt < timeoutMs) {
     if (api.exitCode !== null)
       throw new Error(
@@ -136,11 +136,14 @@ async function waitUntilReady(timeoutMs = 60_000) {
     try {
       const response = await request("/health/ready");
       if (response.status === 200 && response.body?.status === "ready") return;
-    } catch {}
+      lastFailure = `HTTP ${response.status}, status=${response.body?.status ?? "unknown"}, code=${response.body?.code ?? "none"}`;
+    } catch (error) {
+      lastFailure = `${error?.name ?? "Error"}: ${error?.cause?.code ?? error?.cause?.message ?? "readiness request failed"}`;
+    }
     await new Promise((resolve) => setTimeout(resolve, 400));
   }
   throw new Error(
-    `API did not become ready within ${timeoutMs} ms:\n${logLines.join("\n")}`,
+    `API did not become ready within ${timeoutMs} ms at ${apiBase}/health/ready: ${lastFailure}\n${logLines.join("\n")}`,
   );
 }
 

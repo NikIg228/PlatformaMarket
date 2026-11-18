@@ -19,7 +19,8 @@ for (const capability of ["BUYER", "SUPPLIER"] as const) {
       const exchange = other.waitForResponse(r => r.url().endsWith("/api/auth/handoff/exchange"));
       await other.goto(`${baseURL}${target}#session=${encodeURIComponent(JSON.stringify(envelope))}`);
       expect((await exchange).status()).toBe(401);
-      await expect(other.getByText("Не удалось завершить переход в кабинет.", { exact: false })).toBeVisible();
+      await expect(other.getByRole("heading", { name: "Не удалось проверить вход", exact: true })).toBeVisible();
+      await expect(other.getByRole("button", { name: "Повторить проверку", exact: true })).toBeVisible();
       expect(await other.evaluate(k => sessionStorage.getItem(k), key)).toBeNull();
       expect((await victim.cookies()).some(c => c.name.startsWith("mp_refresh"))).toBe(false);
 
@@ -34,7 +35,7 @@ for (const capability of ["BUYER", "SUPPLIER"] as const) {
 
       await other.goto("about:blank");
       await other.goto(`${baseURL}${target}#session=${encodeURIComponent(JSON.stringify({ capability, organizationId: fixture.organizationId, accessToken: token, accessTokenExpiresAt: Date.now() + 900000 }))}`);
-      await expect(other.getByText("Переход в кабинет не подтверждён.", { exact: false })).toBeVisible();
+      await expect(other.getByRole("heading", { name: "Не удалось проверить вход", exact: true })).toBeVisible();
       expect(await other.evaluate(k => sessionStorage.getItem(k), key)).toBeNull();
     } finally { await victim.close(); await fixture.dispose(); }
   });

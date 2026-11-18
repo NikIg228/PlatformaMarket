@@ -104,8 +104,11 @@ for (const capability of ["BUYER", "SUPPLIER", "MARKETPLACE_OPERATOR"] as const)
     expect(await db.authSession.count({ where: { userId: added.id, status: "ACTIVE" } })).toBe(0);
     expect((await request.get("/api/auth/sessions", { headers: { authorization: `Bearer ${memberSession.accessToken}` } })).status()).toBe(401);
     if (!operator) {
+      const returnTo = new URL(invitePage.url()).pathname;
       await invitePage.reload();
-      await expect(invitePage.getByRole("link", { name: "Войти", exact: true })).toBeVisible();
+      await expect(invitePage).toHaveURL(url => url.pathname === "/login"
+        && url.searchParams.get("signedOut") === "1" && url.searchParams.get("returnTo") === returnTo);
+      await expect(invitePage.getByRole("heading", { name: "Войдите в аккаунт", exact: true })).toBeVisible();
     }
     if (operator) {
       await member.getByRole("button", { name: "Восстановить доступ" }).click();
