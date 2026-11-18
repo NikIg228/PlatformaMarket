@@ -19,8 +19,9 @@ for (const capability of ["BUYER", "SUPPLIER"] as const) {
       const exchange = other.waitForResponse(r => r.url().endsWith("/api/auth/handoff/exchange"));
       await other.goto(`${baseURL}${target}#session=${encodeURIComponent(JSON.stringify(envelope))}`);
       expect((await exchange).status()).toBe(401);
-      await expect(other.getByRole("heading", { name: "Не удалось проверить вход", exact: true })).toBeVisible();
-      await expect(other.getByRole("button", { name: "Повторить проверку", exact: true })).toBeVisible();
+      await expect(other).toHaveURL(url => url.pathname === "/login"
+        && url.searchParams.get("signedOut") === "1" && url.searchParams.get("returnTo") === target);
+      await expect(other.getByRole("heading", { name: "Войдите в аккаунт", exact: true })).toBeVisible();
       expect(await other.evaluate(k => sessionStorage.getItem(k), key)).toBeNull();
       expect((await victim.cookies()).some(c => c.name.startsWith("mp_refresh"))).toBe(false);
 

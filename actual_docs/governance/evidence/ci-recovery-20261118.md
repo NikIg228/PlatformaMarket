@@ -46,3 +46,17 @@ Logs: ignored `.tmp/order-cycle-20261118/ci-fix-audit*.json/log`,
 `ci-fix-postgres.log`, `ci-auth-contract.log`, `ci-focused-types.log`.
 Final remote checks remain pending until the new candidate finishes. Mobile
 scenarios remain NOT_RUN in this phase; preparation is not mobile acceptance.
+
+## Candidate dcb7bac5 remote result and follow-up
+
+CI44359247467: PostgreSQL/authority/backup-restore and both container builds PASS;
+main types/lint/unit/build/contracts/extended API PASS; canonical browser121PASS,
+2FAIL in security-handoff. Security44359247479 dependencies and CodeQL PASS.
+The remaining failure is an incorrect expectation introduced in the first repair:
+HTTP401 from a foreign browser invalidates the session and redirects to login;
+it does not render the retryable error screen. CI logs show the exact signedOut
+and returnTo URL. The token-bearing URL rejection is a separate parse error and
+still expects the shared error screen. Minimal follow-up changes only the first
+assertion to verify the login destination and heading. All401, no-session/cookie,
+legitimate exchange and replay rejection checks remain. Mobile remains NOT_RUN
+until the follow-up candidate passes the whole required workflow.
