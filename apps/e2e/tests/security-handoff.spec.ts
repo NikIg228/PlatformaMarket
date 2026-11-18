@@ -36,7 +36,9 @@ for (const capability of ["BUYER", "SUPPLIER"] as const) {
 
       await other.goto("about:blank");
       await other.goto(`${baseURL}${target}#session=${encodeURIComponent(JSON.stringify({ capability, organizationId: fixture.organizationId, accessToken: token, accessTokenExpiresAt: Date.now() + 900000 }))}`);
-      await expect(other.getByRole("heading", { name: "Не удалось проверить вход", exact: true })).toBeVisible();
+      const rejectedLink = other.getByRole("alert");
+      await expect(rejectedLink.getByText("Не удалось проверить вход", { exact: true })).toBeVisible();
+      await expect(rejectedLink.getByRole("button", { name: "Повторить проверку", exact: true })).toBeVisible();
       expect(await other.evaluate(k => sessionStorage.getItem(k), key)).toBeNull();
     } finally { await victim.close(); await fixture.dispose(); }
   });

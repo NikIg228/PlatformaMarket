@@ -60,3 +60,13 @@ still expects the shared error screen. Minimal follow-up changes only the first
 assertion to verify the login destination and heading. All401, no-session/cookie,
 legitimate exchange and replay rejection checks remain. Mobile remains NOT_RUN
 until the follow-up candidate passes the whole required workflow.
+
+Candidate83cb26b9 / CI44363265743: the foreign-browser401 redirect, legitimate
+exchange and one-use replay checks now PASS for both roles. Browser121PASS/2FAIL
+now occurs later, at malformed token-bearing URL error rendering (line39).
+Different demonstrated cause: FeedbackSurface renders its title as strong text
+inside role=alert, not role=heading. Follow-up scopes the exact title and retry
+button to the actual alert; no product rendering/authentication changes. Security,
+PostgreSQL/backup and containers PASS again. Local session/handoff17PASS.
+Chrome connection disappeared during local visual repro (no available extension
+in inventory after timeout); user reconnect requested, no browser-channel bypass.
