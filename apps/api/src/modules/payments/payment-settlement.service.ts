@@ -214,11 +214,16 @@ export class PaymentSettlementService {
     if (allocation.merchantAccount && Number(allocation.netAmountMinor) > 0) await tx.payout.upsert({ where: { idempotencyKey: `payout:${allocation.id}:capture` }, update: {}, create: { paymentAllocationId: allocation.id, merchantAccountId: allocation.merchantAccount.id, amountMinor: allocation.netAmountMinor, currency, status: allocation.merchantAccount.payoutStatus === "READY" ? "READY" : "ON_HOLD", idempotencyKey: `payout:${allocation.id}:capture` } });
   }
 
-  async applyProviderWebhook(transactionId: string, status: "PENDING" | "PROCESSING" | "SUCCEEDED" | "FAILED" | "CANCELLED", payload: Record<string, unknown>) {
+  async applyProviderWebhook(transactionId: string, status: "PENDING" | "PROCESSING" | "SUCCEEDED" | "FAILED" | "CANCELLED", payload: Record<string, unknown>, inboxTx?: Prisma.TransactionClient) {
     requireExternalIntegrations();
-    return this.prisma.$transaction(async (tx) => {
+    const settle = async (tx: Prisma.TransactionClient) => {
+      const target = await tx.paymentTransaction.findUnique({ where: { id: transactionId }, select: { paymentIntentId: true } });
+      if (!target) return null;
+      // Different provider events for the same payment must observe committed predecessors.
+      await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "PaymentIntent" WHERE "id" = ${target.paymentIntentId}::uuid FOR UPDATE`);
       const transaction = await tx.paymentTransaction.findUnique({ where: { id: transactionId } });
       if (!transaction || transaction.status === "SUCCEEDED") return transaction;
+      if (["FAILED", "CANCELLED"].includes(transaction.status) && status !== "SUCCEEDED") return transaction;
       const nextStatus = status === "SUCCEEDED" ? "SUCCEEDED" : status === "FAILED" ? "FAILED" : status === "CANCELLED" ? "CANCELLED" : "PROCESSING";
       await tx.paymentTransaction.update({ where: { id: transaction.id }, data: { status: nextStatus, responsePayload: payload as Prisma.InputJsonValue, processedAt: nextStatus === "SUCCEEDED" ? new Date() : transaction.processedAt, failureReason: nextStatus === "FAILED" && typeof payload.error === "string" ? payload.error.slice(0, 500) : null } });
       const operationKey = this.record(transaction.requestPayload).operationKey;
@@ -228,6 +233,7 @@ export class PaymentSettlementService {
       if (!intent) return transaction;
       const context = { actorId: null, organizationId: intent.buyerOrganizationId };
       if (transaction.type === "AUTHORIZATION") {
+        if (["CAPTURED", "PARTIALLY_CAPTURED", "REFUNDED", "PARTIALLY_REFUNDED", "CANCELLED"].includes(intent.status)) return transaction;
         const authorization = await tx.paymentAuthorization.findUnique({ where: { paymentIntentId: intent.id } });
         if (!authorization) await tx.paymentAuthorization.create({ data: { paymentIntentId: intent.id, paymentTransactionId: transaction.id, authorizedAmountMinor: transaction.amountMinor, status: "AUTHORIZED", expiresAt: intent.expiresAt } });
         else await tx.paymentAuthorization.update({ where: { id: authorization.id }, data: { paymentTransactionId: transaction.id, status: "AUTHORIZED" } });
@@ -235,6 +241,7 @@ export class PaymentSettlementService {
         await tx.paymentIntent.update({ where: { id: intent.id }, data: { status: "AUTHORIZED" } });
         await tx.auditLog.create({ data: { ...context, action: "payment.authorized.webhook", entityType: "PaymentIntent", entityId: intent.id, after: { transactionId: transaction.id } } });
       } else if (transaction.type === "CAPTURE") {
+        if (intent.status === "CANCELLED") throw new ConflictException("Capture conflicts with a cancelled payment; reconcile provider state");
         const existingCapture = await tx.paymentCapture.findUnique({ where: { paymentTransactionId: transaction.id } });
         if (!existingCapture) {
           const request = this.record(transaction.requestPayload);
@@ -252,6 +259,7 @@ export class PaymentSettlementService {
           await tx.outboxEvent.create({ data: { aggregateType: "PaymentIntent", aggregateId: intent.id, eventType: fullCapture ? "PaymentCaptured" : "PaymentPartiallyCaptured", payload: { paymentIntentId: intent.id, amountMinor: transaction.amountMinor.toString(), capturedAmountMinor: capturedAmount.toString(), currency: intent.currency } } });
         }
       } else if (transaction.type === "VOID") {
+        if (["CAPTURED", "PARTIALLY_CAPTURED", "REFUNDED", "PARTIALLY_REFUNDED"].includes(intent.status)) throw new ConflictException("Void conflicts with captured funds; reconcile provider state");
         await tx.paymentIntent.update({ where: { id: intent.id }, data: { status: "CANCELLED" } });
         await tx.paymentAllocation.updateMany({ where: { paymentIntentId: intent.id, status: { in: ["PENDING", "AUTHORIZED"] } }, data: { status: "CANCELLED" } });
         await tx.paymentAuthorization.updateMany({ where: { paymentIntentId: intent.id }, data: { status: "VOIDED", voidedAmountMinor: intent.totalAmountMinor } });
@@ -261,6 +269,7 @@ export class PaymentSettlementService {
       } else if (transaction.type === "REFUND") {
         const refund = await tx.refund.findUnique({ where: { paymentTransactionId: transaction.id } });
         const allocation = refund ? intent.allocations.find(({ id }) => id === refund.paymentAllocationId) : undefined;
+        if (!refund || !allocation || !["CAPTURED", "PARTIALLY_REFUNDED", "REFUNDED"].includes(allocation.status)) throw new ConflictException("Refund prerequisites are not available yet; retry the webhook");
         if (refund && allocation && refund.status !== "COMPLETED") {
           const nextRefunded = new Prisma.Decimal((BigInt(allocation.refundedAmountMinor.toString()) + BigInt(refund.amountMinor.toString())).toString());
           const fullAllocationRefund = nextRefunded.gte(allocation.grossAmountMinor);
@@ -288,7 +297,8 @@ export class PaymentSettlementService {
         }
       }
       return transaction;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    };
+    return inboxTx ? settle(inboxTx) : this.prisma.$transaction(settle, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 
   async cancel(paymentIntentId: string, input: CancelPaymentIntentInput, context: SupplierActorContext) {

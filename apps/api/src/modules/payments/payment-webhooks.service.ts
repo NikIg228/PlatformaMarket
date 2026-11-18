@@ -14,6 +14,7 @@ export function paymentWebhookSecret(providerCode: string) {
 @Injectable()
 export class PaymentWebhooksService {
   private running = false;
+  private readonly claimTimeoutMs = 5 * 60_000;
   constructor(private readonly prisma: PrismaService, private readonly settlement: PaymentSettlementService) {}
 
   async receive(providerCode: string, rawBody: Buffer, headers: Record<string, string | string[] | undefined>) {
@@ -33,15 +34,15 @@ export class PaymentWebhooksService {
     if (existing) {
       if (existing.signatureStatus !== "VERIFIED") {
         const repaired = await this.prisma.paymentWebhookEvent.update({ where: { id: existing.id }, data: { eventType, signatureStatus: "VERIFIED", status: "RECEIVED", payload: payload as Prisma.InputJsonValue, headers: this.safeHeaders(headers) as Prisma.InputJsonValue, attempt: 0, processedAt: null, lastError: null } });
-        await this.process(repaired.id);
-        return { duplicate: false, eventId: repaired.id, status: "PROCESSED" };
+        const processed = await this.process(repaired.id);
+        return { duplicate: false, eventId: repaired.id, status: processed?.status ?? repaired.status };
       }
       if (JSON.stringify(existing.payload) !== JSON.stringify(payload)) throw new ConflictException("Payment event ID was already used with a different payload");
       return { duplicate: true, eventId: existing.id, status: existing.status };
     }
     const event = await this.prisma.paymentWebhookEvent.create({ data: { providerId: provider.id, externalEventId, eventType, signatureStatus: "VERIFIED", status: "RECEIVED", payload: payload as Prisma.InputJsonValue, headers: this.safeHeaders(headers) as Prisma.InputJsonValue } });
-    await this.process(event.id);
-    return { duplicate: false, eventId: event.id, status: "PROCESSED" };
+    const processed = await this.process(event.id);
+    return { duplicate: false, eventId: event.id, status: processed?.status ?? event.status };
   }
 
   @Cron("*/10 * * * * *")
@@ -50,34 +51,55 @@ export class PaymentWebhooksService {
     if (this.running) return;
     this.running = true;
     try {
-      const events = await this.prisma.paymentWebhookEvent.findMany({ where: { signatureStatus: "VERIFIED", status: { in: ["RECEIVED", "FAILED"] }, attempt: { lt: 10 } }, orderBy: { createdAt: "asc" }, take: 20 });
+      const events = await this.prisma.paymentWebhookEvent.findMany({ where: this.retryable(), orderBy: { createdAt: "asc" }, take: 20 });
       for (const event of events) await this.process(event.id).catch(() => undefined);
     } finally { this.running = false; }
+  }
+
+  private retryable(): Prisma.PaymentWebhookEventWhereInput {
+    return { signatureStatus: "VERIFIED", OR: [
+      { status: { in: ["RECEIVED", "FAILED"] }, attempt: { lt: 10 } },
+      { status: "PROCESSING", updatedAt: { lte: new Date(Date.now() - this.claimTimeoutMs) } },
+    ] };
   }
 
   async process(eventId: string) {
     requireExternalIntegrations();
     const event = await this.prisma.paymentWebhookEvent.findUnique({ where: { id: eventId }, include: { provider: true } });
     if (!event || event.status === "PROCESSED" || event.signatureStatus !== "VERIFIED") return event;
-    const claimed = await this.prisma.paymentWebhookEvent.updateMany({ where: { id: event.id, status: { in: ["RECEIVED", "FAILED"] } }, data: { status: "PROCESSING", attempt: { increment: 1 }, lastError: null } });
+    if (event.attempt >= 10) {
+      await this.prisma.paymentWebhookEvent.updateMany({ where: { ...this.retryable(), id: event.id, attempt: event.attempt }, data: { status: "DEAD_LETTER", lastError: "Payment webhook retry limit reached" } });
+      return this.prisma.paymentWebhookEvent.findUnique({ where: { id: event.id } });
+    }
+    const claimed = await this.prisma.paymentWebhookEvent.updateMany({ where: { ...this.retryable(), id: event.id, attempt: event.attempt }, data: { status: "PROCESSING", attempt: { increment: 1 }, lastError: null } });
     if (claimed.count !== 1) return event;
+    const ownership = { id: event.id, status: "PROCESSING" as const, attempt: event.attempt + 1 };
     try {
-      const payload = event.payload && typeof event.payload === "object" && !Array.isArray(event.payload) ? event.payload as Record<string, unknown> : {};
-      const externalTransactionId = typeof payload.externalTransactionId === "string" ? payload.externalTransactionId : typeof payload.transactionId === "string" ? payload.transactionId : undefined;
-      if (externalTransactionId) {
-        const transaction = await this.prisma.paymentTransaction.findFirst({ where: { providerId: event.providerId, externalTransactionId } });
-        if (transaction) {
-          const status = payload.status === "SUCCEEDED" ? "SUCCEEDED" : payload.status === "FAILED" ? "FAILED" : payload.status === "CANCELLED" ? "CANCELLED" : "PROCESSING";
-          await this.settlement.applyProviderWebhook(transaction.id, status, payload);
-        } else {
-          await this.prisma.paymentReconciliationEntry.create({ data: { providerId: event.providerId, externalRef: externalTransactionId, status: "MISSING_INTERNAL", expected: payload as Prisma.InputJsonValue, actual: { webhookEventId: event.id } } });
+      return await this.prisma.$transaction(async (tx) => {
+        // Hold the inbox row through settlement and acknowledgement. A replaced claim
+        // cannot apply effects, and a crash rolls back effects with the acknowledgement.
+        const locked = await tx.paymentWebhookEvent.updateMany({ where: ownership, data: { status: "PROCESSING" } });
+        if (locked.count !== 1) return tx.paymentWebhookEvent.findUnique({ where: { id: event.id } });
+        const payload = event.payload && typeof event.payload === "object" && !Array.isArray(event.payload) ? event.payload as Record<string, unknown> : {};
+        const externalTransactionId = typeof payload.externalTransactionId === "string" ? payload.externalTransactionId : typeof payload.transactionId === "string" ? payload.transactionId : undefined;
+        if (externalTransactionId) {
+          const transaction = await tx.paymentTransaction.findFirst({ where: { providerId: event.providerId, externalTransactionId } });
+          if (transaction) {
+            const status = payload.status === "SUCCEEDED" ? "SUCCEEDED" : payload.status === "FAILED" ? "FAILED" : payload.status === "CANCELLED" ? "CANCELLED" : "PROCESSING";
+            await this.settlement.applyProviderWebhook(transaction.id, status, payload, tx);
+            await tx.paymentReconciliationEntry.updateMany({ where: { providerId: event.providerId, externalRef: externalTransactionId, status: "MISSING_INTERNAL", actual: { path: ["webhookEventId"], equals: event.id } }, data: { status: "RESOLVED", resolvedAt: new Date(), resolution: "Webhook applied after internal transaction became available" } });
+          } else {
+            const missing = await tx.paymentReconciliationEntry.findFirst({ where: { providerId: event.providerId, externalRef: externalTransactionId, actual: { path: ["webhookEventId"], equals: event.id } } });
+            if (!missing) await tx.paymentReconciliationEntry.create({ data: { providerId: event.providerId, externalRef: externalTransactionId, status: "MISSING_INTERNAL", expected: payload as Prisma.InputJsonValue, actual: { webhookEventId: event.id } } });
+            return tx.paymentWebhookEvent.update({ where: { id: event.id }, data: { status: ownership.attempt >= 10 ? "DEAD_LETTER" : "FAILED", lastError: "Payment transaction is not available yet; retry the webhook" } });
+          }
         }
-      }
-      return await this.prisma.paymentWebhookEvent.update({ where: { id: event.id }, data: { status: "PROCESSED", processedAt: new Date(), lastError: null } });
+        return tx.paymentWebhookEvent.update({ where: { id: event.id }, data: { status: "PROCESSED", processedAt: new Date(), lastError: null } });
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Payment webhook processing failed";
       const nextStatus = event.attempt + 1 >= 10 ? "DEAD_LETTER" : "FAILED";
-      await this.prisma.paymentWebhookEvent.update({ where: { id: event.id }, data: { status: nextStatus, lastError: message.slice(0, 4_000) } });
+      await this.prisma.paymentWebhookEvent.updateMany({ where: ownership, data: { status: nextStatus, lastError: message.slice(0, 4_000) } });
       throw error;
     }
   }
