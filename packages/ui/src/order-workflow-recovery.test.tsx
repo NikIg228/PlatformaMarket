@@ -21,7 +21,7 @@ vi.mock("react", async original => ({
 }));
 vi.mock("./permissions", () => ({ usePermissions: () => () => harness.allowed }));
 vi.mock("@fluentui/react-components", () => ({ Tab: "tab" }));
-vi.mock("./actions", () => ({ DmButton: "button" }));
+vi.mock("./actions", () => ({ DmButton: "button", DmDisclosureSummary: "summary" }));
 vi.mock("./primitives", () => ({ DmFeedback: "feedback", LoadingState: "loading", Section: "section" }));
 vi.mock("./controls", () => ({ DmTabList: "tabs" }));
 vi.mock("./OrderWorkflowHistory", () => ({ OrderWorkflowHistory: "history" }));
@@ -70,6 +70,16 @@ beforeEach(async () => {
   render(); cleanup = harness.effects[0](); await flush();
 });
 afterEach(() => { cleanup?.(); vi.useRealTimers(); vi.unstubAllGlobals(); });
+
+it("opens an unfinished return without overriding the user's subsequent tab choice", async () => {
+  snapshot = { ...snapshot, status: "DELIVERED", returns: [{ status: "REQUESTED" }] } as OrderWorkflowResponse;
+  await vi.advanceTimersByTimeAsync(5000);
+  expect(find(render(), "tabs")!.props.selectedValue).toBe("returns");
+  (find(render(), "tabs")!.props.onTabSelect as (event: unknown, data: { value: string }) => void)(null, { value: "payment" });
+  await vi.advanceTimersByTimeAsync(5000);
+  expect(find(render(), "tabs")!.props.selectedValue).toBe("payment");
+  expect(find(render(), TransferReviewPanel)).toBeDefined();
+});
 
 it("recovers through the visible control after polling removes the committed action, then permits the next command", async () => {
   api.executeOrderWorkflow.mockImplementationOnce(async () => {

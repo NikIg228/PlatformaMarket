@@ -27,7 +27,7 @@ export function OrderReturnPanel(props: Props) {
   const items = data.order.items.filter(item => quantities[item.id]?.trim() && quantities[item.id].trim() !== "0").map(item => ({ orderItemId: item.id, quantity: quantities[item.id].replace(",", "."), condition: conditions[item.id] ?? "" }));
   const invalidLines = kind === "GOODS" && (!items.length || items.some(item => !/^(?:[1-9]\d{0,11}(?:\.\d{1,6})?|0\.\d{1,6})$/.test(item.quantity) || !/[1-9]/.test(item.quantity) || item.condition.trim().length < 3));
   return <Section title="Отмена и возвраты">
-    <p>Согласование, отправка и получение денег фиксируются отдельно. Перевод выполняется поставщиком в банке; площадка не отправляет деньги.</p>
+    <p>Деньги возвращает поставщик. Получение подтверждает клиника.</p>
     {data.returns?.length ? data.returns.map(value => <ReturnCard key={value.id} {...props} value={value} />) : <p>Обращений по возврату пока нет.</p>}
     {buyer && !open && data.paymentSummary && data.paymentSummary.confirmedAmountMinor !== "0" && data.paymentStatus !== "REFUNDED" ? <div style={{ display: "grid", gap: "var(--dm-space-3)" }}>
       <DmField label={{ htmlFor: kindId, children: "Причина обращения" }}><DmSelect id={kindId} disabled={busy} value={kind} onChange={event => setKind(event.target.value as OrderReturn["kind"])}>{Object.entries(kindLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</DmSelect></DmField>
@@ -38,7 +38,7 @@ export function OrderReturnPanel(props: Props) {
       </div>) : null}
       <DmField label="Причина и комментарий к возврату"><DmInput disabled={busy} value={reason} onChange={(_, value) => setReason(value.value)} /></DmField>
       {invalidLines ? <p>Для каждой выбранной позиции укажите положительное количество и состояние товара (не менее 3 символов).</p> : null}
-      <DmButton disabled={busy || !canAct("REQUEST_RETURN") || reason.trim().length < 3 || invalidLines} onClick={() => void perform({ action: "REQUEST_RETURN", kind, reason, items: kind === "GOODS" ? items : [] })}>Отправить заявку на возврат</DmButton>
+      <DmButton appearance="primary" disabled={busy || !canAct("REQUEST_RETURN") || reason.trim().length < 3 || invalidLines} onClick={() => void perform({ action: "REQUEST_RETURN", kind, reason, items: kind === "GOODS" ? items : [] })}>Отправить заявку на возврат</DmButton>
     </div> : null}
   </Section>;
 }
@@ -78,7 +78,7 @@ function ReturnCard(props: Props & { value: OrderReturn }) {
     {value.refundDocumentId ? <DmButton appearance="subtle" onClick={() => void props.download(value.refundDocumentId!)}>Скачать квитанцию возврата</DmButton> : null}
     {error ? <DmFeedback tone="danger" title="Квитанция не отправлена" description={error} /> : null}
     {supplier && value.status === "REQUESTED" ? <><DmField label="Комментарий к решению о возврате"><DmInput value={reason} disabled={busy} onChange={(_, field) => setReason(field.value)} /></DmField>
-      <DmButton disabled={busy || !canAct("DECIDE_RETURN") || reason.trim().length < 3} onClick={() => void perform({ action: "DECIDE_RETURN", returnId: value.id, accepted: true, reason })}>{value.kind === "CANCELLATION" ? "Подтвердить остановку заказа и возврат" : "Согласовать указанные условия и сумму"}</DmButton>
+      <DmButton appearance="primary" disabled={busy || !canAct("DECIDE_RETURN") || reason.trim().length < 3} onClick={() => void perform({ action: "DECIDE_RETURN", returnId: value.id, accepted: true, reason })}>{value.kind === "CANCELLATION" ? "Подтвердить остановку заказа и возврат" : "Согласовать условия и сумму"}</DmButton>
       <DmButton disabled={busy || !canAct("DECIDE_RETURN") || reason.trim().length < 3} onClick={() => void perform({ action: "DECIDE_RETURN", returnId: value.id, accepted: false, reason })}>Отклонить заявку</DmButton></> : null}
     {buyer && value.kind === "GOODS" && value.status === "AGREED" ? <DmButton disabled={busy || !canAct("SEND_RETURN_GOODS")} onClick={() => void perform({ action: "SEND_RETURN_GOODS", returnId: value.id })}>Подтвердить отправку товара обратно</DmButton> : null}
     {supplier && value.status === "GOODS_SENT" ? <><p>Подтверждайте получение только при совпадении количества и состояния с согласованным. При расхождении обратитесь в поддержку. Товар не возвращается в продажу автоматически.</p><DmButton disabled={busy || !canAct("RECEIVE_RETURN_GOODS")} onClick={() => void perform({ action: "RECEIVE_RETURN_GOODS", returnId: value.id })}>Подтвердить получение согласованного товара</DmButton></> : null}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@fluentui/react-components";
+import { LoadingState } from "@marketplace/ui/loading-state";
 import type { MarketplaceApiClient, OrderDocumentResponse } from "@marketplace/api-client";
 import {
   DmButton as Button,
@@ -156,7 +156,7 @@ export function ShipmentPanel({
   return (
     <section className={styles.panel} aria-label={`Отгрузки заказа ${order.orderNumber}`}>
       <header className={styles.header}>
-        <div><strong>Отгрузки</strong><p>Статусы синхронизируются с заказом и уведомляют клинику.</p></div>
+        <div><strong>Отгрузки</strong></div>
         <span>{shipments.length}</span>
       </header>
       {error ? <DmFeedback tone="danger" title="Отгрузка не обновлена" description={error} alert /> : null}
@@ -182,7 +182,7 @@ export function ShipmentPanel({
                   </Field>
                 ) : null}
                 {action ? (
-                  <Button appearance="secondary" disabled={busy !== null} onClick={() => void transition(shipment)}>
+                  <Button appearance="primary" disabled={busy !== null} onClick={() => void transition(shipment)}>
                     {busy === `transition:${shipment.id}` ? "Сохраняем…" : action.label}
                   </Button>
                 ) : null}
@@ -200,7 +200,7 @@ export function ShipmentPanel({
           <Field label="Получатель"><Input value={recipientName} onChange={(_, data) => setRecipientName(data.value)} /></Field>
           <Field label="Адрес доставки"><Input value={recipientAddress} onChange={(_, data) => setRecipientAddress(data.value)} /></Field>
           <Field label="Перевозчик (необязательно)"><Input value={carrierName} onChange={(_, data) => setCarrierName(data.value)} /></Field>
-          <Button appearance="primary" disabled={busy !== null || !recipientName.trim()} onClick={() => void createShipment()}>{busy === "create" ? <Spinner size="tiny" label="Создаём" /> : "Создать отгрузку"}</Button>
+          <Button appearance="primary" disabled={busy !== null || !recipientName.trim()} onClick={() => void createShipment()}>{busy === "create" ? <LoadingState presentation="inline" label="Создаём отгрузку…" /> : "Создать отгрузку"}</Button>
         </div>
       ) : <p className={styles.notice}>Все подтверждённые позиции распределены по отгрузкам.</p>}
     </section>

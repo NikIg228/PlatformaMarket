@@ -8,21 +8,29 @@ import { formatDate } from "./format";
 import { formatMoney } from "./money";
 import { orderItemCount, orderOverview, type OrderDetailTab } from "./order-presentation";
 
-export function OrderDetailOverview({ data, supplier, onTab, confirmation, conversation }: {
-  data: OrderWorkflowResponse; supplier: boolean; onTab: (tab: OrderDetailTab) => void; confirmation?: ReactNode; conversation?: ReactNode;
+export function OrderDetailOverview({ data, supplier, activeTab, onTab, confirmation, conversation }: {
+  data: OrderWorkflowResponse; supplier: boolean; activeTab?: OrderDetailTab; onTab: (tab: OrderDetailTab) => void; confirmation?: ReactNode; conversation?: ReactNode;
 }) {
   const view = orderOverview(data, supplier);
+  const openCurrentStep = () => {
+    if (data.status !== "PARTIALLY_CONFIRMED") { onTab(view.tab); return; }
+    const items = document.getElementById(`order-items-${data.order.id}`);
+    const disclosure = items?.closest("details");
+    if (disclosure) disclosure.open = true;
+    items?.focus();
+  };
   return <section className={`dm-order-overview${view.terminal ? " dm-order-overview-terminal" : ""}`} aria-label="Текущее состояние заказа">
     <div className="dm-order-overview-main" data-attention={Boolean(view.action) || data.status === "AWAITING_CONFIRMATION" && supplier}><div><span className="dm-order-eyebrow">Текущий этап</span><h2>{view.title}</h2><p>{view.description}</p></div>
-      <div className="dm-order-actions">{confirmation}{view.action ? <DmButton appearance="primary" onClick={() => { if (data.status === "PARTIALLY_CONFIRMED") document.getElementById(`order-items-${data.order.id}`)?.focus(); else onTab(view.tab); }}>{view.action}</DmButton> : null}{conversation}</div>
+      <div className="dm-order-actions">{view.action && activeTab !== view.tab ? <DmButton appearance="subtle" onClick={openCurrentStep}>{view.action}</DmButton> : null}{conversation}</div>
     </div>
-    {!view.terminal ? <ol className="dm-order-stages" aria-label="Этапы заказа">{view.steps.map((step, index) => <li key={step.label} data-state={step.state} aria-current={step.state === "current" ? "step" : undefined}><span aria-hidden="true">{step.state === "done" ? "✓" : index + 1}</span>{step.label}</li>)}</ol> : null}
+    {confirmation ? <div className="dm-order-confirmation">{confirmation}</div> : null}
+    {!view.terminal && data.status !== "DELIVERED" ? <ol className="dm-order-stages" aria-label="Этапы заказа">{view.steps.map((step, index) => <li key={step.label} data-state={step.state} aria-current={step.state === "current" ? "step" : undefined}><span aria-hidden="true">{step.state === "done" ? "✓" : index + 1}</span>{step.label}</li>)}</ol> : null}
     {view.openReturn ? <div className="dm-order-return-note">Есть незавершённый возврат <DmButton appearance="subtle" onClick={() => onTab("returns")}>Открыть возврат</DmButton></div> : null}
   </section>;
 }
 
-export function OrderDetailItems({ data, action }: { data: OrderWorkflowResponse; action?: ReactNode }) {
-  return <section id={`order-items-${data.order.id}`} tabIndex={-1} className="dm-order-card" aria-label="Состав заказа"><div className="dm-order-card-heading"><h2>Состав заказа</h2><span>{orderItemCount(data.order.items.length)}</span></div>
+export function OrderDetailItems({ data, action, hideHeading = false }: { data: OrderWorkflowResponse; action?: ReactNode; hideHeading?: boolean }) {
+  return <section id={`order-items-${data.order.id}`} tabIndex={-1} className="dm-order-card" aria-label="Состав заказа">{!hideHeading ? <div className="dm-order-card-heading"><h2>Состав заказа</h2><span>{orderItemCount(data.order.items.length)}</span></div> : null}
     <div className="dm-order-items">{data.order.items.map(item => <article key={item.id} className="dm-order-item">
       <div><h3>{item.offer?.productVariant.product.canonicalName ?? "Товар"}</h3>{item.giftForItemId ? <span className="dm-order-eyebrow">Подарок</span> : null}<p>Заказано: {item.quantity} · Подтверждено: {item.acceptedQuantity ?? "—"}</p>{item.decisionReason ? <p>{item.decisionReason}</p> : null}</div>
       <div><strong>{formatMoney(item.totalPriceMinor, item.currency)}</strong><VatLineAmount tax={orderLineVat(item.offerSnapshot, item.totalPriceMinor)} currency={item.currency} /></div>

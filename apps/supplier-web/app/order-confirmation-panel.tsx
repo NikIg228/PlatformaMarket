@@ -126,11 +126,11 @@ export function OrderConfirmationPanel({
         open={open}
         onOpenChange={changeOpen}
         title={`Подтверждение заказа ${order.orderNumber}`}
-        description="Проверьте доступное количество. Уменьшение освободит лишний резерв и изменит итог заказа; причина будет видна клинике. Черновик сохраняется при закрытии окна, пока вы остаётесь на этой странице."
+        description="Проверьте количество. Если оно изменилось, укажите причину для клиники."
         actions={
           <>
             <DmButton appearance="secondary" disabled={submitting} onClick={() => changeOpen(false)}>
-              Вернуться к заказам
+              Отмена
             </DmButton>
             <DmButton appearance="primary" onClick={() => void submit()} disabled={submitting || stale || preview === null || !has("order.confirm")}>
               {submitting ? "Сохраняем решение…" : "Подтвердить заказ"}

@@ -61,17 +61,12 @@ export function OrderTransferUpload({
     <Section
       title={mayInvoice ? "Загрузить готовый счёт" : "Сообщить о переводе"}
     >
-      <p>
-        {mayInvoice
-          ? "Загрузите счёт с реквизитами и суммой заказа. После заявления перевода замена счёта недоступна."
-          : "Укажите сумму этого перевода и приложите отдельную квитанцию. Доплаты учитываются после проверки поставщиком."}
-      </p>
       <DmField
         label={{
           htmlFor: fileInputId,
           children: mayInvoice
-            ? "Счёт, PDF до 10 МБ (10 000 000 байт)"
-            : "Квитанция, PDF до 10 МБ (10 000 000 байт)",
+            ? "Счёт, PDF до 10 МБ"
+            : "Квитанция, PDF до 10 МБ",
         }}
       >
         <DmFileInput
@@ -126,6 +121,7 @@ export function OrderTransferUpload({
         </>
       ) : null}
       <DmButton
+        appearance="primary"
         disabled={
           busy ||
           !file ||

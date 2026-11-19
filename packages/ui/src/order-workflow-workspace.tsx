@@ -37,9 +37,9 @@ import {
   type OrderInvoiceApi,
 } from "./order-invoice-panel";
 import { OrderSupplierContacts } from "./order-supplier-contacts";
-import { orderOverview, type OrderDetailTab } from "./order-presentation";
+import { orderItemCount, orderOverview, type OrderDetailTab } from "./order-presentation";
 import { documentUploadFileError } from "./document-upload-model";
-import { DmButton } from "./actions";
+import { DmButton, DmDisclosureSummary } from "./actions";
 import { DmFeedback, LoadingState, Section } from "./primitives";
 import { formatDate, errorMessage as describeError } from "./format";
 import { formatMoney } from "./money";
@@ -444,7 +444,7 @@ function OrderWorkflowSession({
     }
   };
   const overview = orderOverview(data, supplier);
-  const activeTab = selectedTab ?? overview.tab;
+  const activeTab = selectedTab ?? (overview.openReturn ? "returns" : overview.tab);
   const selectTab = (tab: OrderDetailTab) => {
     setSelectedTab(tab);
     requestAnimationFrame(() =>
@@ -510,6 +510,7 @@ function OrderWorkflowSession({
       <OrderDetailOverview
         data={data}
         supplier={supplier}
+        activeTab={activeTab}
         onTab={selectTab}
         confirmation={renderConfirmation?.(data, refresh)}
         conversation={conversation}
@@ -520,15 +521,15 @@ function OrderWorkflowSession({
       {data.reservationState?.status === "HELD_TRANSFER" ? (
         <DmFeedback
           tone="neutral"
-          title="Резерв удерживается"
-          description="Перевод заявлен. Автоматическая отмена и снятие резерва приостановлены, в том числе при уточнении оплаты. Если проверка затянулась, обратитесь в поддержку."
+          title="Товары зарезервированы на время проверки перевода"
+          description="Поставщик проверяет поступление денег."
         />
       ) : null}
       {data.reservationState?.status === "HELD_EXTERNAL" ? (
         <DmFeedback
           tone="neutral"
-          title="Резерв управляется платёжным или складским контуром"
-          description="Автоматическое локальное освобождение недоступно. Изменение требует завершения соответствующей операции."
+          title="По заказу выполняется операция"
+          description="Резерв сохранится до её завершения."
         />
       ) : null}
       {reserveOverdue ? (
@@ -545,18 +546,21 @@ function OrderWorkflowSession({
       {data.reservationState?.status === "ACTIVE" &&
       data.reservationState.expiresAt ? (
         <p>
-          Локальный резерв действует до{" "}
-          {formatDate(data.reservationState.expiresAt, true)}. После заявления
-          перевода автоматическое снятие приостанавливается.
+          Товары зарезервированы до{" "}
+          {formatDate(data.reservationState.expiresAt, true)}.
         </p>
       ) : null}
       <div className="dm-order-columns">
         <div className="dm-order-main">
+          <details className="dm-order-composition" open={data.status === "PARTIALLY_CONFIRMED" || data.status === "AWAITING_CONFIRMATION"}>
+          <DmDisclosureSummary>Состав заказа · {orderItemCount(data.order.items.length)}</DmDisclosureSummary>
           <OrderDetailItems
+            hideHeading
             data={data}
             action={
               buyer && data.status === "PARTIALLY_CONFIRMED" ? (
                 <DmButton
+                  appearance="primary"
                   disabled={busy || !canAct("ACCEPT_COMPOSITION")}
                   onClick={() => void perform({ action: "ACCEPT_COMPOSITION" })}
                 >
@@ -565,6 +569,7 @@ function OrderWorkflowSession({
               ) : undefined
             }
           />
+          </details>
 
           <div className="dm-order-tabs">
             <DmTabList
@@ -589,6 +594,8 @@ function OrderWorkflowSession({
           </div>
           <div {...panel("payment")}>
             {supplier ? (
+              <details className="dm-order-disclosure" open={mayInvoice}>
+              <DmDisclosureSummary>Счёт на оплату</DmDisclosureSummary>
               <OrderInvoicePanel
                 api={api}
                 resource={invoiceResource}
@@ -599,6 +606,7 @@ function OrderWorkflowSession({
                 canIssue={has("order.confirm", "document.issue")}
                 busy={busy}
               />
+              </details>
             ) : null}
             {!mayInvoice && !mayReport && !data.claims.length ? (
               <p className="dm-order-muted">
@@ -608,6 +616,8 @@ function OrderWorkflowSession({
               </p>
             ) : null}
             {mayInvoice || mayReport ? (
+              <details className="dm-order-disclosure" open={!mayInvoice && unpaid && !data.claims.length}>
+              <DmDisclosureSummary>{mayInvoice ? "Загрузить готовый счёт" : data.claims.length ? "Сообщить ещё об одном переводе" : "Сообщить о переводе"}</DmDisclosureSummary>
               <OrderTransferUpload
                 mayInvoice={mayInvoice}
                 fileInputId={fileInputId}
@@ -628,6 +638,7 @@ function OrderWorkflowSession({
                 canAct={canAct}
                 sendFile={sendFile}
               />
+              </details>
             ) : null}
             <TransferReviewPanel
               data={data}
@@ -638,6 +649,13 @@ function OrderWorkflowSession({
               perform={perform}
               download={download}
             />
+            <div className="dm-order-card dm-order-payment-summary">
+              <div className="dm-order-card-heading">
+                <h2>Оплата</h2>
+                <span className="dm-order-payment-label" data-tone={overview.payment.tone}>{overview.payment.label}</span>
+              </div>
+              <PaymentSummaryPanel data={data} compact showConfigurationWarning={supplier && !overview.terminal && data.status !== "DELIVERED"} />
+            </div>
             {buyer || supplier ? (
               <PaymentReductionPanel
                 data={data}
@@ -651,12 +669,15 @@ function OrderWorkflowSession({
             has("supplier.profile.manage") &&
             api.getSupplierPaymentPolicy &&
             api.saveSupplierPaymentPolicy ? (
+              <details className="dm-order-disclosure">
+              <DmDisclosureSummary>Настройки проверки оплаты</DmDisclosureSummary>
               <Suspense fallback={null}>
                 <SupplierPaymentPolicyPanel
                   api={api as Api & PaymentPolicyApi}
                   onSaved={refresh}
                 />
               </Suspense>
+              </details>
             ) : null}
           </div>
           <div {...panel("returns")}>
@@ -684,20 +705,18 @@ function OrderWorkflowSession({
           {buyer && ["DELIVERED", "CANCELLED"].includes(data.status) ? (
             <Section title="Повторная закупка">
               <p>
-                Создайте новую корзину по составу заказа. Перед оформлением
-                проверьте текущие цены, доступность и условия; прежняя скидка не
-                гарантируется.
+                В новой корзине проверьте актуальные цены и наличие.
               </p>
               {reordered ? (
                 <a href={cartHref}>
-                  Перейти в корзину и проверить текущие условия
+                  Перейти в корзину
                 </a>
               ) : (
                 <DmButton
                   disabled={busy || !canAct("REORDER")}
                   onClick={() => void perform({ action: "REORDER" })}
                 >
-                  Создать корзину для повторной закупки
+                  Повторить заказ
                 </DmButton>
               )}
             </Section>
@@ -750,22 +769,10 @@ function OrderWorkflowSession({
             <OrderWorkflowHistory data={data} labels={labels} />
           </div>
         </div>
-        <aside className="dm-order-sidebar">
+        {data.supplierContacts?.official || data.supplierContacts?.reserves.length ? <details className="dm-order-disclosure">
+          <DmDisclosureSummary>Контакты поставщика</DmDisclosureSummary>
           <OrderSupplierContacts contacts={data.supplierContacts} />
-          <div className="dm-order-card dm-order-payment-summary">
-            <div className="dm-order-card-heading">
-              <h2>Оплата</h2>
-              <span
-                className="dm-order-payment-label"
-                data-tone={overview.payment.tone}
-              >
-                {overview.payment.label}
-              </span>
-            </div>
-            <PaymentSummaryPanel data={data} compact />
-          </div>
-          <OrderDetailDocuments data={data} download={download} />
-        </aside>
+        </details> : null}
       </div>
     </div>
   );
