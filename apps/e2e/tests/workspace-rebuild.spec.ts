@@ -138,7 +138,8 @@ test("A15 order PDF boundaries and retry preserve the file and workflow identity
     return route.fulfill({ json: { id: "66666666-6666-4666-8666-666666666666" } });
   });
   await page.goto(`/supplier/orders/${id}`);
-  const file = page.getByLabel("Счёт, PDF до 10 МБ (10 000 000 байт)");
+  await page.locator("summary").filter({ hasText: /^Загрузить готовый счёт$/ }).click();
+  const file = page.getByLabel("Счёт, PDF до 10 МБ", { exact: true });
   const send = page.getByRole("button", { name: "Выставить счёт", exact: true });
   for (const size of [9_999_999, 10_000_000]) {
     const buffer = Buffer.alloc(size, 32); buffer.write("%PDF-1.7\n");
@@ -179,7 +180,7 @@ for (const width of [1440, 390]) test(`CORE02 supplier exact payment review and 
     return route.fulfill({ json: {} });
   });
   await page.goto(`/supplier/orders/${id}`);
-  const confirm = page.getByRole("button", { name: "Подтвердить фактически полученную сумму", exact: true });
+  const confirm = page.getByRole("button", { name: "Подтвердить получение денег", exact: true });
   await expect(confirm).toBeDisabled();
   const amount = page.getByLabel("Фактически поступило по переводу 1, KZT");
   await amount.fill("90071992547409,93");
@@ -210,11 +211,12 @@ for (const width of [1440, 390]) test(`CORE02 buyer partial report invalidates c
   });
   await page.route("**/api/documents/upload", async route => { uploads.push(route.request().postDataJSON()); return route.fulfill({ json: { id: uploads.length === 1 ? cityId : organizationId } }); });
   await page.goto(`/clinic/orders/${id}`);
-  await expect(page.getByText("График проверки оплаты не настроен", { exact: true })).toBeVisible();
   const amount = page.getByLabel("Сумма этого перевода, KZT");
+  await expect(amount).toBeVisible();
+  await expect(amount).toBeEditable();
   await amount.fill("100,01");
   await page.getByLabel("Дата и время перевода").fill("2026-10-01T09:00");
-  await page.getByLabel("Квитанция, PDF до 10 МБ (10 000 000 байт)").setInputFiles({ name: "partial.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.7\nfixture") });
+  await page.getByLabel("Квитанция, PDF до 10 МБ", { exact: true }).setInputFiles({ name: "partial.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.7\nfixture") });
   const send = page.getByRole("button", { name: "Отправить квитанцию", exact: true });
   await send.click(); await expect(page.getByText("Проверьте сумму квитанции. Ввод сохранён.", { exact: true })).toBeVisible();
   await expect(amount).toHaveValue("100,01");
@@ -250,6 +252,7 @@ test("CORE02 mobile bilateral reduction and supplier policy require explicit cho
   await expect(page.getByText("Проверьте обновлённые условия уменьшения", { exact: true })).toBeVisible();
   expect(decision).toMatchObject({ action: "DECIDE_PAYMENT_REDUCTION", reductionId: sessionId, accepted: true });
   await expect(consent).toBeChecked();
+  await page.locator("summary").filter({ hasText: /^Настройки проверки оплаты$/ }).click();
   await page.getByRole("button", { name: "Открыть настройки проверки", exact: true }).click();
   await page.getByLabel("Основной ответственный", { exact: true }).selectOption(sessionId);
   await page.getByLabel("Резервный ответственный", { exact: true }).selectOption(cityId);
@@ -286,7 +289,7 @@ for (const width of [1440, 390]) test(`CORE03 refund receipt requires consent an
   await page.getByRole("button", { name: "Восстановить результат", exact: true }).click();
   await expect(page.getByText("Клиника подтвердила получение денег", { exact: true })).toBeVisible();
   expect(commands[0]).toEqual(commands[1]); expect(commands[1].action).toBe("RECEIVE_MANUAL_REFUND");
-  await page.getByRole("button", { name: "Создать корзину для повторной закупки", exact: true }).click();
+  await page.getByRole("button", { name: "Повторить заказ", exact: true }).click();
   await expect(page.getByRole("link", { name: "Перейти в корзину и проверить текущие условия" })).toHaveAttribute("href", "/clinic/cart");
   expect(commands[2].action).toBe("REORDER");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -305,7 +308,7 @@ test("CORE03 supplier agrees exact return conditions before money stage", async 
   });
   await page.goto(`/supplier/orders/${id}`);
   await page.getByRole("tab", { name: /Возвраты/ }).click();
-  const agree = page.getByRole("button", { name: "Согласовать указанные условия и сумму" });
+  const agree = page.getByRole("button", { name: "Согласовать условия и сумму", exact: true });
   await expect(agree).toBeDisabled(); await expect(page.getByText(/Упаковка не вскрыта/)).toBeVisible();
   await page.getByLabel("Комментарий к решению о возврате").fill("Принимаем одну упаковку в указанном состоянии");
   await agree.click(); await expect(page.getByText("Согласован", { exact: true })).toBeVisible();
@@ -947,9 +950,8 @@ test("supplier confirms an order and returns to its own order list", async ({
   await page
     .getByRole("button", { name: "Подтвердить заказ", exact: true })
     .click();
-  await expect(
-    page.getByRole("button", { name: "Выставить счёт", exact: true }),
-  ).toBeVisible();
+  await page.locator("summary").filter({ hasText: /^Загрузить готовый счёт$/ }).click();
+  await expect(page.getByRole("button", { name: "Выставить счёт", exact: true })).toBeVisible();
   expect(decisions).toEqual({
     decisions: [{ itemId: "item", acceptedQuantity: 1 }],
   });
@@ -1030,6 +1032,7 @@ for (const width of [1440, 390]) test(`orders-ux list and terminal detail ${widt
   await page.screenshot({ animations: "disabled", path: `../../output/playwright/orders-ux/orders-${width}.png`, fullPage: true });
   await page.getByRole("link", { name: "SO-1048", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Проверьте поступление оплаты", exact: true })).toBeVisible();
+  await page.locator("summary").filter({ hasText: /^Проблема с переводом$/ }).click();
   await page.getByRole("textbox", { name: "Комментарий к проверке или спору по переводу 1", exact: true }).fill("Проверяем банк");
   await page.getByRole("tab", { name: "История", exact: true }).click(); await page.getByRole("tab", { name: "Оплата", exact: true }).click();
   await expect(page.getByRole("textbox", { name: "Комментарий к проверке или спору по переводу 1", exact: true })).toHaveValue("Проверяем банк");

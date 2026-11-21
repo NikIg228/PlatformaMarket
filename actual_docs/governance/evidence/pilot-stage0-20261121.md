@@ -183,3 +183,54 @@ dependencies; npm также пересобрал transitive layout, удали�
 UI/browser/рабочая БД не проверялись: соответствующее поведение не менялось.
 Полные DB/build/E2E проверки опубликованной версии выполняются существующим CI;
 до получения результата статус CI остаётся PENDING, а не PASS.
+
+### Итог dependency CI и продолжение: ORDER-E2E-20261121
+
+Dependency commit d882709e опубликован. Security44926804127 SUCCESS;
+CI44926804110: audit/security regressions/types/lint/tests/build/observability/
+runtime/PostgreSQL/container jobs PASS, canonical browser FAIL:14/109PASS.
+Список14 совпадает с прежним CI44492539074. Последующие full-access/go_live/promotion
+шаги пропущены из-за падения браузерного этапа, а не отключены исправлением.
+
+Новое поручение владельца: разобрать14 E2E, исправить устаревшие ожидания либо
+реальные дефекты без ослабления гарантий/потери WIP, получить зелёный CI.
+Предыдущий результат14FAIL → сравнение логов и опубликованных компонентов →
+проверить и завершить уже существующие изменения двух specs, не переписывать UI.
+
+| Сценарии | Число | Подтверждённое расхождение ожидания с HEAD |
+| --- | ---: | --- |
+| Контакты поставщика1440/390 | 2 | Контакты внутри details; сначала раскрыть |
+| A15 PDF boundary/retry | 1 | Форма загрузки внутри details; сокращена подпись file input |
+| CORE02 supplier payment1440/390 | 2 | Подпись теперь «Подтвердить получение денег» |
+| CORE02 buyer receipt1440/390 | 2 | Удалён служебный текст о графике поставщика; сокращена подпись file input |
+| CORE02 mobile policy | 1 | Настройки внутри details |
+| CORE03 refund1440/390 | 2 | Действие теперь «Повторить заказ» |
+| CORE03 return agreement | 1 | Подпись теперь «Согласовать условия и сумму» |
+| Supplier confirmation | 1 | Загрузка счёта внутри details |
+| Order terminal detail1440/390 | 2 | Комментарий внутри «Проблема с переводом» |
+
+Риск: принять несоответствие локаторов за успешный бизнес-сценарий.
+Сохранить суммы выше2^53, explicit consent, payloads, retry identity, PDF byte
+boundaries, удержание ввода, desktop/mobile и отсутствие overflow. Добавить
+положительную проверку доступной формы; раскрытие контактов проверить клавиатурой.
+Применены market-review-frontend и market-run-verification; визуальный редизайн
+не входит в scope. Продуктовые изменения допускаются только при воспроизведённом баге.
+
+Canonical local order routes намеренно возвращают null по прежнему поручению.
+Их и новую неопубликованную оплату/proposals не восстанавливать/публиковать ради CI.
+Локальная browser-проверка опубликованного UI невозможна на этом dirty checkout;
+копии/worktrees запрещены, рабочие API4012/web3000 и БД сохраняются.
+Проверки до публикации test-only candidate: scoped lint, E2E types/discovery,
+полный review диффа и сохранность остального WIP. Браузерное исполнение кандидата:
+существующий CI на чистом checkout; требуемый результат всех jobs SUCCESS.
+До зелёного CI считать исправление проверяемым кандидатом, не завершённой приёмкой.
+
+Предпубликационные проверки кандидата: scoped TypeScript для двух specs с исходным
+strict tsconfig PASS; scoped ESLint PASS; canonical Playwright discovery14/14 PASS.
+Все бизнес-assertions сохранены. Раскрытие контактов теперь дополнительно проверяет
+closed/open и клавиатуру Enter; проверка формы квитанции положительная (visible/editable).
+Полный локальный E2E typecheck FAIL в неизменённом workspace-list-volume.spec.ts:134:
+dirty Prisma добавил agreedProposalSnapshot: JsonValue, копируемый в create без
+преобразования null. Это отдельный WIP/schema-fixture gap, не ошибка двух specs;
+не маскировать casts/ts-ignore, не включать в публикацию этой задачи.
+Полный typecheck публикуемого состояния и все14 browser cases остаются CI gates.

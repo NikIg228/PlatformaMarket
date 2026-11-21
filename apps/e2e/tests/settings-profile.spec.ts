@@ -173,6 +173,10 @@ for (const width of [1440,390]) test(`supplier-order contact presentation and na
   await page.route(`**/api/supplier-orders/${id}/discrepancies`, route=>route.fulfill({json:{orderId:id,orderVersion:order.version,party:"BUYER",canWrite:false,shipments:[],discrepancies:[]}}));
   await page.route(`**/api/supplier-orders/${id}/workflow`, route=>route.fulfill({json:{orderId:id,order,version:1,status:order.status,paymentStatus:order.paymentStatus,invoiceDocumentId:null,claims:[],events:[],supplierContacts:{official,reserves}}}));
   await page.goto(`/clinic/orders/${id}`);
+  const contactDisclosure = page.locator("summary").filter({ hasText: /^Контакты поставщика$/ });
+  await expect(contactDisclosure.locator("..")).toHaveJSProperty("open", false);
+  await contactDisclosure.focus(); await page.keyboard.press("Enter");
+  await expect(contactDisclosure.locator("..")).toHaveJSProperty("open", true);
   const contacts=page.getByRole("region",{name:"Контакты поставщика",exact:true}); await expect(contacts.getByText(official.contactName,{exact:true})).toBeVisible();
   for (const contact of [official,...reserves]) { await expect(contacts.getByRole("link",{name:contact.phone,exact:true})).toHaveAttribute("href",`tel:${contact.phone}`); await expect(contacts.getByRole("link",{name:contact.email,exact:true})).toHaveAttribute("href",`mailto:${contact.email}`); }
   const tabs=page.getByRole("tablist",{name:"Подробности заказа",exact:true}); await tabs.getByRole("tab").first().focus(); await page.keyboard.press("ArrowRight"); await page.keyboard.press("Enter");
