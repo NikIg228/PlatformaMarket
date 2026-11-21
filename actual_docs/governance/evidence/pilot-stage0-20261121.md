@@ -133,3 +133,53 @@ ownership/совместной публикации локальных изме�
 scope — документация и анализ, не исправление найденных дефектов и не release.
 Сверка не означает готовность к пилоту. Публикация документов и её CI фиксируются
 отдельно от статуса продукта в итоговом сообщении.
+
+## Dependency audit — отдельное поручение 21.11.2026
+
+Исходный результат: audit FAIL (3 high, 2 moderate) → повторный локальный audit
+подтвердил effect 3.21.0 / HTTP instrumentation 0.221.0 → минимальный delta:
+override effect 3.22.1 без смены Prisma 6.19.3; auto-instrumentations-node 0.80.0
+и согласованные sdk-node/exporter 0.222.0. Основа: main, 50ac7476.
+Scope: зависимости, целевые security regressions и evidence; proposal/payment WIP
+не включать и не менять. UI, API-контракты, миграции и рабочая БД вне scope.
+
+Риск: совместимость конфигурации Prisma и запуска/export HTTP-телеметрии.
+Применены resolve-dependency-alert, fix-finding (standard), market-run-verification:
+проверить все lockfile-копии, ближайшие patched версии, legitimate controls,
+отдельно различать локальную проверку грязного дерева и CI опубликованного commit.
+Gates: npm audit, dependency security regressions, instrumentation/observability
+tests, API types/build (включает Prisma generate), Prisma validate, runtime-split;
+затем task-only commit/push и фактический итог CI. Без live provider calls/DB writes.
+DoD: audit без уязвимых цепочек, scoped проверки PASS, неизменность WIP,
+результат CI прочитан; посторонний CI FAIL фиксировать без изменения заказа/оплаты.
+
+Локальные результаты (Node 24.18.0, npm 12.0.1):
+
+- `npm audit --audit-level=high`: PASS, 0 vulnerabilities вместо 5.
+- `npm ls effect @opentelemetry/instrumentation-http @opentelemetry/sdk-node @opentelemetry/exporter-trace-otlp-http --all`:
+  PASS; effect 3.22.1, HTTP/SDK/exporter 0.222.0; Prisma/Client остаются 6.19.3.
+- `node --test scripts/dependency-security.test.mjs`: PASS 5/5, включая реальные
+  Effect invalid/valid inputs и loopback server spans (AWS/Azure credentials скрыты,
+  обычный page=2 сохранён). Первый HTTP probe превысил 10s при ещё идущей установке;
+  после завершения установки PASS без изменения теста (5.39s).
+- `npm exec --workspace=@marketplace/api -- vitest run --dir src src/instrumentation.spec.ts src/platform/observability`:
+  PASS 21 tests / 6 files; `node scripts/verify-observability-alerts.mjs`: PASS.
+- API `typecheck` и `npm exec --workspace=@marketplace/api -- nest build`: PASS.
+  Обычный `npm run build --workspace=@marketplace/api` остановился на prebuild:
+  EPERM замены занятой Windows Prisma DLL. Чужие процессы не останавливались.
+  Тот же schema/client 6.19.3 успешно сгенерирован в отдельный ignored test output;
+  canonical schema/client configuration не менялись. Чистая штатная сборка остаётся CI gate.
+- `prisma validate`: PASS с фиктивным DATABASE_URL на порту 1, без подключения.
+  Первая попытка без DATABASE_URL дала P1012; это исправление test environment.
+- `node scripts/verify-runtime-split.mjs`: PASS после завершения сборки; преждевременный запуск во
+  время перезаписи dist дал MODULE_NOT_FOUND и не считается результатом кандидата.
+- Сверка SHA-256 всех 723 исходных dirty/untracked файлов: изменений нет.
+  Diff ограничен manifests/lockfile, security tests и этой записью; diff hygiene PASS.
+
+Lockfile SHA-256: `f4b8809bcb3a733d9208cfdaf3ca850321565555682e8babc1fa832a02e6247f`.
+Обновление auto-instrumentations согласованно обновляет его bundled instrumentation
+dependencies; npm также пересобрал transitive layout, удалил устаревшие type-only
+зависимости и разрешил grpc через существующий override. Force-fix не применялся.
+UI/browser/рабочая БД не проверялись: соответствующее поведение не менялось.
+Полные DB/build/E2E проверки опубликованной версии выполняются существующим CI;
+до получения результата статус CI остаётся PENDING, а не PASS.
