@@ -290,7 +290,9 @@ for (const width of [1440, 390]) test(`CORE03 refund receipt requires consent an
   await expect(page.getByText("Клиника подтвердила получение денег", { exact: true })).toBeVisible();
   expect(commands[0]).toEqual(commands[1]); expect(commands[1].action).toBe("RECEIVE_MANUAL_REFUND");
   await page.getByRole("button", { name: "Повторить заказ", exact: true }).click();
-  await expect(page.getByRole("link", { name: "Перейти в корзину и проверить текущие условия" })).toHaveAttribute("href", "/clinic/cart");
+  const cartLink = page.getByRole("link", { name: "Перейти в корзину", exact: true });
+  await expect(cartLink).toBeVisible();
+  await expect(cartLink).toHaveAttribute("href", "/clinic/cart");
   expect(commands[2].action).toBe("REORDER");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath(`core03-refund-${width}.png`), fullPage: true });
@@ -1041,7 +1043,11 @@ for (const width of [1440, 390]) test(`orders-ux list and terminal detail ${widt
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   workflow.status = "CANCELLED"; order.status = "CANCELLED"; workflow.claims = []; await page.reload();
   await expect(page.getByRole("heading", { name: "Заказ отменён", exact: true })).toBeVisible();
+  await expect(page.getByRole("tab", { name: "История", exact: true })).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("tab", { name: "Оплата", exact: true }).click();
   await expect(page.getByText("Оплата не требуется", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Подтвердить получение денег", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Выставить счёт", exact: true })).toHaveCount(0);
   await expect(page.getByRole("list", { name: "Этапы заказа" })).toHaveCount(0);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ animations: "disabled", path: `../../output/playwright/orders-ux/cancelled-${width}.png`, fullPage: true });

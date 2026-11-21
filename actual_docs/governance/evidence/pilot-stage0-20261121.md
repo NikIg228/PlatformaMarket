@@ -234,3 +234,16 @@ dirty Prisma добавил agreedProposalSnapshot: JsonValue, копируем�
 преобразования null. Это отдельный WIP/schema-fixture gap, не ошибка двух specs;
 не маскировать casts/ts-ignore, не включать в публикацию этой задачи.
 Полный typecheck публикуемого состояния и все14 browser cases остаются CI gates.
+
+Кандидат0f0de4b1: CI44930147410 подтвердил полный typecheck/lint/tests/build,
+PostgreSQL, оба контейнера; Security44930147412 SUCCESS. Browser119PASS/4FAIL:
+10 из14 исправленных сценариев прошли; ещё4 дошли до следующих устаревших ожиданий.
+Refund1440/390: ссылка в HEAD называется «Перейти в корзину», href /clinic/cart
+сохранён. Terminal1440/390: orderOverview намеренно выбирает history для CANCELLED;
+тест искал label оплаты в скрытой вкладке. CI screenshots refund390 и terminal1440
+из ci-diagnostics14718051805 скачаны и визуально проверены: ссылка присутствует,
+выбрана «История», статус отмены виден. Product regression этими падениями не доказан.
+Минимальный delta2: точная подпись ссылки + visible/href; history selected → обычный
+клик «Оплата» → прежний payment label + отсутствие подтверждения денег/выставления
+счёта. Никаких forced clicks, скрытых DOM-проверок вместо visible или отмены assertions.
+Результат следующего полного CI остаётся обязательным; первый FAIL сохранён.
