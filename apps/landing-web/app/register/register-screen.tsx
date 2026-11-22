@@ -5,6 +5,7 @@ import { useProductReturn } from "../use-product-return";
 import styles from "../auth-split.module.css";
 import { RegistrationHeading } from "./registration-heading";
 import { RegistrationEmailCorrection } from "./registration-email-correction";
+import { registrationErrors } from "../auth-validation";
 
 import {
   DmButton,
@@ -19,6 +20,7 @@ import {
   type AuthFeedback,
   authRequest,
   feedbackFromError,
+  buyerAppUrl,
 } from "../auth-client";
 
 type RegistrationResult = {
@@ -72,37 +74,7 @@ export default function RegisterPage() {
     if (role === "supplier") setCapability("SUPPLIER");
   }, []);
 
-  const errors = useMemo(
-    () => ({
-      ownerDisplayName:
-        form.ownerDisplayName.trim().length >= 2
-          ? undefined
-          : "Укажите имя длиной не менее 2 символов.",
-      email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
-        ? undefined
-        : "Укажите корректный рабочий email.",
-      password:
-        form.password.length >= 12
-          ? undefined
-          : "Пароль должен содержать не менее 12 символов.",
-      legalName:
-        form.legalName.trim().length >= 2
-          ? undefined
-          : "Укажите юридическое наименование.",
-      organizationDisplayName:
-        form.organizationDisplayName.trim().length >= 2
-          ? undefined
-          : "Укажите название, которое сотрудники увидят в кабинете.",
-      bin: /^\d{12}$/.test(form.bin)
-        ? undefined
-        : "БИН должен содержать ровно 12 цифр.",
-      consents:
-        form.termsAccepted && form.privacyAccepted
-          ? undefined
-          : "Для регистрации примите условия использования и политику конфиденциальности.",
-    }),
-    [form],
-  );
+  const errors = useMemo(() => registrationErrors(form), [form]);
   const canSubmit = Object.values(errors).every((value) => !value);
 
   const update = <Key extends keyof RegistrationForm>(
@@ -112,6 +84,7 @@ export default function RegisterPage() {
 
   const createRegistration = async (event: FormEvent) => {
     event.preventDefault();
+    if (busy) return;
     setSubmitted(true);
     setFeedback(null);
     if (!canSubmit) {
@@ -129,6 +102,7 @@ export default function RegisterPage() {
         "/onboarding/registrations",
         {
           ...form,
+          email: form.email.trim().toLowerCase(),
           capability,
           consentVersion: "2026-07-17",
           source: "landing_registration",
@@ -142,7 +116,7 @@ export default function RegisterPage() {
       }
       registrationToken.current = result.registrationToken;
       const accepted = authRegistrationAcceptedSchema.parse(await authRequest("/auth/register", {
-        email: form.email,
+        email: form.email.trim().toLowerCase(),
         displayName: form.ownerDisplayName,
         password: form.password,
         registrationToken: result.registrationToken,
@@ -217,8 +191,8 @@ export default function RegisterPage() {
       </aside>
       <section className={`registrationCard ${styles.registerCard}`} aria-labelledby="register-title">
         <div className={styles.registerTop}>
-          <a className="backLink" href="/">
-            ← На главную
+          <a className="backLink" href={`${buyerAppUrl.replace(/\/$/, "")}/catalog`}>
+            К каталогу
           </a>
         </div>
         <h2 id="register-title">Создать организацию</h2>
@@ -247,6 +221,8 @@ export default function RegisterPage() {
               value={form.ownerDisplayName}
               onChange={(_, data) => update("ownerDisplayName", data.value)}
               autoComplete="name"
+              minLength={2}
+              maxLength={160}
               disabled={busy}
               required
             />
@@ -268,7 +244,7 @@ export default function RegisterPage() {
           </DmField>
           <DmField
             label="Пароль"
-            hint="Минимум 12 символов"
+            hint="От 12 до 128 символов"
             required
             validationState={submitted && errors.password ? "error" : "none"}
             validationMessage={submitted ? errors.password : undefined}
@@ -279,6 +255,7 @@ export default function RegisterPage() {
               onChange={(_, data) => update("password", data.value)}
               autoComplete="new-password"
               minLength={12}
+              maxLength={128}
               disabled={busy}
               required
             />
@@ -294,6 +271,8 @@ export default function RegisterPage() {
               value={form.legalName}
               onChange={(_, data) => update("legalName", data.value)}
               placeholder="ТОО «Стоматология»"
+              minLength={2}
+              maxLength={240}
               disabled={busy}
               required
             />
@@ -310,6 +289,8 @@ export default function RegisterPage() {
           >
             <DmInput
               value={form.organizationDisplayName}
+              minLength={2}
+              maxLength={160}
               onChange={(_, data) =>
                 update("organizationDisplayName", data.value)
               }

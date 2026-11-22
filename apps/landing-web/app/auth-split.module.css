@@ -19,20 +19,45 @@
   visibility: hidden;
 }
 
-.headingPause {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--dm-control-default);
-  height: var(--dm-control-default);
-  margin-top: var(--dm-space-6);
-  padding: var(--dm-space-2) 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-size: var(--dm-font-size-body);
-  cursor: pointer;
+.loginViewport.loginViewport {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.loginViewport .loginIntro {
+  min-height: 0;
+}
+
+.loginViewport .loginPanel {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-items: safe center;
+  padding-block: var(--dm-space-6);
+}
+
+@media (max-width: 900px) {
+  .loginViewport.loginViewport {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .loginViewport .loginIntro {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dm-space-4);
+    padding: var(--dm-space-4) var(--dm-space-6);
+  }
+  .loginViewport .loginIntro > div {
+    display: none;
+  }
+  .loginViewport .loginIntro > a {
+    margin: 0;
+  }
+  .loginViewport .loginPanel {
+    align-items: safe center;
+    padding-block: var(--dm-space-6);
+  }
 }
 
 .foldLine {
@@ -120,11 +145,6 @@
   .loginIntro > div {
     margin: 0;
     padding-bottom: var(--dm-space-10);
-  }
-
-  .loginPanel.loginPanel {
-    align-items: start;
-    padding-top: calc(var(--dm-space-16) + var(--dm-space-32));
   }
 
   .registerAside.registerAside {

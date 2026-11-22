@@ -7,6 +7,7 @@ import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
 import { useProductReturn } from "../use-product-return";
 import styles from "../auth-split.module.css";
 import { LoginHeading } from "./login-heading";
+import { loginErrors } from "../auth-validation";
 import { LoginWorkspaceChoice } from "./workspace-choice";
 import { MfaStep } from "./mfa-step";
 
@@ -69,6 +70,9 @@ export default function LoginPage() {
   const [feedback, setFeedback] = useState<AuthFeedback | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [emailChecked, setEmailChecked] = useState(false);
+  const errors = loginErrors(email, password);
   const [pendingSession, setPendingSession] = useState<AuthSession | null>(null);
   const [mfaSession, setMfaSession] = useState<AuthSession | null>(null);
   const [choices, setChoices] = useState<WorkspaceChoice[]>([]);
@@ -165,11 +169,14 @@ export default function LoginPage() {
 
   const emailLogin = async (event: FormEvent) => {
     event.preventDefault();
+    if (busy) return;
+    setSubmitted(true);
+    if (errors.email || errors.password) return;
     setBusyAction("email");
     setFeedback(null);
     try {
       await continueSession(
-        await authRequest<AuthSession>("/auth/login", { email, password }),
+        await authRequest<AuthSession>("/auth/login", { email: email.trim().toLowerCase(), password }),
       );
     } catch (cause) {
       setFeedback(feedbackFromError(cause, "Вход не выполнен"));
@@ -179,17 +186,19 @@ export default function LoginPage() {
   };
 
   const forgotPassword = async () => {
-    if (!email) {
+    if (busy) return;
+    setEmailChecked(true);
+    if (errors.email) {
       setFeedback({
         kind: "error",
-        message: "Сначала укажите рабочий email в поле выше.",
+        message: "Укажите корректный рабочий email в поле выше.",
       });
       return;
     }
     setBusyAction("forgot");
     setFeedback(null);
     try {
-      const accepted = authForgotAcceptedSchema.parse(await authRequest("/auth/password/forgot", { email }));
+      const accepted = authForgotAcceptedSchema.parse(await authRequest("/auth/password/forgot", { email: email.trim().toLowerCase() }));
       setFeedback({
         kind: "success",
         message:
@@ -240,7 +249,7 @@ export default function LoginPage() {
   if (restoring) return <main className={styles.restoring}><LoadingState label={cabinetLoadingLabel(locale)} /></main>;
 
   return (
-    <main className={`loginPage ${styles.split}`}>
+    <main className={`loginPage ${styles.split} ${styles.loginViewport}`}>
       {hasGoogle ? (
         <Script
           src="https://accounts.google.com/gsi/client?hl=ru"
@@ -259,8 +268,8 @@ export default function LoginPage() {
         <div>
           <LoginHeading />
         </div>
-        <a className="backLink" href={buyerAppUrl}>
-          ← Вернуться в магазин
+        <a className="backLink" href={`${buyerAppUrl.replace(/\/$/, "")}/catalog`}>
+          К каталогу
         </a>
       </section>
       <section className={`loginPanel ${styles.loginPanel}`} aria-labelledby="login-title">
@@ -271,8 +280,8 @@ export default function LoginPage() {
             await continueSession(confirmed, expected);
             if (expected === continuation.current) setMfaSession(null);
           }} /> : null}
-          {!pendingSession && !mfaSession ? <form className="emailLoginForm" onSubmit={emailLogin}>
-            <DmField label="Рабочий email" required>
+          {!pendingSession && !mfaSession ? <form className="emailLoginForm" onSubmit={emailLogin} noValidate>
+            <DmField label="Рабочий email" required validationState={(submitted || emailChecked) && errors.email ? "error" : "none"} validationMessage={submitted || emailChecked ? errors.email : undefined}>
               <DmInput
                 type="email"
                 autoComplete="email"
@@ -282,10 +291,11 @@ export default function LoginPage() {
                 required
               />
             </DmField>
-            <DmField label="Пароль" required>
+            <DmField label="Пароль" required validationState={submitted && errors.password ? "error" : "none"} validationMessage={submitted ? errors.password : undefined}>
               <DmInput
                 type="password"
                 autoComplete="current-password"
+                maxLength={128}
                 value={password}
                 onChange={(_, data) => setPassword(data.value)}
                 disabled={busy}

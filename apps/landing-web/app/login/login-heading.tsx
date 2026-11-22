@@ -1,5 +1,4 @@
 "use client";
-import { DmAction } from "@marketplace/ui/controls";
 
 import { useEffect, useState } from "react";
 import styles from "../auth-split.module.css";
@@ -14,7 +13,6 @@ const phrases = [
 
 export function LoginHeading() {
   const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(true);
 
   useEffect(() => {
@@ -26,12 +24,12 @@ export function LoginHeading() {
   }, []);
 
   useEffect(() => {
-    if (paused || reducedMotion) return;
+    if (reducedMotion) return;
     const timer = window.setInterval(() => {
       if (!document.hidden) setActive(current => (current + 1) % phrases.length);
     }, 3000);
     return () => window.clearInterval(timer);
-  }, [paused, reducedMotion]);
+  }, [reducedMotion]);
 
   return (
     <>
@@ -46,13 +44,6 @@ export function LoginHeading() {
           </span>
         ))}
       </h1>
-      {!reducedMotion && (
-        <DmAction variant="text" type="button" className={styles.headingPause} aria-label="Пауза смены фраз" aria-pressed={paused} onClick={() => setPaused(value => !value)}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            {paused ? <path d="M8 5v14l11-7z" /> : <path d="M6 5h4v14H6zm8 0h4v14h-4z" />}
-          </svg>
-        </DmAction>
-      )}
     </>
   );
 }
