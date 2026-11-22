@@ -124,3 +124,12 @@ describe("protected registration continuation", () => {
     expect(coreOpenApiSchemas.RegistrationResumeCompletedResponse).toBeDefined();
   });
 });
+
+it.each(["abcdefgh", "Abcdefg", "Аbcdefgh"])("rejects invalid new password %s before creating an account", async password => {
+  await expect(service.complete({ ...input, token, password })).rejects.toThrow("Минимум 8");
+  expect(db.user.create).not.toHaveBeenCalled();
+  expect(onboarding.claim).not.toHaveBeenCalled();
+});
+it("accepts an eight-character password with a Latin uppercase letter", async () => {
+  expect(await service.complete({ ...input, token, password: "Abcdefgh" })).toEqual({ status: "COMPLETED", next: "LOGIN" });
+});

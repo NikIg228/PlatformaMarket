@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { MarketplaceApiClient } from "@marketplace/api-client";
-import type { InvitationDetails } from "@marketplace/schemas";
+import { emailRegisterSchema, emailLoginSchema, type InvitationDetails } from "@marketplace/schemas";
 import { DmButton, DmField, DmInput, LoadingState } from "@marketplace/ui";
 import { AuthBrand, AuthNotice } from "../auth-components";
 import { feedbackFromError, type AuthFeedback } from "../auth-client";
@@ -38,8 +38,8 @@ export default function InvitationPage() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (flight.current || !details) return;
-    if (password.length < 12 || (!details.accountExists && displayName.trim().length < 2)) {
-      setFeedback({ kind: "error", message: "Укажите имя и пароль длиной не менее 12 символов." }); return;
+    if (!(details.accountExists ? emailLoginSchema : emailRegisterSchema).shape.password.safeParse(password).success || (!details.accountExists && displayName.trim().length < 2)) {
+      setFeedback({ kind: "error", message: "Проверьте имя и пароль. Новый пароль: минимум 8 символов и заглавная латинская буква (A–Z)." }); return;
     }
     flight.current = true; setBusy(true); setFeedback(null);
     try {
@@ -56,7 +56,7 @@ export default function InvitationPage() {
     {details && !done ? <><p className="authUtilityLead">{details.organizationName}</p><p>{details.email}</p><p>Роли: {details.roles.join(", ") || "Без назначенных прав"}</p>
       <form className="passwordForm" onSubmit={submit}>
         {!details.accountExists ? <DmField label="Ваше имя" required><DmInput value={displayName} onChange={(_, value) => setDisplayName(value.value)} autoComplete="name" required minLength={2} maxLength={160} disabled={busy} /></DmField> : <p>Аккаунт уже существует. Введите его действующий пароль. Имя и пароль аккаунта не изменятся.</p>}
-        <DmField label={details.accountExists ? "Действующий пароль" : "Создайте пароль"} hint="Минимум 12 символов" required><DmInput type="password" autoComplete={details.accountExists ? "current-password" : "new-password"} value={password} onChange={(_, value) => setPassword(value.value)} minLength={12} maxLength={128} required disabled={busy} /></DmField>
+        <DmField label={details.accountExists ? "Действующий пароль" : "Создайте пароль"} hint={details.accountExists ? undefined : "Минимум 8 символов и одна заглавная латинская буква (A–Z)"} required><DmInput type="password" autoComplete={details.accountExists ? "current-password" : "new-password"} value={password} onChange={(_, value) => setPassword(value.value)} minLength={details.accountExists ? 1 : 8} maxLength={128} required disabled={busy} /></DmField>
         {details.mfaRequired ? <DmField label="Код MFA или код восстановления" required><DmInput value={mfaCode} onChange={(_, value) => setMfaCode(value.value)} autoComplete="one-time-code" required minLength={6} maxLength={32} disabled={busy} /></DmField> : null}
         <DmButton type="submit" appearance="primary" disabled={busy}>{busy ? "Принимаем приглашение…" : "Принять приглашение"}</DmButton>
         {details.accountExists ? <a href="/login">Восстановить пароль на странице входа</a> : null}

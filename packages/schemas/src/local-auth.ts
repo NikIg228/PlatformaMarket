@@ -5,7 +5,7 @@ export const authClientOptionsSchema = z.object({ localOperatorPasswordEnabled: 
 export const authRegistrationAcceptedSchema = z.object({ ok: z.literal(true), verificationRequired: z.literal(true), email: z.email(), delivery: authMailDeliverySchema }).strict();
 export const registrationEmailCorrectionSchema = z.object({
   registrationToken: z.string().min(32).max(512),
-  password: z.string().min(12).max(128),
+  password: z.string().min(1).max(128),
   email: z.string().trim().pipe(z.email().max(254)).transform(value => value.toLowerCase()),
   returnTo: emailRegisterSchema.shape.returnTo,
 }).strict();

@@ -8,7 +8,7 @@ export const registrationResumeRequestSchema = z.object({
 export const registrationResumeProofSchema = z.object({ token: z.string().regex(/^[A-Za-z0-9_-]{64}$/) }).strict();
 export const registrationResumeCompleteSchema = registrationResumeRequestSchema.extend({
   token: registrationResumeProofSchema.shape.token,
-  password: z.string().min(12).max(128),
+  password: z.string().min(1).max(128),
 }).strict();
 export const registrationResumeRequestedSchema = z.object({ status: z.literal("ACCEPTED") }).strict();
 export const registrationResumeDetailsSchema = z.object({

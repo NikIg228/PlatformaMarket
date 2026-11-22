@@ -18,8 +18,8 @@ export function DmButton({ className, density, intent = "default", fullWidth = f
 
 
 /** Semantic actions whose content is a row, a choice card, a tab or inline text. */
-export function DmAction({ className, variant, density, type = "button", ...props }: ComponentPropsWithRef<"button"> & Density & { variant: "text" | "navigation" | "choice" | "tab" | "row" | "avatar" }) {
-  return <button {...props} type={type} data-dm-action={variant} data-dm-density={densityFor(density)} className={classes("dm-action", className)} />;
+export function DmAction({ className, variant, density, selection = "subtle", type = "button", ...props }: ComponentPropsWithRef<"button"> & Density & { selection?: "subtle" | "strong"; variant: "text" | "navigation" | "choice" | "tab" | "row" | "avatar" }) {
+  return <button {...props} type={type} data-dm-action={variant} data-dm-selection={selection === "strong" ? "strong" : undefined} data-dm-density={densityFor(density)} className={classes("dm-action", className)} />;
 }
 
 

@@ -1,5 +1,6 @@
 {
   "version": "market-components-v1",
+  "choiceSelection": { "default": "subtle", "strong": { "background": "--dm-brand-primary", "foreground": "--dm-text-inverse", "trigger": "aria-pressed=true" } },
   "fieldTypography": {
     "default": { "labelSize": "14px", "labelWeight": 700 },
     "auth": { "labelSize": "14px", "labelWeight": 600, "labelLineHeight": "20px" }

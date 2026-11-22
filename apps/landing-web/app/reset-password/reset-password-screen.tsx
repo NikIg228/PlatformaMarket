@@ -1,5 +1,6 @@
 "use client";
 
+import { emailResetPasswordSchema } from "@marketplace/schemas";
 import { DmButton, DmField, DmInput } from "@marketplace/ui";
 import { type FormEvent, useEffect, useState } from "react";
 import { AuthBrand, AuthNotice } from "../auth-components";
@@ -23,9 +24,9 @@ export default function ResetPasswordPage() {
   }, []);
 
   const passwordError =
-    password.length >= 12
+    emailResetPasswordSchema.shape.password.safeParse(password).success
       ? undefined
-      : "Пароль должен содержать не менее 12 символов.";
+      : "Минимум 8 символов и одна заглавная латинская буква (A–Z).";
   const confirmationError =
     password === confirmation ? undefined : "Пароли не совпадают.";
 
@@ -74,7 +75,7 @@ export default function ResetPasswordPage() {
           <form onSubmit={submit} className="passwordForm" noValidate>
             <DmField
               label="Новый пароль"
-              hint="Минимум 12 символов"
+              hint="Минимум 8 символов и одна заглавная латинская буква (A–Z)"
               required
               validationState={
                 submitted && passwordError ? "error" : "none"
@@ -83,7 +84,7 @@ export default function ResetPasswordPage() {
             >
               <DmInput
                 type="password"
-                minLength={12}
+                minLength={8}
                 autoComplete="new-password"
                 value={password}
                 onChange={(_, data) => setPassword(data.value)}
@@ -101,7 +102,7 @@ export default function ResetPasswordPage() {
             >
               <DmInput
                 type="password"
-                minLength={12}
+                minLength={8}
                 autoComplete="new-password"
                 value={confirmation}
                 onChange={(_, data) => setConfirmation(data.value)}

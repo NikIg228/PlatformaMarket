@@ -30,7 +30,7 @@ export function AuthRolePicker({
 }) {
   return (
     <div className="rolePicker" role="group" aria-label="Тип кабинета">
-      <DmAction variant="choice"
+      <DmAction variant="choice" selection="strong"
         type="button"
 
         data-selected={value === "BUYER"}
@@ -43,7 +43,7 @@ export function AuthRolePicker({
           {registration ? "Закупки, бюджеты и документы" : "Магазин и закупки"}
         </span>
       </DmAction>
-      <DmAction variant="choice"
+      <DmAction variant="choice" selection="strong"
         type="button"
 
         data-selected={value === "SUPPLIER"}

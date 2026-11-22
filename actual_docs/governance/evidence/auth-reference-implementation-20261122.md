@@ -1,3 +1,48 @@
+## Registration simplification follow-up — 2026-11-22
+
+Prior91a15189 PASS → owner requests simpler forms and new password policy → scoped
+UI/schema/auth changes. Owner confirms empty legalName until future Kompra.kz; no
+provider integration or invented legal name. Existing non-null string storage accepts
+empty string; no Prisma migration/data rewrite. Registration agreement remains true
+with server timestamp/IP/version, now accepted through submit beside explicit notice;
+marketing stays false. Password:8+ with ASCII uppercase, symbols/digits optional;
+technical128 cap retained; existing login passwords are not revalidated as new.
+Skills reused: frontend, Anti Slop during/UI/layout/human/copy; preserve typography,
+shared controls, role contrast, mobile fit, keyboard and input retention. Gates:
+schema/API focused tests and builds, landing/web builds, lint/UI contract, Chrome
+form/role/links/password/validation desktop+mobile. No live signup or credentials.
+Status: SCOPED_PASS. Canonical main91a15189, unrelated WIP preserved.
+Owner refinements included: «Создать профиль» button, concise acceptance notice,
+bold700 + underlined «условия регистрации» link; company/BIN row before passwords.
+New /legal/registration links existing terms/privacy; no new legal text invented.
+
+Verification: schema113, API36, frontend auth41 tests PASS; scoped ESLint and final
+UI-contract PASS. Both final landing/web isolated production builds/types PASS after
+last field reorder. Standard API prebuild hit Windows EPERM on loaded Prisma DLL;
+no schema change, existing generated client retained; explicit nest build PASS and
+runtime-split probe PASS. No DB migration, no working data writes, no full E2E.
+Owner approved restarting exact API4012/PID17840 (other dev process); restarted
+canonical apps/api/dist via existing local launcher, session69250, health200. Runtime
+invalid requests (invalid email/BIN prevent writes) prove new password policy and
+absence of legalName error. Logs `.tmp/auth-alignment-20261122/*policy*`, `*last*`.
+
+Chrome PASS: login links same400px bounds as fields desktop; mobile390 widths342.4,
+no overflow, removed copy absent, forgot action with empty email shows recoverable
+validation; Tab/Enter registration link reaches form. Role switches update selection,
+strong selected rgb(0,122,89) with white caption; fields retain44px and shared type.
+Password without A-Z rejected, eight chars with A-Z clears error; exact confirmation
+retained. Documents link opens real rules page and terms document. Registration final
+row order confirmed desktop1440x1000 and mobile390x844; footer wraps within screen.
+Screenshots captured and visually inspected in `output/auth-policy-20261122/`:
+register-desktop, register-mobile, login-desktop, login-mobile. Browser viewport API
+initially had no effect; documented tab CDP emulation worked and was cleared at end.
+Initial stale generated auth CSS caused dark caption; regenerated through existing
+prepare-unified-web script and verified white caption after reload. Transient Fluent
+hydration frame resolved on reload; final fields44px. No real signup/reset performed.
+Anti Slop scoped gates PASS: contrast, hierarchy, alignment, meaningful actions,
+keyboard, recovery, responsive layout. Existing authenticated sessions preserved.
+
+
 # AUTH-REFERENCE-IMPLEMENTATION-20261122
 
 ## Owner follow-up: alignment and narrower login fields

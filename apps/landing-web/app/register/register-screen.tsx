@@ -9,7 +9,6 @@ import { registrationErrors } from "../auth-validation";
 
 import {
   DmButton,
-  DmCheckbox,
   DmField,
   DmInput,
 } from "@marketplace/ui";
@@ -36,24 +35,16 @@ type RegistrationForm = {
   ownerDisplayName: string;
   email: string;
   password: string;
-  legalName: string;
   organizationDisplayName: string;
   bin: string;
-  termsAccepted: boolean;
-  privacyAccepted: boolean;
-  marketingConsent: boolean;
 };
 
 const initialForm: RegistrationForm = {
   ownerDisplayName: "",
   email: "",
   password: "",
-  legalName: "",
   organizationDisplayName: "",
   bin: "",
-  termsAccepted: false,
-  privacyAccepted: false,
-  marketingConsent: false,
 };
 
 export default function RegisterPage() {
@@ -91,7 +82,7 @@ export default function RegisterPage() {
     if (!canSubmit) {
       setFeedback({
         kind: "error",
-        message: "Проверьте отмеченные поля и обязательные согласия.",
+        message: "Проверьте отмеченные поля.",
       });
       return;
     }
@@ -103,6 +94,9 @@ export default function RegisterPage() {
         "/onboarding/registrations",
         {
           ...form,
+          termsAccepted: true,
+          privacyAccepted: true,
+          marketingConsent: false,
           email: form.email.trim().toLowerCase(),
           capability,
           consentVersion: "2026-07-17",
@@ -246,60 +240,6 @@ export default function RegisterPage() {
             />
           </DmField>
           <DmField
-            typography="auth"
-            label="Пароль"
-            hint="От 12 до 128 символов"
-            required
-            validationState={submitted && errors.password ? "error" : "none"}
-            validationMessage={submitted ? errors.password : undefined}
-          >
-            <DmInput
-              type="password"
-              value={form.password}
-              onChange={(_, data) => update("password", data.value)}
-              autoComplete="new-password"
-              minLength={12}
-              maxLength={128}
-              disabled={busy}
-              required
-            />
-          </DmField>
-          <DmField
-            typography="auth"
-            label="Подтвердите пароль"
-            required
-            validationState={submitted && errors.passwordConfirmation ? "error" : "none"}
-            validationMessage={submitted ? errors.passwordConfirmation : undefined}
-          >
-            <DmInput
-              type="password"
-              autoComplete="new-password"
-              maxLength={128}
-              value={passwordConfirmation}
-              onChange={(_, data) => setPasswordConfirmation(data.value)}
-              disabled={busy}
-              required
-            />
-          </DmField>
-          <DmField
-            typography="auth"
-            className="wide"
-            label="Юридическое наименование"
-            required
-            validationState={submitted && errors.legalName ? "error" : "none"}
-            validationMessage={submitted ? errors.legalName : undefined}
-          >
-            <DmInput
-              value={form.legalName}
-              onChange={(_, data) => update("legalName", data.value)}
-              placeholder="ТОО «Стоматология»"
-              minLength={2}
-              maxLength={240}
-              disabled={busy}
-              required
-            />
-          </DmField>
-          <DmField
             label="Название в кабинете"
             typography="auth"
             required
@@ -341,51 +281,42 @@ export default function RegisterPage() {
               required
             />
           </DmField>
-          <div className="registrationConsents wide">
-            <DmCheckbox
-              checked={form.termsAccepted}
-              onChange={(_, data) =>
-                update("termsAccepted", data.checked === true)
-              }
+          <DmField
+            typography="auth"
+            label="Пароль"
+            hint="Минимум 8 символов и одна заглавная латинская буква (A–Z)"
+            required
+            validationState={submitted && errors.password ? "error" : "none"}
+            validationMessage={submitted ? errors.password : undefined}
+          >
+            <DmInput
+              type="password"
+              value={form.password}
+              onChange={(_, data) => update("password", data.value)}
+              autoComplete="new-password"
+              minLength={8}
+              maxLength={128}
               disabled={busy}
-              label={
-                <span>
-                  Принимаю{" "}
-                  <a href="/legal/terms" target="_blank" rel="noreferrer">
-                    условия использования
-                  </a>
-                </span>
-              }
+              required
             />
-            <DmCheckbox
-              checked={form.privacyAccepted}
-              onChange={(_, data) =>
-                update("privacyAccepted", data.checked === true)
-              }
+          </DmField>
+          <DmField
+            typography="auth"
+            label="Подтвердите пароль"
+            required
+            validationState={submitted && errors.passwordConfirmation ? "error" : "none"}
+            validationMessage={submitted ? errors.passwordConfirmation : undefined}
+          >
+            <DmInput
+              type="password"
+              autoComplete="new-password"
+              maxLength={128}
+              value={passwordConfirmation}
+              onChange={(_, data) => setPasswordConfirmation(data.value)}
               disabled={busy}
-              label={
-                <span>
-                  Согласен с{" "}
-                  <a href="/legal/privacy" target="_blank" rel="noreferrer">
-                    политикой конфиденциальности
-                  </a>
-                </span>
-              }
+              required
             />
-            <DmCheckbox
-              checked={form.marketingConsent}
-              onChange={(_, data) =>
-                update("marketingConsent", data.checked === true)
-              }
-              disabled={busy}
-              label="Получать новости продукта (необязательно)"
-            />
-            {submitted && errors.consents ? (
-              <p className="consentError" role="alert">
-                {errors.consents}
-              </p>
-            ) : null}
-          </div>
+          </DmField>
           {feedback ? (
             <div className="wide">
               <AuthNotice feedback={feedback} />
@@ -397,8 +328,11 @@ export default function RegisterPage() {
             className={`wide registrationSubmit ${styles.submitAction}`}
             disabled={busy}
           >
-            {busy ? "Создаём аккаунт…" : "Продолжить"}
+            {busy ? "Создаём профиль…" : "Создать профиль"}
           </DmButton>
+          <p className={`wide ${styles.registrationConsent}`}>
+            Нажимая «Создать профиль», вы принимаете <a href="/legal/registration" target="_blank" rel="noreferrer"><strong><u>условия регистрации</u></strong></a>.
+          </p>
         </form>
       </section>
     </main>

@@ -1,3 +1,4 @@
+import { emailRegisterSchema } from "@marketplace/schemas";
 import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import type { AcceptInvitationInput, CreateInvitationInput } from "@marketplace/schemas";
 import { createHash, randomBytes } from "node:crypto";
@@ -109,7 +110,7 @@ export class InvitationsService {
         throw new UnauthorizedException("Введите действующий пароль аккаунта или войдите через провайдера.");
       }
     }
-    if (!user && !input.password) throw new BadRequestException("Создайте пароль для нового аккаунта");
+    if (!user && !emailRegisterSchema.shape.password.safeParse(input.password).success) throw new BadRequestException("Минимум 8 символов и одна заглавная латинская буква (A–Z).");
     if (user?.mfaFactor?.status === "ACTIVE") {
       if (!input.mfaCode) throw new UnauthorizedException("Подтвердите вход кодом MFA");
       await this.mfa.challenge({ code: input.mfaCode }, { actorId: user.id, organizationId: invitation.organizationId });

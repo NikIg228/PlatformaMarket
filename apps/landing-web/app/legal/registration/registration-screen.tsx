@@ -1,0 +1,1 @@
+export default function RegistrationRulesPage() { return <main className="legalPage"><a className="backLink" href="/register">← К регистрации</a><h1>Правила регистрации</h1><p>При создании профиля вы принимаете следующие документы:</p><ul><li><a href="/legal/terms">Условия использования</a></li><li><a href="/legal/privacy">Политика конфиденциальности</a></li></ul></main>; }

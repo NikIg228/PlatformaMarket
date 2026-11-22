@@ -316,7 +316,6 @@ export default function LoginPage() {
                 {busyAction === "forgot" ? "Отправляем…" : "Забыли пароль?"}
               </DmButton>
               <p className={`loginSignup ${styles.signup}`}>
-                Нет аккаунта?{" "}
                 <Link href={withWorkspaceReturn("/register", returnTo)}>
                   Зарегистрироваться
                 </Link>

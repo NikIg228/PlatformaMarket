@@ -151,6 +151,8 @@
 }
 
 .loginLinks {
+  width: min(400px, 100%);
+  justify-self: center;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -244,3 +246,5 @@
     min-width: 0;
   }
 }
+
+.registrationConsent { margin: 0; text-align: center; font-size: var(--dm-font-size-caption); color: var(--dm-text-secondary); }

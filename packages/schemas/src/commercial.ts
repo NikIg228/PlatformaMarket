@@ -20,7 +20,7 @@ export const demoSessionSchema = z.object({
 export const createRegistrationIntentSchema = z.object({
   email: z.email().transform((value) => value.toLowerCase()),
   ownerDisplayName: z.string().trim().min(2).max(160),
-  legalName: z.string().trim().min(2).max(240),
+  legalName: z.union([z.literal(""), z.string().trim().min(2).max(240)]).default(""),
   organizationDisplayName: z.string().trim().min(2).max(160),
   bin: z.string().regex(/^\d{12}$/, "БИН должен содержать 12 цифр"),
   capability: z.enum(["BUYER", "SUPPLIER"]),
@@ -59,14 +59,14 @@ export const refreshSessionSchema = z.object({
 export const emailRegisterSchema = z.object({
   email: z.email().transform((value) => value.toLowerCase()),
   displayName: z.string().trim().min(2).max(160),
-  password: z.string().min(12).max(128),
+  password: z.string().min(8).max(128).regex(/[A-Z]/, "Добавьте заглавную латинскую букву"),
   registrationToken: z.string().min(32).max(512).optional(),
   returnTo: z.string().max(4096).refine(value => workspaceReturnPath(value) !== undefined, "Недопустимый адрес возврата").optional(),
 });
 export const emailLoginSchema = z.object({ email: z.email().transform((value) => value.toLowerCase()), password: z.string().min(1).max(128) });
 export const emailTokenSchema = z.object({ token: z.string().min(32).max(512) });
 export const emailForgotPasswordSchema = z.object({ email: z.email().transform((value) => value.toLowerCase()) });
-export const emailResetPasswordSchema = z.object({ token: z.string().min(32).max(512), password: z.string().min(12).max(128) });
+export const emailResetPasswordSchema = z.object({ token: z.string().min(32).max(512), password: z.string().min(8).max(128).regex(/[A-Z]/, "Добавьте заглавную латинскую букву") });
 
 export const switchSessionOrganizationSchema = z.object({ organizationId: z.uuid() });
 export const revokeSessionSchema = z.object({ reason: z.string().trim().min(3).max(240).default("user_requested") });
