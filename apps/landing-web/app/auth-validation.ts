@@ -8,10 +8,10 @@ const registrationFields = {
   bin: createRegistrationIntentSchema.shape.bin,
 };
 const messages = {
-  ownerDisplayName: "Укажите ФИО длиной от 2 до 160 символов.",
+  ownerDisplayName: "Укажите ФИО длиной от 2 символов.",
   email: "Укажите корректный рабочий email.",
   password: "Минимум 8 символов и одна заглавная латинская буква (A–Z) и одна цифра.",
-  organizationDisplayName: "Укажите название в кабинете длиной от 2 до 160 символов.",
+  organizationDisplayName: "Укажите название в кабинете длиной от 2 символов.",
   bin: "БИН должен содержать ровно 12 цифр.",
 };
 type RegistrationFields = Record<keyof typeof registrationFields, string>;
@@ -20,7 +20,13 @@ export function registrationErrors(form: RegistrationFields, passwordConfirmatio
   const errors: Partial<Record<keyof RegistrationFields | "passwordConfirmation", string>> = {};
   for (const key of Object.keys(registrationFields) as (keyof typeof registrationFields)[]) {
     const value = key === "email" ? form[key].trim() : form[key];
-    if (!registrationFields[key].safeParse(value).success) errors[key] = messages[key];
+    if (!registrationFields[key].safeParse(value).success) {
+      errors[key] = key === "ownerDisplayName" && value.trim().length > 50
+        ? "Сократите ФИО."
+        : key === "organizationDisplayName" && value.trim().length > 50
+          ? "Сократите название в кабинете."
+          : messages[key];
+    }
   }
   if (!passwordConfirmation) errors.passwordConfirmation = "Повторите пароль.";
   else if (passwordConfirmation !== form.password) errors.passwordConfirmation = "Пароли не совпадают.";

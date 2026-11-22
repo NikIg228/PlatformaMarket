@@ -13,3 +13,9 @@ it("leaves legal name blank and records mandatory agreement but no marketing opt
   expect(createRegistrationIntentSchema.parse(input)).toMatchObject({ legalName: "", termsAccepted: true, privacyAccepted: true, marketingConsent: false });
   expect(createRegistrationIntentSchema.safeParse({ ...input, termsAccepted: false }).success).toBe(false);
 });
+
+it.each([createRegistrationIntentSchema.shape.ownerDisplayName, createRegistrationIntentSchema.shape.organizationDisplayName, emailRegisterSchema.shape.displayName])("limits registration names to 2–50 trimmed characters", schema => {
+  for (const length of [0, 1, 51]) expect(schema.safeParse("А".repeat(length)).success).toBe(false);
+  for (const length of [2, 50]) expect(schema.safeParse("А".repeat(length)).success).toBe(true);
+  expect(schema.safeParse(" А ").success).toBe(false);
+});

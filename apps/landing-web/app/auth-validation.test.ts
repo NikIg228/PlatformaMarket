@@ -9,7 +9,7 @@ it("accepts normalized email without removed registration fields", () => {
   expect(registrationErrors({ ...valid, email: " OWNER@example.invalid " })).toEqual({});
 });
 it.each([
-  ["ownerDisplayName", 160], ["organizationDisplayName", 160], ["password", 128],
+  ["ownerDisplayName", 50], ["organizationDisplayName", 50], ["password", 128],
 ] as const)("enforces both boundaries for %s", (field, maximum) => {
   const minimum = field === "password" ? 8 : 2;
   expect(registrationErrors({ ...valid, [field]: "A1" + "a".repeat(minimum - 2) })[field]).toBeUndefined();
@@ -35,4 +35,9 @@ it("requires an exact password confirmation, preserving spaces and case", () => 
   expect(registrationErrors(valid, valid.password.toUpperCase()).passwordConfirmation).toBeTruthy();
   expect(registrationErrors(valid, `${valid.password} `).passwordConfirmation).toBeTruthy();
   expect(registrationErrors(valid, valid.password).passwordConfirmation).toBeUndefined();
+});
+
+it("explains short names without advertising the maximum", () => {
+  expect(registrationErrors({ ...valid, ownerDisplayName: "А", organizationDisplayName: "К" })).toMatchObject({ ownerDisplayName: "Укажите ФИО длиной от 2 символов.", organizationDisplayName: "Укажите название в кабинете длиной от 2 символов." });
+  expect(registrationErrors({ ...valid, ownerDisplayName: "А".repeat(51), organizationDisplayName: "К".repeat(51) })).toMatchObject({ ownerDisplayName: "Сократите ФИО.", organizationDisplayName: "Сократите название в кабинете." });
 });

@@ -1,3 +1,26 @@
+## Follow-up: registration name limits — 2026-11-22
+
+Prior5f095e62 PASS → owner requires FIO/cabinet name2–50 and minimum-only short
+input errors → shared onboarding/registration schema limits, input maxlength50,
+short/long specific copy without advertising maximum. Existing data/login/profile
+editing unchanged. Skills frontend + Anti Slop during/human/copy reused; preserve
+layout, inline feedback, keyboard, name input. Gates: schema/frontend boundary
+regression, schema build, landing/web build/types, scoped lint/UI-contract, browser
+short/recovery/maxlength screenshot; runtime validation with invalid BIN/email (no
+writes). Canonical main5f095e62, unrelated WIP preserved. Status: SCOPED_PASS.
+Schema117 and auth frontend42 tests PASS (0/1/2/50/51 lengths and trimmed input,
+short/long copy); schema build, landing/web production builds/types, scoped lint
+and UI-contract PASS. API code/types/runtime topology unchanged; no API rebuild,
+migration or full E2E needed for schema validation bounds. Owned API17300 restarted
+via approved existing launcher, new session5373; health200. Invalid-email/BIN live
+requests show names1/51 rejected,2/50 accepted, no data writes. Logs name-* under
+.tmp/auth-alignment-20261122. Chrome: one-char errors omit maximum, two chars clear
+errors, typing51 is capped at50 for both fields; mobile390 no overflow. Screenshots
+captured and visually inspected output/auth-names-20261122/{validation,mobile}.png.
+Anti Slop scoped form/copy/layout gates PASS; previous password/logo/order fixes
+preserved. Emulation cleared; no real registration/password changes.
+
+
 ## Follow-up: mandatory digit and attached logo — 2026-11-22
 
 Prior bea79ee7 scoped PASS → owner now requires a digit as well as Latin uppercase

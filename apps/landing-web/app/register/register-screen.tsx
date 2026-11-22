@@ -217,7 +217,7 @@ export default function RegisterPage() {
               onChange={(_, data) => update("ownerDisplayName", data.value)}
               autoComplete="name"
               minLength={2}
-              maxLength={160}
+              maxLength={50}
               disabled={busy}
               required
             />
@@ -252,7 +252,7 @@ export default function RegisterPage() {
             <DmInput
               value={form.organizationDisplayName}
               minLength={2}
-              maxLength={160}
+              maxLength={50}
               onChange={(_, data) =>
                 update("organizationDisplayName", data.value)
               }
