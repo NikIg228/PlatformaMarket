@@ -6,7 +6,8 @@ export async function revokeWorkspaceSession(apiUrl: string, session: { sessionI
   async function send(accessToken: string): Promise<Response> {
     try {
       return await fetch(`${apiUrl.replace(/\/$/, "")}/auth/session-logout`, {
-        method: "POST", credentials: "omit", cache: "no-store",
+        // Same-origin cookies pass the stand gate; the body proof still selects the session.
+        method: "POST", credentials: "same-origin", cache: "no-store",
         headers: { "content-type": "application/json" }, body: JSON.stringify({ sessionId, accessToken }),
         signal: AbortSignal.timeout(10_000),
       });

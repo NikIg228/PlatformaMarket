@@ -35,14 +35,14 @@ describe("workspace logout server confirmation", () => {
     expect(renew).not.toHaveBeenCalled();
     expect(postMessage).toHaveBeenCalledWith({ type: "revoked", sessionId: session.sessionId }); expect(close).toHaveBeenCalledOnce();
   });
-  it("revokes the exact bearer session without cookies or identity headers", async () => {
+  it("passes same-origin stand cookies while selecting the session only through its proof", async () => {
     const fetcher = vi.fn().mockResolvedValue(Response.json(receipt));
     vi.stubGlobal("fetch", fetcher);
     await revokeWorkspaceSession("http://localhost/api/", session);
     expect(fetcher).toHaveBeenCalledTimes(1);
     const [url, options] = fetcher.mock.calls[0];
     expect(url).toBe("http://localhost/api/auth/session-logout");
-    expect(options).toMatchObject({ method: "POST", credentials: "omit", headers: { "content-type": "application/json" }, body: JSON.stringify(session) });
+    expect(options).toMatchObject({ method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify(session) });
     expect(Object.keys(options.headers)).toHaveLength(1);
     expect(options.signal).toBeInstanceOf(AbortSignal);
   });
