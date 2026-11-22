@@ -2,7 +2,9 @@
 
 import { Checkbox, Combobox, Dropdown, Field, Input, TabList, Textarea } from "@fluentui/react-components";
 import type { ComponentPropsWithRef } from "react";
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { Eye20Regular, EyeOff20Regular } from "@fluentui/react-icons";
+import { DmButton } from "./actions";
 
 import { classes, densityFor, type Density } from "./control-utils";
 
@@ -15,7 +17,23 @@ export function DmField({ className, typography = "default", ...props }: Compone
   return <Field {...props} data-dm-field-typography={typography === "default" ? undefined : typography} className={classes("dm-field", className)} />;
 }
 
-export function DmInput({ className, density, quantity = false, style, ...props }: ComponentPropsWithRef<typeof Input> & Density & { quantity?: boolean }) {
+type DmInputProps = ComponentPropsWithRef<typeof Input> & Density & { quantity?: boolean };
+
+export function DmInput(props: DmInputProps) {
+  return props.type === "password" ? <PasswordInput {...props} /> : <InputControl {...props} />;
+}
+
+function PasswordInput(props: DmInputProps) {
+  const [visible, setVisible] = useState(false);
+  return <InputControl {...props} type={visible ? "text" : "password"} contentAfter={<>
+    {props.contentAfter}
+    <DmButton type="button" appearance="subtle" density="compact" disabled={props.disabled}
+      aria-label={visible ? "Скрыть пароль" : "Показать пароль"} aria-pressed={visible}
+      icon={visible ? <EyeOff20Regular /> : <Eye20Regular />} onClick={() => setVisible(current => !current)} />
+  </>} />;
+}
+
+function InputControl({ className, density, quantity = false, style, ...props }: DmInputProps) {
   const digits = Math.max(1, Math.min(14, String(props.value ?? props.defaultValue ?? "").length));
   return <Input {...props} style={quantity ? { ...style, width: `calc(${digits}ch + var(--dm-space-6) + 2px)` } : style} data-dm-quantity={quantity || undefined} data-dm-density={densityFor(density, props.size)} className={classes("dm-control", "dm-input", quantity ? "dm-input-quantity" : undefined, props.readOnly && props.appearance === "filled-darker" ? "dm-input-readonly" : undefined, className)} />;
 }

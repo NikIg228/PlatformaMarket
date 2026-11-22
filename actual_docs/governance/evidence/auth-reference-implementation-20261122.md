@@ -1,5 +1,56 @@
 # AUTH-REFERENCE-IMPLEMENTATION-20261122
 
+## Owner follow-up: alignment and narrower login fields
+
+Prior cb2cba1b scoped PASS → owner requests centered form headings/actions and
+registration lead, shorter login fields, BIN hint inside input → local layout/copy
+delta only. Login fields max400px (previous520); parent form and vertical centering
+retained. Shared typography/control heights unchanged. Reuse skills/brand direction
+above; gates: landing/web build/types, scoped lint/UI-contract/diff, browser desktop
+and mobile geometry, BIN placeholder entry and validation. No auth/data changes.
+Status: IMPLEMENTED / scoped checks PASS; publication pending.
+
+Owner added «Создайте профиль», reveal actions for password inputs and registration
+confirmation in the same desktop row. Shared DmInput type=password now has an opt-in
+by-type visibility button (default masked, type=button, disabled follows input,
+accessible show/hide labels); covers login/register/reset/resume/invitation and
+the existing admin secret input without per-page duplication. Registration confirm
+is local state only, exact equality required before existing requests; no new API
+field. Add focused shared input/confirmation tests and browser reveal/hide keyboard,
+retained value, mismatched confirmation, narrow layout and representative reset
+consumer checks. Earlier alignment-only builds do not certify this added behavior.
+
+Follow-up verification (2026-11-22):
+- PASS: auth tests42 (including exact confirmation, empty/mismatch/case/spaces),
+  shared password/component tests5, scoped ESLint, UI contract policy5 + verifier.
+  Initial shared test runner failed on Fluent/Tabster ESM; existing CJS-compatible
+  test loading fixed it, subsequent run PASS. Real Fluent controls remain rendered.
+- PASS: final isolated landing-web and web production builds including types,
+  after all password edits. Logs `.tmp/auth-alignment-20261122/`.
+- Chrome desktop login: centered heading/button; fields400px; outer control44px
+  (fractional computed43.6). Synthetic password revealed then masked by keyboard,
+  no submit/navigation/errors from reveal. Registration heading32/40/600 and
+  centered lead/action; passwords same row; mismatch appears then clears on exact
+  correction, reveal retains synthetic value. BIN hint is placeholder, hidden
+  while typing. No successful account creation or credential changes performed.
+- Registration390x844: passwords stack, no horizontal overflow; screenshots
+  captured and visually inspected: `output/auth-alignment-20261122/` files
+  `register-desktop.png`, `register-mobile.png`, `login-desktop.png`, `login-mobile.png`.
+- Reset without token: both fields and both reveal actions correctly disabled;
+  existing recovery error/link retained. Enabled reset submission not exercised
+  (no reset token, no credential changes in scope). Login mobile repeat on127.0.0.1
+  redirected to supplier after an active session appeared. Resolved by checking
+  same canonical dev on localhost in a separate unauthenticated tab, preserving
+  user's session. At390x844 fields342.4px, no horizontal overflow, heading/action
+  centered; Tab/Enter reveal/hide retains input, focus outline visible, no submit.
+  Screenshot captured and visually inspected; viewport override reset.
+- Anti Slop delivery within scope: existing typography, compact actions, centered
+  geometry, meaningful labels/placeholder, keyboard reveal and validation recovery
+  checked; no assets/dependencies or adjacent redesign. Loading/network/backend
+  states unchanged; no DB/E2E release gates for this frontend-only delta.
+
+## Prior reference implementation (cb2cba1b)
+
 Status: SCOPED_CHECKS_PASS / PUBLICATION_PENDING. main@64071145, canonical PlatformaMarket root. Prior auth
 layout/validation PASS → owner approved references with strict numeric typography
 and compact primary buttons → minimal presentation changes, no auth/API/DB change.

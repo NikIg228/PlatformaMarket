@@ -60,6 +60,7 @@ export default function RegisterPage() {
   const returnTo = useProductReturn();
   const [capability, setCapability] = useState<AuthCapability>("BUYER");
   const [form, setForm] = useState(initialForm);
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
   const [delivery, setDelivery] = useState<"LOCAL_FILE" | "PROVIDER" | null>(null);
   const [busy, setBusy] = useState(false);
@@ -74,7 +75,7 @@ export default function RegisterPage() {
     if (role === "supplier") setCapability("SUPPLIER");
   }, []);
 
-  const errors = useMemo(() => registrationErrors(form), [form]);
+  const errors = useMemo(() => registrationErrors(form, passwordConfirmation), [form, passwordConfirmation]);
   const canSubmit = Object.values(errors).every((value) => !value);
 
   const update = <Key extends keyof RegistrationForm>(
@@ -195,7 +196,7 @@ export default function RegisterPage() {
             <span aria-hidden="true">←</span> Вернуться к каталогу
           </a>
         </div>
-        <h2 id="register-title">Создать профиль</h2>
+        <h2 id="register-title">Создайте профиль</h2>
         <p className="formLead">
           Выберите роль и укажите сведения точно как в регистрационных
           документах.
@@ -265,6 +266,23 @@ export default function RegisterPage() {
           </DmField>
           <DmField
             typography="auth"
+            label="Подтвердите пароль"
+            required
+            validationState={submitted && errors.passwordConfirmation ? "error" : "none"}
+            validationMessage={submitted ? errors.passwordConfirmation : undefined}
+          >
+            <DmInput
+              type="password"
+              autoComplete="new-password"
+              maxLength={128}
+              value={passwordConfirmation}
+              onChange={(_, data) => setPasswordConfirmation(data.value)}
+              disabled={busy}
+              required
+            />
+          </DmField>
+          <DmField
+            typography="auth"
             className="wide"
             label="Юридическое наименование"
             required
@@ -306,13 +324,13 @@ export default function RegisterPage() {
           <DmField
             label="БИН"
             typography="auth"
-            hint="12 цифр без пробелов"
             required
             validationState={submitted && errors.bin ? "error" : "none"}
             validationMessage={submitted ? errors.bin : undefined}
           >
             <DmInput
               aria-label="БИН"
+              placeholder="12 цифр без пробелов"
               inputMode="numeric"
               maxLength={12}
               value={form.bin}

@@ -1,5 +1,7 @@
 import { expect, it } from "vitest";
-import { loginErrors, registrationErrors } from "./auth-validation";
+import { loginErrors, registrationErrors as validateRegistration } from "./auth-validation";
+
+const registrationErrors = (form: Parameters<typeof validateRegistration>[0], confirmation = form.password) => validateRegistration(form, confirmation);
 
 const valid = { ownerDisplayName: "Иван Иванов", email: "owner@example.invalid", password: "test-password", legalName: "ТОО Клиника", organizationDisplayName: "Клиника", bin: "123456789012", termsAccepted: true, privacyAccepted: true };
 
@@ -25,4 +27,12 @@ it("login accepts existing short passwords but rejects empty or overlong credent
   expect(loginErrors(valid.email, "").password).toBeTruthy();
   expect(loginErrors(valid.email, "a".repeat(128)).password).toBeUndefined();
   expect(loginErrors(valid.email, "a".repeat(129)).password).toBeTruthy();
+});
+
+it("requires an exact password confirmation, preserving spaces and case", () => {
+  expect(registrationErrors(valid, "").passwordConfirmation).toBe("Повторите пароль.");
+  expect(registrationErrors(valid, "different-password").passwordConfirmation).toBe("Пароли не совпадают.");
+  expect(registrationErrors(valid, valid.password.toUpperCase()).passwordConfirmation).toBeTruthy();
+  expect(registrationErrors(valid, `${valid.password} `).passwordConfirmation).toBeTruthy();
+  expect(registrationErrors(valid, valid.password).passwordConfirmation).toBeUndefined();
 });

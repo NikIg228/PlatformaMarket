@@ -18,13 +18,15 @@ const messages = {
 };
 type RegistrationFields = Record<keyof typeof registrationFields, string> & { termsAccepted: boolean; privacyAccepted: boolean };
 
-export function registrationErrors(form: RegistrationFields) {
-  const errors: Partial<Record<keyof RegistrationFields | "consents", string>> = {};
+export function registrationErrors(form: RegistrationFields, passwordConfirmation: string) {
+  const errors: Partial<Record<keyof RegistrationFields | "consents" | "passwordConfirmation", string>> = {};
   for (const key of Object.keys(registrationFields) as (keyof typeof registrationFields)[]) {
     const value = key === "email" ? form[key].trim() : form[key];
     if (!registrationFields[key].safeParse(value).success) errors[key] = messages[key];
   }
   if (!form.termsAccepted || !form.privacyAccepted) errors.consents = "Для регистрации примите условия использования и политику конфиденциальности.";
+  if (!passwordConfirmation) errors.passwordConfirmation = "Повторите пароль.";
+  else if (passwordConfirmation !== form.password) errors.passwordConfirmation = "Пароли не совпадают.";
   return errors;
 }
 

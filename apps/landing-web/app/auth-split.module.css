@@ -12,18 +12,25 @@
 }
 
 .formSurface.formSurface > h2 {
+  text-align: center;
   font-size: var(--dm-font-size-page);
   font-weight: var(--dm-font-weight-semibold);
   line-height: var(--dm-line-heading);
 }
 
 .formSurface :global(.formLead) {
+  text-align: center;
   line-height: var(--dm-font-size-title);
 }
 
 .formSurface .submitAction {
   width: auto;
-  justify-self: start;
+  justify-self: center;
+}
+
+.loginPanel :global(.emailLoginForm) > :global(.dm-field) {
+  width: min(400px, 100%);
+  justify-self: center;
 }
 
 .catalogReturn.catalogReturn {
