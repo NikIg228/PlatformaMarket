@@ -49,6 +49,7 @@ export function apiErrorMessage(payload: ApiErrorPayload | null, status: number)
 export function feedbackFromError(
   cause: unknown,
   fallback: string,
+  networkMessage = "Сервер не ответил. Данные формы сохранены — проверьте соединение и повторите вход.",
 ): AuthFeedback {
   if (cause instanceof AuthRequestError) {
     return {
@@ -63,7 +64,7 @@ export function feedbackFromError(
       ? "Не удалось связаться с сервером"
       : undefined,
     message: cause instanceof TypeError || (cause instanceof Error && ["TimeoutError", "AbortError"].includes(cause.name))
-      ? "Сервер не ответил. Данные формы сохранены — проверьте соединение и повторите вход."
+      ? networkMessage
       : cause instanceof Error ? cause.message : fallback,
   };
 }

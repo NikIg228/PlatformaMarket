@@ -4,9 +4,12 @@ import { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 import type { MarketplaceEnvironment } from "../../platform/config/environment";
 import { isLimitedTestStand } from "../../platform/config/limited-stand";
+import { authMailTimeout, validAuthMailRelay } from "../../platform/config/auth-mail-relay";
 
 export function authMailMode(config: MarketplaceEnvironment): "LOCAL_FILE" | "PROVIDER" | "UNAVAILABLE" {
-  if (config.LIMITED_TEST_STAND || isLimitedTestStand()) return "UNAVAILABLE";
+  const limited = config.LIMITED_TEST_STAND || isLimitedTestStand();
+  if (validAuthMailRelay({ ...config, LIMITED_TEST_STAND: limited })) return "PROVIDER";
+  if (limited) return "UNAVAILABLE";
   if (config.AUTH_LOCAL_MAIL_ENABLED) {
     if (config.NODE_ENV === "production" || !["127.0.0.1", "::1", "localhost"].includes(config.API_HOST)) throw new ServiceUnavailableException("Локальная доставка запрещена в этом окружении");
     return "LOCAL_FILE";
@@ -27,7 +30,8 @@ export async function deliverAuthMail(config: MarketplaceEnvironment, message: {
       await mkdir(directory, { recursive: true, mode: 0o700 });
       await writeFile(resolve(directory, `${randomUUID()}.json`), JSON.stringify({ ...message, delivery: "LOCAL_FILE", externalDelivery: false, createdAt: new Date().toISOString() }, null, 2), { flag: "wx", mode: 0o600 });
     } else {
-      const response = await fetch(config.EMAIL_PROVIDER_URL!, { method: "POST", redirect: "error", headers: { "content-type": "application/json", authorization: `Bearer ${config.EMAIL_PROVIDER_TOKEN}` }, body: JSON.stringify(message), signal: AbortSignal.timeout(2_000) });
+      const relay = validAuthMailRelay({ ...config, LIMITED_TEST_STAND: config.LIMITED_TEST_STAND || isLimitedTestStand() });
+      const response = await fetch(relay ? config.AUTH_MAIL_RELAY_URL! : config.EMAIL_PROVIDER_URL!, { method: "POST", redirect: "error", headers: { "content-type": "application/json", authorization: `Bearer ${relay ? config.AUTH_MAIL_RELAY_TOKEN : config.EMAIL_PROVIDER_TOKEN}` }, body: JSON.stringify(message), signal: AbortSignal.timeout(authMailTimeout(config)) });
       await response.body?.cancel();
       if (!response.ok) throw new Error("Delivery rejected");
     }

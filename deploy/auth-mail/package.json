@@ -1,0 +1,7 @@
+{
+  "name": "platformamarket-auth-mail-relay",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test relay.test.mjs" },
+  "dependencies": { "nodemailer": "10.6.1" }
+}

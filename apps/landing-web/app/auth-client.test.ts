@@ -13,6 +13,12 @@ import {
 } from "./auth-client";
 
 describe("landing auth contract", () => {
+  it("uses recovery-specific network feedback without changing the login default", () => {
+    const error = new TypeError("network unavailable");
+    expect(feedbackFromError(error, "Ошибка").message).toContain("повторите вход");
+    expect(feedbackFromError(error, "Ошибка", "Email сохранён — повторите запрос.").message)
+      .toBe("Email сохранён — повторите запрос.");
+  });
   it("distinguishes MFA-required from an expired or invalid session", async () => {
     const session = { accessToken: "password-only", activeOrganizationId: "org", user: { id: "user", displayName: "Test", email: "test@example.invalid" } };
     const fetcher = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ message: "Multi-factor authentication is required" }), { status: 401 }))

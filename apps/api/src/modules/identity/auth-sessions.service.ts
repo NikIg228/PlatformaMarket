@@ -11,6 +11,7 @@ import { OidcVerifierService } from "./oidc-verifier.service";
 import { OnboardingService } from "../onboarding/onboarding.service";
 import { PlatformAuthorityPolicy } from "../access-control/platform-authority.policy";
 import { authMailMode, deliverAuthMail, requireAuthMail } from "./auth-mail.delivery";
+import { authMailTimeout } from "../../platform/config/auth-mail-relay";
 import { setTimeout as delay } from "node:timers/promises";
 import { verifyProfileEmailChange } from "./profile-email-verification";
 import { lockSessionRows, logoutTargetSession } from "./session-logout";
@@ -259,7 +260,7 @@ export class AuthSessionsService {
         catch { await this.prisma.emailAuthToken.deleteMany({ where: { tokenHash: hash(token.raw), consumedAt: null } }); this.logger.warn("auth_password_reset_delivery_failed"); }
       }
       return { ok: true as const, message: "Запрос принят. Если аккаунт существует, письмо передано на доставку. Если письма нет, обратитесь к оператору.", delivery };
-    } finally { await delay(Math.max(0, 3_000 - (performance.now() - started))); }
+    } finally { await delay(Math.max(0, authMailTimeout(environment()) + 1_000 - (performance.now() - started))); }
   }
 
   async resetPassword(rawToken: string, password: string) {

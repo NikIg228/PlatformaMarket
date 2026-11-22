@@ -2,6 +2,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { AuthSessionsService } from "./auth-sessions.service";
 import { passwordHash } from "./password-codec";
 import { deliverAuthMail, requireAuthMail } from "./auth-mail.delivery";
+import { setTimeout as delay } from "node:timers/promises";
 vi.mock("../../platform/config/environment", () => ({ environment: () => config }));
 vi.mock("node:timers/promises", () => ({ setTimeout: vi.fn().mockResolvedValue(undefined) }));
 vi.mock("./auth-mail.delivery", () => ({ deliverAuthMail: vi.fn(), requireAuthMail: vi.fn(), authMailMode: () => "LOCAL_FILE" }));
@@ -83,4 +84,15 @@ it("reset ack is identical for known, unknown and delivery-failed account; faile
   expect(await service.forgotPassword(user.email)).toEqual(accepted);
   expect(db.emailAuthToken.deleteMany).toHaveBeenLastCalledWith({ where: { tokenHash: expect.stringMatching(/^[a-f0-9]{64}$/), consumedAt: null } });
   expect(JSON.stringify(accepted)).not.toMatch(/private-token|tokenHash|\.tmp/);
+});
+it("uses the same SMTP time budget for known and unknown accounts", async () => {
+  config.AUTH_MAIL_RELAY_URL = "http://127.0.0.1:8091/send";
+  config.AUTH_MAIL_RELAY_TOKEN = "synthetic-relay-token".repeat(3);
+  await service.forgotPassword(user.email);
+  const known = vi.mocked(delay).mock.calls.at(-1)![0] as number;
+  user = null;
+  await service.forgotPassword("unknown@example.invalid");
+  const unknown = vi.mocked(delay).mock.calls.at(-1)![0] as number;
+  expect(known).toBeGreaterThan(10_000); expect(unknown).toBeGreaterThan(10_000);
+  expect(known).toBeLessThanOrEqual(11_000); expect(unknown).toBeLessThanOrEqual(11_000);
 });

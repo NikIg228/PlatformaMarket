@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { accessControlModeSchema, deploymentProfileSchema } from "@marketplace/schemas";
+import { validAuthMailRelay } from "./auth-mail-relay";
 
 const booleanFromString = z.preprocess((value) => {
   if (typeof value !== "string") return value;
@@ -159,6 +160,8 @@ const environmentSchema = z
     EMAIL_PROVIDER_URL: z.string().url().optional(),
     EMAIL_PROVIDER_TOKEN: z.string().min(16).optional(),
     EMAIL_PROVIDER_HEALTHCHECK_URL: z.string().url().optional(),
+    AUTH_MAIL_RELAY_URL: z.string().url().optional(),
+    AUTH_MAIL_RELAY_TOKEN: z.string().min(32).optional(),
     AUTH_EMAIL_BASE_URL: z.string().url().default("http://localhost:3000"),
     AUTH_EMAIL_VERIFICATION_TTL_HOURS: z.coerce
       .number()
@@ -181,6 +184,12 @@ const environmentSchema = z
       .default("info"),
   })
   .superRefine((value, context) => {
+    if ((value.AUTH_MAIL_RELAY_URL || value.AUTH_MAIL_RELAY_TOKEN) && !validAuthMailRelay(value)) {
+      context.addIssue({ code: "custom", path: ["AUTH_MAIL_RELAY_URL"], message: "Auth mail relay requires a complete token and an approved TLS/internal endpoint" });
+    }
+    if (value.AUTH_MAIL_RELAY_URL && value.AUTH_LOCAL_MAIL_ENABLED) {
+      context.addIssue({ code: "custom", path: ["AUTH_LOCAL_MAIL_ENABLED"], message: "Choose local mail or auth mail relay, not both" });
+    }
     if (value.LIMITED_TEST_STAND) {
       if (value.NODE_ENV !== "production") context.addIssue({ code: "custom", path: ["LIMITED_TEST_STAND"], message: "Limited stand requires production security controls" });
       if (value.PAYMENT_PROVIDER_MODE !== "disabled") context.addIssue({ code: "custom", path: ["PAYMENT_PROVIDER_MODE"], message: "Limited stand requires payments disabled" });

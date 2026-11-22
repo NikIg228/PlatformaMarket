@@ -1,6 +1,5 @@
 "use client";
 import { cabinetLoadingLabel } from "@marketplace/ui/loading-state";
-import { authForgotAcceptedSchema } from "@marketplace/schemas";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { withWorkspaceReturn } from "@marketplace/schemas/product-navigation";
@@ -58,7 +57,7 @@ const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
 const appleClientId = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID ?? "";
 const appleRedirectUri = process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI ?? "";
 
-type BusyAction = "email" | "forgot" | "workspace" | "social" | null;
+type BusyAction = "email" | "workspace" | "social" | null;
 
 export default function LoginPage() {
   const returnTo = useProductReturn();
@@ -71,7 +70,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [emailChecked, setEmailChecked] = useState(false);
   const errors = loginErrors(email, password);
   const [pendingSession, setPendingSession] = useState<AuthSession | null>(null);
   const [mfaSession, setMfaSession] = useState<AuthSession | null>(null);
@@ -185,32 +183,6 @@ export default function LoginPage() {
     }
   };
 
-  const forgotPassword = async () => {
-    if (busy) return;
-    setEmailChecked(true);
-    if (errors.email) {
-      setFeedback({
-        kind: "error",
-        message: "Укажите корректный рабочий email в поле выше.",
-      });
-      return;
-    }
-    setBusyAction("forgot");
-    setFeedback(null);
-    try {
-      const accepted = authForgotAcceptedSchema.parse(await authRequest("/auth/password/forgot", { email: email.trim().toLowerCase() }));
-      setFeedback({
-        kind: "success",
-        message:
-          accepted.delivery === "LOCAL_FILE" ? "Запрос принят. Если аккаунт существует, тестовое письмо сохранено на этом ПК в .tmp/auth-mail локального API. В интернет ничего не отправлялось; при отсутствии письма обратитесь к оператору стенда." : accepted.message,
-      });
-    } catch (cause) {
-      setFeedback(feedbackFromError(cause, "Не удалось отправить письмо"));
-    } finally {
-      setBusyAction(null);
-    }
-  };
-
   const renderGoogle = () => {
     if (!hasGoogle || !window.google || !googleButton.current) return;
     googleButton.current.replaceChildren();
@@ -281,7 +253,7 @@ export default function LoginPage() {
             if (expected === continuation.current) setMfaSession(null);
           }} /> : null}
           {!pendingSession && !mfaSession ? <form className="emailLoginForm" onSubmit={emailLogin} noValidate>
-            <DmField typography="auth" label="Рабочий email" required validationState={(submitted || emailChecked) && errors.email ? "error" : "none"} validationMessage={submitted || emailChecked ? errors.email : undefined}>
+            <DmField typography="auth" label="Рабочий email" required validationState={submitted && errors.email ? "error" : "none"} validationMessage={submitted ? errors.email : undefined}>
               <DmInput
                 type="email"
                 autoComplete="email"
@@ -306,15 +278,7 @@ export default function LoginPage() {
               {busyAction === "email" ? "Входим…" : "Войти"}
             </DmButton>
             <div className={styles.loginLinks}>
-              <DmButton
-                type="button"
-                appearance="subtle"
-                className="linkButton"
-                onClick={() => void forgotPassword()}
-                disabled={busy}
-              >
-                {busyAction === "forgot" ? "Отправляем…" : "Забыли пароль?"}
-              </DmButton>
+              <Link href={withWorkspaceReturn("/forgot-password", returnTo)}>Забыли пароль?</Link>
               <p className={`loginSignup ${styles.signup}`}>
                 <Link href={withWorkspaceReturn("/register", returnTo)}>
                   Зарегистрироваться

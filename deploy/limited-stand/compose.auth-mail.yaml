@@ -1,0 +1,32 @@
+# Only the SMTP relay receives the Resend credential and external network.
+services:
+  api:
+    image: ${AUTH_MAIL_API_IMAGE:?Set verified auth mail API image}
+    command: [node, apps/api/dist/src/main.js]
+    env_file:
+      - ${SHARED_DIR}/auth-mail-api.env
+    depends_on:
+      auth-mail-relay: { condition: service_healthy }
+  auth-mail-relay:
+    image: ${AUTH_MAIL_IMAGE:?Set verified SMTP relay image}
+    env_file: ["${SHARED_DIR}/auth-mail-relay.env"]
+    networks: [market, auth-mail-egress]
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cgroup_parent: platformamarket.slice
+    mem_limit: 96m
+    cpus: 0.25
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:8091/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+networks:
+  auth-mail-egress: {}

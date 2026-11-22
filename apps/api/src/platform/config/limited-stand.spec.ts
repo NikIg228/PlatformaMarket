@@ -52,6 +52,16 @@ it("does not relax ordinary production requirements", () => {
   vi.stubEnv("LIMITED_TEST_STAND", "false");
   expect(() => environment()).toThrow("External payment gateway");
 });
+it("permits only the isolated auth-mail relay with a complete token", () => {
+  vi.stubEnv("AUTH_MAIL_RELAY_URL", "http://auth-mail-relay:8091/send");
+  vi.stubEnv("AUTH_MAIL_RELAY_TOKEN", "synthetic-relay-token".repeat(3));
+  expect(environment().AUTH_MAIL_RELAY_URL).toBe("http://auth-mail-relay:8091/send");
+});
+it.each(["http://evil.test/send", "https://smtp.resend.com/send", "http://auth-mail-relay:8091/send?x=1", "http://user:pass@auth-mail-relay:8091/send"])("rejects relay endpoint %s", url => {
+  vi.stubEnv("AUTH_MAIL_RELAY_URL", url);
+  vi.stubEnv("AUTH_MAIL_RELAY_TOKEN", "synthetic-relay-token".repeat(3));
+  expect(() => environment()).toThrow("approved TLS/internal endpoint");
+});
 it("denies outbound operations for all accepted true encodings and preserves default behavior", () => {
   for (const value of ["true", "TRUE", "1", "yes", "on"]) {
     vi.stubEnv("LIMITED_TEST_STAND", value);

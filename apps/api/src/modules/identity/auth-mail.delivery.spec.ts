@@ -40,3 +40,13 @@ it("does not return provider error bodies", async () => {
   vi.mocked(fetch).mockResolvedValue(new Response("private provider body", { status: 500 }));
   await expect(deliverAuthMail({ ...config, AUTH_LOCAL_MAIL_ENABLED: false, EMAIL_PROVIDER_URL: "https://mail.example.invalid/send", EMAIL_PROVIDER_TOKEN: "synthetic" }, message)).rejects.toThrow("Не удалось передать письмо");
 });
+it("allows only an explicitly configured private auth relay on the limited stand", async () => {
+  const limited = { ...config, NODE_ENV: "production", AUTH_LOCAL_MAIL_ENABLED: false, LIMITED_TEST_STAND: true,
+    AUTH_MAIL_RELAY_URL: "http://auth-mail-relay:8091/send", AUTH_MAIL_RELAY_TOKEN: "synthetic-token".repeat(4) } as MarketplaceEnvironment;
+  vi.mocked(fetch).mockResolvedValue(Response.json({ code: "SMTP_ACCEPTED" }));
+  expect(await deliverAuthMail(limited, message)).toBe("PROVIDER");
+  expect(fetch).toHaveBeenCalledWith(limited.AUTH_MAIL_RELAY_URL, expect.objectContaining({ redirect: "error", body: JSON.stringify(message) }));
+  expect(authMailMode({ ...limited, AUTH_MAIL_RELAY_URL: "http://evil.example/send" })).toBe("UNAVAILABLE");
+  expect(authMailMode({ ...limited, AUTH_MAIL_RELAY_TOKEN: undefined })).toBe("UNAVAILABLE");
+  expect(writeFile).not.toHaveBeenCalled();
+});
