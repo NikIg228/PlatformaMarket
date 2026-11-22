@@ -1,10 +1,10 @@
 import { expect, it } from "vitest";
 import { createRegistrationIntentSchema, emailRegisterSchema, emailResetPasswordSchema, emailLoginSchema } from "./commercial";
-it.each(["Abcdefgh", "A1234567", "A!@#$%^&", "AБвгдежз"])("accepts supported password %s", password => {
+it.each(["Abcdefg1", "A1234567", "A!@#$%^1", "AБвгдеж1"])("accepts supported password %s", password => {
   expect(emailRegisterSchema.shape.password.safeParse(password).success).toBe(true);
   expect(emailResetPasswordSchema.shape.password.safeParse(password).success).toBe(true);
 });
-it.each(["Abcdefg", "abcdefgh", "А1234567", "12345678"])("rejects password without eight characters and Latin uppercase %s", password => {
+it.each(["Abcdef1", "Abcdefgh", "abcdefgh", "А1234567", "12345678"])("rejects password without eight characters, Latin uppercase and digit %s", password => {
   expect(emailRegisterSchema.shape.password.safeParse(password).success).toBe(false);
 });
 it("keeps existing login credentials valid", () => expect(emailLoginSchema.shape.password.safeParse("old").success).toBe(true));

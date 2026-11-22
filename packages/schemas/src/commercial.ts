@@ -59,14 +59,14 @@ export const refreshSessionSchema = z.object({
 export const emailRegisterSchema = z.object({
   email: z.email().transform((value) => value.toLowerCase()),
   displayName: z.string().trim().min(2).max(160),
-  password: z.string().min(8).max(128).regex(/[A-Z]/, "Добавьте заглавную латинскую букву"),
+  password: z.string().min(8).max(128).regex(/[A-Z]/, "Добавьте заглавную латинскую букву").regex(/[0-9]/, "Добавьте цифру"),
   registrationToken: z.string().min(32).max(512).optional(),
   returnTo: z.string().max(4096).refine(value => workspaceReturnPath(value) !== undefined, "Недопустимый адрес возврата").optional(),
 });
 export const emailLoginSchema = z.object({ email: z.email().transform((value) => value.toLowerCase()), password: z.string().min(1).max(128) });
 export const emailTokenSchema = z.object({ token: z.string().min(32).max(512) });
 export const emailForgotPasswordSchema = z.object({ email: z.email().transform((value) => value.toLowerCase()) });
-export const emailResetPasswordSchema = z.object({ token: z.string().min(32).max(512), password: z.string().min(8).max(128).regex(/[A-Z]/, "Добавьте заглавную латинскую букву") });
+export const emailResetPasswordSchema = z.object({ token: z.string().min(32).max(512), password: z.string().min(8).max(128).regex(/[A-Z]/, "Добавьте заглавную латинскую букву").regex(/[0-9]/, "Добавьте цифру") });
 
 export const switchSessionOrganizationSchema = z.object({ organizationId: z.uuid() });
 export const revokeSessionSchema = z.object({ reason: z.string().trim().min(3).max(240).default("user_requested") });

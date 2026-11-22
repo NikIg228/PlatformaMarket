@@ -59,7 +59,7 @@ function ResumeRegistrationForm({ token }: { token: string | null }) {
   const errors = {
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? undefined : "Укажите email из исходной заявки.",
     bin: /^\d{12}$/.test(bin) ? undefined : "Укажите БИН из 12 цифр.",
-    password: (details?.passwordMode === "NEW" ? emailRegisterSchema : emailLoginSchema).shape.password.safeParse(password).success ? undefined : "Проверьте пароль: для нового — минимум 8 символов и заглавная латинская буква (A–Z).",
+    password: (details?.passwordMode === "NEW" ? emailRegisterSchema : emailLoginSchema).shape.password.safeParse(password).success ? undefined : "Проверьте пароль: для нового — минимум 8 символов и заглавная латинская буква (A–Z) и одна цифра.",
     confirmation: password === confirmation ? undefined : "Пароли не совпадают.",
   };
   async function submit(event: FormEvent) {
@@ -104,7 +104,7 @@ function ResumeRegistrationForm({ token }: { token: string | null }) {
       {token && details ? <>
         <dl><dt>Организация</dt><dd>{details.organizationDisplayName}</dd><dt>Email</dt><dd>{details.email}</dd><dt>БИН</dt><dd>{details.bin}</dd><dt>Роль</dt><dd>{details.capability === "BUYER" ? "Клиника" : "Поставщик"}</dd></dl>
         <form onSubmit={submit} className="passwordForm" noValidate>
-          <DmField label={details.passwordMode === "NEW" ? "Пароль аккаунта" : "Текущий пароль"} hint={details.passwordMode === "NEW" ? "Минимум 8 символов и одна заглавная латинская буква (A–Z). Пароль с потерянной страницы не сохранялся; задайте его заново." : "Аккаунт уже существует. Ссылка не меняет его пароль; введите действующий."} required validationState={submitted && errors.password ? "error" : "none"} validationMessage={submitted ? errors.password : undefined}>
+          <DmField label={details.passwordMode === "NEW" ? "Пароль аккаунта" : "Текущий пароль"} hint={details.passwordMode === "NEW" ? "Минимум 8 символов и одна заглавная латинская буква (A–Z) и одна цифра. Пароль с потерянной страницы не сохранялся; задайте его заново." : "Аккаунт уже существует. Ссылка не меняет его пароль; введите действующий."} required validationState={submitted && errors.password ? "error" : "none"} validationMessage={submitted ? errors.password : undefined}>
             <DmInput type="password" value={password} maxLength={128} autoComplete={details.passwordMode === "NEW" ? "new-password" : "current-password"} disabled={busy} onChange={(_, data) => setPassword(data.value)} />
           </DmField>
           {details.passwordMode === "NEW" ? <DmField label="Повторите пароль" required validationState={submitted && errors.confirmation ? "error" : "none"} validationMessage={submitted ? errors.confirmation : undefined}>

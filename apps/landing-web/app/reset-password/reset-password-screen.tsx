@@ -26,7 +26,7 @@ export default function ResetPasswordPage() {
   const passwordError =
     emailResetPasswordSchema.shape.password.safeParse(password).success
       ? undefined
-      : "Минимум 8 символов и одна заглавная латинская буква (A–Z).";
+      : "Минимум 8 символов и одна заглавная латинская буква (A–Z) и одна цифра.";
   const confirmationError =
     password === confirmation ? undefined : "Пароли не совпадают.";
 
@@ -75,7 +75,7 @@ export default function ResetPasswordPage() {
           <form onSubmit={submit} className="passwordForm" noValidate>
             <DmField
               label="Новый пароль"
-              hint="Минимум 8 символов и одна заглавная латинская буква (A–Z)"
+              hint="Минимум 8 символов и одна заглавная латинская буква (A–Z) и одна цифра"
               required
               validationState={
                 submitted && passwordError ? "error" : "none"

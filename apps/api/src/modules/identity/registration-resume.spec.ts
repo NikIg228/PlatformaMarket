@@ -125,11 +125,11 @@ describe("protected registration continuation", () => {
   });
 });
 
-it.each(["abcdefgh", "Abcdefg", "Аbcdefgh"])("rejects invalid new password %s before creating an account", async password => {
+it.each(["abcdefgh", "Abcdefgh", "Abcdefg", "Аbcdefgh"])("rejects invalid new password %s before creating an account", async password => {
   await expect(service.complete({ ...input, token, password })).rejects.toThrow("Минимум 8");
   expect(db.user.create).not.toHaveBeenCalled();
   expect(onboarding.claim).not.toHaveBeenCalled();
 });
 it("accepts an eight-character password with a Latin uppercase letter", async () => {
-  expect(await service.complete({ ...input, token, password: "Abcdefgh" })).toEqual({ status: "COMPLETED", next: "LOGIN" });
+  expect(await service.complete({ ...input, token, password: "Abcdefg1" })).toEqual({ status: "COMPLETED", next: "LOGIN" });
 });

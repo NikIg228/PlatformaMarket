@@ -110,7 +110,7 @@ export class InvitationsService {
         throw new UnauthorizedException("Введите действующий пароль аккаунта или войдите через провайдера.");
       }
     }
-    if (!user && !emailRegisterSchema.shape.password.safeParse(input.password).success) throw new BadRequestException("Минимум 8 символов и одна заглавная латинская буква (A–Z).");
+    if (!user && !emailRegisterSchema.shape.password.safeParse(input.password).success) throw new BadRequestException("Минимум 8 символов и одна заглавная латинская буква (A–Z) и одна цифра.");
     if (user?.mfaFactor?.status === "ACTIVE") {
       if (!input.mfaCode) throw new UnauthorizedException("Подтвердите вход кодом MFA");
       await this.mfa.challenge({ code: input.mfaCode }, { actorId: user.id, organizationId: invitation.organizationId });

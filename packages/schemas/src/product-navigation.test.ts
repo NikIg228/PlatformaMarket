@@ -48,7 +48,7 @@ describe("product return intent", () => {
     expect(workspaceReturnPath(selection, "BUYER")).toBe(selection);
     expect(workspaceReturnPath(selection, "SUPPLIER")).toBeUndefined();
     expect(new URL(withProductReturn("/login", selection), "https://local.invalid").searchParams.get("returnTo")).toBe(selection);
-    expect(emailRegisterSchema.parse({ email: "test@example.invalid", displayName: "Test", password: "Synthetic-password", returnTo: selection }).returnTo).toBe(selection);
+    expect(emailRegisterSchema.parse({ email: "test@example.invalid", displayName: "Test", password: "Synthetic-password1", returnTo: selection }).returnTo).toBe(selection);
   });
   it("preserves the product and catalog context without a purchase action", () => {
     expect(productReturnPath(target)).toBe(target);
@@ -73,7 +73,7 @@ describe("product return intent", () => {
     expect(withProductReturn("/login", value)).toBe("/login");
   });
   it("validates the optional registration field at the API boundary", () => {
-    const input = { email: "test@example.invalid", displayName: "Test", password: "Synthetic-password" };
+    const input = { email: "test@example.invalid", displayName: "Test", password: "Synthetic-password1" };
     expect(emailRegisterSchema.parse({ ...input, returnTo: target }).returnTo).toBe(target);
     expect(emailRegisterSchema.parse(input).returnTo).toBeUndefined();
     expect(emailRegisterSchema.safeParse({ ...input, returnTo: "https://outside.invalid" }).success).toBe(false);

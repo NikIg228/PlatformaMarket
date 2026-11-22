@@ -3,7 +3,7 @@ import { redeemInvitation } from "./redeem-invitation";
 import { passwordHash, passwordMatches } from "./password-codec";
 vi.mock("./redeem-invitation", () => ({ redeemInvitation: vi.fn().mockResolvedValue({ ok: true }) }));
 import { InvitationsService } from "./invitations.service";
-it.each(["abcdefgh", "Abcdefg", "А1234567"])("rejects invalid new invitation password %s", async password => {
+it.each(["abcdefgh", "Abcdefgh", "Abcdefg", "А1234567"])("rejects invalid new invitation password %s", async password => {
   const db = { user: { findUnique: vi.fn().mockResolvedValue(null) } };
   const authority = { assertRolesBelongToOrganization: vi.fn() };
   const service = new InvitationsService(db as never, authority as never, {} as never);
@@ -12,7 +12,7 @@ it.each(["abcdefgh", "Abcdefg", "А1234567"])("rejects invalid new invitation pa
 });
 
 it.each([false, true])("accepts credentials for existing=%s without applying new policy to existing accounts", async existing => {
-  const password = existing ? "old" : "Abcdefgh";
+  const password = existing ? "old" : "Abcdefg1";
   const user = existing ? { id: "existing", status: "ACTIVE", passwordHash: passwordHash(password), failedLoginAttempts: 0 } : null;
   const db = { user: { findUnique: vi.fn().mockResolvedValue(user) } };
   const service = new InvitationsService(db as never, { assertRolesBelongToOrganization: vi.fn() } as never, {} as never);

@@ -1,3 +1,33 @@
+## Follow-up: mandatory digit and attached logo — 2026-11-22
+
+Prior bea79ee7 scoped PASS → owner now requires a digit as well as Latin uppercase
+in8+ characters, and logo moving together with left text → add shared schema digit
+check, synchronize creation/reset/resume/invitation hints, group registration brand
+and heading inside the existing sticky movement. Existing login scroll containment
+keeps its brand/text together already. Preserve control geometry and all previous
+fields/consent fixes. Risk: existing-password login regression, sticky overflow.
+Gates: focused schema/auth/API tests, schema/API compile, landing/web builds/types,
+lint/UI contract, desktop scroll and mobile screenshot/keyboard verification.
+Skills reused frontend and Anti Slop during/UI/layout/human/copy; shared tokens,
+paired motion, reduced-motion behavior, readable hints, no new dependencies.
+Status: SCOPED_PASS. Main bea79ee7, other WIP preserved.
+Schema71, auth frontend41, API initial36 then affected final37 tests PASS (new
+no-digit cases added to invitation/resume); schema build, API nest compile, runtime
+split, landing/web builds/types, scoped lint/UI-contract PASS. Logs digit-* under
+.tmp/auth-alignment-20261122; shared generated Prisma client unchanged/reused.
+API owned process12076/parent3664 restarted with existing authorized launcher,
+new session17381; health200. Invalid-email runtime probes prevent data writes:
+Abcdefg1 has no password error, Abcdefgh requires digit, abcdefg1 requires uppercase.
+Browser: registration scroll0→232 keeps logo/title gap64px, logo remains visible;
+mobile390 has no overflow, group static; reduced-motion desktop sticky top24 gap64.
+No-digit form error appears; replacing with Abcdefg1 and matching confirmation
+clears both errors. AX stale indices/Playwright timeout recovered after kernel reset
+and fresh binding, no permissions bypass. Screenshot capture+visual inspection:
+output/auth-logo-digit-20261122/desktop-scrolled.png and mobile.png. Emulation reset.
+Existing login bounded layout unchanged; no real account/password writes. Anti Slop
+scoped geometry/contrast/copy/focus/responsive gates satisfied. No migrations/full E2E.
+
+
 ## Registration simplification follow-up — 2026-11-22
 
 Prior91a15189 PASS → owner requests simpler forms and new password policy → scoped

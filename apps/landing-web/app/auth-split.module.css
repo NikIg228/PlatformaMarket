@@ -185,6 +185,8 @@
   display: inline-block;
 }
 
+.registerHeadingContent { display: grid; gap: var(--dm-space-8); }
+
 @media (min-width: 901px) {
   .loginIntro.loginIntro {
     display: grid;
@@ -203,7 +205,7 @@
 
   .registerAside.registerAside {
     display: grid;
-    grid-template-rows: 124px 1fr auto;
+    grid-template-rows: 1fr auto;
     padding-top: var(--dm-space-16);
   }
 
@@ -217,8 +219,9 @@
     padding-bottom: var(--dm-space-10);
   }
 
-  .registerHeading h1 {
+  .registerHeadingContent {
     position: sticky;
+    row-gap: var(--dm-space-16);
     top: var(--registration-heading-top, 24px);
   }
 

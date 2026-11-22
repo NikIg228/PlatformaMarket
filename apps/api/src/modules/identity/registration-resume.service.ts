@@ -111,7 +111,7 @@ export class RegistrationResumeService {
           const verified = await tx.user.updateMany({ where: { id: user.id, status: "ACTIVE", passwordHash: user.passwordHash, lockedUntil: user.lockedUntil }, data: { emailVerifiedAt: user.emailVerifiedAt ?? now } });
           if (verified.count !== 1) throw new ConflictException("Аккаунт изменился. Повторите проверку ссылки.");
         } else {
-          if (!emailRegisterSchema.shape.password.safeParse(input.password).success) throw new BadRequestException("Минимум 8 символов и одна заглавная латинская буква (A–Z).");
+          if (!emailRegisterSchema.shape.password.safeParse(input.password).success) throw new BadRequestException("Минимум 8 символов и одна заглавная латинская буква (A–Z) и одна цифра.");
           user = await tx.user.create({ data: { email: registration.email, displayName: registration.ownerDisplayName, passwordHash: passwordHash(input.password), emailVerifiedAt: now }, include: { mfaFactor: true } });
         }
         // The internal claim token is never returned, logged, or stored in plaintext.

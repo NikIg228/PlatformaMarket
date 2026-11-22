@@ -3,7 +3,7 @@ import { loginErrors, registrationErrors as validateRegistration } from "./auth-
 
 const registrationErrors = (form: Parameters<typeof validateRegistration>[0], confirmation = form.password) => validateRegistration(form, confirmation);
 
-const valid = { ownerDisplayName: "Иван Иванов", email: "owner@example.invalid", password: "Test-password", organizationDisplayName: "Клиника", bin: "123456789012" };
+const valid = { ownerDisplayName: "Иван Иванов", email: "owner@example.invalid", password: "Test-password1", organizationDisplayName: "Клиника", bin: "123456789012" };
 
 it("accepts normalized email without removed registration fields", () => {
   expect(registrationErrors({ ...valid, email: " OWNER@example.invalid " })).toEqual({});
@@ -12,10 +12,10 @@ it.each([
   ["ownerDisplayName", 160], ["organizationDisplayName", 160], ["password", 128],
 ] as const)("enforces both boundaries for %s", (field, maximum) => {
   const minimum = field === "password" ? 8 : 2;
-  expect(registrationErrors({ ...valid, [field]: "A".repeat(minimum) })[field]).toBeUndefined();
-  expect(registrationErrors({ ...valid, [field]: "A".repeat(minimum - 1) })[field]).toBeTruthy();
-  expect(registrationErrors({ ...valid, [field]: "A".repeat(maximum) })[field]).toBeUndefined();
-  expect(registrationErrors({ ...valid, [field]: "A".repeat(maximum + 1) })[field]).toBeTruthy();
+  expect(registrationErrors({ ...valid, [field]: "A1" + "a".repeat(minimum - 2) })[field]).toBeUndefined();
+  expect(registrationErrors({ ...valid, [field]: field === "password" ? "A1" + "a".repeat(minimum - 3) : "A".repeat(minimum - 1) })[field]).toBeTruthy();
+  expect(registrationErrors({ ...valid, [field]: "A1" + "a".repeat(maximum - 2) })[field]).toBeUndefined();
+  expect(registrationErrors({ ...valid, [field]: "A1" + "a".repeat(maximum - 1) })[field]).toBeTruthy();
 });
 it("rejects malformed email, blank name, nonnumeric BIN", () => {
   const errors = registrationErrors({ ...valid, email: "a..b@example.invalid", ownerDisplayName: "  ", bin: "12345678901a" });

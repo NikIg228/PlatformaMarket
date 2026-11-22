@@ -176,7 +176,6 @@ export default function RegisterPage() {
   return (
     <main className={`registrationPage ${styles.split}`}>
       <aside className={`registrationAside ${styles.registerAside}`}>
-        <AuthBrand />
         <RegistrationHeading isSupplier={capability === "SUPPLIER"} />
         <ol aria-label="Этапы регистрации">
           <li data-active="true">Реквизиты организации</li>
@@ -284,7 +283,7 @@ export default function RegisterPage() {
           <DmField
             typography="auth"
             label="Пароль"
-            hint="Минимум 8 символов и одна заглавная латинская буква (A–Z)"
+            hint="Минимум 8 символов и одна заглавная латинская буква (A–Z) и одна цифра"
             required
             validationState={submitted && errors.password ? "error" : "none"}
             validationMessage={submitted ? errors.password : undefined}

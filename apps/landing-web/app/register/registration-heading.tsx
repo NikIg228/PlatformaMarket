@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { AuthBrand } from "../auth-components";
 import styles from "../auth-split.module.css";
 
 export function RegistrationHeading({ isSupplier }: { isSupplier: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
+  const headingRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -64,11 +65,14 @@ export function RegistrationHeading({ isSupplier }: { isSupplier: boolean }) {
 
   return (
     <div className={styles.registerHeading} ref={containerRef}>
-      <h1 ref={headingRef}>
-        {isSupplier
-          ? "Начните продавать клиникам Казахстана"
-          : "Управляйте закупками клиники в одном месте"}
-      </h1>
+      <div className={styles.registerHeadingContent} ref={headingRef}>
+        <AuthBrand />
+        <h1>
+          {isSupplier
+            ? "Начните продавать клиникам Казахстана"
+            : "Управляйте закупками клиники в одном месте"}
+        </h1>
+      </div>
     </div>
   );
 }
