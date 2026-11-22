@@ -11,8 +11,8 @@ export function DmTabList({ className, ...props }: ComponentPropsWithRef<typeof 
   return <TabList {...props} data-dm-tab-kind="navigation" className={classes("dm-navigation-tabs", className)} />;
 }
 
-export function DmField({ className, ...props }: ComponentPropsWithRef<typeof Field>) {
-  return <Field {...props} className={classes("dm-field", className)} />;
+export function DmField({ className, typography = "default", ...props }: ComponentPropsWithRef<typeof Field> & { typography?: "default" | "auth" }) {
+  return <Field {...props} data-dm-field-typography={typography === "default" ? undefined : typography} className={classes("dm-field", className)} />;
 }
 
 export function DmInput({ className, density, quantity = false, style, ...props }: ComponentPropsWithRef<typeof Input> & Density & { quantity?: boolean }) {

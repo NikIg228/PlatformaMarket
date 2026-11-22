@@ -268,12 +268,12 @@ export default function LoginPage() {
         <div>
           <LoginHeading />
         </div>
-        <a className="backLink" href={`${buyerAppUrl.replace(/\/$/, "")}/catalog`}>
-          К каталогу
+        <a className={`backLink ${styles.catalogReturn} ${styles.loginReturn}`} data-dm-focus="inverse" href={`${buyerAppUrl.replace(/\/$/, "")}/catalog`}>
+          <span aria-hidden="true">←</span> Вернуться к каталогу
         </a>
       </section>
       <section className={`loginPanel ${styles.loginPanel}`} aria-labelledby="login-title">
-        <div className="loginCard">
+        <div className={`loginCard ${styles.formSurface}`}>
           <h2 id="login-title">{mfaSession ? (locale === "kk" ? "Кіруді растаңыз" : "Подтвердите вход") : pendingSession ? "Выберите кабинет" : "Войдите в аккаунт"}</h2>
           {mfaSession ? <MfaStep session={mfaSession} locale={locale} onCancel={switchAccount} onComplete={async confirmed => {
             const expected = continuation.current;
@@ -281,7 +281,7 @@ export default function LoginPage() {
             if (expected === continuation.current) setMfaSession(null);
           }} /> : null}
           {!pendingSession && !mfaSession ? <form className="emailLoginForm" onSubmit={emailLogin} noValidate>
-            <DmField label="Рабочий email" required validationState={(submitted || emailChecked) && errors.email ? "error" : "none"} validationMessage={submitted || emailChecked ? errors.email : undefined}>
+            <DmField typography="auth" label="Рабочий email" required validationState={(submitted || emailChecked) && errors.email ? "error" : "none"} validationMessage={submitted || emailChecked ? errors.email : undefined}>
               <DmInput
                 type="email"
                 autoComplete="email"
@@ -291,7 +291,7 @@ export default function LoginPage() {
                 required
               />
             </DmField>
-            <DmField label="Пароль" required validationState={submitted && errors.password ? "error" : "none"} validationMessage={submitted ? errors.password : undefined}>
+            <DmField typography="auth" label="Пароль" required validationState={submitted && errors.password ? "error" : "none"} validationMessage={submitted ? errors.password : undefined}>
               <DmInput
                 type="password"
                 autoComplete="current-password"
@@ -302,7 +302,7 @@ export default function LoginPage() {
                 required
               />
             </DmField>
-            <DmButton type="submit" appearance="primary" disabled={busy}>
+            <DmButton className={styles.submitAction} type="submit" appearance="primary" disabled={busy}>
               {busyAction === "email" ? "Входим…" : "Войти"}
             </DmButton>
             <div className={styles.loginLinks}>

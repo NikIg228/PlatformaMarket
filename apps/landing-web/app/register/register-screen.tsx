@@ -189,13 +189,13 @@ export default function RegisterPage() {
           <li>Настройка кабинета</li>
         </ol>
       </aside>
-      <section className={`registrationCard ${styles.registerCard}`} aria-labelledby="register-title">
+      <section className={`registrationCard ${styles.registerCard} ${styles.formSurface}`} aria-labelledby="register-title">
         <div className={styles.registerTop}>
-          <a className="backLink" href={`${buyerAppUrl.replace(/\/$/, "")}/catalog`}>
-            К каталогу
+          <a className={`backLink ${styles.catalogReturn}`} href={`${buyerAppUrl.replace(/\/$/, "")}/catalog`}>
+            <span aria-hidden="true">←</span> Вернуться к каталогу
           </a>
         </div>
-        <h2 id="register-title">Создать организацию</h2>
+        <h2 id="register-title">Создать профиль</h2>
         <p className="formLead">
           Выберите роль и укажите сведения точно как в регистрационных
           документах.
@@ -212,6 +212,7 @@ export default function RegisterPage() {
           noValidate
         >
           <DmField
+            typography="auth"
             label="ФИО владельца"
             required
             validationState={submitted && errors.ownerDisplayName ? "error" : "none"}
@@ -228,6 +229,7 @@ export default function RegisterPage() {
             />
           </DmField>
           <DmField
+            typography="auth"
             label="Рабочий email"
             required
             validationState={submitted && errors.email ? "error" : "none"}
@@ -243,6 +245,7 @@ export default function RegisterPage() {
             />
           </DmField>
           <DmField
+            typography="auth"
             label="Пароль"
             hint="От 12 до 128 символов"
             required
@@ -261,6 +264,7 @@ export default function RegisterPage() {
             />
           </DmField>
           <DmField
+            typography="auth"
             className="wide"
             label="Юридическое наименование"
             required
@@ -279,6 +283,7 @@ export default function RegisterPage() {
           </DmField>
           <DmField
             label="Название в кабинете"
+            typography="auth"
             required
             validationState={
               submitted && errors.organizationDisplayName ? "error" : "none"
@@ -300,6 +305,7 @@ export default function RegisterPage() {
           </DmField>
           <DmField
             label="БИН"
+            typography="auth"
             hint="12 цифр без пробелов"
             required
             validationState={submitted && errors.bin ? "error" : "none"}
@@ -370,7 +376,7 @@ export default function RegisterPage() {
           <DmButton
             type="submit"
             appearance="primary"
-            className="wide registrationSubmit"
+            className={`wide registrationSubmit ${styles.submitAction}`}
             disabled={busy}
           >
             {busy ? "Создаём аккаунт…" : "Продолжить"}

@@ -1,5 +1,9 @@
 {
   "version": "market-components-v1",
+  "fieldTypography": {
+    "default": { "labelSize": "14px", "labelWeight": 700 },
+    "auth": { "labelSize": "14px", "labelWeight": 600, "labelLineHeight": "20px" }
+  },
   "tokens": {
     "--dm-radius-field": "8px",
     "--dm-radius-button": "8px",

@@ -3,6 +3,7 @@
 .dm-field { display: grid; align-content: start; gap: var(--dm-space-2); min-width: 0; }
 .dm-field .fui-Label { color: var(--dm-text-primary); font-size: var(--dm-font-size-body); font-weight: var(--dm-font-weight-bold); line-height: var(--dm-line-compact); }
 .dm-field .fui-Label::after { color: var(--dm-brand-primary); }
+.dm-field[data-dm-field-typography="auth"] .fui-Label { font-weight: var(--dm-font-weight-semibold); line-height: var(--dm-font-size-title); }
 .dm-field .fui-Field__validationMessage { margin-top: var(--dm-space-micro); color: var(--dm-danger-text); font-size: var(--dm-font-size-caption); line-height: var(--dm-line-compact); }
 .dm-field .fui-Field__hint { color: var(--dm-text-muted); font-size: var(--dm-font-size-caption); line-height: var(--dm-line-body); }
 .dm-control, .dm-button, .dm-action, .dm-link-button { --dm-control-height: var(--dm-control-default); }
@@ -67,8 +68,9 @@ html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown
 html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Dropdown,.fui-Combobox)::after { display: none; }
 html[data-input-modality] :is([data-fui-focus-visible],[data-fui-focus-within]:focus-within)::after { border: 0 !important; outline: none !important; box-shadow: none !important; }
 html[data-input-modality="keyboard"] :is(:focus-visible,[data-fui-focus-visible]),
-html[data-input-modality="keyboard"] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown,.fui-Combobox,.fui-Checkbox,.fui-Radio,.fui-Switch):has(> :is(input,textarea,select,button):focus) { outline: 1px solid var(--dm-brand-primary) !important; outline-offset: 2px !important; }
+html[data-input-modality="keyboard"] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown,.fui-Combobox,.fui-Checkbox,.fui-Radio,.fui-Switch):has(> :is(input,textarea,select,button):focus) { outline: 1px solid var(--dm-focus-color, var(--dm-brand-primary)) !important; outline-offset: 2px !important; }
 html[data-input-modality] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown,.fui-Combobox,.fui-Checkbox,.fui-Radio,.fui-Switch) > :is(input,textarea,select,button):focus { outline: none !important; }
+[data-dm-focus="inverse"] { --dm-focus-color: var(--dm-text-inverse); }
 @media (forced-colors: active) {
   html[data-input-modality="keyboard"] :is(:focus-visible,[data-fui-focus-visible]),
   html[data-input-modality="keyboard"] :is(.fui-Input,.fui-Textarea,.fui-Select,.fui-Dropdown,.fui-Combobox,.fui-Checkbox,.fui-Radio,.fui-Switch):has(> :is(input,textarea,select,button):focus) { outline-color: Highlight !important; }
