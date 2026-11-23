@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
           <DmInput type="email" autoComplete="email" value={email} required disabled={busy}
             onChange={(_, data) => { setEmail(data.value); setFeedback(null); }} />
         </DmField>
-        <DmButton type="submit" appearance="primary" disabled={busy} aria-busy={busy}>
+        <DmButton className={styles.submitAction} type="submit" appearance="primary" disabled={busy} aria-busy={busy}>
           {busy ? <LoadingState presentation="inline" label="Отправляем письмо…" /> : "Отправить письмо"}
         </DmButton>
       </form>

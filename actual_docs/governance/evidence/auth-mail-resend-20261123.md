@@ -194,3 +194,22 @@ using existing generated client PASS. Local API restarted with original SMTP
 configuration, no migrations. Browser unknown-email request shows Account not
 found alert, retains email and reenables submit; screenshot visually inspected
 in output/auth-mail-resend-20261123/account-not-found.png. Publication pending.
+
+## Alert copy and compact submit, 2026-11-23
+
+Owner requests no visible request reference in alerts and compact recovery button.
+Search of production TSX found reference rendering only in shared AuthNotice.
+Remove that details prop for all auth forms; preserve error message, severity,
+accessible announcement and diagnostic transport metadata. Recovery submit uses
+existing auth width:auto/center composition; no shared control size change.
+Anti Slop during/copy/human/UI: preserve established tokens, readable error,
+retained input/retry and keyboard. Check desktop/mobile alert and pending button,
+focused recovery tests, lint and web build/types.
+
+Browser PASS: desktop button161px within446px form, centered; error alert only
+Account not found, no heading/reference. At390px no horizontal overflow;
+compact-alert.png and compact-alert-mobile.png captured and visually inspected.
+Recovery tests4 PASS and ESLint PASS. Initial no-title prop failed types because
+DmFeedback requires a string; empty title preserves the shared API and omits
+the heading. Final build/types result recorded at completion. No server deploy.
+Final web production build and TypeScript PASS (51 routes).

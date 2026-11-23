@@ -62,9 +62,7 @@ export function AuthRolePicker({
 
 export function AuthNotice({ feedback }: { feedback: AuthFeedback }) {
   return (
-    <DmFeedback presentation="inline" tone={feedback.kind === "error" ? "danger" : "success"}
-      title={feedback.title ?? (feedback.kind === "error" ? "Нужно исправить" : "Готово")}
-      description={feedback.message} alert={feedback.kind === "error"}
-      details={feedback.requestId ? <small>Код обращения: {feedback.requestId}</small> : undefined} />
+    <DmFeedback title="" presentation="inline" tone={feedback.kind === "error" ? "danger" : "success"}
+      description={feedback.message} alert={feedback.kind === "error"} />
   );
 }
