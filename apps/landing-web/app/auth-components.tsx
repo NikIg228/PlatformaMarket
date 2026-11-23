@@ -5,6 +5,7 @@ import { DmAction } from "@marketplace/ui/controls";
 import { DmButton, DmFeedback } from "@marketplace/ui";
 import type { AuthCapability, AuthFeedback } from "./auth-client";
 import styles from "./auth-brand.module.css";
+import noticeStyles from "./auth-notice.module.css";
 
 export function AuthBrand({ href = "/" }: { href?: string }) {
   return (
@@ -62,7 +63,7 @@ export function AuthRolePicker({
 
 export function AuthNotice({ feedback }: { feedback: AuthFeedback }) {
   return (
-    <DmFeedback title="" presentation="inline" tone={feedback.kind === "error" ? "danger" : "success"}
-      description={feedback.message} alert={feedback.kind === "error"} />
+    <div className={noticeStyles.notice}><DmFeedback title="" presentation="inline" tone={feedback.kind === "error" ? "danger" : "success"}
+      description={feedback.message} alert={feedback.kind === "error"} /></div>
   );
 }

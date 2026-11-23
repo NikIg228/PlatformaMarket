@@ -277,6 +277,7 @@ export default function LoginPage() {
             <DmButton className={styles.submitAction} type="submit" appearance="primary" disabled={busy}>
               {busyAction === "email" ? "Входим…" : "Войти"}
             </DmButton>
+            {feedback ? <AuthNotice feedback={feedback} /> : null}
             <div className={styles.loginLinks}>
               <Link href={withWorkspaceReturn("/forgot-password", returnTo)}>Забыли пароль?</Link>
               <p className={`loginSignup ${styles.signup}`}>
@@ -311,7 +312,7 @@ export default function LoginPage() {
           ) : null}
           {pendingSession && !mfaSession ? <LoginWorkspaceChoice choices={choices} selected={choiceIndex} unavailable={unavailable}
             busy={busy} onSelect={setChoiceIndex} onContinue={() => void chooseWorkspace()} onSwitchAccount={switchAccount} /> : null}
-          {feedback ? <AuthNotice feedback={feedback} /> : null}
+          {feedback && (pendingSession || mfaSession) ? <AuthNotice feedback={feedback} /> : null}
         </div>
       </section>
     </main>

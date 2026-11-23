@@ -316,11 +316,6 @@ export default function RegisterPage() {
               required
             />
           </DmField>
-          {feedback ? (
-            <div className="wide">
-              <AuthNotice feedback={feedback} />
-            </div>
-          ) : null}
           <DmButton
             type="submit"
             appearance="primary"
@@ -329,6 +324,11 @@ export default function RegisterPage() {
           >
             {busy ? "Создаём профиль…" : "Создать профиль"}
           </DmButton>
+          {feedback ? (
+            <div className="wide">
+              <AuthNotice feedback={feedback} />
+            </div>
+          ) : null}
           <p className={`wide ${styles.registrationConsent}`}>
             Нажимая «Создать профиль», вы принимаете <a href="/legal/registration" target="_blank" rel="noreferrer"><strong><u>условия регистрации</u></strong></a>.
           </p>

@@ -54,8 +54,8 @@ export default function ForgotPasswordPage() {
         <DmButton className={styles.submitAction} type="submit" appearance="primary" disabled={busy} aria-busy={busy}>
           {busy ? <LoadingState presentation="inline" label="Отправляем письмо…" /> : "Отправить письмо"}
         </DmButton>
+        {feedback ? <AuthNotice feedback={feedback} /> : null}
       </form>
-      {feedback ? <AuthNotice feedback={feedback} /> : null}
       <a className="authBackLink" href={withWorkspaceReturn("/login?signedOut=1", returnTo)}>Вернуться ко входу</a>
     </section>
   </main>;

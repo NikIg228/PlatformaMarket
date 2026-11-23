@@ -213,3 +213,21 @@ Recovery tests4 PASS and ESLint PASS. Initial no-title prop failed types because
 DmFeedback requires a string; empty title preserves the shared API and omits
 the heading. Final build/types result recorded at completion. No server deploy.
 Final web production build and TypeScript PASS (51 routes).
+
+## Center feedback beneath auth actions, 2026-11-23
+
+Owner requests inline centered alerts immediately below submit on login/register/
+recovery. Preserve existing design, field validation and keyboard order. Move
+feedback beneath primary actions; keep MFA/workspace feedback in its active
+surface. Shared AuthNotice wrapper centers content within available width.
+Anti Slop UI/layout/human during: no toast, no extra content or new control sizes.
+Gates: affected auth tests, ESLint, web build/types, desktop/mobile screenshots
+and reachable recovery error. Existing unrelated personal-purchase WIP in login
+must be excluded from publication.
+
+Acceptance PASS: 24 focused tests, ESLint, web build/types51 routes. Browser
+recovery and login errors centered beneath submit; registration empty-submit
+summary below Create profile before consent, desktop and390px screenshots
+visually inspected. Center difference below0.01px. Field-level errors retained;
+keyboard Tab reaches terms with focus visible; viewport restored. Browser
+compile/navigation timeouts recovered on same tab. No real account created.
