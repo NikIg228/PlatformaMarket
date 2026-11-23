@@ -5,8 +5,11 @@ const input = { registrationToken: "synthetic-proof".repeat(4), password: "synth
 it("normalizes the corrected address and preserves a local return target", () => {
   expect(registrationEmailCorrectionSchema.parse({ ...input, returnTo: "/catalog" })).toMatchObject({ email: "owner@example.invalid", returnTo: "/catalog" });
 });
+it.each(["x", "short", "x".repeat(128)])("accepts an existing password for server-side verification: %s", password => {
+  expect(registrationEmailCorrectionSchema.parse({ ...input, password }).password).toBe(password);
+});
 it.each([
-  { registrationToken: "short" }, { password: "short" }, { email: "invalid" },
+  { registrationToken: "short" }, { password: "" }, { password: "x".repeat(129) }, { email: "invalid" },
   { returnTo: "https://external.invalid" }, { userId: "caller-controlled" },
 ])("rejects invalid proof/input and caller-supplied identity %j", patch => {
   expect(registrationEmailCorrectionSchema.safeParse({ ...input, ...patch }).success).toBe(false);

@@ -62,9 +62,8 @@ files use an explicit owner ACL via icacls; copying ACLs with Set-Acl failed and
 was not treated as success.
 Build logs and provider attempt marker are in ignored .tmp/auth-mail-resend-20261123.
 
-Local API is actively owned by start-cart-delivery-api.mjs; no stop/restart was
-performed. Prepared a mail bootstrap preserving that launcher and asked for
-permission under AGENTS. Local SMTP activation remains pending owner response.
+Local activation initially waited for owner permission to restart API 4012.
+The owner subsequently approved; activation and checks are recorded below.
 Do not rerun the delivered test mail. Reuse backend checks unless mail/config
 inputs change; recheck only the copy correction after its web deployment.
 
@@ -74,3 +73,32 @@ No Prisma or commerce changes. Mixed personal-purchase/calendar/order WIP remain
 outside this task and is excluded from the commit. Stand artifacts were derived
 from the previous accepted stand archive with only the task delta; they do not
 publish the unrelated local UI/domain WIP. Git/CI outcome is reported separately.
+
+## Continuation: local SMTP and CI
+
+Owner approved restarting local API 4012. Prior result: server SMTP delivered and
+browser recovery accepted; new evidence: CI schema test still rejects a short
+existing password although credential verification accepts any nonempty password
+and checks its hash on the server. Minimal delta: correct the stale schema test,
+retain empty/oversized/forged-input rejection, and activate the prepared local
+SMTP runtime without running migrations or changing delivery configuration.
+Checks: schemas suite, API registration-email credential tests, live local
+health/options/unknown-email request, relay TLS authentication (no extra mail),
+then task-only commit/push and actual CI result. Preserve existing server PASS.
+
+Local activation PASS: API 4012 and loopback-only relay 8091 are running from
+this source root with separate dev relay authentication. The ignored bootstrap
+.tmp/auth-mail-resend-20261123/start-local-mail.mjs preserves the existing CDEK
+sandbox profile and uses a runtime snapshot that refuses pending migrations.
+Read-only preflight found zero pending migrations; no migrations or data edits.
+API readiness and client options PASS (PROVIDER, local-file delivery disabled).
+Unknown-email request: 201/PROVIDER in 11077 ms. Relay authentication boundary
+and Resend TLS authentication PASS without sending another test message.
+Browser dev recovery: loading followed by neutral success, retained input;
+screenshot captured and visually inspected at
+output/auth-mail-resend-20261123/dev-smtp-ready.png (outside Git).
+Schemas: 60 files / 468 tests PASS; server registration-email: 17 tests PASS,
+including wrong-password denial and lockout. Targeted test ESLint PASS.
+Only the stale credential test changed; new-password requirements are unchanged.
+No server redeploy is required for this test-only correction. The new commit's
+CI result is recorded separately after publication; previous failed run is not PASS.
