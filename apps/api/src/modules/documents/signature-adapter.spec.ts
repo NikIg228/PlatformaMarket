@@ -1,9 +1,23 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ConfiguredSignatureAdapter } from "./signature-adapter";
+import { ConfiguredSignatureAdapter, MockSignatureAdapter } from "./signature-adapter";
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe("ConfiguredSignatureAdapter", () => {
+  it("does not accept a signed session response as verified document completion", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ externalSessionId: "eds-1", status: "SIGNED", evidence: { unverified: true } }), { status: 201 })));
+    const result = await new ConfiguredSignatureAdapter("https://eds.example/api").createSession({ documentId: "doc-1", checksumSha256: "a".repeat(64), method: "EDS", expiresAt: new Date() });
+    expect(result.status).toBe("SESSION_CREATED");
+    expect(result.evidence).not.toHaveProperty("gatewayEvidence");
+  });
+
+  it("blocks direct mock invocation for production and real signature methods", async () => {
+    const request = { documentId: "doc-1", checksumSha256: "a".repeat(64), expiresAt: new Date() };
+    vi.stubEnv("NODE_ENV", "test");
+    await expect(new MockSignatureAdapter().createSession({ ...request, method: "EDS" })).rejects.toThrow("cannot perform");
+    vi.stubEnv("NODE_ENV", "production");
+    await expect(new MockSignatureAdapter().createSession({ ...request, method: "SIMPLE" })).rejects.toThrow("cannot perform");
+  });
   it("creates a remote signing session without sending document contents", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ sessionId: "eds-1", url: "https://eds.example/session/eds-1" }), { status: 201 }));
     vi.stubGlobal("fetch", fetchMock);

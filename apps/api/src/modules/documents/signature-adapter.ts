@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { ServiceUnavailableException } from "@nestjs/common";
 import { requireExternalIntegrations } from "../../platform/config/limited-stand";
 
 export type SignatureSessionRequest = {
@@ -18,6 +19,9 @@ export interface SignatureAdapter {
 export class MockSignatureAdapter implements SignatureAdapter {
   async createSession(request: SignatureSessionRequest): Promise<SignatureSessionResult> {
     requireExternalIntegrations();
+    if (process.env.NODE_ENV === "production" || !["MOCK", "SIMPLE"].includes(request.method)) {
+      throw new ServiceUnavailableException("Test adapter cannot perform a real document signature");
+    }
     return { externalSessionId: `mock-sign-${randomUUID()}`, signingUrl: null, status: request.method === "SIMPLE" ? "SIGNED" : "SESSION_CREATED", evidence: { adapter: "mock", checksumSha256: request.checksumSha256 } };
   }
 }
@@ -61,8 +65,9 @@ export class ConfiguredSignatureAdapter implements SignatureAdapter {
       const externalSessionId = typeof body.externalSessionId === "string" ? body.externalSessionId : typeof body.sessionId === "string" ? body.sessionId : undefined;
       if (!externalSessionId) throw new Error("EDS gateway response does not contain externalSessionId");
       const signingUrl = typeof body.signingUrl === "string" ? body.signingUrl : typeof body.url === "string" ? body.url : null;
-      const status = body.status === "SIGNED" ? "SIGNED" : "SESSION_CREATED";
-      return { externalSessionId, signingUrl, status, evidence: { adapter: "configured-gateway", method: request.method, gatewayEvidence: body.evidence ?? body } };
+      // Session creation is not verified signature evidence. Completion uses the
+      // authenticated callback or server verification of the submitted CMS.
+      return { externalSessionId, signingUrl, status: "SESSION_CREATED", evidence: { adapter: "configured-gateway", method: request.method } };
     } finally {
       clearTimeout(timer);
     }

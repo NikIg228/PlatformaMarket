@@ -54,17 +54,22 @@ export class EdsSignatureVerificationService {
       throw new ServiceUnavailableException("EDS verification gateway is unavailable");
     }
 
-    const responseText = await response.text();
+    if (response.status >= 500 || [408, 429].includes(response.status)) {
+      throw new ServiceUnavailableException("EDS verification gateway is temporarily unavailable");
+    }
+    const responseText = await response.text().catch(() => {
+      throw new ServiceUnavailableException("EDS verification gateway response is unavailable");
+    });
     let payload: unknown;
     try {
       payload = responseText ? JSON.parse(responseText) : null;
     } catch {
       throw new ServiceUnavailableException("EDS verification gateway returned invalid JSON");
     }
-    if (!response.ok) throw new UnauthorizedException("EDS signature was rejected by the verification gateway");
+    if (!response.ok) throw new ServiceUnavailableException("EDS verification gateway did not provide verification evidence");
 
     const verification = signatureGatewayVerificationSchema.safeParse(payload);
-    if (!verification.success) throw new UnauthorizedException("EDS verification evidence is incomplete");
+    if (!verification.success) throw new ServiceUnavailableException("EDS verification evidence is incomplete");
     return this.assertVerifiedEvidence(verification.data, parsedInput.data.dataChecksumSha256, input.expectedSubjectBin);
   }
 

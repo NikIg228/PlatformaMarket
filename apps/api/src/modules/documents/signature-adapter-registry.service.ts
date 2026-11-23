@@ -8,15 +8,18 @@ export class SignatureAdapterRegistry {
   private readonly mock = new MockSignatureAdapter();
   resolve(method: DocumentSignatureMethod) {
     requireExternalIntegrations();
-    if (["MOCK", "SIMPLE"].includes(method)) return this.mock;
+    if (["MOCK", "SIMPLE"].includes(method)) {
+      if (process.env.NODE_ENV === "production") throw new ServiceUnavailableException("Test signature methods are unavailable in production");
+      return this.mock;
+    }
     const url = process.env.SIGNATURE_GATEWAY_URL;
-    if (!url && process.env.NODE_ENV !== "production") return this.mock;
     if (!url) throw new ServiceUnavailableException(`Signature method ${method} is configured but SIGNATURE_GATEWAY_URL is missing`);
     return new ConfiguredSignatureAdapter(url, process.env.SIGNATURE_GATEWAY_TOKEN);
   }
 
   capabilities() {
     if (isLimitedTestStand()) return { methods: [], configuredExternalGateway: false };
-    return { methods: ["MOCK", "SIMPLE", "EDS", "EGOV_QR", "EXTERNAL"], configuredExternalGateway: Boolean(process.env.SIGNATURE_GATEWAY_URL) };
+    const configuredExternalGateway = Boolean(process.env.SIGNATURE_GATEWAY_URL);
+    return { methods: [...(process.env.NODE_ENV === "production" ? [] : ["MOCK", "SIMPLE"]), ...(configuredExternalGateway ? ["EDS", "EGOV_QR", "EXTERNAL"] : [])], configuredExternalGateway };
   }
 }

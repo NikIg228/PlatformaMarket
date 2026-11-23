@@ -6,6 +6,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { PrismaService } from "../../platform/prisma/prisma.service";
 import { ObjectStorageService } from "../../platform/storage/object-storage.service";
 import type { SupplierActorContext } from "../suppliers/supplier-access.service";
+import { membershipPermission } from "../access-control/access-mode";
 import { DocumentRendererService } from "./document-renderer.service";
 import { documentTaxTemplate, documentVat } from "./document-vat";
 import { calculateLineTotal } from "../commerce/commerce-rules";
@@ -849,32 +850,44 @@ export class DocumentsService {
     if (signature.signerOrganizationId !== context.organizationId) throw new ForbiddenException("Signer organization must be the active organization");
     if (signature.signerUserId && signature.signerUserId !== context.actorId) throw new ForbiddenException("Signer user must be the authenticated user");
     if (["EDS", "EGOV_QR", "EXTERNAL"].includes(signature.method) && !trustedExternalCallback) throw new ForbiddenException("External signature status is accepted only through a verified gateway callback");
-    if (!["PENDING", "SESSION_CREATED"].includes(signature.status)) throw new ConflictException("Signature session is already final");
-    if (signature.expiresAt && signature.expiresAt < new Date()) throw new ConflictException("Signature session has expired");
-    const claimed = await this.prisma.documentSignature.updateMany({ where: { id: signatureId, status: { in: ["PENDING", "SESSION_CREATED"] } }, data: {
-      status: input.status,
-      externalSignatureId: input.externalSignatureId,
-      signatureHash: input.status === "SIGNED" ? input.signatureHash ?? createHash("sha256").update(`${signature.document.checksumSha256}:${signature.externalSessionId}:${Date.now()}`).digest("hex") : null,
-      signedAt: input.status === "SIGNED" ? new Date() : null,
-      rejectionReason: input.status === "REJECTED" ? input.rejectionReason : null,
-      evidence: input.evidence == null ? Prisma.JsonNull : input.evidence as Prisma.InputJsonValue,
-    } });
-    if (claimed.count !== 1) {
-      const current = await this.prisma.documentSignature.findUniqueOrThrow({ where: { id: signatureId }, include: { document: { include: { supplierOrder: true } } } });
-      if (current.status !== input.status || (input.externalSignatureId && current.externalSignatureId !== input.externalSignatureId)) throw new ConflictException("Signature session already has a conflicting terminal status");
-      return { signature: current, document: current.document };
-    }
-    const updated = await this.prisma.documentSignature.findUniqueOrThrow({ where: { id: signatureId } });
-    const document = input.status === "SIGNED" ? await this.refreshDocumentSignatureStatus(signature.documentId) : await this.prisma.document.update({ where: { id: signature.documentId }, data: { status: input.status === "REJECTED" ? "REJECTED" : "AWAITING_SIGNATURE" } });
-    await this.prisma.$transaction([
-      this.prisma.auditLog.create({ data: { ...context, action: "document.signature.completed", entityType: "DocumentSignature", entityId: signature.id, before: { status: signature.status }, after: { status: updated.status, documentStatus: document.status } } }),
-      this.prisma.outboxEvent.create({ data: { aggregateType: "Document", aggregateId: signature.documentId, eventType: updated.status === "SIGNED" ? "DocumentSigned" : "DocumentSignatureChanged", payload: { documentId: signature.documentId, signatureId: signature.id, signatureStatus: updated.status, documentStatus: document.status, ownerOrganizationId: signature.document.ownerOrganizationId } } }),
-    ]);
-    return { signature: updated, document };
+    if (process.env.NODE_ENV === "production" && ["MOCK", "SIMPLE"].includes(signature.method)) throw new ForbiddenException("Test signatures cannot be completed in production");
+    return this.prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${context.actorId}::uuid FOR SHARE`;
+      await tx.$queryRaw`SELECT id FROM "OrganizationMembership" WHERE "userId" = ${context.actorId}::uuid AND "organizationId" = ${context.organizationId}::uuid FOR SHARE`;
+      const activeSigner = await tx.organizationMembership.findFirst({ where: { userId: context.actorId, organizationId: context.organizationId, status: "ACTIVE", user: { status: "ACTIVE" }, organization: { status: "ACTIVE" }, ...membershipPermission(context.organizationId, "document.sign") } });
+      if (!activeSigner) throw new ForbiddenException("Signer membership or signing permission is no longer active");
+      await tx.$queryRaw`SELECT id FROM "Document" WHERE id = ${signature.documentId}::uuid FOR UPDATE`;
+      await tx.$queryRaw`SELECT id FROM "DocumentSignature" WHERE id = ${signatureId}::uuid FOR UPDATE`;
+      const current = await tx.documentSignature.findUniqueOrThrow({ where: { id: signatureId }, include: { document: { include: { nextVersions: { select: { id: true } } } } } });
+      if (!["PENDING", "SESSION_CREATED"].includes(current.status)) {
+        if (trustedExternalCallback && input.status === "SIGNED" && current.status === input.status && current.externalSignatureId === (input.externalSignatureId ?? null) && current.signatureHash === input.signatureHash) return { signature: current, document: current.document };
+        throw new ConflictException("Signature session is already final: conflicting terminal status");
+      }
+      if (current.expiresAt && current.expiresAt <= new Date()) throw new ConflictException("Signature session has expired");
+      if (current.document.nextVersions.length || !["GENERATED", "AWAITING_SIGNATURE", "PARTIALLY_SIGNED"].includes(current.document.status) || current.document.checksumSha256 !== signature.document.checksumSha256) throw new ConflictException("Document version is no longer available for signing");
+      const claimed = await tx.documentSignature.updateMany({ where: { id: signatureId, status: { in: ["PENDING", "SESSION_CREATED"] } }, data: {
+        status: input.status,
+        externalSignatureId: input.externalSignatureId,
+        signatureHash: input.status === "SIGNED" ? input.signatureHash ?? createHash("sha256").update(`${signature.document.checksumSha256}:${signature.externalSessionId}:${Date.now()}`).digest("hex") : null,
+        signedAt: input.status === "SIGNED" ? new Date() : null,
+        rejectionReason: input.status === "REJECTED" ? input.rejectionReason : null,
+        evidence: input.evidence == null ? Prisma.JsonNull : input.evidence as Prisma.InputJsonValue,
+      } });
+      if (claimed.count !== 1) {
+        const current = await tx.documentSignature.findUniqueOrThrow({ where: { id: signatureId }, include: { document: { include: { supplierOrder: true } } } });
+        if (current.status !== input.status || (input.externalSignatureId && current.externalSignatureId !== input.externalSignatureId)) throw new ConflictException("Signature session already has a conflicting terminal status");
+        return { signature: current, document: current.document };
+      }
+      const updated = await tx.documentSignature.findUniqueOrThrow({ where: { id: signatureId } });
+      const document = input.status === "SIGNED" ? await this.refreshDocumentSignatureStatus(signature.documentId, tx) : await tx.document.update({ where: { id: signature.documentId }, data: { status: input.status === "REJECTED" ? "REJECTED" : "AWAITING_SIGNATURE" } });
+      await tx.auditLog.create({ data: { ...context, action: "document.signature.completed", entityType: "DocumentSignature", entityId: signature.id, before: { status: signature.status }, after: { status: updated.status, documentStatus: document.status } } });
+      await tx.outboxEvent.create({ data: { aggregateType: "Document", aggregateId: signature.documentId, eventType: updated.status === "SIGNED" ? "DocumentSigned" : "DocumentSignatureChanged", payload: { documentId: signature.documentId, signatureId: signature.id, signatureStatus: updated.status, documentStatus: document.status, ownerOrganizationId: signature.document.ownerOrganizationId } } });
+      return { signature: updated, document };
+    });
   }
 
-  private async refreshDocumentSignatureStatus(documentId: string) {
-    const document = await this.prisma.document.findUniqueOrThrow({ where: { id: documentId }, include: { signatures: true, marketplaceAgreement: true, buyerSupplierAgreement: true } });
+  private async refreshDocumentSignatureStatus(documentId: string, db: Prisma.TransactionClient = this.prisma) {
+    const document = await db.document.findUniqueOrThrow({ where: { id: documentId }, include: { signatures: true, marketplaceAgreement: true, buyerSupplierAgreement: true } });
     const parties = document.marketplaceAgreement
       ? [document.marketplaceAgreement.supplierOrganizationId, document.marketplaceAgreement.operatorOrganizationId]
       : document.buyerSupplierAgreement
@@ -885,8 +898,8 @@ export class DocumentsService {
     const complete = parties
       ? parties.every(organizationId => signedOrganizations.has(organizationId))
       : signedCount >= Math.max(1, document.requiredSignatureCount);
-    await this.prisma.document.updateMany({ where: { id: documentId, status: { not: "SIGNED" } }, data: { status: complete ? "SIGNED" : "PARTIALLY_SIGNED", immutableAt: document.immutableAt ?? new Date() } });
-    return this.prisma.document.findUniqueOrThrow({ where: { id: documentId } });
+    await db.document.updateMany({ where: { id: documentId, status: { not: "SIGNED" } }, data: { status: complete ? "SIGNED" : "PARTIALLY_SIGNED", immutableAt: document.immutableAt ?? new Date() } });
+    return db.document.findUniqueOrThrow({ where: { id: documentId } });
   }
 
   async archive(documentId: string, context: SupplierActorContext) {

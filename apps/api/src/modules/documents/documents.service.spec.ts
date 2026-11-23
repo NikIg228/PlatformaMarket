@@ -251,12 +251,14 @@ describe("signature session actor binding", () => {
     expect(prisma.documentSignature.create).not.toHaveBeenCalled();
   });
   it("allows the recorded signer to reject its session once and refuses replay", async () => {
-    const signature = { id: "signature", documentId: "document", signerOrganizationId: "org", signerUserId: "actor", method: "MOCK", status: "SESSION_CREATED", document: { ownerOrganizationId: "org" } };
+    const signature = { id: "signature", documentId: "document", signerOrganizationId: "org", signerUserId: "actor", method: "MOCK", status: "SESSION_CREATED", document: { ownerOrganizationId: "org", status: "AWAITING_SIGNATURE", nextVersions: [] } };
     const prisma = {
-      documentSignature: { findUnique: vi.fn().mockResolvedValue(signature), updateMany: vi.fn().mockResolvedValue({ count: 1 }), findUniqueOrThrow: vi.fn().mockResolvedValue({ ...signature, status: "REJECTED" }) },
+      documentSignature: { findUnique: vi.fn().mockResolvedValue(signature), updateMany: vi.fn().mockResolvedValue({ count: 1 }), findUniqueOrThrow: vi.fn(async (args: { include?: unknown }) => args.include ? signature : { ...signature, status: "REJECTED" }) },
       document: { update: vi.fn().mockResolvedValue({ id: "document", status: "REJECTED" }) },
+      $queryRaw: vi.fn(), organizationMembership: { findFirst: vi.fn().mockResolvedValue({ id: "membership" }) },
       auditLog: { create: vi.fn() }, outboxEvent: { create: vi.fn() }, $transaction: vi.fn(),
     };
+    prisma.$transaction.mockImplementation(work => work(prisma));
     const service = new DocumentsService(prisma as never, {} as never, {} as never, {} as never, {} as never);
     vi.spyOn(service, "get").mockResolvedValue({ id: "document" } as never);
     const context = { actorId: "actor", organizationId: "org" };
