@@ -134,3 +134,24 @@ selection and registration terms link. Align those E2E expectations; retain
 validation/focus checks, test keyboard role switching and terms link instead of
 the removed checkbox. No product code change. Clean CI is the browser gate;
 local canonical suite would conflict with the owner's active dev ports/profile.
+
+## Recovery page spacing correction
+
+Owner screenshot 23.11: recovery works, but display-size heading and top spacing
+are oversized. Scope is /forgot-password only. Use existing page typography
+tokens (32px desktop, 28px narrow) and 24px top inset; remove the extra 24px
+brand margin so the existing 24px grid gap alone separates logo and title.
+Anti Slop during, UI and layoutmobile: preserve brand/shared controls, compact
+hierarchy, no new assets, no clipping. Direction is existing Market utility form,
+energy/rhythm/motion 1/1/1. Low-risk CSS composition only; check desktop/mobile
+screenshots and computed sizes, empty validation/keyboard, web types/build and
+diff hygiene. Retain SMTP behavior and unrelated source/process ownership.
+Browser PASS: desktop title32/top24/logo-title gap24px; 390px title28 and 768px
+fluid title30.72, no horizontal overflow. Desktop/mobile screenshots captured and
+visually inspected (output/auth-mail-resend-20261123/recovery-compact-*.png).
+Empty submit shows inline validation; Shift+Tab focuses email with visible ring;
+return link opens /login?signedOut=1. No browser console errors. Viewport reset.
+Delivery Gate: hierarchy/spacing/responsiveness/keyboard PASS in changed scope;
+shared input/button sizes and colors preserved. No new content, assets or motion;
+new loading/success/network behavior is not introduced by this CSS-only change.
+Completion checks: web production build and TypeScript PASS (51 routes, isolated .tmp output so dev stays running); targeted ESLint and diff hygiene PASS. No CSS-mirroring tests added. Server deployment is outside this local UI correction.

@@ -7,6 +7,7 @@ import { type FormEvent, useRef, useState } from "react";
 import { AuthBrand, AuthNotice } from "../auth-components";
 import { authRequest, feedbackFromError, type AuthFeedback } from "../auth-client";
 import { useProductReturn } from "../use-product-return";
+import styles from "./forgot-password.module.css";
 
 export default function ForgotPasswordPage() {
   const returnTo = useProductReturn();
@@ -40,7 +41,7 @@ export default function ForgotPasswordPage() {
   }
 
   return <main className="authUtilityPage">
-    <section className="authUtilityCard" aria-labelledby="forgot-title">
+    <section className={`authUtilityCard ${styles.card}`} aria-labelledby="forgot-title">
       <AuthBrand href="/catalog" />
       <h1 id="forgot-title">Восстановить пароль</h1>
       <p className="authUtilityLead">Укажите email вашего аккаунта. Мы отправим ссылку для создания нового пароля.</p>
