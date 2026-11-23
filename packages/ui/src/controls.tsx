@@ -3,7 +3,8 @@
 import { Checkbox, Combobox, Dropdown, Field, Input, TabList, Textarea } from "@fluentui/react-components";
 import type { ComponentPropsWithRef } from "react";
 import { useLayoutEffect, useRef, useState } from "react";
-import { Eye20Regular, EyeOff20Regular } from "@fluentui/react-icons";
+import { Eye20Regular } from "@fluentui/react-icons/svg/eye";
+import { EyeOff20Regular } from "@fluentui/react-icons/svg/eye-off";
 import { DmButton } from "./actions";
 
 import { classes, densityFor, type Density } from "./control-utils";

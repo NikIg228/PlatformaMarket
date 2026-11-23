@@ -102,3 +102,11 @@ including wrong-password denial and lockout. Targeted test ESLint PASS.
 Only the stale credential test changed; new-password requirements are unchanged.
 No server redeploy is required for this test-only correction. The new commit's
 CI result is recorded separately after publication; previous failed run is not PASS.
+
+CI continuation: run 45121573042 passed the corrected schema test, then exposed
+an existing shared password-control icon barrel import (controls.tsx), rejected
+by buyer performance-boundaries.test.ts. Minimal delta: use the existing package's
+svg/eye and svg/eye-off entry points for the same two icons. No markup, styles,
+password policy or interaction changed. Focused boundary/password-control tests
+and shared UI types validate this correction; CI validates the full consumers.
+Boundary tests 3/3, password-control tests 3/3 and shared UI typecheck PASS. Rendered SVG markup is identical for both imports; component-reference identity differs because the package builds separate entry points. No visual or behavioral delta.
