@@ -41,7 +41,7 @@ for (const width of [1440, 390]) test(`shared focus keeps proposal search typing
   expect(state.writes).toEqual([]); expect(state.unexpected).toEqual([]);
 });
 
-test("shared focus preserves textarea editing, validation borders and checkbox selection", async ({ page }, testInfo) => {
+test("shared focus preserves textarea editing, validation borders and registration role selection", async ({ page }, testInfo) => {
   const state = await productFixture(page);
   await page.goto("/supplier/products/new?request=1");
   const textarea = page.getByRole("textbox", { name: "Сведения о товаре" });
@@ -53,7 +53,7 @@ test("shared focus preserves textarea editing, validation borders and checkbox s
   await expect(textarea.locator("xpath=..")).toHaveCSS("outline-width", "1px");
   // Fresh navigation in the fixture; no successful registration is submitted.
   await page.goto("/register");
-  await page.getByRole("button", { name: "Продолжить", exact: true }).click();
+  await page.getByRole("button", { name: "Создать профиль", exact: true }).click();
   const invalid = page.locator('input[aria-invalid="true"]').first();
   await expect(invalid).toBeVisible();
   const border = invalid.locator("xpath=..");
@@ -67,14 +67,15 @@ test("shared focus preserves textarea editing, validation borders and checkbox s
   await invalid.press("Tab"); await page.keyboard.press("Shift+Tab");
   await expect(border).toHaveCSS("outline-width", "1px"); await expect(border).toHaveCSS("border-top-color", errorBorder);
   await expect(border).toHaveCSS("outline-offset", "2px");
-  const checkbox = page.getByRole("checkbox", { name: "Получать новости продукта (необязательно)" });
-  await checkbox.click(); await expect(checkbox).toBeChecked();
-  const checkboxRoot = checkbox.locator("xpath=..");
-  await expect(checkboxRoot).toHaveCSS("outline-style", "none");
-  await checkbox.press("Tab"); await page.keyboard.press("Shift+Tab");
-  await expect(checkbox).toBeFocused(); await expect(checkbox).toHaveCSS("outline-style", "none");
-  await expect(checkboxRoot).toHaveCSS("outline-width", "1px");
-  await checkbox.press("Space"); await expect(checkbox).not.toBeChecked();
+  const role = page.locator('.rolePicker button').filter({ hasText: "Поставщик" });
+  await role.click(); await expect(role).toHaveAttribute("aria-pressed", "true");
+  await expect(role).toHaveCSS("outline-style", "none");
+  await role.press("Tab"); await page.keyboard.press("Shift+Tab");
+  await expect(role).toBeFocused(); await expect(role).toHaveCSS("outline-width", "1px");
+  await role.press("Shift+Tab"); await page.keyboard.press("Space");
+  await expect(page.locator('.rolePicker button').filter({ hasText: "Клиника" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("checkbox")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "условия регистрации", exact: true })).toHaveAttribute("href", "/legal/registration");
   await page.screenshot({ path: testInfo.outputPath("focus-registration-errors.png"), fullPage: true });
   expect(state.writes).toEqual([]);
 });

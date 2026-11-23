@@ -125,3 +125,12 @@ Broader local npm test hit a module-load timeout; sequential Turbo then passed
 api-client/order-payment.ts imports schemas before their held/rejected mock.
 That module is unrelated local WIP and absent from HEAD; do not publish or change
 it for this task. Clean GitHub CI remains the acceptance check for published code.
+
+Run 45124887682: all unit tests, types, lint, builds, JS budget, API/runtime/config,
+PostgreSQL and Security PASS. Pilot browser suite: 120 passed / 3 failed due to
+old registration expectations (Continue label, pale role selection, removed
+newsletter checkbox). Owner-requested current form uses Create profile, strong
+selection and registration terms link. Align those E2E expectations; retain
+validation/focus checks, test keyboard role switching and terms link instead of
+the removed checkbox. No product code change. Clean CI is the browser gate;
+local canonical suite would conflict with the owner's active dev ports/profile.

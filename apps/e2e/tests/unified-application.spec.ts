@@ -90,7 +90,7 @@ for (const width of [390, 1440]) test(`shared theme auth audit ${width}`, async 
     await expect(page.locator("main").first()).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     if (route === "/register") {
-      await expect(page.locator('.rolePicker [data-selected="true"]')).toHaveCSS("background-color", "rgb(228, 243, 237)");
+      await expect(page.locator('.rolePicker [data-selected="true"]')).toHaveCSS("background-color", "rgb(0, 122, 89)");
       await expect(page.locator('.registrationSubmit')).toHaveCSS("background-color", "rgb(0, 122, 89)");
     }
     await page.screenshot({ path: testInfo.outputPath(`theme-${route.slice(1).replaceAll("/", "-")}-${width}.png`) });
