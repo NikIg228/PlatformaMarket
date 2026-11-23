@@ -155,3 +155,27 @@ Delivery Gate: hierarchy/spacing/responsiveness/keyboard PASS in changed scope;
 shared input/button sizes and colors preserved. No new content, assets or motion;
 new loading/success/network behavior is not introduced by this CSS-only change.
 Completion checks: web production build and TypeScript PASS (51 routes, isolated .tmp output so dev stays running); targeted ESLint and diff hygiene PASS. No CSS-mirroring tests added. Server deployment is outside this local UI correction.
+
+## Recovery submit feedback correction
+
+Owner 23.11: rename submit to Send email; place Sending email status inside the
+button. Preserve compact layout and use shared inline LoadingState within the
+disabled button. Anti Slop human/copy: explicit action, announced busy status,
+no extra layout row, retained input and safe retry. Focused recovery test must
+assert label, containment, disabled/busy and duplicate protection. Browser checks
+cover pending/completed state and mobile fit; web build/types and ESLint complete.
+Read-only local recipient check: requested address has no User record or reset
+tokens; client options report PROVIDER and current runtime stderr has no errors.
+Existing forgotPassword only sends for an existing User. No account/data edits
+or additional real email sends are needed to explain this request.
+Recovery submit checks PASS: 3 focused tests (validation, pending containment,
+duplicate guard, neutral completion, retained email/retry), ESLint, web production
+build/types (51 routes). Browser: disabled aria-busy button contains shared status;
+returns to Send email after response. At390px button44px high, no horizontal
+overflow. Desktop pending screenshot captured/visually inspected using tab screenshot;
+first combined capture lagged the current AX state, so final proof uses a separate
+capture call. Screenshot: recovery-button-pending-desktop.png. No real messages
+sent by these synthetic unknown-email checks. Viewport restored.
+Release wording mentions all changes while unrelated commerce/delivery WIP exists;
+asked owner to clarify release scope. That does not block publishing this tested
+recovery button change; no server rollout or unrelated staging performed here.
