@@ -110,3 +110,18 @@ svg/eye and svg/eye-off entry points for the same two icons. No markup, styles,
 password policy or interaction changed. Focused boundary/password-control tests
 and shared UI types validate this correction; CI validates the full consumers.
 Boundary tests 3/3, password-control tests 3/3 and shared UI typecheck PASS. Rendered SVG markup is identical for both imports; component-reference identity differs because the package builds separate entry points. No visual or behavioral delta.
+
+Run 45122948438 passed the icon boundary but then failed the older quantity-input
+test: it inspected DmInput's immediate React element, which became an InputControl
+wrapper when password visibility was added. Actual numeric input behavior is
+unchanged. The test now renders through that wrapper and observes the underlying
+input props, retaining validation, controlled value, event identity and sizing
+assertions. Check all shared UI tests, types and lint before the next CI run.
+Shared UI: 32 files / 144 tests PASS; final quantity mock adjustment 2 tests PASS,
+ESLint PASS and shared UI types PASS. Initial native-input mock was rejected by
+the lint rule and replaced by a props observer returning null.
+Broader local npm test hit a module-load timeout; sequential Turbo then passed
+10 workspaces but failed two admin restoration tests because unpublished
+api-client/order-payment.ts imports schemas before their held/rejected mock.
+That module is unrelated local WIP and absent from HEAD; do not publish or change
+it for this task. Clean GitHub CI remains the acceptance check for published code.
