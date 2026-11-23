@@ -47,7 +47,8 @@ if (serve) {
     await request('/identity/mfa/challenge', { code: invalidCode }, 401, relogin.accessToken);
     await request('/identity/mfa/challenge', { code: generateTotp(enrollment.secret) }, 201, relogin.accessToken);
     const known = await request('/auth/password/forgot', { email: operator.email });
-    const unknown = await request('/auth/password/forgot', { email: `${runId}-absent@example.invalid` }); assert.deepEqual(unknown, known);
+    assert.equal(known.ok, true);
+    const unknown = await request('/auth/password/forgot', { email: `${runId}-absent@example.invalid` }, 404); assert.equal(unknown.message, "Аккаунт не найден");
     const link = await mail(operator.email, '/reset-password'); assert.ok(link);
     const token = new URL(link).searchParams.get('token'), password = randomBytes(24).toString('base64url');
     await request('/auth/password/reset', { token, password });
@@ -62,6 +63,6 @@ if (serve) {
     await db.emailAuthToken.update({ where: { tokenHash: createHash('sha256').update(expiredToken).digest('hex') }, data: { expiresAt: new Date(0) } });
     await request('/auth/password/reset', { token: expiredToken, password }, 401);
     assert.equal(await db.authSession.count({ where: { userId: tenant.userId } }), 1, 'Only pre-membership verification session exists for denied tenant');
-    console.log(JSON.stringify({ status: 'PASS', runId, database: 'dentmarket_audit_20260914', scenarios: ['local-file-verification','sequential-verification-replay-denied','live-openapi','tenant-password-denied-before-session','wrong-password-denied','anonymous-denied','primary-without-mfa-denied','totp-enrollment-and-elevation','mfa-relogin-challenge','bad-mfa-denied','nonenumerating-reset-ack','local-file-reset','reset-replay-expiry-denied','old-sessions-revoked','new-password-valid'], cleanup: 'Owned processes stopped, sessions revoked, actual secret-bearing test mails removed; synthetic DB records retained' }, null, 2));
+    console.log(JSON.stringify({ status: 'PASS', runId, database: 'dentmarket_audit_20260914', scenarios: ['local-file-verification','sequential-verification-replay-denied','live-openapi','tenant-password-denied-before-session','wrong-password-denied','anonymous-denied','primary-without-mfa-denied','totp-enrollment-and-elevation','mfa-relogin-challenge','bad-mfa-denied','missing-account-reset-error','local-file-reset','reset-replay-expiry-denied','old-sessions-revoked','new-password-valid'], cleanup: 'Owned processes stopped, sessions revoked, actual secret-bearing test mails removed; synthetic DB records retained' }, null, 2));
   } finally { await fixture.stop(); }
 }

@@ -78,7 +78,7 @@ export class AuthSessionsController {
   }
 
   @Post("password/forgot")
-  @ApiCoreBody("AuthForgotRequest") @ApiCoreResponse("AuthForgotAcceptedResponse", 201) @ApiCoreResponse("ErrorResponse", 503)
+  @ApiCoreBody("AuthForgotRequest") @ApiCoreResponse("AuthForgotAcceptedResponse", 201) @ApiCoreResponse("ErrorResponse", 404) @ApiCoreResponse("ErrorResponse", 503)
   forgotPassword(@Body() body: unknown) { const parsed = emailForgotPasswordSchema.safeParse(body); if (!parsed.success) throw new BadRequestException(parsed.error.flatten()); return this.sessions.forgotPassword(parsed.data.email); }
 
   @Get("client-options") @Header("Cache-Control", "no-store")

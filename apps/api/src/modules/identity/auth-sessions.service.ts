@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
 import { withWorkspaceReturn, type AuthEmailRegistration, type SocialExchangeInput, type WorkspaceContext } from "@marketplace/schemas";
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { passwordHash, passwordMatches } from "./password-codec";
@@ -253,13 +253,14 @@ export class AuthSessionsService {
     const started = performance.now();
     try {
       const user = await this.prisma.user.findUnique({ where: { email } });
-      if (user) {
+      if (!user) throw new NotFoundException("Аккаунт не найден");
+      {
         const token = await this.issueEmailToken(user.id, "PASSWORD_RESET");
         const link = `${environment().AUTH_EMAIL_BASE_URL}/reset-password?token=${encodeURIComponent(token.raw)}`;
         try { await this.email(user.email, "Восстановление пароля PlatformaMarket", `Сбросить пароль: ${link}\nСсылка действует до ${token.expiresAt.toISOString()}.`); }
-        catch { await this.prisma.emailAuthToken.deleteMany({ where: { tokenHash: hash(token.raw), consumedAt: null } }); this.logger.warn("auth_password_reset_delivery_failed"); }
+        catch { await this.prisma.emailAuthToken.deleteMany({ where: { tokenHash: hash(token.raw), consumedAt: null } }); this.logger.warn("auth_password_reset_delivery_failed"); throw new ServiceUnavailableException("Не удалось отправить письмо. Попробуйте ещё раз позже."); }
       }
-      return { ok: true as const, message: "Запрос принят. Если аккаунт существует, письмо передано на доставку. Если письма нет, обратитесь к оператору.", delivery };
+      return { ok: true as const, message: "Мы выслали письмо на указанный email.", delivery };
     } finally { await delay(Math.max(0, authMailTimeout(environment()) + 1_000 - (performance.now() - started))); }
   }
 

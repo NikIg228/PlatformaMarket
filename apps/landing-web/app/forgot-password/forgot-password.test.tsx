@@ -8,7 +8,7 @@ vi.mock("react", async original => ({ ...await original<typeof import("react")>(
 vi.mock("@marketplace/ui", () => ({ DmButton:"button", DmField:"field", DmInput:"input", LoadingState:"loading" }));
 vi.mock("../auth-components", () => ({ AuthBrand:"brand", AuthNotice:"notice" }));
 vi.mock("../use-product-return", () => ({ useProductReturn: () => "/catalog" }));
-vi.mock("../auth-client", () => ({ authRequest: state.request, feedbackFromError: () => ({kind:"error",message:"Попробуйте ещё раз."}) }));
+vi.mock("../auth-client", () => ({ authRequest: state.request, feedbackFromError: (cause: Error) => ({kind:"error",message:cause.message}) }));
 import ForgotPasswordPage from "./forgot-password-screen";
 function render() { state.cursor=0;return ForgotPasswordPage(); }
 function find(node: ReactNode, type: string): any {
@@ -24,7 +24,7 @@ it("opens an empty recovery form independently from login fields and validates o
   await find(page,"form").onSubmit(event);page=render();
   expect(find(page,"field").validationState).toBe("error");expect(state.request).not.toHaveBeenCalled();
 });
-it("normalizes email, prevents duplicate submission and keeps a neutral success", async()=>{
+it("normalizes email, prevents duplicate submission and reports successful delivery", async()=>{
   let resolve!: (value:unknown)=>void;
   state.request.mockImplementation(()=>new Promise(r=>{resolve=r;}));
   find(render(),"input").onChange(null,{value:"  Test@Example.com  "});
@@ -34,7 +34,7 @@ it("normalizes email, prevents duplicate submission and keeps a neutral success"
   expect(button.disabled).toBe(true);expect(button["aria-busy"]).toBe(true);
   expect(find(button.children,"loading").label).toBe("Отправляем письмо…");
   resolve({ok:true,message:"Accepted",delivery:"PROVIDER"});await first;
-  expect(find(render(),"notice").feedback.message).toContain("Если аккаунт");
+  expect(find(render(),"notice").feedback.message).toBe("Мы выслали письмо на указанный email.");
   expect(find(render(),"button").children).toBe("Отправить письмо");
   expect(find(render(),"button")["aria-busy"]).toBe(false);
 });
@@ -45,4 +45,13 @@ it("retains the email on delivery errors and permits a deliberate retry", async(
   expect(find(page,"button").disabled).toBe(false);
   state.request.mockResolvedValue({ok:true,message:"Accepted",delivery:"LOCAL_FILE"});await find(page,"form").onSubmit(event);
   expect(find(render(),"notice").feedback.message).toContain("локальном стенде");
+});
+
+it("shows account-not-found feedback without success and retains the address", async()=>{
+  state.request.mockRejectedValue(new Error("Аккаунт не найден"));
+  find(render(),"input").onChange(null,{value:"absent@example.invalid"});
+  await find(render(),"form").onSubmit(event);
+  expect(find(render(),"notice").feedback).toEqual({kind:"error",message:"Аккаунт не найден"});
+  expect(find(render(),"input").value).toBe("absent@example.invalid");
+  expect(find(render(),"button").disabled).toBe(false);
 });

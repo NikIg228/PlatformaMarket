@@ -179,3 +179,18 @@ sent by these synthetic unknown-email checks. Viewport restored.
 Release wording mentions all changes while unrelated commerce/delivery WIP exists;
 asked owner to clarify release scope. That does not block publishing this tested
 recovery button change; no server rollout or unrelated staging performed here.
+
+## Explicit account lookup, owner decision 2026-11-23
+
+Prior neutral response is superseded by explicit owner request. Unknown email:404
+with Account not found; successful provider acceptance:201; delivery failure:503
+with retry feedback and deletion of the unused token. Shared error envelope and
+rate limits remain. Account existence is intentionally disclosed by this policy.
+Skills Anti Slop during/human/copy: preserve layout, loading, accessible alert and
+input/retry; do not claim successful sending on transport failure.
+Focused API tests21 and recovery tests4 PASS; ESLint PASS; web build/types PASS.
+API npm prebuild hit a locked Prisma DLL; schema unchanged, direct nest build
+using existing generated client PASS. Local API restarted with original SMTP
+configuration, no migrations. Browser unknown-email request shows Account not
+found alert, retains email and reenables submit; screenshot visually inspected
+in output/auth-mail-resend-20261123/account-not-found.png. Publication pending.

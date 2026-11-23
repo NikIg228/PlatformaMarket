@@ -76,12 +76,15 @@ it("includes a validated product return in the verification email for a new tab"
   expect(link.searchParams.get("token")).toBeTruthy();
   expect(db.authSession.create).not.toHaveBeenCalled();
 });
-it("reset ack is identical for known, unknown and delivery-failed account; failed token invalidated", async () => {
+it("reports missing account and delivery failure without false success; failed token invalidated", async () => {
   const accepted = await service.forgotPassword(user.email);
-  user = null; expect(await service.forgotPassword("unknown@example.invalid")).toEqual(accepted);
+  expect(accepted.message).toBe("Мы выслали письмо на указанный email.");
+  const sends = vi.mocked(deliverAuthMail).mock.calls.length;
+  user = null; await expect(service.forgotPassword("unknown@example.invalid")).rejects.toThrow("Аккаунт не найден");
+  expect(deliverAuthMail).toHaveBeenCalledTimes(sends);
   user = { id: "user", email: "audit@example.invalid" };
   vi.mocked(deliverAuthMail).mockRejectedValue(new Error("private-token"));
-  expect(await service.forgotPassword(user.email)).toEqual(accepted);
+  await expect(service.forgotPassword(user.email)).rejects.toThrow("Не удалось отправить письмо");
   expect(db.emailAuthToken.deleteMany).toHaveBeenLastCalledWith({ where: { tokenHash: expect.stringMatching(/^[a-f0-9]{64}$/), consumedAt: null } });
   expect(JSON.stringify(accepted)).not.toMatch(/private-token|tokenHash|\.tmp/);
 });
@@ -91,7 +94,7 @@ it("uses the same SMTP time budget for known and unknown accounts", async () => 
   await service.forgotPassword(user.email);
   const known = vi.mocked(delay).mock.calls.at(-1)![0] as number;
   user = null;
-  await service.forgotPassword("unknown@example.invalid");
+  await expect(service.forgotPassword("unknown@example.invalid")).rejects.toThrow("Аккаунт не найден");
   const unknown = vi.mocked(delay).mock.calls.at(-1)![0] as number;
   expect(known).toBeGreaterThan(10_000); expect(unknown).toBeGreaterThan(10_000);
   expect(known).toBeLessThanOrEqual(11_000); expect(unknown).toBeLessThanOrEqual(11_000);

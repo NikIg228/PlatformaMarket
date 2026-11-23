@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
       const accepted = authForgotAcceptedSchema.parse(await authRequest("/auth/password/forgot", valid.data));
       setFeedback({ kind: "success", message: accepted.delivery === "LOCAL_FILE"
         ? "Запрос принят. На локальном стенде письмо доступно оператору."
-        : "Запрос принят. Если аккаунт с этим email существует, проверьте почту и папку «Спам» — там появится ссылка для восстановления пароля." });
+        : "Мы выслали письмо на указанный email." });
     } catch (cause) {
       setFeedback(feedbackFromError(cause, "Не удалось отправить письмо",
         "Сервер не ответил. Email сохранён — проверьте соединение и повторите запрос."));
