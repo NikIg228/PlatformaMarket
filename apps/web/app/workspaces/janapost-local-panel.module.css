@@ -1,0 +1,8 @@
+.section {
+  margin-block-start: var(--dm-space-4);
+}
+
+.body {
+  padding: var(--dm-space-4);
+  min-inline-size: 0;
+}

@@ -108,3 +108,4 @@ export type { ResolvedReconciliation, CreateIntegrationConnectionInput, UpdateIn
 export * from "./supplier-storefront.js";
 export * from "./supplier-calendar.js";
 export * from "./cdek-sandbox";
+export * from "./janapost-local";

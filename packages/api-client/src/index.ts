@@ -1,4 +1,5 @@
 import * as cdekSandboxApi from "./domains/cdek-sandbox";
+export { lookupJanaPostLocal } from "./domains/janapost-local";
 import type { CdekSandboxQuoteInput } from "@marketplace/schemas";
 import * as integrationsApi from "./domains/integrations";
 import * as supplierImportsApi from "./domains/supplier-imports";

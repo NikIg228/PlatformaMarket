@@ -1,4 +1,5 @@
 import { cdekCityQuerySchema, cdekCitiesSchema, cdekSandboxQuoteInputSchema, cdekSandboxQuoteSchema, cdekSandboxStatusSchema } from "@marketplace/schemas";
+import { janaPostLocalQuerySchema, janaPostLocalResultSchema } from "@marketplace/schemas";
 import { supplierStorefrontSchema, supplierStorefrontSettingsSchema, saveSupplierStorefrontSchema, uploadSupplierLogoSchema, supplierStorefrontQuerySchema } from "@marketplace/schemas";
 import { personalSessionSchema, personalCartSchema, personalCartCreateSchema, personalCartAddSchema, personalCartUpdateSchema, personalCartVersionSchema, personalCartRepriceSchema, personalCartValidationSchema } from "@marketplace/schemas";
 import { operatorOrdersQuerySchema, operatorOrdersSchema, operatorOrderDetailSchema, operatorDocumentExceptionSchema, operatorExceptionReviewSchema, operatorExceptionReviewResultSchema } from "@marketplace/schemas";
@@ -140,6 +141,8 @@ const supplierOrdersQuerySchema = z.object({ checkoutId: z.uuid().optional() });
 const coreZodSchemas = {
   CdekCityQuery: cdekCityQuerySchema,
   CdekCities: cdekCitiesSchema,
+  JanaPostLocalQuery: janaPostLocalQuerySchema,
+  JanaPostLocalResult: janaPostLocalResultSchema,
   CdekSandboxQuoteInput: cdekSandboxQuoteInputSchema,
   CdekSandboxQuote: cdekSandboxQuoteSchema,
   CdekSandboxStatus: cdekSandboxStatusSchema,

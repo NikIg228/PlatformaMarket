@@ -44,7 +44,8 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": ["NEXT_PUBLIC_JANAPOST_LOCAL_FIXTURES"]
     },
     "lint": {
       "dependsOn": [
