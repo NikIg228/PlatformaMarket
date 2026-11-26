@@ -79,4 +79,35 @@ describe("JanaPost DEV adapter", () => {
       response: { code: "JANAPOST_UNAVAILABLE" },
     });
   });
+
+  it.each([401, 429, 503])("masks HTTP %s without reading the provider error body", async status => {
+    const responseBody = vi.fn().mockResolvedValue("private provider diagnostics");
+    request.mockResolvedValue({ ok: false, status, text: responseBody });
+    await expect(adapter.status("JPD123")).rejects.toMatchObject({
+      response: { code: "JANAPOST_UNAVAILABLE" },
+    });
+    expect(responseBody).not.toHaveBeenCalled();
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+
+  it("separates a timed-out call from a later explicit retry", async () => {
+    vi.spyOn(Date, "now").mockReturnValue(1_700_000_000_000);
+    request.mockRejectedValueOnce(new Error("timeout"));
+    await expect(adapter.status("JPD123")).rejects.toMatchObject({
+      response: { code: "JANAPOST_UNAVAILABLE" },
+    });
+    expect(request).toHaveBeenCalledTimes(1);
+    await expect(adapter.status("JPD123")).resolves.toBe("delivered");
+    const [first, retry] = request.mock.calls;
+    expect(retry![1].body).toBe(first![1].body);
+    expect(retry![1].headers["X-RequestTimestamp"]).not.toBe(first![1].headers["X-RequestTimestamp"]);
+    expect(retry![1].headers["X-RequestClientSign"]).not.toBe(first![1].headers["X-RequestClientSign"]);
+  });
+
+  it("rejects malformed JSON without exposing its content", async () => {
+    request.mockResolvedValue({ ok: true, text: async () => "<html>private diagnostics</html>" });
+    await expect(adapter.status("JPD123")).rejects.toMatchObject({
+      response: { code: "JANAPOST_INVALID_RESPONSE" },
+    });
+  });
 });
